@@ -105,7 +105,7 @@ const Home = () => {
   ];
 
   return (
-    <div className="bg-gray-100 dark:bg-gray-900">
+    <div className="bg-white dark:bg-gray-900">
       {/* Hero Section */}
       <div className="relative hero-gradient overflow-hidden">
         <div className="absolute inset-0">
@@ -149,7 +149,7 @@ const Home = () => {
       </div>
 
       {/* Featured Blog Posts */}
-      <div className="section bg-gray-100 dark:bg-gray-900">
+      <div className="section bg-white dark:bg-gray-900">
         <div className="container">
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Latest AI Insights</h2>
@@ -162,7 +162,7 @@ const Home = () => {
                 to={`/blog/${post.id}`}
                 className="group"
               >
-                <article className="card overflow-hidden h-full transform transition duration-300 group-hover:scale-105">
+                <article className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden h-full transform transition duration-300 group-hover:scale-105">
                   <div className="relative h-48">
                     <img
                       src={post.image}
@@ -176,13 +176,13 @@ const Home = () => {
                     </div>
                   </div>
                   <div className="p-6">
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 group-hover:text-primary-600 dark:group-hover:text-primary-400">
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
                       {post.title}
                     </h3>
                     <p className="text-gray-600 dark:text-gray-300 mb-4">
                       {post.excerpt}
                     </p>
-                    <span className="inline-flex items-center text-primary-600 dark:text-primary-400">
+                    <span className="inline-flex items-center text-primary-600 dark:text-primary-400 group-hover:text-primary-700 dark:group-hover:text-primary-300">
                       Read More
                       <ArrowRight className="ml-2 h-4 w-4 transform group-hover:translate-x-2 transition-transform" />
                     </span>
@@ -216,8 +216,8 @@ const Home = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
             {africanAIUseCase.map((useCase, index) => (
-              <div key={index} className="card bg-white/10 backdrop-blur-lg p-6 rounded-lg hover:bg-white/20 transition">
-                <h3 className="text-xl font-semibold mb-3">{useCase.title}</h3>
+              <div key={index} className="bg-white/10 backdrop-blur-lg p-6 rounded-lg hover:bg-white/20 transition">
+                <h3 className="text-xl font-semibold mb-3 text-white">{useCase.title}</h3>
                 <p className="text-gray-300 mb-4">{useCase.description}</p>
                 <p className="text-green-400 font-medium">{useCase.impact}</p>
               </div>
@@ -228,7 +228,7 @@ const Home = () => {
             {aiFeatures.map((feature, index) => (
               <div key={index} className="group bg-white/10 backdrop-blur-lg rounded-lg p-6 hover:bg-white/20 transition transform hover:-translate-y-2 duration-300">
                 <feature.icon className="h-12 w-12 text-green-400 mb-4 group-hover:animate-bounce" />
-                <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
+                <h3 className="text-xl font-semibold mb-3 text-white">{feature.title}</h3>
                 <p className="text-gray-300">{feature.description}</p>
               </div>
             ))}
@@ -237,11 +237,11 @@ const Home = () => {
       </div>
 
       {/* Stats Section */}
-      <div className="section">
+      <div className="section bg-white dark:bg-gray-900">
         <div className="container">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {stats.map((stat, index) => (
-              <div key={index} className="card p-8 text-center transform hover:scale-105 transition duration-300">
+              <div key={index} className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg text-center transform hover:scale-105 transition duration-300">
                 <stat.icon className="h-12 w-12 text-primary-600 dark:text-primary-400 mx-auto mb-4 animate-float" />
                 <p className="text-4xl font-bold text-gray-900 dark:text-white mb-2">{stat.value}</p>
                 <p className="text-xl text-gray-600 dark:text-gray-300">{stat.label}</p>
@@ -252,22 +252,22 @@ const Home = () => {
       </div>
 
       {/* Quote Section */}
-      <div className="section bg-gray-200 dark:bg-gray-800">
+      <div className="section bg-gray-50 dark:bg-gray-800">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="card p-12">
-            <blockquote className="text-3xl font-light italic text-gray-700 dark:text-gray-300 leading-relaxed animate-float">
+          <div className="bg-white dark:bg-gray-800 p-12 rounded-lg shadow-lg">
+            <blockquote className="text-3xl font-light italic text-gray-700 dark:text-white leading-relaxed animate-float">
               "Africa's future lies in harnessing AI technology to solve our unique challenges. By training the next generation of AI innovators, we're not just participating in the global AI revolution - we're leading it with solutions that reflect our values, culture, and aspirations."
             </blockquote>
             <div className="mt-8">
               <p className="text-xl font-medium text-gray-900 dark:text-white">Anthony Mwangi</p>
-              <p className="text-gray-600 dark:text-gray-400">Founder & Lead AI Instructor</p>
+              <p className="text-gray-600 dark:text-gray-300">Founder & Lead AI Instructor</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Partners Section */}
-      <div className="section">
+      <div className="section bg-white dark:bg-gray-900">
         <div className="container">
           <h2 className="text-4xl font-bold text-center mb-16 text-gray-900 dark:text-white">Our Partners in Innovation</h2>
           <Swiper
@@ -285,13 +285,13 @@ const Home = () => {
           >
             {partners.map((partner, index) => (
               <SwiperSlide key={index}>
-                <div className="card p-8 transform hover:scale-105 transition duration-300">
+                <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg transform hover:scale-105 transition duration-300">
                   <img 
                     src={partner.logo} 
                     alt={partner.name} 
                     className="h-24 object-contain mx-auto"
                   />
-                  <p className="text-center mt-4 text-gray-600 dark:text-gray-300">{partner.name}</p>
+                  <p className="text-center mt-4 text-gray-900 dark:text-white">{partner.name}</p>
                 </div>
               </SwiperSlide>
             ))}

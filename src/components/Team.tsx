@@ -1,122 +1,142 @@
 import React from 'react';
-import { Github, Linkedin, Mail } from 'lucide-react';
+import { Github, Linkedin, Mail, GraduationCap, Building2, BrainCircuit, Wallet, Users } from 'lucide-react';
 
 const Team = () => {
   const teamMembers = [
     {
-      name: "Anthony Mwangi",
-      role: "Founder & Lead Instructor",
-      bio: "With over 10 years of experience in robotics and AI, Anthony leads our vision of transforming STEAM education in Africa.",
+      name: "Kevin Irungu",
+      role: "Co-Founder & CEO",
+      bio: "Kevin Irungu is a visionary leader passionate about robotics and STEAM education. With over six years of experience in coding and a deep understanding of robotics applications in the African context, Kevin has been pivotal in making robotics accessible and relevant across the continent. Under his leadership, ChipuRobo is driving innovation and empowering young minds to explore the exciting world of technology and engineering.",
       image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e",
+      icon: Users,
+      social: {
+        linkedin: "#",
+        github: "#",
+        email: "kevin@chipurobo.com"
+      }
+    },
+    {
+      name: "Jeffery Mulee",
+      role: "Co-Founder & CMO",
+      bio: "Jeffery Mulee is both a dynamic leader and a dedicated student, currently pursuing a degree in International Business Administration at USIU Africa. As Chief Marketing Officer, Jeffery leverages his academic knowledge and real-world experience to craft compelling marketing strategies that elevate ChipuRobo's profile and outreach. His dual role as a student and a co-founder showcases the balance of education and practical application, inspiring young innovators.",
+      image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e",
+      icon: Building2,
+      social: {
+        linkedin: "#",
+        github: "#",
+        email: "jeffery@chipurobo.com"
+      }
+    },
+    {
+      name: "Cindy Mugire",
+      role: "Co-Founder & CTO",
+      bio: "Cindy Mugire is an integral part of the ChipuRobo team, serving as Chief Technology Officer while also pursuing a Bachelor of Science in Computer Science at Strathmore University. Her role involves leading the technological development of ChipuRobo's educational tools, ensuring they are cutting-edge and effective. Cindy's commitment to both her studies and her work at ChipuRobo exemplifies the importance of continuous learning and passion for technology.",
+      image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330",
+      icon: BrainCircuit,
+      social: {
+        linkedin: "#",
+        github: "#",
+        email: "cindy@chipurobo.com"
+      }
+    },
+    {
+      name: "David Muguchia",
+      role: "Co-Founder & CFO",
+      bio: "David Muguchia serves as Chief Financial Architect at ChipuRobo, bringing his expertise in financial management to the team. His strategic planning and oversight ensure that ChipuRobo is financially robust, enabling the company to expand its educational outreach and impact. David's background in finance makes him a crucial asset in managing the organization's growth. Holding a degree in finance, David excels in merging financial strategy with technological solutions to drive innovation and growth.",
+      image: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7",
+      icon: Wallet,
+      social: {
+        linkedin: "#",
+        github: "#",
+        email: "david@chipurobo.com"
+      }
+    },
+    {
+      name: "Anthony Mwangi",
+      role: "Co-Founder & Mentor",
+      bio: "Anthony Mwangi is an experienced professional with over 20 years in Government & Regulatory Affairs, Public Policy, Communication, and Business Development. Anthony has significantly contributed to the transportation, ICT, aviation, and oil & gas industries. With a Master's Degree in Public Policy and Management from Strathmore Business School and extensive experience across various sectors, Anthony provides strategic mentorship and leadership to the advisory board.",
+      image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e",
+      icon: GraduationCap,
       social: {
         linkedin: "#",
         github: "#",
         email: "anthony@chipurobo.com"
       }
-    },
-    {
-      name: "Sarah Kamau",
-      role: "Robotics Engineer",
-      bio: "Sarah specializes in computer vision and sensor integration, bringing practical industry experience to our programs.",
-      image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80",
-      social: {
-        linkedin: "#",
-        github: "#",
-        email: "sarah@chipurobo.com"
-      }
-    },
-    {
-      name: "John Odhiambo",
-      role: "AI Specialist",
-      bio: "John leads our AI curriculum development, focusing on making complex concepts accessible to learners.",
-      image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e",
-      social: {
-        linkedin: "#",
-        github: "#",
-        email: "john@chipurobo.com"
-      }
-    }
-  ];
-
-  const advisors = [
-    {
-      name: "Dr. Emily Wangari",
-      role: "Technical Advisor",
-      bio: "PhD in Robotics from MIT, bringing global perspective to our curriculum.",
-      image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330"
-    },
-    {
-      name: "Prof. David Mutua",
-      role: "Education Advisor",
-      bio: "25 years of experience in STEAM education and curriculum development.",
-      image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e"
     }
   ];
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
       <div className="text-center mb-16">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">Our Team</h1>
-        <p className="text-xl text-gray-600">
-          Meet the passionate educators and engineers behind ChipuRobo
+        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Our Team</h1>
+        <p className="text-xl text-gray-600 dark:text-gray-300">
+          Meet the passionate innovators and educators behind ChipuRobo
         </p>
       </div>
 
-      {/* Core Team */}
-      <div className="mb-24">
-        <h2 className="text-3xl font-bold mb-12">Core Team</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-          {teamMembers.map((member, index) => (
-            <div key={index} className="bg-white rounded-lg shadow-md overflow-hidden">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {teamMembers.map((member, index) => (
+          <div 
+            key={index}
+            className="group relative bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden transform transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl"
+          >
+            {/* Image Container */}
+            <div className="relative h-80 overflow-hidden">
               <img
                 src={member.image}
                 alt={member.name}
-                className="w-full h-64 object-cover"
+                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
               />
-              <div className="p-6">
-                <h3 className="text-xl font-semibold mb-2">{member.name}</h3>
-                <p className="text-green-600 mb-4">{member.role}</p>
-                <p className="text-gray-600 mb-6">{member.bio}</p>
-                <div className="flex space-x-4">
-                  <a href={member.social.linkedin} className="text-gray-600 hover:text-green-600">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              
+              {/* Role Icon */}
+              <div className="absolute top-4 left-4 bg-primary-500 dark:bg-primary-600 p-2 rounded-full shadow-lg">
+                <member.icon className="h-6 w-6 text-white" />
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-6">
+              <div className="mb-4">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{member.name}</h2>
+                <p className="text-primary-600 dark:text-primary-400 font-medium">{member.role}</p>
+              </div>
+
+              <div className="relative">
+                <div className="h-24 overflow-hidden">
+                  <p className="text-gray-600 dark:text-gray-300 line-clamp-4">
+                    {member.bio}
+                  </p>
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white dark:from-gray-800"></div>
+              </div>
+
+              {/* Social Links */}
+              <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                <div className="flex justify-center space-x-4">
+                  <a 
+                    href={member.social.linkedin}
+                    className="text-gray-500 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400 transition-colors"
+                  >
                     <Linkedin className="h-5 w-5" />
                   </a>
-                  <a href={member.social.github} className="text-gray-600 hover:text-green-600">
+                  <a 
+                    href={member.social.github}
+                    className="text-gray-500 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400 transition-colors"
+                  >
                     <Github className="h-5 w-5" />
                   </a>
-                  <a href={`mailto:${member.social.email}`} className="text-gray-600 hover:text-green-600">
+                  <a 
+                    href={`mailto:${member.social.email}`}
+                    className="text-gray-500 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400 transition-colors"
+                  >
                     <Mail className="h-5 w-5" />
                   </a>
                 </div>
               </div>
             </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Advisory Board */}
-      <div>
-        <h2 className="text-3xl font-bold mb-12">Advisory Board</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-          {advisors.map((advisor, index) => (
-            <div key={index} className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div className="md:flex">
-                <div className="md:flex-shrink-0">
-                  <img
-                    src={advisor.image}
-                    alt={advisor.name}
-                    className="h-48 w-full md:w-48 object-cover"
-                  />
-                </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-semibold mb-2">{advisor.name}</h3>
-                  <p className="text-green-600 mb-4">{advisor.role}</p>
-                  <p className="text-gray-600">{advisor.bio}</p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
     </div>
   );

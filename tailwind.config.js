@@ -17,58 +17,77 @@ export default {
           800: '#166534',
           900: '#14532d',
           950: '#052e16',
-        },
-        surface: {
-          light: '#f3f4f6',
-          dark: '#1f2937',
-        },
-        card: {
-          light: '#ffffff',
-          dark: '#111827',
         }
       },
-      screens: {
-        'xs': '475px',
-      },
-      spacing: {
-        '18': '4.5rem',
-        '112': '28rem',
-        '128': '32rem',
-      },
-      typography: (theme) => ({
+      typography: {
         DEFAULT: {
           css: {
-            color: theme('colors.gray.900'),
+            maxWidth: '65ch',
+            color: 'inherit',
             a: {
-              color: theme('colors.primary.600'),
+              color: 'inherit',
               '&:hover': {
-                color: theme('colors.primary.700'),
+                color: '#22c55e',
               },
             },
-            'h1, h2, h3, h4': {
-              color: theme('colors.gray.900'),
-              'scroll-margin-top': theme('spacing.24'),
+            '[class~="lead"]': {
+              color: 'inherit',
+            },
+            strong: {
+              color: 'inherit',
+            },
+            'ol > li::before': {
+              color: 'inherit',
+            },
+            'ul > li::before': {
+              backgroundColor: 'currentColor',
+            },
+            hr: {
+              borderColor: 'inherit',
+            },
+            blockquote: {
+              color: 'inherit',
+              borderLeftColor: '#22c55e',
+            },
+            h1: {
+              color: 'inherit',
+            },
+            h2: {
+              color: 'inherit',
+            },
+            h3: {
+              color: 'inherit',
+            },
+            h4: {
+              color: 'inherit',
+            },
+            'figure figcaption': {
+              color: 'inherit',
+            },
+            code: {
+              color: 'inherit',
+            },
+            'a code': {
+              color: 'inherit',
+            },
+            pre: {
+              color: 'inherit',
+              backgroundColor: 'inherit',
+            },
+            thead: {
+              color: 'inherit',
+              borderBottomColor: 'inherit',
+            },
+            'tbody tr': {
+              borderBottomColor: 'inherit',
             },
           },
         },
-        dark: {
-          css: {
-            color: theme('colors.gray.300'),
-            a: {
-              color: theme('colors.primary.400'),
-              '&:hover': {
-                color: theme('colors.primary.300'),
-              },
-            },
-            'h1, h2, h3, h4': {
-              color: theme('colors.white'),
-            },
-          },
-        },
-      }),
+      },
     },
   },
   plugins: [
+    require('@tailwindcss/forms'),
     require('@tailwindcss/typography'),
   ],
 };
