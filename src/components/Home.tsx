@@ -17,24 +17,27 @@ const Home = () => {
   const featuredPosts = [
     {
       id: '1',
-      title: 'Revolutionizing African Agriculture with AI-Powered Robotics',
-      excerpt: 'How our students are developing autonomous farming solutions to address food security challenges in East Africa.',
-      image: 'https://images.unsplash.com/photo-1563089145-599997674d42',
-      category: 'Agriculture'
+      title: 'AI Literacy Workshop at Alliance Girls High School',
+      excerpt: 'Empowering young women in technology through hands-on AI workshops and practical demonstrations at one of Kenya\'s premier national schools.',
+      image: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f',
+      category: 'School Outreach',
+      icon: School
     },
     {
       id: '2',
-      title: 'Building AI Solutions for Local Healthcare Challenges',
-      excerpt: 'Exploring how our AI programs are helping develop innovative healthcare solutions for rural communities.',
-      image: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d',
-      category: 'Healthcare'
+      title: 'Nairobi School AI Innovation Day',
+      excerpt: 'Interactive AI workshop focusing on machine learning basics and real-world applications with enthusiastic participation from Nairobi School students.',
+      image: 'https://images.unsplash.com/photo-1531482615713-2afd69097998',
+      category: 'School Outreach',
+      icon: Brain
     },
     {
       id: '3',
-      title: 'The Rise of African Tech Innovation',
-      excerpt: "How young African innovators are leading the continent's technological revolution through robotics and AI.",
-      image: 'https://images.unsplash.com/photo-1531482615713-2afd69097998',
-      category: 'Innovation'
+      title: 'TVET AI Training at Tharaka Nithi University',
+      excerpt: 'Bridging the gap between technical education and AI innovation through comprehensive workshops for TVET students and educators.',
+      image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4',
+      category: 'Higher Education',
+      icon: GraduationCap
     }
   ];
 
@@ -153,7 +156,7 @@ const Home = () => {
         <div className="container">
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Latest AI Insights</h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300">Discover how AI is transforming Africa</p>
+            <p className="text-xl text-gray-600 dark:text-gray-300">Discover our recent school outreach programs</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
             {featuredPosts.map((post) => (
@@ -173,6 +176,9 @@ const Home = () => {
                       <span className="bg-primary-500 text-white px-3 py-1 rounded-full text-sm">
                         {post.category}
                       </span>
+                    </div>
+                    <div className="absolute top-4 right-4">
+                      <post.icon className="h-6 w-6 text-white" />
                     </div>
                   </div>
                   <div className="p-6">

@@ -69,17 +69,6 @@ const blogPosts: BlogPost[] = [
     image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4',
     category: 'School Outreach',
     icon: School
-  },
-  {
-    id: '6',
-    title: 'Revolutionizing African Agriculture with AI-Powered Robotics',
-    excerpt: 'How our students are developing autonomous farming solutions to address food security challenges in East Africa.',
-    author: 'Anthony Mwangi',
-    date: 'March 15, 2025',
-    readTime: '5 min read',
-    image: 'https://images.unsplash.com/photo-1563089145-599997674d42',
-    category: 'Innovation',
-    icon: Brain
   }
 ];
 
