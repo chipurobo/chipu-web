@@ -42,6 +42,7 @@ const Navbar = () => {
             <Link to="/services" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400">Services</Link>
             <Link to="/blog" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400">Blog</Link>
             <Link to="/contact" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400">Contact</Link>
+            <Link to="/microsoft" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400">Microsoft</Link>
             <ThemeToggle />
           </div>
         </div>
@@ -91,6 +92,13 @@ const Navbar = () => {
             onClick={() => setIsMenuOpen(false)}
           >
             Contact
+          </Link>
+          <Link 
+            to="/microsoft" 
+            className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+            onClick={() => setIsMenuOpen(false)}
+          >
+            Microsoft
           </Link>
         </div>
       </div>

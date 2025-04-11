@@ -11,6 +11,7 @@ import EnrollmentForm from './components/EnrollmentForm';
 import Blog from './components/Blog';
 import BlogPost from './components/BlogPost';
 import Footer from './components/Footer';
+import Microsoft from './components/Microsoft';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
             <Route path="/enroll" element={<EnrollmentForm />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:id" element={<BlogPost />} />
+            <Route path="/microsoft" element={<Microsoft />} />
           </Routes>
           <Footer />
         </div>
