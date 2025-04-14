@@ -47,15 +47,15 @@ const Home = () => {
       logo: "https://images.unsplash.com/photo-1599305445671-ac291c95aaa9",
     },
     {
-      name: "KII",
+      name: "YSK",
       logo: "https://images.unsplash.com/photo-1599305445671-ac291c95aaa9",
     },
     {
-      name: "World Bank",
+      name: "eKitabu",
       logo: "https://images.unsplash.com/photo-1599305445671-ac291c95aaa9",
     },
     {
-      name: "Partner 4",
+      name: "Microsoft",
       logo: "https://images.unsplash.com/photo-1599305445671-ac291c95aaa9",
     }
   ];
@@ -276,32 +276,16 @@ const Home = () => {
       <div className="section bg-white dark:bg-gray-900">
         <div className="container">
           <h2 className="text-4xl font-bold text-center mb-16 text-gray-900 dark:text-white">Our Partners in Innovation</h2>
-          <Swiper
-            modules={[Autoplay, Pagination]}
-            spaceBetween={30}
-            slidesPerView={1}
-            pagination={{ clickable: true }}
-            autoplay={{ delay: 3000 }}
-            breakpoints={{
-              640: { slidesPerView: 2 },
-              768: { slidesPerView: 3 },
-              1024: { slidesPerView: 4 },
-            }}
-            className="py-8"
-          >
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
             {partners.map((partner, index) => (
-              <SwiperSlide key={index}>
-                <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg transform hover:scale-105 transition duration-300">
-                  <img 
-                    src={partner.logo} 
-                    alt={partner.name} 
-                    className="h-24 object-contain mx-auto"
-                  />
-                  <p className="text-center mt-4 text-gray-900 dark:text-white">{partner.name}</p>
-                </div>
-              </SwiperSlide>
+              <div 
+                key={index} 
+                className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg text-center transform hover:scale-105 transition duration-300"
+              >
+                <p className="text-lg font-semibold text-gray-900 dark:text-white">{partner.name}</p>
+              </div>
             ))}
-          </Swiper>
+          </div>
         </div>
       </div>
 

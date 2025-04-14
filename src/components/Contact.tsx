@@ -37,18 +37,6 @@ const Contact = () => {
           <h2 className="text-2xl font-semibold mb-6 text-gray-900 dark:text-white">Contact Information</h2>
           <div className="space-y-6">
             <div className="flex items-center">
-              <Phone className="h-6 w-6 text-primary-600 dark:text-primary-400 mr-4" />
-              <div>
-                <p className="font-medium text-gray-900 dark:text-white">Phone</p>
-                <a 
-                  href="tel:+254715067441" 
-                  className="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400"
-                >
-                  +254 715 067 441
-                </a>
-              </div>
-            </div>
-            <div className="flex items-center">
               <Mail className="h-6 w-6 text-primary-600 dark:text-primary-400 mr-4" />
               <div>
                 <p className="font-medium text-gray-900 dark:text-white">Email</p>
