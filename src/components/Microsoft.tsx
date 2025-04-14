@@ -14,13 +14,20 @@ const Microsoft = () => {
           Led by Microsoft Kenya in partnership with CHIPUROBO and eKitabu, the program delivers immersive, hands-on learning experiences that foster creativity, innovation, and real-world problem solving.
         </p>
 
-        <h2 className="text-2xl font-semibold mb-4">Program Goals</h2>
-        <ul className="list-disc list-inside mb-8">
-          <li>Introduce students to foundational and advanced AI and robotics concepts</li>
-          <li>Provide hands-on training in coding, computer vision, and hardware integration</li>
-          <li>Empower teachers to deliver AI literacy in their classrooms</li>
-          <li>Support long-term STEM career pathways for Kenyan youth</li>
+        <h2 className="text-2xl font-semibold mb-4">Program Goals – What This Program Is All About</h2>
+        <p className="mb-8">
+          The Microsoft AI & Robotics Program is here to help students and teachers learn about the exciting world of Artificial Intelligence (AI), robots, and how technology is changing the world around us. We want to make learning fun, hands-on, and practical — not just theory in books.
+        </p>
+        <ul className="list-disc list-inside mb-8 space-y-2">
+          <li>💡 Students will understand how AI works and how it’s used in real life — like in robots, self-driving cars, or apps like ChatGPT.</li>
+          <li>🤖 You’ll get to build and program your own robot, using sensors, motors, and even vision (like giving your robot “eyes”).</li>
+          <li>🧠 You’ll learn how to write code in Python — one of the most popular programming languages used by engineers and scientists.</li>
+          <li>🛠️ You’ll design and create parts using 3D printers and laser cutters, just like in real tech labs.</li>
+          <li>👩‍🏫 Teachers will also learn how to teach AI in class, and how to support students to become future innovators.</li>
         </ul>
+        <p className="mb-8">
+          The big outcome? Students walk away with real skills in AI and robotics. You’ll have built something, coded something, and learned how these technologies can solve real-world problems. And teachers become champions who can guide more students in the future.
+        </p>
 
         <h2 className="text-2xl font-semibold mb-4">Confirmed April 2025 Cohort</h2>
         <p className="mb-4">The following schools have officially confirmed their participation in the upcoming workshop:</p>
