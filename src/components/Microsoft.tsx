@@ -24,19 +24,19 @@ const Microsoft = () => {
 
         <h2 className="text-2xl font-semibold mb-4">Confirmed April 2025 Cohort</h2>
         <p className="mb-4">The following schools have officially confirmed their participation in the upcoming workshop:</p>
-        <ul className="list-disc list-inside mb-8">
-          <li>✅ Starehe Girls Centre</li>
-          <li>✅ Starehe Boys Centre</li>
-          <li>✅ The Excellence School</li>
-          <li>✅ Moi Girls School Nairobi</li>
-          <li>✅ Limuru Girls High School</li>
-        </ul>
+        <ol className="list-decimal list-inside mb-8">
+          <li>Starehe Girls Centre</li>
+          <li>Starehe Boys Centre</li>
+          <li>The Excellence School</li>
+          <li>Moi Girls School Nairobi</li>
+          <li>Limuru Girls High School</li>
+        </ol>
         <p className="mb-8">
           These schools were pre-selected based on their strong STEM focus, infrastructure readiness, and ongoing collaboration with Microsoft and CHIPUROBO.
         </p>
 
         <h2 className="text-2xl font-semibold mb-4">Workshop Details</h2>
-        <ul className="mb-8">
+        <ul className="mb-8 space-y-2">
           <li>📅 <strong>Dates:</strong> April 14th – 16th, 2025</li>
           <li>📍 <strong>Venue:</strong> Microsoft ADC Garage, Westlands – Nairobi</li>
           <li>🕙 <strong>Time:</strong> 10:00 AM – 3:30 PM daily</li>
@@ -46,19 +46,19 @@ const Microsoft = () => {
         </ul>
 
         <h2 className="text-2xl font-semibold mb-4">What Students Will Experience</h2>
-        <ul className="list-disc list-inside mb-8">
+        <ol className="list-decimal list-inside mb-8 space-y-2">
           <li>🤖 AI-Powered Robotics: Build and code intelligent robots</li>
           <li>🧠 Python & AI: Learn programming, computer vision, and object tracking</li>
           <li>🛠️ 3D Printing & Laser Cutting: Fabricate custom robot parts</li>
           <li>🎮 Minecraft Education: Gamified AI learning experience (April 15)</li>
-        </ul>
+        </ol>
 
         <h2 className="text-2xl font-semibold mb-4">What Teachers Will Gain</h2>
-        <ul className="list-disc list-inside mb-8">
+        <ol className="list-decimal list-inside mb-8 space-y-2">
           <li>Training on classroom integration of AI concepts</li>
           <li>Access to digital resources and ongoing support</li>
           <li>Recognition as AI Literacy Program mentors</li>
-        </ul>
+        </ol>
 
         <h2 className="text-2xl font-semibold mb-4">Looking Ahead</h2>
         <p className="mb-8">
