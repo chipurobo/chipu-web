@@ -69,6 +69,17 @@ const blogPosts: BlogPost[] = [
     image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4',
     category: 'School Outreach',
     icon: School
+  },
+  {
+    id: '6',
+    title: 'Building the Future: How AI and Robotics Are Inspiring Kenya’s Next Generation of Innovators',
+    excerpt: 'AI & Robotics Bootcamp sparks innovation in Kenyan schools.',
+    author: 'Microsoft ADC Team',
+    date: 'April 15, 2025',
+    readTime: '7 min read',
+    image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4',
+    category: 'AI & Robotics',
+    icon: Brain
   }
 ];
 

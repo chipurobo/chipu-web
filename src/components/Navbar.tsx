@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Notebook as Robot, Menu, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 
 const Navbar = () => {
@@ -15,7 +15,7 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <Link to="/" className="flex items-center">
-            <Robot className="h-8 w-8 text-primary-600 dark:text-primary-400" />
+            <img src="/img/logo.png" alt="ChipuRobo Logo" className="h-8 w-8" />
             <span className="ml-2 text-xl font-semibold text-gray-900 dark:text-white">ChipuRobo</span>
           </Link>
 

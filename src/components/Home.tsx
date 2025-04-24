@@ -16,6 +16,14 @@ const Home = () => {
 
   const featuredPosts = [
     {
+      id: '0',
+      title: 'Microsoft AI & Robotics Literacy Program',
+      excerpt: 'Empowering the next generation of innovators through hands-on AI and robotics education.',
+      image: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f',
+      category: 'Technology',
+      icon: Cpu
+    },
+    {
       id: '1',
       title: 'AI Literacy Workshop at Alliance Girls High School',
       excerpt: 'Empowering young women in technology through hands-on AI workshops and practical demonstrations at one of Kenya\'s premier national schools.',
@@ -30,14 +38,6 @@ const Home = () => {
       image: 'https://images.unsplash.com/photo-1531482615713-2afd69097998',
       category: 'School Outreach',
       icon: Brain
-    },
-    {
-      id: '3',
-      title: 'TVET AI Training at Tharaka Nithi University',
-      excerpt: 'Bridging the gap between technical education and AI innovation through comprehensive workshops for TVET students and educators.',
-      image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4',
-      category: 'Higher Education',
-      icon: GraduationCap
     }
   ];
 

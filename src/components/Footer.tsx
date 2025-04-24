@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Notebook as Robot, Facebook, Twitter, Linkedin } from 'lucide-react';
+import { Facebook, Twitter, Linkedin } from 'lucide-react';
 
 const Footer = () => {
   return (
@@ -9,7 +9,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
           <div>
             <Link to="/" className="flex items-center mb-4">
-              <Robot className="h-10 w-10 text-green-500" />
+              <img src="/img/logo.png" alt="ChipuRobo Logo" className="h-10 w-10" />
               <span className="ml-3 text-2xl font-bold">ChipuRobo</span>
             </Link>
             <p className="text-gray-400 leading-relaxed">
