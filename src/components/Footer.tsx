@@ -9,7 +9,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
           <div>
             <Link to="/" className="flex items-center mb-4">
-              <img src="/img/logo.png" alt="ChipuRobo Logo" className="h-10 w-10" />
+              <img src="https://github.com/chipurobo/chipu-web/blob/main/img/logo.png" alt="ChipuRobo Logo" className="h-10 w-10" />
               <span className="ml-3 text-2xl font-bold">ChipuRobo</span>
             </Link>
             <p className="text-gray-400 leading-relaxed">

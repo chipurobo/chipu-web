@@ -15,7 +15,7 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <Link to="/" className="flex items-center">
-            <img src="/img/logo.png" alt="ChipuRobo Logo" className="h-8 w-8" />
+            <img src="https://github.com/chipurobo/chipu-web/blob/main/img/logo.png" alt="ChipuRobo Logo" className="h-8 w-8" />
             <span className="ml-2 text-xl font-semibold text-gray-900 dark:text-white">ChipuRobo</span>
           </Link>
 
