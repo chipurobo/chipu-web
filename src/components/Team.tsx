@@ -1,5 +1,5 @@
 import React from 'react';
-import { Github, Linkedin, Mail, GraduationCap, Building2, BrainCircuit, Wallet, Users } from 'lucide-react';
+import { Github, Linkedin, Mail, GraduationCap, Building2, BrainCircuit, Wallet, Users, Share2, Code } from 'lucide-react';
 
 const Team = () => {
   const teamMembers = [
@@ -37,6 +37,17 @@ const Team = () => {
       }
     },
     {
+      name: "Davies Maina",
+      role: "Digital Marketing Specialist",
+      bio: "Davies Maina is a Digital Marketing specialist focusing on Social Media Management, Content Creation, and Management. With years of experience, Davies helps businesses build their online presence and reach their target audience. He crafts tailored content strategies that drive engagement, boost brand awareness, and increase conversions through compelling copy, eye-catching graphics, and impactful videos.",
+      icon: Share2,
+      social: {
+        linkedin: "https://www.linkedin.com/in/davies-maina-3620b213b/",
+        github: "#",
+        email: "davies@chipurobo.com"
+      }
+    },
+    {
       name: "David Muguchia",
       role: "Co-Founder & CFO",
       bio: "David Muguchia serves as Chief Financial Architect at ChipuRobo, bringing his expertise in financial management to the team. His strategic planning and oversight ensure that ChipuRobo is financially robust, enabling the company to expand its educational outreach and impact. David's background in finance makes him a crucial asset in managing the organization's growth. Holding a degree in finance, David excels in merging financial strategy with technological solutions to drive innovation and growth.",
@@ -45,6 +56,17 @@ const Team = () => {
         linkedin: "https://www.linkedin.com/in/david-muguchia-082072224/",
         github: "#",
         email: "dwightndungu@gmail.com"
+      }
+    },
+    {
+      name: "Allan Kamau",
+      role: "Full-Stack Developer & AI Enthusiast",
+      bio: "Allan Kamau is a Computer Science Student at Strathmore University and a skilled Full-Stack Developer with a passion for AI & Robotics. As a Chipurobo Trainee, Allan brings fresh perspectives and technical expertise to the team, contributing to the development of innovative educational tools and platforms that empower the next generation of tech enthusiasts.",
+      icon: Code,
+      social: {
+        linkedin: "https://www.linkedin.com/in/allan-kamau-b47880308/",
+        github: "#",
+        email: "allan@chipurobo.com"
       }
     },
     {

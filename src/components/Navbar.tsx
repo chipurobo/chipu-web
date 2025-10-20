@@ -38,11 +38,11 @@ const Navbar = () => {
           <div className="hidden md:flex items-center space-x-8">
             <Link to="/" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400">Home</Link>
             <Link to="/about" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400">About</Link>
+            <Link to="/program" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400">Future Builders</Link>
+            <Link to="/sustainability" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400">Sustainability</Link>
             <Link to="/team" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400">Team</Link>
-            <Link to="/services" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400">Services</Link>
-            <Link to="/blog" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400">Blog</Link>
-            <Link to="/contact" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400">Contact</Link>
             <Link to="/microsoft" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400">Microsoft</Link>
+            <Link to="/contact" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400">Contact</Link>
             <ThemeToggle />
           </div>
         </div>
@@ -51,54 +51,54 @@ const Navbar = () => {
       {/* Mobile menu */}
       <div className={`md:hidden ${isMenuOpen ? 'block' : 'hidden'}`}>
         <div className="px-2 pt-2 pb-3 space-y-1 bg-white dark:bg-gray-900 shadow-lg">
-          <Link 
-            to="/" 
+          <Link
+            to="/"
             className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-800"
             onClick={() => setIsMenuOpen(false)}
           >
             Home
           </Link>
-          <Link 
-            to="/about" 
+          <Link
+            to="/about"
             className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-800"
             onClick={() => setIsMenuOpen(false)}
           >
             About
           </Link>
-          <Link 
-            to="/team" 
+          <Link
+            to="/program"
+            className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+            onClick={() => setIsMenuOpen(false)}
+          >
+            Future Builders Season 1
+          </Link>
+          <Link
+            to="/sustainability"
+            className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+            onClick={() => setIsMenuOpen(false)}
+          >
+            Sustainability
+          </Link>
+          <Link
+            to="/team"
             className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-800"
             onClick={() => setIsMenuOpen(false)}
           >
             Team
           </Link>
-          <Link 
-            to="/services" 
+          <Link
+            to="/microsoft"
             className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-800"
             onClick={() => setIsMenuOpen(false)}
           >
-            Services
+            Microsoft Program
           </Link>
-          <Link 
-            to="/blog" 
-            className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-800"
-            onClick={() => setIsMenuOpen(false)}
-          >
-            Blog
-          </Link>
-          <Link 
-            to="/contact" 
+          <Link
+            to="/contact"
             className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-800"
             onClick={() => setIsMenuOpen(false)}
           >
             Contact
-          </Link>
-          <Link 
-            to="/microsoft" 
-            className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-800"
-            onClick={() => setIsMenuOpen(false)}
-          >
-            Microsoft
           </Link>
         </div>
       </div>

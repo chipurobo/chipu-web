@@ -22,7 +22,7 @@ const Services = () => {
   const navigate = useNavigate();
 
   const handleEnroll = () => {
-    navigate('/enroll');
+    navigate('/bootcamp-enrollment');
   };
 
   const mainPrograms = [

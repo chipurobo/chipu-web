@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Brain, Building2, Award, Users, Trophy, Camera, Notebook as Robot, Cpu, Lightbulb, Code, GraduationCap, School, Zap, BrainCircuit as Circuit, Ship as Chip, Globe, Heart, Leaf, ArrowRight } from 'lucide-react';
+import { Brain, Award, Users, Notebook as Robot, Cpu, Code, GraduationCap, School, Zap, BrainCircuit as Circuit, Globe, Heart, Leaf, ArrowRight, Rocket, Recycle, MapPin, Target } from 'lucide-react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination } from 'swiper/modules';
 import 'swiper/css';
@@ -11,59 +11,68 @@ const Home = () => {
   const navigate = useNavigate();
 
   const handleEnroll = () => {
-    navigate('/enroll');
+    navigate('/future-builders-registration');
   };
 
   const featuredPosts = [
     {
-      id: '0',
-      title: 'Microsoft AI & Robotics Literacy Program',
-      excerpt: 'Empowering the next generation of innovators through hands-on AI and robotics education.',
-      image: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f',
-      category: 'Technology',
-      icon: Cpu
+      id: 'august-bootcamp',
+      title: 'August 2025 Microsoft ADC Bootcamp Success',
+      excerpt: 'Over 150 learners and teachers participated in our intensive AI and Robotics bootcamp, building intelligent robots and exploring computer vision.',
+      image: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e',
+      category: 'Bootcamp',
+      icon: Rocket
     },
     {
-      id: '1',
-      title: 'AI Literacy Workshop at Alliance Girls High School',
-      excerpt: 'Empowering young women in technology through hands-on AI workshops and practical demonstrations at one of Kenya\'s premier national schools.',
-      image: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f',
-      category: 'School Outreach',
-      icon: School
+      id: 'pet-recycling',
+      title: 'From Waste to Innovation: PET Recycling Initiative',
+      excerpt: 'Our PET recycling machines are transforming plastic waste into 3D printing filament, creating robot parts while empowering communities.',
+      image: 'https://images.unsplash.com/photo-1532996122724-e3c354a0b15b',
+      category: 'Sustainability',
+      icon: Recycle
     },
     {
-      id: '2',
-      title: 'Nairobi School AI Innovation Day',
-      excerpt: 'Interactive AI workshop focusing on machine learning basics and real-world applications with enthusiastic participation from Nairobi School students.',
-      image: 'https://images.unsplash.com/photo-1531482615713-2afd69097998',
-      category: 'School Outreach',
-      icon: Brain
+      id: 'code-clubs',
+      title: '10 Code Clubs Launched Across Kenya',
+      excerpt: 'In partnership with Raspberry Pi Foundation, we\'re bringing coding education to 123 schools by 2026, starting with 10 active clubs.',
+      image: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f',
+      category: 'Education',
+      icon: Code
     }
   ];
 
   const partners = [
     {
-      name: "KIRDI",
-      logo: "https://images.unsplash.com/photo-1599305445671-ac291c95aaa9",
-    },
-    {
-      name: "YSK",
-      logo: "https://images.unsplash.com/photo-1599305445671-ac291c95aaa9",
+      name: "Microsoft ADC",
+      role: "Technical enablement, mentorship, and AI learning integration",
     },
     {
       name: "eKitabu",
-      logo: "https://images.unsplash.com/photo-1599305445671-ac291c95aaa9",
+      role: "LMS platform, curriculum access, and inclusive learning distribution",
     },
     {
-      name: "Microsoft",
-      logo: "https://images.unsplash.com/photo-1599305445671-ac291c95aaa9",
+      name: "CEMASTEA",
+      role: "Academic validation, KSEF coordination, and teacher training",
+    },
+    {
+      name: "Raspberry Pi Foundation",
+      role: "Code Clubs, hardware, and computing education",
+    },
+    {
+      name: "Funkie Science",
+      role: "Outreach, content production, and youth engagement",
+    },
+    {
+      name: "Creptie School",
+      role: "Early-stage pilot school and mentorship collaborator",
     }
   ];
 
   const stats = [
-    { icon: Users, value: "8,000+", label: "Students Trained" },
-    { icon: School, value: "20+", label: "Schools Reached" },
-    { icon: Robot, value: "100+", label: "African AI Solutions" }
+    { icon: Users, value: "350+", label: "Learners & Teachers Trained" },
+    { icon: School, value: "15", label: "Schools Onboarded" },
+    { icon: Code, value: "10", label: "Code Clubs Launched" },
+    { icon: Recycle, value: "2", label: "PET Recycling Machines" }
   ];
 
   const aiFeatures = [
@@ -123,29 +132,34 @@ const Home = () => {
             <div className="inline-block animate-float mb-8">
               <Robot className="h-24 w-24 text-green-400 mx-auto animate-pulse-slow" />
             </div>
-            <h1 className="text-6xl font-bold text-white mb-8">
-              African AI Innovation Hub
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6">
+              The Future is Built Here
             </h1>
             <div className="typing-container mb-8">
-              <p className="typing-effect text-2xl text-green-100 mx-auto">
-                Building Africa's future through AI innovation and local talent
+              <p className="typing-effect text-2xl md:text-3xl text-green-100 mx-auto">
+                Equipping 4 Million Youth Through AI and Robotics
               </p>
             </div>
+            <p className="text-xl text-white/90 mb-8 max-w-3xl mx-auto">
+              From recycled plastic to intelligent machines. From classrooms to communities.
+              <br />
+              <strong className="text-green-300">Future Builders Season 1 — National AI & Robotics Competition begins soon.</strong>
+            </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <button 
+              <button
                 onClick={handleEnroll}
-                className="group bg-green-500 text-white px-8 py-4 rounded-lg hover:bg-green-600 transition text-lg font-semibold flex items-center justify-center"
+                className="group bg-primary-600 text-white px-8 py-4 rounded-lg hover:bg-primary-700 transition text-lg font-semibold flex items-center justify-center shadow-lg"
               >
-                <Zap className="mr-2 h-5 w-5 group-hover:animate-pulse" />
-                START YOUR AI JOURNEY
+                <Rocket className="mr-2 h-5 w-5 group-hover:animate-bounce" />
+                REGISTER FOR SEASON 1
               </button>
-              <button 
-                onClick={handleEnroll}
-                className="group bg-white/10 backdrop-blur-lg text-green-400 px-8 py-4 rounded-lg hover:bg-white/20 transition text-lg font-semibold flex items-center justify-center"
+              <Link
+                to="/microsoft"
+                className="group bg-white/10 backdrop-blur-lg text-white px-8 py-4 rounded-lg hover:bg-white/20 transition text-lg font-semibold flex items-center justify-center"
               >
-                <Chip className="mr-2 h-5 w-5 group-hover:animate-spin" />
-                JOIN AI COHORT
-              </button>
+                <School className="mr-2 h-5 w-5" />
+                VIEW BOOTCAMP HIGHLIGHTS
+              </Link>
             </div>
           </div>
         </div>
@@ -155,8 +169,8 @@ const Home = () => {
       <div className="section bg-white dark:bg-gray-900">
         <div className="container">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Latest AI Insights</h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300">Discover our recent school outreach programs</p>
+            <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Latest From ChipuRobo</h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300">Milestones from our Pan-African robotics movement</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
             {featuredPosts.map((post) => (
@@ -213,10 +227,10 @@ const Home = () => {
       <div className="section bg-gradient-to-r from-gray-900 to-primary-900 dark:from-black dark:to-primary-950 text-white">
         <div className="container">
           <div className="text-center mb-16">
-            <Circuit className="h-16 w-16 text-green-400 mx-auto mb-6 animate-spin-slow" />
-            <h2 className="text-4xl font-bold mb-6">AI for African Development</h2>
+            <Globe className="h-16 w-16 text-green-400 mx-auto mb-6 animate-pulse" />
+            <h2 className="text-4xl font-bold mb-6">A Pan-African Innovation Ecosystem</h2>
             <p className="text-xl text-gray-200 max-w-3xl mx-auto">
-              We're pioneering AI solutions that address unique African challenges while celebrating our rich cultural heritage and innovative spirit.
+              We're not just teaching robotics — we're building Africa's innovation ecosystem, connecting learners, teachers, and innovators across the continent through AI-driven education.
             </p>
           </div>
 
@@ -257,16 +271,27 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Quote Section */}
+      {/* Mission Section */}
       <div className="section bg-gray-50 dark:bg-gray-800">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white dark:bg-gray-800 p-12 rounded-lg shadow-lg">
-            <blockquote className="text-3xl font-light italic text-gray-700 dark:text-white leading-relaxed animate-float">
-              "Africa's future lies in harnessing AI technology to solve our unique challenges. By training the next generation of AI innovators, we're not just participating in the global AI revolution - we're leading it with solutions that reflect our values, culture, and aspirations."
-            </blockquote>
-            <div className="mt-8">
-              <p className="text-xl font-medium text-gray-900 dark:text-white">Anthony Mwangi</p>
-              <p className="text-gray-600 dark:text-gray-300">Founder & Lead AI Instructor</p>
+          <div className="bg-white dark:bg-gray-900 p-12 rounded-lg shadow-lg border-l-4 border-primary-600">
+            <div className="flex items-start gap-4 mb-6">
+              <Target className="h-12 w-12 text-primary-600 flex-shrink-0" />
+              <div>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Our Mission</h3>
+                <p className="text-xl text-gray-700 dark:text-gray-300 leading-relaxed">
+                  Making technology accessible, inclusive, and locally built. From Nairobi to the continent, we're shaping the next generation of African engineers, innovators, and creators.
+                </p>
+              </div>
+            </div>
+            <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
+              <p className="text-lg text-gray-600 dark:text-gray-400 italic">
+                "We're establishing ChipuRobo as a Pan-African Robotics Movement — connecting communities through hands-on learning, sustainable innovation, and inclusive STEM education."
+              </p>
+              <div className="mt-4">
+                <p className="text-lg font-medium text-gray-900 dark:text-white">Anthony Mwangi</p>
+                <p className="text-gray-600 dark:text-gray-300">Founder & Lead Instructor</p>
+              </div>
             </div>
           </div>
         </div>
@@ -275,14 +300,16 @@ const Home = () => {
       {/* Partners Section */}
       <div className="section bg-white dark:bg-gray-900">
         <div className="container">
-          <h2 className="text-4xl font-bold text-center mb-16 text-gray-900 dark:text-white">Our Partners in Innovation</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+          <h2 className="text-4xl font-bold text-center mb-4 text-gray-900 dark:text-white">Together We Build</h2>
+          <p className="text-xl text-center text-gray-600 dark:text-gray-300 mb-16">Our partners in creating Africa's innovation ecosystem</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {partners.map((partner, index) => (
-              <div 
-                key={index} 
-                className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg text-center transform hover:scale-105 transition duration-300"
+              <div
+                key={index}
+                className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg transform hover:scale-105 transition duration-300 border-l-4 border-primary-600"
               >
-                <p className="text-lg font-semibold text-gray-900 dark:text-white">{partner.name}</p>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{partner.name}</h3>
+                <p className="text-gray-600 dark:text-gray-400">{partner.role}</p>
               </div>
             ))}
           </div>
@@ -290,18 +317,34 @@ const Home = () => {
       </div>
 
       {/* CTA Section */}
-      <div className="bg-green-600 dark:bg-green-700 py-16">
-        <div className="container text-center">
-          <h2 className="text-3xl font-bold text-white mb-8">
-            Join Africa's AI Revolution
+      <div className="relative overflow-hidden bg-gradient-to-r from-primary-600 to-emerald-700 dark:from-primary-700 dark:to-emerald-800 py-24">
+        <div className="absolute inset-0 bg-grid-white/10 bg-[size:20px_20px]" />
+        <div className="relative container text-center">
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            Future Builders Season 1
           </h2>
-          <button 
-            onClick={handleEnroll}
-            className="group bg-white text-green-600 dark:text-green-700 px-8 py-4 rounded-lg hover:bg-gray-100 transition text-lg font-semibold flex items-center justify-center mx-auto"
-          >
-            <Robot className="mr-2 h-5 w-5 group-hover:animate-spin" />
-            Start Your Journey
-          </button>
+          <p className="text-xl text-white/90 mb-6 max-w-3xl mx-auto">
+            National AI & Robotics Competition
+          </p>
+          <p className="text-lg text-white/80 mb-8 max-w-2xl mx-auto">
+            Registration Opens November 2025 • Let's build the future together — one school, one robot, one idea at a time.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button
+              onClick={handleEnroll}
+              className="group bg-white text-primary-600 px-8 py-4 rounded-lg hover:bg-gray-100 transition text-lg font-semibold flex items-center justify-center shadow-lg"
+            >
+              <School className="mr-2 h-5 w-5 group-hover:animate-bounce" />
+              Register Your School
+            </button>
+            <Link
+              to="/about"
+              className="group bg-white/10 backdrop-blur-lg text-white px-8 py-4 rounded-lg hover:bg-white/20 transition text-lg font-semibold flex items-center justify-center"
+            >
+              <Heart className="mr-2 h-5 w-5" />
+              Learn More About Us
+            </Link>
+          </div>
         </div>
       </div>
     </div>

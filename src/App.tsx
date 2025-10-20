@@ -7,11 +7,15 @@ import About from './components/About';
 import Team from './components/Team';
 import Services from './components/Services';
 import Contact from './components/Contact';
-import EnrollmentForm from './components/EnrollmentForm';
+import SchoolRegistration from './components/SchoolRegistration';
+import BootcampEnrollment from './components/BootcampEnrollment';
+import FutureBuildersComingSoon from './components/FutureBuildersComingSoon';
 import Blog from './components/Blog';
 import BlogPost from './components/BlogPost';
 import Footer from './components/Footer';
 import Microsoft from './components/Microsoft';
+import Program from './components/Program';
+import Sustainability from './components/Sustainability';
 
 function App() {
   return (
@@ -22,10 +26,14 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
+            <Route path="/program" element={<Program />} />
+            <Route path="/sustainability" element={<Sustainability />} />
             <Route path="/team" element={<Team />} />
             <Route path="/services" element={<Services />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="/enroll" element={<EnrollmentForm />} />
+            <Route path="/future-builders-registration" element={<FutureBuildersComingSoon />} />
+            <Route path="/school-registration" element={<SchoolRegistration />} />
+            <Route path="/bootcamp-enrollment" element={<BootcampEnrollment />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:id" element={<BlogPost />} />
             <Route path="/microsoft" element={<Microsoft />} />
