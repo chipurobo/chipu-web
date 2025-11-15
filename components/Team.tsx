@@ -36,6 +36,18 @@ const Team = () => {
         email: "john@chipurobo.com"
       }
     }
+    ,
+    {
+      name: "Ryan",
+      role: "Workshop Manager — Software Engineer & STEM Educator",
+      bio: "Ryan is the Workshop Manager and leads the base of operations. He manages workshops, equipment, and curriculum, and mentors students in robotics and coding to ensure high-quality, hands-on learning.",
+      image: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 600'><rect width='100%25' height='100%25' fill='%23f3f4f6'/><text x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='80' fill='%23333'>RY</text></svg>",
+      social: {
+        linkedin: "#",
+        github: "#",
+        email: "ryan@chipurobo.com"
+      }
+    }
   ];
 
   const advisors = [
