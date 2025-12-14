@@ -15,7 +15,7 @@ const About = () => {
     },
     {
       icon: Award,
-      title: "10 Code Clubs Launched",
+      title: "15 Code Clubs Launched",
       description: "Targeting 123 schools by 2026 with Raspberry Pi"
     },
     {
