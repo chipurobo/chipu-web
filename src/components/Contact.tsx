@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, Phone, MapPin } from 'lucide-react';
+import { Mail, Phone, MapPin, Linkedin, Youtube, Twitter } from 'lucide-react';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -49,10 +49,49 @@ const Contact = () => {
               </div>
             </div>
             <div className="flex items-center">
+              <Phone className="h-6 w-6 text-primary-600 dark:text-primary-400 mr-4" />
+              <div>
+                <p className="font-medium text-gray-900 dark:text-white">Phone</p>
+                <a 
+                  href="tel:+254700000000" 
+                  className="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400"
+                >
+                  +254 700 000 000
+                </a>
+              </div>
+            </div>
+            <div className="flex items-center">
               <MapPin className="h-6 w-6 text-primary-600 dark:text-primary-400 mr-4" />
               <div>
                 <p className="font-medium text-gray-900 dark:text-white">Location</p>
                 <p className="text-gray-600 dark:text-gray-300">Nairobi, Kenya</p>
+              </div>
+            </div>
+            
+            <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Follow Us</h3>
+              <div className="flex space-x-4">
+                <a 
+                  href="#" 
+                  className="text-gray-500 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400 transition-colors"
+                  aria-label="LinkedIn"
+                >
+                  <Linkedin className="h-6 w-6" />
+                </a>
+                <a 
+                  href="#" 
+                  className="text-gray-500 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400 transition-colors"
+                  aria-label="YouTube"
+                >
+                  <Youtube className="h-6 w-6" />
+                </a>
+                <a 
+                  href="#" 
+                  className="text-gray-500 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400 transition-colors"
+                  aria-label="X (formerly Twitter)"
+                >
+                  <Twitter className="h-6 w-6" />
+                </a>
               </div>
             </div>
           </div>

@@ -26,9 +26,9 @@ const Team = () => {
       }
     },
     {
-      name: "Cindy Mugire",
+      name: "Cindy Mugure",
       role: "Co-Founder & CTO",
-      bio: "Cindy Mugire is an integral part of the ChipuRobo team, serving as Chief Technology Officer while also pursuing a Bachelor of Science in Computer Science at Strathmore University. Her role involves leading the technological development of ChipuRobo's educational tools, ensuring they are cutting-edge and effective. Cindy's commitment to both her studies and her work at ChipuRobo exemplifies the importance of continuous learning and passion for technology.",
+      bio: "Cindy Mugure is an integral part of the ChipuRobo team, serving as Chief Technology Officer while also pursuing a Bachelor of Science in Computer Science at Strathmore University. Her role involves leading the technological development of ChipuRobo's educational tools, ensuring they are cutting-edge and effective. Cindy's commitment to both her studies and her work at ChipuRobo exemplifies the importance of continuous learning and passion for technology.",
       icon: BrainCircuit,
       social: {
         linkedin: "https://www.linkedin.com/in/jeffery-ngui-36969b168/",
@@ -78,6 +78,17 @@ const Team = () => {
         linkedin: "https://www.linkedin.com/in/anthony-mwangi1/",
         github: "#",
         email: "anthony@chipurobo.com"
+      }
+    },
+    {
+      name: "Ryan Muuo",
+      role: "Workshop Manager — Software Engineer & STEM Educator",
+      bio: "Ryan is the Workshop Manager and leads the base of operations. He is a software engineer and STEM educator who manages workshops, maintains equipment, develops hands-on curriculum, and mentors students in robotics and coding to deliver consistent, high-quality learning experiences.",
+      icon: Building2,
+      social: {
+        linkedin: "https://www.linkedin.com/in/ryan-muuo-1a889817a/",
+        github: "#",
+        email: "ryanmuuo91@chipurobo.com"
       }
     }
   ];

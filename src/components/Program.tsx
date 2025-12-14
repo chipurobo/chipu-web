@@ -252,6 +252,42 @@ const Program = () => {
             </div>
           </div>
         </div>
+      {/* Registration Options */}
+      <div className="bg-white dark:bg-gray-900 py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+              Future Builders Registration
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              Choose your registration path to join Kenya's premier National AI & Robotics Competition
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-8 max-w-2xl mx-auto">
+            {/* Individual Registration */}
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-8 rounded-2xl border border-blue-200 dark:border-blue-800">
+              <div className="text-center">
+                <Users className="h-16 w-16 text-blue-600 mx-auto mb-6" />
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                  Register as Individual
+                </h3>
+                <p className="text-gray-600 dark:text-gray-300 mb-8">
+                  Join as an individual participant. Perfect for self-motivated learners and independent innovators.
+                </p>
+                <a
+                  href="https://docs.google.com/forms/d/e/1FAIpQLSfWh0Tmxc1l8O_HCD2jPqcVNBr1-5XfFvb5bU75EmWTVVOyOg/viewform?usp=publish-editor"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-blue-600 text-white px-8 py-4 rounded-lg hover:bg-blue-700 transition text-lg font-semibold inline-flex items-center justify-center w-full"
+                >
+                  <ArrowRight className="mr-2 h-5 w-5" />
+                  Sign Up Now
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* CTA Section */}
@@ -259,29 +295,30 @@ const Program = () => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <Cpu className="h-16 w-16 text-primary-500 mx-auto mb-6" />
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-            Join Future Builders Season 1
+            Ready to Build the Future?
           </h2>
           <p className="text-xl text-gray-300 mb-8">
-            Limited spaces available. Register your school to compete in Kenya's premier National AI & Robotics Competition.
+            Have questions about the program? Our team is here to help you get started.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
-              onClick={handleEnroll}
-              className="bg-primary-600 text-white px-8 py-4 rounded-lg hover:bg-primary-700 transition text-lg font-semibold inline-flex items-center justify-center"
-            >
-              <Rocket className="mr-2 h-5 w-5" />
-              Register Your School
-            </button>
-            <button
               onClick={() => navigate('/contact')}
-              className="bg-white/10 backdrop-blur-lg text-white px-8 py-4 rounded-lg hover:bg-white/20 transition text-lg font-semibold inline-flex items-center justify-center"
+              className="bg-primary-600 text-white px-8 py-4 rounded-lg hover:bg-primary-700 transition text-lg font-semibold inline-flex items-center justify-center"
             >
               <Users className="mr-2 h-5 w-5" />
               Contact Us for More Info
             </button>
+            <button
+              onClick={() => navigate('/about')}
+              className="bg-white/10 backdrop-blur-lg text-white px-8 py-4 rounded-lg hover:bg-white/20 transition text-lg font-semibold inline-flex items-center justify-center"
+            >
+              <Eye className="mr-2 h-5 w-5" />
+              Learn About ChipuRobo
+            </button>
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 };
