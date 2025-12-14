@@ -27,69 +27,69 @@ const Services = () => {
 
   const mainPrograms = [
     {
-      icon: Robot,
-      title: "Robotics Bootcamp",
-      description: "5-day intensive hands-on training in robotics and automation. Perfect for beginners and intermediate learners.",
+      icon: Brain,
+      title: "AI Literacy Bootcamps",
+      description: "Hands-on AI and robotics education aligned with CBC framework. Delivered through locally fabricated kits.",
       features: [
-        "Hardware assembly and programming",
-        "Sensor integration",
-        "Robot navigation and control",
-        "Project-based learning"
+        "CBC-aligned curriculum",
+        "Locally fabricated robotics kits",
+        "Digital fabrication skills",
+        "Inclusive learning design"
       ],
-      duration: "5 days",
-      groupSize: "10-15 students",
+      duration: "5-day intensive",
+      groupSize: "15-20 students",
       color: "from-blue-500 to-cyan-500"
     },
     {
-      icon: Brain,
-      title: "AI & Computer Vision",
-      description: "Learn to implement AI and computer vision solutions using Raspberry Pi and Python.",
+      icon: Code,
+      title: "Code Clubs (Raspberry Pi)",
+      description: "66 active Code Clubs across Kenya in partnership with Raspberry Pi Foundation for secondary schools.",
       features: [
-        "Object detection and tracking",
-        "Machine learning basics",
-        "Computer vision applications",
-        "Real-world projects"
+        "Raspberry Pi computing education",
+        "Python programming",
+        "Hardware projects",
+        "Teacher training included"
       ],
-      duration: "4 weeks",
-      groupSize: "12-15 students",
+      duration: "Weekly sessions",
+      groupSize: "12-18 students",
       color: "from-purple-500 to-pink-500"
     },
     {
-      icon: Code,
-      title: "Coding Classes",
-      description: "Master programming fundamentals through practical projects and real-world applications.",
+      icon: Robot,
+      title: "Inclusive Robotics",
+      description: "Accessible technology solutions including Braille challenges and adaptive tools for all learners.",
       features: [
-        "Python programming",
-        "Algorithm development",
-        "Data structures",
-        "Software engineering practices"
+        "Braille robotics challenges",
+        "Adaptive technology tools",
+        "Universal design principles",
+        "Multi-sensory learning"
       ],
-      duration: "8 weeks",
-      groupSize: "15-20 students",
+      duration: "Flexible",
+      groupSize: "8-12 students",
       color: "from-green-500 to-emerald-500"
     }
   ];
 
   const workshops = [
     {
-      icon: Zap,
-      title: "Saturday Tinkering",
-      description: "Weekly hands-on sessions for practical experimentation",
-      schedule: "Every Saturday, 9 AM - 1 PM",
+      icon: Target,
+      title: "PET Recycling Program",
+      description: "Converting plastic waste into 3D printing materials for robotics education",
+      schedule: "Ongoing community initiative",
       color: "from-amber-500 to-orange-500"
     },
     {
       icon: Globe,
-      title: "Holiday Camps",
-      description: "Intensive programs during school holidays",
-      schedule: "During school breaks, 2-week duration",
+      title: "Teacher Training",
+      description: "Professional development for educators in AI and robotics integration",
+      schedule: "Quarterly workshops with CEMASTEA",
       color: "from-indigo-500 to-violet-500"
     },
     {
-      icon: Target,
-      title: "School Programs",
-      description: "Customized training for educational institutions",
-      schedule: "Flexible scheduling",
+      icon: Zap,
+      title: "Digital Fabrication",
+      description: "3D printing and maker skills using locally sourced materials",
+      schedule: "Integrated into all programs",
       color: "from-rose-500 to-red-500"
     }
   ];
@@ -97,33 +97,33 @@ const Services = () => {
   const benefits = [
     {
       icon: Award,
-      title: "STEM.org Certified",
-      description: "Internationally recognized certification"
+      title: "CBC Aligned",
+      description: "Integrated with national curriculum frameworks"
     },
     {
       icon: Users,
-      title: "Small Groups",
-      description: "Personalized attention and guidance"
+      title: "Inclusive Design",
+      description: "Accessible to learners of all abilities"
     },
     {
       icon: Brain,
-      title: "Expert Instructors",
-      description: "Learn from industry professionals"
+      title: "Partnership Network",
+      description: "Supported by eKitabu, Microsoft, Raspberry Pi"
     },
     {
       icon: Cpu,
-      title: "Modern Equipment",
-      description: "Access to cutting-edge technology"
+      title: "Local Fabrication",
+      description: "Locally made robotics kits and tools"
     },
     {
       icon: GraduationCap,
-      title: "Career Support",
-      description: "Ongoing mentorship and guidance"
+      title: "Teacher Training",
+      description: "Professional development for educators"
     },
     {
       icon: Lightbulb,
-      title: "Innovation Focus",
-      description: "Emphasis on creative problem-solving"
+      title: "Digital Fabrication",
+      description: "3D printing and maker skills development"
     }
   ];
 
@@ -140,7 +140,7 @@ const Services = () => {
               Our Programs
             </h1>
             <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              Comprehensive STEAM and robotics education programs designed to empower Africa's next generation of innovators
+              Inclusive AI and robotics education with locally fabricated kits, Code Clubs, and CBC alignment across Kenya
             </p>
           </div>
         </div>

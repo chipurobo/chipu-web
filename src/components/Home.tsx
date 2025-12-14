@@ -43,36 +43,28 @@ const Home = () => {
 
   const partners = [
     {
-      name: "Microsoft ADC",
-      role: "Technical enablement, mentorship, and AI learning integration",
-    },
-    {
       name: "eKitabu",
-      role: "LMS platform, curriculum access, and inclusive learning distribution",
+      role: "LMS platform integration and inclusive learning content distribution",
     },
     {
-      name: "CEMASTEA",
-      role: "Academic validation, KSEF coordination, and teacher training",
+      name: "Microsoft ADC",
+      role: "Technical enablement, AI learning resources, and mentorship programs",
     },
     {
       name: "Raspberry Pi Foundation",
-      role: "Code Clubs, hardware, and computing education",
+      role: "Code Clubs program, hardware support, and computing education framework",
     },
     {
-      name: "Funkie Science",
-      role: "Outreach, content production, and youth engagement",
-    },
-    {
-      name: "Creptie School",
-      role: "Early-stage pilot school and mentorship collaborator",
+      name: "CEMASTEA",
+      role: "KSEF alignment, teacher training, and curriculum validation",
     }
   ];
 
   const stats = [
-    { icon: Users, value: "350+", label: "Learners & Teachers Trained" },
-    { icon: School, value: "15", label: "Schools Onboarded" },
-    { icon: Code, value: "10", label: "Code Clubs Launched" },
-    { icon: Recycle, value: "2", label: "PET Recycling Machines" }
+    { icon: Users, value: "800+", label: "Learners Reached in 2025" },
+    { icon: Code, value: "66", label: "Active Code Clubs" },
+    { icon: School, value: "CBC", label: "Curriculum Aligned" },
+    { icon: Recycle, value: "PET", label: "Recycling Program" }
   ];
 
   const aiFeatures = [
@@ -133,17 +125,17 @@ const Home = () => {
               <Robot className="h-24 w-24 text-green-400 mx-auto animate-pulse-slow" />
             </div>
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6">
-              The Future is Built Here
+              Inclusive AI & Robotics Education
             </h1>
             <div className="typing-container mb-8">
               <p className="typing-effect text-2xl md:text-3xl text-green-100 mx-auto">
-                Equipping 4 Million Youth Through AI and Robotics
+                66 Code Clubs • 800+ Learners • Locally Fabricated Solutions
               </p>
             </div>
             <p className="text-xl text-white/90 mb-8 max-w-3xl mx-auto">
-              From recycled plastic to intelligent machines. From classrooms to communities.
+              Delivering hands-on technology education with locally fabricated robotics kits across Kenya.
               <br />
-              <strong className="text-green-300">Future Builders Season 1 — National AI & Robotics Competition begins soon.</strong>
+              <strong className="text-green-300">Aligned with CBC • Powered by Digital Fabrication • Accessible to All</strong>
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <button
@@ -151,14 +143,14 @@ const Home = () => {
                 className="group bg-primary-600 text-white px-8 py-4 rounded-lg hover:bg-primary-700 transition text-lg font-semibold flex items-center justify-center shadow-lg"
               >
                 <Rocket className="mr-2 h-5 w-5 group-hover:animate-bounce" />
-                REGISTER FOR SEASON 1
+                JOIN A CODE CLUB
               </button>
               <Link
                 to="/microsoft"
                 className="group bg-white/10 backdrop-blur-lg text-white px-8 py-4 rounded-lg hover:bg-white/20 transition text-lg font-semibold flex items-center justify-center"
               >
                 <School className="mr-2 h-5 w-5" />
-                VIEW BOOTCAMP HIGHLIGHTS
+                EXPLORE OUR PROGRAMS
               </Link>
             </div>
           </div>
@@ -280,17 +272,17 @@ const Home = () => {
               <div>
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Our Mission</h3>
                 <p className="text-xl text-gray-700 dark:text-gray-300 leading-relaxed">
-                  Making technology accessible, inclusive, and locally built. From Nairobi to the continent, we're shaping the next generation of African engineers, innovators, and creators.
+                  Delivering inclusive, hands-on AI and robotics education across Kenya using locally fabricated solutions, digital fabrication, and Code Clubs aligned with national curriculum frameworks.
                 </p>
               </div>
             </div>
             <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
               <p className="text-lg text-gray-600 dark:text-gray-400 italic">
-                "We're establishing ChipuRobo as a Pan-African Robotics Movement — connecting communities through hands-on learning, sustainable innovation, and inclusive STEM education."
+                "We're delivering inclusive, hands-on AI and robotics education that ensures no learner is left behind — from locally fabricated kits to accessible technology solutions."
               </p>
               <div className="mt-4">
-                <p className="text-lg font-medium text-gray-900 dark:text-white">Anthony Mwangi</p>
-                <p className="text-gray-600 dark:text-gray-300">Founder & Lead Instructor</p>
+                <p className="text-lg font-medium text-gray-900 dark:text-white">Kevin Irungu</p>
+                <p className="text-gray-600 dark:text-gray-300">Co-founder & Technical Lead</p>
               </div>
             </div>
           </div>

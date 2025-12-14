@@ -38,10 +38,9 @@ const Navbar = () => {
           <div className="hidden md:flex items-center space-x-8">
             <Link to="/" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400">Home</Link>
             <Link to="/about" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400">About</Link>
-            <Link to="/program" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400">Future Builders</Link>
-            <Link to="/sustainability" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400">Sustainability</Link>
+            <Link to="/program" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400">Programs</Link>
             <Link to="/team" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400">Team</Link>
-            <Link to="/microsoft" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400">Microsoft</Link>
+            <Link to="/sustainability" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400">Sustainability</Link>
             <Link to="/contact" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400">Contact</Link>
             <ThemeToggle />
           </div>
@@ -70,14 +69,7 @@ const Navbar = () => {
             className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-800"
             onClick={() => setIsMenuOpen(false)}
           >
-            Future Builders Season 1
-          </Link>
-          <Link
-            to="/sustainability"
-            className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-800"
-            onClick={() => setIsMenuOpen(false)}
-          >
-            Sustainability
+            Programs
           </Link>
           <Link
             to="/team"
@@ -87,11 +79,11 @@ const Navbar = () => {
             Team
           </Link>
           <Link
-            to="/microsoft"
+            to="/sustainability"
             className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-800"
             onClick={() => setIsMenuOpen(false)}
           >
-            Microsoft Program
+            Sustainability
           </Link>
           <Link
             to="/contact"
