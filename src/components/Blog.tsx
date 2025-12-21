@@ -22,7 +22,7 @@ const blogPosts: BlogPost[] = [
     author: 'Cindy Mugire',
     date: 'March 28, 2025',
     readTime: '4 min read',
-    image: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f',
+    image: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&h=400&fit=crop',
     category: 'School Outreach',
     icon: School
   },
@@ -33,7 +33,7 @@ const blogPosts: BlogPost[] = [
     author: 'Kevin Irungu',
     date: 'March 25, 2025',
     readTime: '5 min read',
-    image: 'https://images.unsplash.com/photo-1531482615713-2afd69097998',
+    image: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800&h=400&fit=crop',
     category: 'School Outreach',
     icon: Brain
   },
@@ -44,7 +44,7 @@ const blogPosts: BlogPost[] = [
     author: 'Anthony Mwangi',
     date: 'March 22, 2025',
     readTime: '6 min read',
-    image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4',
+    image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&h=400&fit=crop',
     category: 'Higher Education',
     icon: GraduationCap
   },
@@ -55,7 +55,7 @@ const blogPosts: BlogPost[] = [
     author: 'Jeffery Mulee',
     date: 'March 20, 2025',
     readTime: '4 min read',
-    image: 'https://images.unsplash.com/photo-1571260899304-425eee4c7efc',
+    image: 'https://images.unsplash.com/photo-1571260899304-425eee4c7efc?w=800&h=400&fit=crop',
     category: 'School Outreach',
     icon: Users
   },
@@ -66,7 +66,7 @@ const blogPosts: BlogPost[] = [
     author: 'David Muguchia',
     date: 'March 18, 2025',
     readTime: '5 min read',
-    image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4',
+    image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&h=400&fit=crop',
     category: 'School Outreach',
     icon: School
   },
@@ -77,7 +77,7 @@ const blogPosts: BlogPost[] = [
     author: 'Microsoft ADC Team',
     date: 'April 15, 2025',
     readTime: '7 min read',
-    image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4',
+    image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&h=400&fit=crop',
     category: 'AI & Robotics',
     icon: Brain
   }

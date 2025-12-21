@@ -10,7 +10,7 @@ const About = () => {
     },
     {
       icon: GraduationCap,
-      title: "66 Code Clubs Active",
+      title: "60+ Schools Engaged",
       description: "Partnered with Raspberry Pi Foundation across Kenya"
     },
     {

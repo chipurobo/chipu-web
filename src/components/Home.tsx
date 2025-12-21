@@ -62,7 +62,7 @@ const Home = () => {
 
   const stats = [
     { icon: Users, value: "800+", label: "Learners Reached in 2025" },
-    { icon: Code, value: "66", label: "Active Code Clubs" },
+    { icon: Code, value: "60+", label: "Schools Engaged" },
     { icon: School, value: "CBC", label: "Curriculum Aligned" },
     { icon: Recycle, value: "PET", label: "Recycling Program" }
   ];
@@ -129,7 +129,7 @@ const Home = () => {
             </h1>
             <div className="typing-container mb-8">
               <p className="typing-effect text-2xl md:text-3xl text-green-100 mx-auto">
-                66 Code Clubs • 800+ Learners • Locally Fabricated Solutions
+                60+ Schools • 800+ Learners • Locally Fabricated Solutions
               </p>
             </div>
             <p className="text-xl text-white/90 mb-8 max-w-3xl mx-auto">

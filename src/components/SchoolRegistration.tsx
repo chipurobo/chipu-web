@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Send, School, Users, Award } from 'lucide-react';
+import { ArrowLeft, Send, School, Users, Award, Download } from 'lucide-react';
 
 const SchoolRegistration = () => {
   const navigate = useNavigate();
@@ -101,6 +101,30 @@ ${formData.expectations}
             <h1 className="text-4xl font-bold mb-2">Future Builders Season 1</h1>
             <p className="text-xl text-white/90">School Registration Form</p>
             <p className="text-sm text-white/75 mt-2">National AI & Robotics Competition | Opens November 2025</p>
+          </div>
+
+          {/* Coding Club Teacher Guide */}
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-8 border-b border-gray-200 dark:border-gray-700">
+            <div className="max-w-3xl mx-auto text-center">
+              <div className="flex items-center justify-center mb-4">
+                <Download className="h-8 w-8 text-blue-600 dark:text-blue-400 mr-3" />
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Coding Club Teacher Guide</h2>
+              </div>
+              <p className="text-lg text-gray-600 dark:text-gray-300 mb-6">
+                Teachers interested in starting a coding club at their school can use this comprehensive guide to get step-by-step instructions on how to establish and run a successful robotics and coding program.
+              </p>
+              <p className="text-gray-500 dark:text-gray-400 mb-6">
+                This guide covers everything from initial setup to curriculum planning, resource requirements, and best practices for engaging students in hands-on robotics education.
+              </p>
+              <a
+                href="/Coding Club Teacher Guide – Rc Robotics Program (1).pdf"
+                download="Coding Club Teacher Guide – Rc Robotics Program.pdf"
+                className="inline-flex items-center bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition text-lg font-semibold shadow-lg"
+              >
+                <Download className="mr-2 h-5 w-5" />
+                Download Teacher Guide (PDF)
+              </a>
+            </div>
           </div>
 
           <form onSubmit={handleSubmit} className="p-8 space-y-8">
