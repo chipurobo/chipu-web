@@ -194,7 +194,7 @@ const Home = () => {
               <Link to="/program" className="block text-white">
                 <div className="relative h-[500px] rounded-lg overflow-hidden">
                   <img src="/img/carousel images/coding clubs image.jpg" alt="Coding Clubs" className="w-full h-full object-cover" />
-                  <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-6 z-10">
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-green-700/70 to-transparent text-black p-6 z-10">
                     <h3 className="text-2xl font-bold">Coding Clubs</h3>
                     <p>Join our coding clubs to learn programming and build projects.</p>
                   </div>
@@ -205,7 +205,7 @@ const Home = () => {
               <Link to="/program" className="block text-white">
                 <div className="relative h-[500px] rounded-lg overflow-hidden">
                   <img src="/img/carousel images/Maker space image.jpg" alt="Maker Space" className="w-full h-full object-cover" />
-                  <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-6 z-10">
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-green-700/70 to-transparent text-black p-6 z-10">
                     <h3 className="text-2xl font-bold">Maker Space</h3>
                     <p>Explore creativity in our maker space with tools and materials.</p>
                   </div>
@@ -216,7 +216,7 @@ const Home = () => {
               <Link to="/program" className="block text-white">
                 <div className="relative h-[500px] rounded-lg overflow-hidden">
                   <img src="/img/carousel images/coding competitions image.jpg" alt="Coding Competition" className="w-full h-full object-cover" />
-                  <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-6 z-10">
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-green-700/70 to-transparent text-black p-6 z-10">
                     <h3 className="text-2xl font-bold">Coding Competition</h3>
                     <p>Participate in exciting coding competitions and showcase your skills.</p>
                   </div>
@@ -227,7 +227,7 @@ const Home = () => {
               <Link to="/program" className="block text-white">
                 <div className="relative h-[500px] rounded-lg overflow-hidden">
                   <img src="/img/carousel images/workshops image.jpg" alt="Workshops" className="w-full h-full object-cover" />
-                  <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-6 z-10">
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-green-700/70 to-transparent text-black p-6 z-10">
                     <h3 className="text-2xl font-bold">Workshops</h3>
                     <p>Attend hands-on workshops to learn new technologies and skills.</p>
                   </div>
