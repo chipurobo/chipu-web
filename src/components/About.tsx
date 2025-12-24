@@ -1,5 +1,5 @@
 import React from 'react';
-import { Target, Users, Lightbulb, Award, GraduationCap, Rocket, Globe, MapPin, Heart, Recycle } from 'lucide-react';
+import { Target, Users, Lightbulb, Award, GraduationCap, Rocket, Globe, MapPin, Heart, Recycle, School } from 'lucide-react';
 
 const About = () => {
   const achievements = [
@@ -14,13 +14,13 @@ const About = () => {
       description: "Partnered with Raspberry Pi Foundation across Kenya"
     },
     {
-      icon: Award,
-      title: "CBC Alignment",
-      description: "Integrated with national curriculum frameworks"
+      icon: School,
+      title: "80+ Schools",
+      description: "Students from 80+ schools participating in our programs"
     },
     {
       icon: Recycle,
-      title: "PET Recycling Program",
+      title: "10+ PET Welders Made",
       description: "Converting plastic waste to 3D printing materials"
     }
   ];
@@ -102,7 +102,7 @@ const About = () => {
       {/* Achievements */}
       <div className="mb-24">
         <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-4">Milestones That Matter</h2>
-        <p className="text-xl text-center text-gray-600 dark:text-gray-300 mb-12">Our journey from August to October 2025</p>
+        <p className="text-xl text-center text-gray-600 dark:text-gray-300 mb-12">Our journey from August to December 2025</p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {achievements.map((achievement, index) => (
             <div key={index} className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg text-center transform hover:scale-105 transition duration-300">
