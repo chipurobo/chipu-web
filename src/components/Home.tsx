@@ -2,10 +2,11 @@ import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Brain, Award, Users, Notebook as Robot, Cpu, Code, GraduationCap, School, Zap, BrainCircuit as Circuit, Globe, Heart, Leaf, ArrowRight, Rocket, Recycle, MapPin, Target } from 'lucide-react';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay, Pagination } from 'swiper/modules';
+import { Autoplay, Pagination, Navigation } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/autoplay';
+import 'swiper/css/navigation';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -155,6 +156,103 @@ const Home = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Programs Carousel */}
+      <div className="section bg-gray-50 dark:bg-gray-800">
+        <div className="container">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Our Programs</h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300">Discover our upcoming and running programs</p>
+          </div>
+          <Swiper
+            modules={[Autoplay, Pagination, Navigation]}
+            spaceBetween={20}
+            slidesPerView={1.4}
+            centeredSlides={true}
+            loop={true}
+            navigation={true}
+            autoplay={{ delay: 4000, disableOnInteraction: false }}
+            pagination={{ clickable: true }}
+            className="programs-carousel"
+            breakpoints={{
+              640: {
+                slidesPerView: 2.3,
+                spaceBetween: 30,
+              },
+              1024: {
+                slidesPerView: 2.3,
+                spaceBetween: 40,
+              },
+            }}
+          >
+            <SwiperSlide>
+              <Link to="/program" className="block text-white">
+                <div className="relative h-[500px] rounded-lg overflow-hidden">
+                  <img src="/img/carousel images/coding clubs image.jpg" alt="Coding Clubs" className="w-full h-full object-cover" />
+                  <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-6 z-10">
+                    <h3 className="text-2xl font-bold">Coding Clubs</h3>
+                    <p>Join our coding clubs to learn programming and build projects.</p>
+                  </div>
+                </div>
+              </Link>
+            </SwiperSlide>
+            <SwiperSlide>
+              <Link to="/program" className="block text-white">
+                <div className="relative h-[500px] rounded-lg overflow-hidden">
+                  <img src="/img/carousel images/Maker space image.jpg" alt="Maker Space" className="w-full h-full object-cover" />
+                  <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-6 z-10">
+                    <h3 className="text-2xl font-bold">Maker Space</h3>
+                    <p>Explore creativity in our maker space with tools and materials.</p>
+                  </div>
+                </div>
+              </Link>
+            </SwiperSlide>
+            <SwiperSlide>
+              <Link to="/program" className="block text-white">
+                <div className="relative h-[500px] rounded-lg overflow-hidden">
+                  <img src="/img/carousel images/coding competitions image.jpg" alt="Coding Competition" className="w-full h-full object-cover" />
+                  <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-6 z-10">
+                    <h3 className="text-2xl font-bold">Coding Competition</h3>
+                    <p>Participate in exciting coding competitions and showcase your skills.</p>
+                  </div>
+                </div>
+              </Link>
+            </SwiperSlide>
+            <SwiperSlide>
+              <Link to="/program" className="block text-white">
+                <div className="relative h-[500px] rounded-lg overflow-hidden">
+                  <img src="/img/carousel images/workshops image.jpg" alt="Workshops" className="w-full h-full object-cover" />
+                  <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-6 z-10">
+                    <h3 className="text-2xl font-bold">Workshops</h3>
+                    <p>Attend hands-on workshops to learn new technologies and skills.</p>
+                  </div>
+                </div>
+              </Link>
+            </SwiperSlide>
+          </Swiper>
+        </div>
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            .programs-carousel .swiper-slide {
+              opacity: 0.6;
+              transform: scale(0.8);
+              transition: opacity 0.3s ease, transform 0.3s ease;
+            }
+            .programs-carousel .swiper-slide-active {
+              opacity: 1;
+              transform: scale(1);
+            }
+            .programs-carousel .swiper-button-next,
+            .programs-carousel .swiper-button-prev {
+              color: #10b981;
+            }
+            .programs-carousel .swiper-button-next:hover,
+            .programs-carousel .swiper-button-prev:hover {
+              color: #059669;
+            }
+          `
+        }} />
       </div>
 
       {/* Featured Blog Posts */}
