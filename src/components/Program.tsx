@@ -6,7 +6,7 @@ const Program = () => {
   const navigate = useNavigate();
 
   const handleEnroll = () => {
-    navigate('/future-builders-registration');
+    navigate('/register-2026');
   };
 
   const learningPathway = [
@@ -104,16 +104,16 @@ const Program = () => {
           <div className="text-center">
             <div className="inline-flex items-center bg-white/20 backdrop-blur-lg px-4 py-2 rounded-full text-white mb-6">
               <Calendar className="h-5 w-5 mr-2" />
-              <span className="font-semibold">Registration Opens November 2025</span>
+              <span className="font-semibold">2026 Registration Now Open</span>
             </div>
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-4">
-              Future Builders
+              ChipuRobo 2026
             </h1>
             <h2 className="text-3xl md:text-4xl font-bold text-green-300 mb-6">
-              Season 1: National AI & Robotics Competition
+              AI & Robotics Programme
             </h2>
             <p className="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto mb-8">
-              A year-long inclusive robotics journey culminating in Kenya's premier student-led AI innovation showcase
+              Join our mission to empower 4 million youth across Africa by 2030 through inclusive AI and robotics education
             </p>
             <button
               onClick={handleEnroll}
@@ -372,8 +372,8 @@ const Program = () => {
                   1
                 </div>
                 <div className="ml-4">
-                  <h4 className="font-semibold text-gray-900 dark:text-white">November 2025</h4>
-                  <p className="text-gray-600 dark:text-gray-300">Future Builders Season 1 registration opens</p>
+                  <h4 className="font-semibold text-gray-900 dark:text-white">December 2025</h4>
+                  <p className="text-gray-600 dark:text-gray-300">2026 Programme registration now open</p>
                 </div>
               </div>
               <div className="flex items-start">

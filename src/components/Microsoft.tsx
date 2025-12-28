@@ -356,11 +356,11 @@ const Microsoft = () => {
             Future cohorts will scale nationwide through <strong>Future Builders Season 1</strong> — our National AI & Robotics Competition targeting 123 schools by 2026.
           </p>
           <button
-            onClick={() => navigate('/program')}
+            onClick={() => navigate('/register-2026')}
             className="bg-white text-blue-600 px-8 py-4 rounded-lg hover:bg-gray-100 transition text-lg font-semibold inline-flex items-center"
           >
             <Rocket className="mr-2 h-5 w-5" />
-            Join Future Builders Season 1
+            Register for 2026 Programme
           </button>
         </div>
       </div>
