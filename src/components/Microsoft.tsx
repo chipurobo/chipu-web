@@ -8,7 +8,7 @@ const Microsoft = () => {
   const programImpact = [
     {
       icon: Users,
-      metric: "500+",
+      metric: "800+",
       label: "Total Learners & Teachers",
       detail: "Across all bootcamps"
     },
@@ -120,30 +120,30 @@ const Microsoft = () => {
         <div className="absolute inset-0 bg-grid-white/10 bg-[size:20px_20px]" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center">
-            <div className="inline-flex items-center bg-white/20 backdrop-blur-lg px-4 py-2 rounded-full text-white mb-6">
-              <Zap className="h-5 w-5 mr-2" />
-              <span className="font-semibold">Year-Round National Initiative</span>
+            <div className="inline-flex items-center bg-green-400/20 backdrop-blur-lg px-4 py-2 rounded-full text-white mb-6">
+              <CheckCircle className="h-5 w-5 mr-2" />
+              <span className="font-semibold dyslexic-text">2025 Programme Completed Successfully</span>
             </div>
-            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-              Microsoft AI & Robotics
+            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 dyslexic-text">
+              2025 Impact Report
               <br />
-              Literacy Program
+              Microsoft ADC Partnership
             </h1>
-            <p className="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto mb-8">
-              Building Kenya's AI-ready workforce through hands-on robotics education
+            <p className="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto mb-8 dyslexic-text">
+              Three transformative bootcamps completed - setting the foundation for 2026 national expansion
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <div className="bg-white/10 backdrop-blur-lg px-6 py-3 rounded-lg">
-                <p className="text-3xl font-bold text-white">500+</p>
-                <p className="text-white/80">Lives Impacted</p>
+                <p className="text-3xl font-bold text-white dyslexic-text">800+</p>
+                <p className="text-white/80 dyslexic-text">Lives Impacted</p>
               </div>
               <div className="bg-white/10 backdrop-blur-lg px-6 py-3 rounded-lg">
-                <p className="text-3xl font-bold text-white">80</p>
-                <p className="text-white/80">Schools</p>
+                <p className="text-3xl font-bold text-white dyslexic-text">80</p>
+                <p className="text-white/80 dyslexic-text">Schools Reached</p>
               </div>
               <div className="bg-white/10 backdrop-blur-lg px-6 py-3 rounded-lg">
-                <p className="text-3xl font-bold text-white">3</p>
-                <p className="text-white/80">Bootcamps</p>
+                <p className="text-3xl font-bold text-white dyslexic-text">3</p>
+                <p className="text-white/80 dyslexic-text">Bootcamps Completed</p>
               </div>
             </div>
           </div>
@@ -177,7 +177,7 @@ const Microsoft = () => {
           <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-8 text-center">
             Measurable Learning Outcomes
           </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {outcomes.map((outcome, index) => (
               <div key={index} className="text-center">
                 <outcome.icon className="h-10 w-10 text-blue-600 dark:text-blue-400 mx-auto mb-3" />
@@ -190,33 +190,57 @@ const Microsoft = () => {
       </div>
 
       {/* Curriculum Breakdown */}
-      <div className="bg-gray-50 dark:bg-gray-800 py-24">
+      <section className="bg-gray-50 dark:bg-gray-800 py-24" aria-labelledby="curriculum-title">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-4">
-            Comprehensive Curriculum
-          </h2>
-          <p className="text-xl text-center text-gray-600 dark:text-gray-300 mb-16">
-            30+ hours of intensive hands-on training per bootcamp
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {learningModules.map((module, index) => (
-              <div key={index} className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-lg">
-                <module.icon className="h-10 w-10 text-blue-600 dark:text-blue-400 mb-4" />
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{module.title}</h3>
-                <p className="text-blue-600 dark:text-blue-400 font-semibold mb-4">{module.hours}</p>
-                <ul className="space-y-2">
-                  {module.topics.map((topic, idx) => (
-                    <li key={idx} className="flex items-start text-sm text-gray-600 dark:text-gray-400">
-                      <CheckCircle className="h-4 w-4 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                      {topic}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+          <div className="text-center mb-16">
+            <h2 id="curriculum-title" className="text-3xl font-bold text-gray-900 dark:text-white mb-4 dyslexic-text">
+              Comprehensive Curriculum
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300 dyslexic-text">
+              30+ hours of intensive hands-on training per bootcamp
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {learningModules.map((module, index) => {
+              const colors = ['blue', 'emerald', 'purple', 'orange'];
+              const colorClass = colors[index % colors.length];
+              return (
+                <article 
+                  key={index} 
+                  className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-shadow"
+                  aria-labelledby={`module-title-${index}`}
+                >
+                  <div className={`bg-${colorClass}-100 dark:bg-${colorClass}-900/30 p-4 rounded-lg w-fit mb-6`}>
+                    <module.icon className={`h-10 w-10 text-${colorClass}-600 dark:text-${colorClass}-400`} aria-hidden="true" />
+                  </div>
+                  <h3 id={`module-title-${index}`} className="text-xl font-bold text-gray-900 dark:text-white mb-3 dyslexic-text">
+                    {module.title}
+                  </h3>
+                  <div className={`bg-${colorClass}-50 dark:bg-${colorClass}-900/20 px-3 py-2 rounded-lg inline-block mb-6`}>
+                    <p className={`text-${colorClass}-600 dark:text-${colorClass}-400 font-semibold text-sm dyslexic-text`}>
+                      <span className="sr-only">Duration: </span>{module.hours}
+                    </p>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3 dyslexic-text">Topics Covered:</h4>
+                    <ul className="space-y-3" role="list">
+                      {module.topics.map((topic, idx) => (
+                        <li key={idx} className="flex items-start" role="listitem">
+                          <div className="bg-green-100 dark:bg-green-900/30 p-1 rounded-full mr-3 mt-1 flex-shrink-0">
+                            <CheckCircle className="h-3 w-3 text-green-600 dark:text-green-400" aria-hidden="true" />
+                          </div>
+                          <span className="text-sm text-gray-600 dark:text-gray-400 dyslexic-text">{topic}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Cohort Breakdown */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
@@ -346,18 +370,21 @@ const Microsoft = () => {
       {/* Partnership & Next Steps */}
       <div className="bg-gradient-to-r from-gray-900 to-blue-900 dark:from-black dark:to-blue-950 py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-white mb-6">
-            A Collaborative Success
+          <h2 className="text-3xl font-bold text-white mb-6 dyslexic-text">
+            From 2025 Success to 2026 Scale-Up
           </h2>
-          <p className="text-xl text-gray-200 mb-8">
-            This program is made possible through partnership between Microsoft Kenya, ChipuRobo, eKitabu, and CEMASTEA, with support from the Raspberry Pi Foundation.
+          <p className="text-xl text-gray-200 mb-8 dyslexic-text">
+            Our successful Microsoft ADC partnership in 2025 proved our model works. Three bootcamps, 800+ participants trained, and transformative results achieved. Now we're ready for nationwide expansion.
           </p>
-          <p className="text-lg text-gray-300 mb-8">
-            Future cohorts will scale nationwide through <strong>Future Builders Season 1</strong> — our National AI & Robotics Competition targeting 123 schools by 2026.
+          <p className="text-lg text-gray-300 mb-8 dyslexic-text">
+            The 2026 programme runs from January to April, aligning with the Kenya Science and Engineering Fair (KSEF) calendar. Term 1 introduces robotics, Term 2 covers AI and computer vision, and the programme culminates in a national judging round by KSEF in April. Schools across all 47 counties are encouraged to express interest and register early to participate.
+          </p>
+          <p className="text-lg text-gray-300 mb-8 dyslexic-text">
+            Interested schools can register for Season 2 of the programme using the button below or reach out via email for more details.
           </p>
           <button
             onClick={() => navigate('/register-2026')}
-            className="bg-white text-blue-600 px-8 py-4 rounded-lg hover:bg-gray-100 transition text-lg font-semibold inline-flex items-center"
+            className="bg-white text-blue-600 px-8 py-4 rounded-lg hover:bg-gray-100 transition text-lg font-semibold inline-flex items-center dyslexic-text"
           >
             <Rocket className="mr-2 h-5 w-5" />
             Register for 2026 Programme

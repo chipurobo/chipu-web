@@ -71,7 +71,7 @@ const Home = () => {
     {
       icon: Globe,
       title: "African AI Solutions",
-      description: "Develop AI solutions tailored to African challenges and opportunities in agriculture, healthcare, and education."
+      description: "Develop AI solutions through sustainable digital fabrication, inclusive learning systems, and locally-relevant automation technologies."
     },
     {
       icon: Robot,
@@ -92,19 +92,19 @@ const Home = () => {
 
   const africanAIUseCase = [
     {
-      title: "Agriculture",
-      description: "AI-powered crop disease detection using local farmer knowledge",
-      impact: "Supporting small-scale farmers across East Africa"
+      title: "♻️ Sustainable Innovation & Manufacturing",
+      description: "PET recycling machines turn plastic waste into 3D printing filament while students prototype real products for community tech projects",
+      impact: "13 machines deployed + youth entrepreneurship programs"
     },
     {
-      title: "Healthcare",
-      description: "Remote medical diagnostics for rural communities",
-      impact: "Bringing healthcare to underserved areas"
+      title: "🎓 Inclusive & Accessible AI Education",
+      description: "Robotics kits with Braille labels, KSL-integrated videos, and AI programs designed for deaf, blind, and neurodiverse learners",
+      impact: "Ensuring no learner is left behind in AI education"
     },
     {
-      title: "Education",
-      description: "Multilingual AI tutoring in local languages",
-      impact: "Making education accessible to all"
+      title: "🤖 Real-World Automation Applications",
+      description: "AI-enabled robots teaching object detection in classrooms plus IoT smart farming towers with sensors and environmental control",
+      impact: "From classroom learning to agricultural innovation"
     }
   ];
 
@@ -227,24 +227,24 @@ const Home = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
             <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg text-center">
-              <div className="text-3xl font-bold text-blue-600 mb-2">3</div>
-              <div className="text-gray-600 dark:text-gray-300 mb-1">National Bootcamps</div>
-              <div className="text-sm text-gray-500">April, August, Nov-Dec</div>
+              <div className="text-3xl font-bold text-blue-600 mb-2 dyslexic-text">3</div>
+              <div className="text-gray-600 dark:text-gray-300 mb-1 dyslexic-text">National Bootcamps</div>
+              <div className="text-sm text-gray-500 dyslexic-text">April, August, Nov-Dec</div>
             </div>
             <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg text-center">
-              <div className="text-3xl font-bold text-emerald-600 mb-2">800+</div>
-              <div className="text-gray-600 dark:text-gray-300 mb-1">Students Trained</div>
-              <div className="text-sm text-gray-500">50+ teachers included</div>
+              <div className="text-3xl font-bold text-emerald-600 mb-2 dyslexic-text">800+</div>
+              <div className="text-gray-600 dark:text-gray-300 mb-1 dyslexic-text">Students Trained</div>
+              <div className="text-sm text-gray-500 dyslexic-text">50+ teachers included</div>
             </div>
             <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg text-center">
-              <div className="text-3xl font-bold text-purple-600 mb-2">66</div>
-              <div className="text-gray-600 dark:text-gray-300 mb-1">Code Clubs Active</div>
-              <div className="text-sm text-gray-500">Raspberry Pi partnership</div>
+              <div className="text-3xl font-bold text-purple-600 mb-2 dyslexic-text">66</div>
+              <div className="text-gray-600 dark:text-gray-300 mb-1 dyslexic-text">Code Clubs Active</div>
+              <div className="text-sm text-gray-500 dyslexic-text">Raspberry Pi partnership</div>
             </div>
             <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg text-center">
-              <div className="text-3xl font-bold text-orange-600 mb-2">13</div>
-              <div className="text-gray-600 dark:text-gray-300 mb-1">PET Machines Deployed</div>
-              <div className="text-sm text-gray-500">Sustainable innovation</div>
+              <div className="text-3xl font-bold text-orange-600 mb-2 dyslexic-text">13</div>
+              <div className="text-gray-600 dark:text-gray-300 mb-1 dyslexic-text">PET Machines Deployed</div>
+              <div className="text-sm text-gray-500 dyslexic-text">Sustainable innovation</div>
             </div>
           </div>
 
@@ -265,37 +265,85 @@ const Home = () => {
       </div>
 
       {/* African AI Impact Section */}
-      <div className="section bg-gradient-to-r from-gray-900 to-primary-900 dark:from-black dark:to-primary-950 text-white">
+      <section 
+        className="section bg-gradient-to-r from-gray-900 to-primary-900 dark:from-black dark:to-primary-950 text-white"
+        aria-labelledby="ai-ecosystem-title"
+      >
         <div className="container">
           <div className="text-center mb-16">
-            <Globe className="h-16 w-16 text-green-400 mx-auto mb-6 animate-pulse" />
-            <h2 className="text-4xl font-bold mb-6">A Pan-African Innovation Ecosystem</h2>
-            <p className="text-xl text-gray-200 max-w-3xl mx-auto">
+            <Globe className="h-16 w-16 text-green-400 mx-auto mb-6 animate-pulse" aria-hidden="true" />
+            <h2 id="ai-ecosystem-title" className="text-4xl font-bold mb-6 dyslexic-text">
+              A Pan-African Innovation Ecosystem
+            </h2>
+            <p className="text-xl text-gray-200 max-w-3xl mx-auto dyslexic-text">
               We're not just teaching robotics — we're building Africa's innovation ecosystem, connecting learners, teachers, and innovators across the continent through AI-driven education.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-            {africanAIUseCase.map((useCase, index) => (
-              <div key={index} className="bg-white/10 backdrop-blur-lg p-6 rounded-lg hover:bg-white/20 transition">
-                <h3 className="text-xl font-semibold mb-3 text-white">{useCase.title}</h3>
-                <p className="text-gray-300 mb-4">{useCase.description}</p>
-                <p className="text-green-400 font-medium">{useCase.impact}</p>
-              </div>
-            ))}
+          <div className="mb-16">
+            <h3 className="text-2xl font-bold text-center text-white mb-8 dyslexic-text">
+              Real-World AI Applications
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {africanAIUseCase.map((useCase, index) => {
+                const colorClasses = [
+                  { bg: 'bg-emerald-500/20', border: 'border-emerald-400/30 hover:border-emerald-400/50', text: 'text-emerald-400', dot: 'bg-emerald-400' },
+                  { bg: 'bg-blue-500/20', border: 'border-blue-400/30 hover:border-blue-400/50', text: 'text-blue-400', dot: 'bg-blue-400' },
+                  { bg: 'bg-purple-500/20', border: 'border-purple-400/30 hover:border-purple-400/50', text: 'text-purple-400', dot: 'bg-purple-400' }
+                ];
+                const colors = colorClasses[index % colorClasses.length];
+                return (
+                  <article 
+                    key={index} 
+                    className={`${colors.bg} backdrop-blur-lg p-8 rounded-xl border ${colors.border} transition-all duration-300 hover:scale-105`}
+                    aria-labelledby={`ai-usecase-title-${index}`}
+                  >
+                    <div className="flex items-center mb-6">
+                      <div className={`w-4 h-4 ${colors.dot} rounded-full mr-3`} aria-hidden="true"></div>
+                      <h4 id={`ai-usecase-title-${index}`} className="text-xl font-semibold text-white dyslexic-text">
+                        {useCase.title}
+                      </h4>
+                    </div>
+                    <p className="text-gray-300 mb-6 dyslexic-text">
+                      {useCase.description}
+                    </p>
+                    <div className="bg-white/10 px-4 py-3 rounded-lg border border-white/20">
+                      <p className={`${colors.text} font-medium text-sm dyslexic-text`}>
+                        <span className="sr-only">Impact: </span>{useCase.impact}
+                      </p>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {aiFeatures.map((feature, index) => (
-              <div key={index} className="group bg-white/10 backdrop-blur-lg rounded-lg p-6 hover:bg-white/20 transition transform hover:-translate-y-2 duration-300">
-                <feature.icon className="h-12 w-12 text-green-400 mb-4 group-hover:animate-bounce" />
-                <h3 className="text-xl font-semibold mb-3 text-white">{feature.title}</h3>
-                <p className="text-gray-300">{feature.description}</p>
-              </div>
-            ))}
+          <div>
+            <h3 className="text-2xl font-bold text-center text-white mb-8 dyslexic-text">
+              AI Innovation Pillars
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {aiFeatures.map((feature, index) => (
+                <article 
+                  key={index} 
+                  className="group bg-white/10 backdrop-blur-lg rounded-xl p-6 hover:bg-white/20 transition transform hover:-translate-y-2 duration-300 border border-white/20 hover:border-white/30"
+                  aria-labelledby={`ai-feature-title-${index}`}
+                >
+                  <div className="bg-green-500/20 p-4 rounded-lg w-fit mb-6">
+                    <feature.icon className="h-12 w-12 text-green-400 group-hover:animate-bounce" aria-hidden="true" />
+                  </div>
+                  <h4 id={`ai-feature-title-${index}`} className="text-xl font-semibold mb-3 text-white dyslexic-text">
+                    {feature.title}
+                  </h4>
+                  <p className="text-gray-300 dyslexic-text">
+                    {feature.description}
+                  </p>
+                </article>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Stats Section */}
       <div className="section bg-white dark:bg-gray-900">
@@ -343,16 +391,18 @@ const Home = () => {
         <div className="container">
           <h2 className="text-4xl font-bold text-center mb-4 text-gray-900 dark:text-white">Together We Build</h2>
           <p className="text-xl text-center text-gray-600 dark:text-gray-300 mb-16">Our partners in creating Africa's innovation ecosystem</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {partners.map((partner, index) => (
-              <div
-                key={index}
-                className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg transform hover:scale-105 transition duration-300 border-l-4 border-primary-600"
-              >
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{partner.name}</h3>
-                <p className="text-gray-600 dark:text-gray-400">{partner.role}</p>
-              </div>
-            ))}
+          <div className="relative overflow-hidden">
+            <div className="flex gap-8 animate-scroll">
+              {[...partners, ...partners].map((partner, index) => (
+                <div
+                  key={index}
+                  className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg transform hover:scale-105 transition duration-300 border-l-4 border-primary-600 flex-shrink-0 w-80"
+                >
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 dyslexic-text">{partner.name}</h3>
+                  <p className="text-gray-600 dark:text-gray-400 dyslexic-text">{partner.role}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

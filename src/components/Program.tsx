@@ -11,40 +11,40 @@ const Program = () => {
 
   const learningPathway = [
     {
-      phase: "Terms 1-2",
-      title: "Intro to Robotics",
-      description: "Build your foundation in robotics, circuits, and programming",
+      phase: "Phase 1: January",
+      title: "Intro to Robotics & Sustainable Hardware",
+      description: "Foundations in electronics, mechanical design, and recycled materials",
       topics: [
-        "Circuit basics and electronics fundamentals",
-        "Robot assembly and mechanical design",
-        "Python programming with Raspberry Pi",
-        "Sensor integration and control systems"
+        "Basic electronics and circuit design",
+        "Robot chassis assembly from recycled PET",
+        "Intro to Raspberry Pi and GPIO",
+        "Motor control and joystick navigation"
       ],
       icon: Code,
       color: "from-blue-500 to-cyan-500"
     },
     {
-      phase: "Terms 3-4",
-      title: "AI & Computer Vision",
-      description: "Explore artificial intelligence and machine learning applications",
+      phase: "Phase 2: February – March",
+      title: "AI, Sensors & Computer Vision",
+      description: "Build vision-enabled robots and learn machine learning fundamentals",
       topics: [
-        "Computer vision fundamentals",
-        "Object detection and tracking",
-        "Gesture recognition and control",
-        "Machine learning model implementation"
+        "Using AI camera with Raspberry Pi",
+        "Object detection with YOLOv8",
+        "Sensor fusion: ultrasonic, IMU, LDR",
+        "Simple ML models for autonomous navigation"
       ],
       icon: Brain,
       color: "from-purple-500 to-pink-500"
     },
     {
-      phase: "Terms 5-6",
-      title: "Project & Competition Phase",
-      description: "Apply your skills to solve real-world challenges",
+      phase: "Phase 3: April",
+      title: "Project Phase & National Judging",
+      description: "Project phase and final judging by CEMASTEA before April holiday",
       topics: [
-        "Real-world robotics solutions design",
-        "Project mentorship and guidance",
-        "Team collaboration and presentations",
-        "National competition under KSEF framework"
+        "Thematic projects: accessibility, agriculture, sustainability",
+        "Team-based prototyping and reporting",
+        "Inclusive adaptation: Braille, KSL, LMS accessibility",
+        "KSEF national showcase and recognition"
       ],
       icon: Trophy,
       color: "from-green-500 to-emerald-500"
@@ -55,32 +55,32 @@ const Program = () => {
     {
       icon: Users,
       title: "Inclusive Learning",
-      description: "Universal access for all abilities including learners who are deaf and blind"
+      description: "Universal access with adaptations for blind, deaf, and low-vision learners — including Braille, KSL videos, and screen-reader–ready content"
     },
     {
       icon: Rocket,
       title: "Hands-On Experience",
-      description: "Build, code, and program real robots with AI capabilities"
+      description: "Students build and code real robots using AI tools and 3D-printed parts made from recycled PET"
     },
     {
       icon: Award,
-      title: "CEMASTEA Certified",
-      description: "Academic validation through KSEF national competition framework"
+      title: "KSEF-Linked Certification",
+      description: "Projects judged under CEMASTEA and KSEF innovation frameworks with official recognition"
     },
     {
       icon: BookOpen,
-      title: "Digital Resources",
-      description: "Access to eKitabu LMS platform and comprehensive curriculum"
+      title: "Blended Curriculum",
+      description: "Access learning offline and online via the eKitabu LMS platform with localized content"
     },
     {
       icon: Eye,
-      title: "Expert Mentorship",
-      description: "Guidance from experienced instructors and industry professionals"
+      title: "Mentorship at All Levels",
+      description: "Guidance from trained teachers, industry experts, and peer-led teams"
     },
     {
       icon: Target,
-      title: "Real Impact",
-      description: "Solve community challenges with technology and innovation"
+      title: "Tangible Results",
+      description: "Projects address real challenges — from PET recycling to accessibility in schools"
     }
   ];
 
@@ -89,7 +89,7 @@ const Program = () => {
     "Raspberry Pi computing platform",
     "AI camera for computer vision projects",
     "3D-printed parts from recycled PET plastic",
-    "Access to Microsoft ADC facilities and tools",
+    "Bootcamp training at Microsoft ADC (Nairobi)",
     "Digital curriculum and learning resources",
     "Certificate upon program completion",
     "Entry to national KSEF robotics competition"
@@ -102,25 +102,25 @@ const Program = () => {
         <div className="absolute inset-0 bg-grid-white/10 bg-[size:20px_20px]" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center">
-            <div className="inline-flex items-center bg-white/20 backdrop-blur-lg px-4 py-2 rounded-full text-white mb-6">
+            <div className="inline-flex items-center bg-green-400/20 backdrop-blur-lg px-4 py-2 rounded-full text-white mb-6">
               <Calendar className="h-5 w-5 mr-2" />
-              <span className="font-semibold">2026 Registration Now Open</span>
+              <span className="font-semibold dyslexic-text">Building on 2025 Success: 800+ Students Trained</span>
             </div>
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-4">
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-4 dyslexic-text">
               ChipuRobo 2026
             </h1>
-            <h2 className="text-3xl md:text-4xl font-bold text-green-300 mb-6">
+            <h2 className="text-3xl md:text-4xl font-bold text-green-300 mb-6 dyslexic-text">
               AI & Robotics Programme
             </h2>
-            <p className="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto mb-8">
-              Join our mission to empower 4 million youth across Africa by 2030 through inclusive AI and robotics education
+            <p className="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto mb-8 dyslexic-text">
+              After 3 successful national bootcamps in 2025, we're scaling to bring AI and robotics education directly to your school
             </p>
             <button
               onClick={handleEnroll}
-              className="bg-white text-primary-600 px-8 py-4 rounded-lg hover:bg-gray-100 transition text-lg font-semibold inline-flex items-center shadow-lg"
+              className="bg-white text-primary-600 px-8 py-4 rounded-lg hover:bg-gray-100 transition text-lg font-semibold inline-flex items-center shadow-lg dyslexic-text"
             >
               <Rocket className="mr-2 h-5 w-5" />
-              Register Your School Now
+              Register Your School for 2026
             </button>
           </div>
         </div>
@@ -204,6 +204,7 @@ const Program = () => {
               
               <p className="text-gray-700 dark:text-gray-300 mb-6">
                 We arrange bootcamps at Microsoft ADC where schools can bring their students for hands-on experience building robots. 
+                The 2025 bootcamps impacted 800+ learners and over 50 teachers, with projects like PET filament creation and inclusive STEM demos (Braille-labeled robots, KSL tutorial content). 
                 Students are taken through an intuitive 3-4 day program where they learn the basics of electronic engineering and programming 
                 in order to create a simple 4-wheeled robot.
               </p>
@@ -263,7 +264,7 @@ const Program = () => {
               Maker Space
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              Hands-on creative building sessions for unrestricted innovation
+              Schools as Innovation Hubs — Building, Recycling, and Prototyping
             </p>
           </div>
 
@@ -272,7 +273,7 @@ const Program = () => {
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center">
                   <Target className="h-8 w-8 text-orange-600 dark:text-orange-400 mr-3" />
-                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Workshop Location</h3>
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Maker Space Model: School-Based Innovation</h3>
                 </div>
                 <Clock className="h-6 w-6 text-gray-400" />
               </div>
@@ -280,22 +281,21 @@ const Program = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
                   <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Venue</h4>
-                  <p className="text-gray-600 dark:text-gray-300">Nairobi Railways Museum, Haile Selasie Ave</p>
+                  <p className="text-gray-600 dark:text-gray-300">Located within participating schools as part of on-site Maker Spaces</p>
                 </div>
                 <div>
                   <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Session Details</h4>
-                  <p className="text-gray-600 dark:text-gray-300">6 hours long, starts at 10 AM</p>
+                  <p className="text-gray-600 dark:text-gray-300">Sessions include PET recycling, 3D printing, and AI prototyping integrated into school activities</p>
                 </div>
               </div>
               
               <p className="text-gray-700 dark:text-gray-300 mb-6">
-                The Maker Space is held at our workshop where students can come and participate in creating their own unrestricted builds. 
-                Join us for creative sessions that encourage innovation and hands-on learning.
+                Maker Spaces are physical innovation hubs hosted within participating schools and the ChipuRobo workshop. These labs empower students and teachers to turn recycled materials into functional robotics kits, prototype real-world solutions using AI and sensors, and collaborate on STEM projects aligned with national challenges like accessibility, food security, and sustainability.
               </p>
               
               <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg">
                 <p className="text-orange-800 dark:text-orange-200 font-medium">
-                  Perfect for students who want to explore creative building and innovation outside the structured curriculum.
+                  Designed to equip learners with hands-on experience in PET recycling, digital fabrication, and AI-driven problem-solving — right from their school.
                 </p>
               </div>
             </div>
@@ -327,7 +327,7 @@ const Program = () => {
         {/* Program Features */}
         <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-12 mb-24">
           <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-12">
-            Why Join Season 1?
+            Why Join Season 2?
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {programFeatures.map((feature, index) => (
@@ -355,14 +355,42 @@ const Program = () => {
             <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
               Every participating school and learner receives a comprehensive robotics education package
             </p>
-            <ul className="space-y-4">
-              {whatYouGet.map((item, index) => (
-                <li key={index} className="flex items-start">
-                  <CheckCircle className="h-6 w-6 text-green-500 mr-3 flex-shrink-0 mt-0.5" />
-                  <span className="text-gray-700 dark:text-gray-300 text-lg">{item}</span>
-                </li>
-              ))}
-            </ul>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+                <div className="flex items-center mb-4">
+                  <div className="bg-blue-100 dark:bg-blue-900/30 p-3 rounded-lg mr-4">
+                    <Cpu className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Hardware Kit</h3>
+                </div>
+                <ul className="space-y-3">
+                  {["Complete robotics kit for hands-on learning", "Raspberry Pi computing platform", "AI camera for computer vision projects", "3D-printed parts from recycled PET plastic"].map((item, index) => (
+                    <li key={index} className="flex items-start">
+                      <span className="w-2 h-2 bg-blue-400 rounded-full mr-3 mt-2 flex-shrink-0"></span>
+                      <span className="text-gray-700 dark:text-gray-300 text-sm">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+                <div className="flex items-center mb-4">
+                  <div className="bg-green-100 dark:bg-green-900/30 p-3 rounded-lg mr-4">
+                    <BookOpen className="h-6 w-6 text-green-600 dark:text-green-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Learning Resources</h3>
+                </div>
+                <ul className="space-y-3">
+                  {["Access to Microsoft ADC facilities and tools", "Digital curriculum and learning resources", "Certificate upon program completion", "Entry to national KSEF robotics competition"].map((item, index) => (
+                    <li key={index} className="flex items-start">
+                      <span className="w-2 h-2 bg-green-400 rounded-full mr-3 mt-2 flex-shrink-0"></span>
+                      <span className="text-gray-700 dark:text-gray-300 text-sm">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
           </div>
           <div className="bg-gradient-to-br from-emerald-50 to-green-50 dark:from-gray-800 dark:to-gray-900 p-8 rounded-2xl">
             <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Program Timeline</h3>
@@ -390,8 +418,8 @@ const Program = () => {
                   3
                 </div>
                 <div className="ml-4">
-                  <h4 className="font-semibold text-gray-900 dark:text-white">Term 3-4, 2026</h4>
-                  <p className="text-gray-600 dark:text-gray-300">AI & Computer Vision training</p>
+                  <h4 className="font-semibold text-gray-900 dark:text-white">February – March 2026</h4>
+                  <p className="text-gray-600 dark:text-gray-300">AI & Vision curriculum deployed across 100+ Code Clubs</p>
                 </div>
               </div>
               <div className="flex items-start">
@@ -399,8 +427,8 @@ const Program = () => {
                   4
                 </div>
                 <div className="ml-4">
-                  <h4 className="font-semibold text-gray-900 dark:text-white">Term 5-6, 2026</h4>
-                  <p className="text-gray-600 dark:text-gray-300">Project phase & National AI Competition (KSEF)</p>
+                  <h4 className="font-semibold text-gray-900 dark:text-white">April 2026</h4>
+                  <p className="text-gray-600 dark:text-gray-300">Project phase and final judging by CEMASTEA before April holiday</p>
                 </div>
               </div>
             </div>
