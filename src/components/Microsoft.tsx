@@ -8,13 +8,13 @@ const Microsoft = () => {
   const programImpact = [
     {
       icon: Users,
-      metric: "350+",
+      metric: "500+",
       label: "Total Learners & Teachers",
-      detail: "Across both bootcamps"
+      detail: "Across all bootcamps"
     },
     {
       icon: School,
-      metric: "15",
+      metric: "80",
       label: "Schools Engaged",
       detail: "National & county institutions"
     },
@@ -32,9 +32,9 @@ const Microsoft = () => {
     },
     {
       icon: Code,
-      metric: "100%",
-      label: "Completion Rate",
-      detail: "Full attendance & certification"
+      metric: "100+",
+      label: "December Participants",
+      detail: "Learners & teachers"
     },
     {
       icon: Award,
@@ -62,6 +62,16 @@ const Microsoft = () => {
     { name: "New Horizon Schools", students: 20, teachers: 2 }
   ];
 
+  const decemberCohort = [
+    { name: "Starehe Boys Centre", students: 9, teachers: 2 },
+    { name: "Starehe Girls Centre", students: 12, teachers: 2 },
+    { name: "Alliance Girls High School", students: 9, teachers: 2 },
+    { name: "Bungoma School", students: 9, teachers: 2 },
+    { name: "Riara School", students: 6, teachers: 1 },
+    { name: "Various Other Schools", students: 85, teachers: 8 },
+    { name: "Home School Students", students: 10, teachers: 1 }
+  ];
+
   const learningModules = [
     {
       icon: Brain,
@@ -86,6 +96,12 @@ const Microsoft = () => {
       title: "Computer Vision",
       hours: "6 hours",
       topics: ["Gesture recognition", "Tracking algorithms", "AI cameras"]
+    },
+    {
+      icon: Target,
+      title: "Waste Recycling",
+      hours: "6 hours",
+      topics: ["Assembling waste recycling PET machine", "Creating filament from plastic", "Using plastic to 3D print"]
     }
   ];
 
@@ -93,7 +109,8 @@ const Microsoft = () => {
     { metric: "30+", label: "AI-powered robots built", icon: Rocket },
     { metric: "100%", label: "Hands-on learning time", icon: Target },
     { metric: "30 hrs", label: "Average training duration", icon: TrendingUp },
-    { metric: "350+", label: "Certificates awarded", icon: Award }
+    { metric: "500+", label: "Certificates awarded", icon: Award },
+    { metric: "10+", label: "Plastic recycling PET welders", icon: Cog }
   ];
 
   return (
@@ -117,15 +134,15 @@ const Microsoft = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <div className="bg-white/10 backdrop-blur-lg px-6 py-3 rounded-lg">
-                <p className="text-3xl font-bold text-white">350+</p>
+                <p className="text-3xl font-bold text-white">500+</p>
                 <p className="text-white/80">Lives Impacted</p>
               </div>
               <div className="bg-white/10 backdrop-blur-lg px-6 py-3 rounded-lg">
-                <p className="text-3xl font-bold text-white">15</p>
+                <p className="text-3xl font-bold text-white">80</p>
                 <p className="text-white/80">Schools</p>
               </div>
               <div className="bg-white/10 backdrop-blur-lg px-6 py-3 rounded-lg">
-                <p className="text-3xl font-bold text-white">2</p>
+                <p className="text-3xl font-bold text-white">3</p>
                 <p className="text-white/80">Bootcamps</p>
               </div>
             </div>
@@ -140,7 +157,7 @@ const Microsoft = () => {
             Program Impact at a Glance
           </h2>
           <p className="text-xl text-gray-600 dark:text-gray-300">
-            Data from April & August 2025 bootcamps
+            Data from December bootcamps
           </p>
         </div>
 
@@ -207,7 +224,7 @@ const Microsoft = () => {
           Participating Schools & Numbers
         </h2>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 mb-16">
           {/* April Cohort */}
           <div>
             <div className="bg-blue-100 dark:bg-blue-900/30 px-4 py-2 rounded-lg inline-block mb-6">
@@ -265,6 +282,35 @@ const Microsoft = () => {
               </div>
             </div>
           </div>
+
+          {/* December Cohort */}
+          <div>
+            <div className="bg-green-100 dark:bg-green-900/30 px-4 py-2 rounded-lg inline-block mb-6">
+              <h3 className="text-xl font-bold text-green-900 dark:text-green-300">December 2025 Cohort</h3>
+            </div>
+            <div className="space-y-4">
+              {decemberCohort.map((school, index) => (
+                <div key={index} className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{school.name}</h4>
+                  <div className="flex gap-6">
+                    <div>
+                      <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{school.students}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Students</p>
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-green-600 dark:text-green-400">{school.teachers}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Teachers</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                <p className="text-lg font-bold text-gray-900 dark:text-white">
+                  Total: 140 students + 18 teachers = 158 participants
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -310,11 +356,11 @@ const Microsoft = () => {
             Future cohorts will scale nationwide through <strong>Future Builders Season 1</strong> — our National AI & Robotics Competition targeting 123 schools by 2026.
           </p>
           <button
-            onClick={() => navigate('/program')}
+            onClick={() => navigate('/register-2026')}
             className="bg-white text-blue-600 px-8 py-4 rounded-lg hover:bg-gray-100 transition text-lg font-semibold inline-flex items-center"
           >
             <Rocket className="mr-2 h-5 w-5" />
-            Join Future Builders Season 1
+            Register for 2026 Programme
           </button>
         </div>
       </div>

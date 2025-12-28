@@ -6,7 +6,7 @@ const Program = () => {
   const navigate = useNavigate();
 
   const handleEnroll = () => {
-    navigate('/future-builders-registration');
+    navigate('/register-2026');
   };
 
   const learningPathway = [
@@ -104,16 +104,16 @@ const Program = () => {
           <div className="text-center">
             <div className="inline-flex items-center bg-white/20 backdrop-blur-lg px-4 py-2 rounded-full text-white mb-6">
               <Calendar className="h-5 w-5 mr-2" />
-              <span className="font-semibold">Registration Opens November 2025</span>
+              <span className="font-semibold">2026 Registration Now Open</span>
             </div>
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-4">
-              Future Builders
+              ChipuRobo 2026
             </h1>
             <h2 className="text-3xl md:text-4xl font-bold text-green-300 mb-6">
-              Season 1: National AI & Robotics Competition
+              AI & Robotics Programme
             </h2>
             <p className="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto mb-8">
-              A year-long inclusive robotics journey culminating in Kenya's premier student-led AI innovation showcase
+              Join our mission to empower 4 million youth across Africa by 2030 through inclusive AI and robotics education
             </p>
             <button
               onClick={handleEnroll}
@@ -170,6 +170,160 @@ const Program = () => {
           ))}
         </div>
 
+        {/* Bootcamps Section */}
+        <div className="bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-12 mb-24">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+              Robotics Bootcamps
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              Intensive hands-on training at Microsoft ADC for schools and students
+            </p>
+          </div>
+
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 mb-8">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center">
+                  <Rocket className="h-8 w-8 text-purple-600 dark:text-purple-400 mr-3" />
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Microsoft ADC Bootcamps</h3>
+                </div>
+                <Calendar className="h-6 w-6 text-gray-400" />
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Duration</h4>
+                  <p className="text-gray-600 dark:text-gray-300">3-4 day intensive program</p>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Location</h4>
+                  <p className="text-gray-600 dark:text-gray-300">Microsoft ADC, Westlands, Nairobi</p>
+                </div>
+              </div>
+              
+              <p className="text-gray-700 dark:text-gray-300 mb-6">
+                We arrange bootcamps at Microsoft ADC where schools can bring their students for hands-on experience building robots. 
+                Students are taken through an intuitive 3-4 day program where they learn the basics of electronic engineering and programming 
+                in order to create a simple 4-wheeled robot.
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div className="flex items-start">
+                  <CheckCircle className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-700 dark:text-gray-300">Electronic engineering fundamentals</span>
+                </div>
+                <div className="flex items-start">
+                  <CheckCircle className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-700 dark:text-gray-300">Programming basics</span>
+                </div>
+                <div className="flex items-start">
+                  <CheckCircle className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-700 dark:text-gray-300">4-wheeled robot assembly</span>
+                </div>
+                <div className="flex items-start">
+                  <CheckCircle className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-700 dark:text-gray-300">Interactive learning and teamwork</span>
+                </div>
+              </div>
+              
+              <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+                <p className="text-purple-800 dark:text-purple-200 font-medium">
+                  Perfect for schools looking to give their students practical robotics experience in a professional environment.
+                </p>
+              </div>
+            </div>
+
+            {/* Bootcamp Inquiry */}
+            <div className="bg-gradient-to-br from-purple-100 to-indigo-100 dark:from-purple-900/30 dark:to-indigo-900/30 p-8 rounded-xl border border-purple-200 dark:border-purple-800">
+              <div className="text-center">
+                <Users className="h-12 w-12 text-purple-600 mx-auto mb-4" />
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                  Arrange a Bootcamp
+                </h3>
+                <p className="text-gray-600 dark:text-gray-300 mb-6">
+                  Contact us to arrange a custom bootcamp for your school at Microsoft ADC.
+                </p>
+                <button
+                  onClick={() => navigate('/contact')}
+                  className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition text-lg font-semibold inline-flex items-center justify-center"
+                >
+                  <ArrowRight className="mr-2 h-5 w-5" />
+                  Contact Us for Bootcamp
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Maker Space Section */}
+        <div className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-12 mb-24">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+              Maker Space
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              Hands-on creative building sessions for unrestricted innovation
+            </p>
+          </div>
+
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 mb-8">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center">
+                  <Target className="h-8 w-8 text-orange-600 dark:text-orange-400 mr-3" />
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Workshop Location</h3>
+                </div>
+                <Clock className="h-6 w-6 text-gray-400" />
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Venue</h4>
+                  <p className="text-gray-600 dark:text-gray-300">Nairobi Railways Museum, Haile Selasie Ave</p>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Session Details</h4>
+                  <p className="text-gray-600 dark:text-gray-300">6 hours long, starts at 10 AM</p>
+                </div>
+              </div>
+              
+              <p className="text-gray-700 dark:text-gray-300 mb-6">
+                The Maker Space is held at our workshop where students can come and participate in creating their own unrestricted builds. 
+                Join us for creative sessions that encourage innovation and hands-on learning.
+              </p>
+              
+              <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg">
+                <p className="text-orange-800 dark:text-orange-200 font-medium">
+                  Perfect for students who want to explore creative building and innovation outside the structured curriculum.
+                </p>
+              </div>
+            </div>
+
+            {/* Maker Space Registration */}
+            <div className="bg-gradient-to-br from-orange-100 to-red-100 dark:from-orange-900/30 dark:to-red-900/30 p-8 rounded-xl border border-orange-200 dark:border-orange-800">
+              <div className="text-center">
+                <Users className="h-12 w-12 text-orange-600 mx-auto mb-4" />
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                  Register for Maker Space
+                </h3>
+                <p className="text-gray-600 dark:text-gray-300 mb-6">
+                  Join individual sessions at our workshop. Open to all students interested in creative building.
+                </p>
+                <a
+                  href="https://docs.google.com/forms/d/e/1FAIpQLSfWh0Tmxc1l8O_HCD2jPqcVNBr1-5XfFvb5bU75EmWTVVOyOg/viewform?usp=publish-editor"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 transition text-lg font-semibold inline-flex items-center justify-center"
+                >
+                  <ArrowRight className="mr-2 h-5 w-5" />
+                  Register for Maker Space
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Program Features */}
         <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-12 mb-24">
           <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-12">
@@ -218,8 +372,8 @@ const Program = () => {
                   1
                 </div>
                 <div className="ml-4">
-                  <h4 className="font-semibold text-gray-900 dark:text-white">November 2025</h4>
-                  <p className="text-gray-600 dark:text-gray-300">Future Builders Season 1 registration opens</p>
+                  <h4 className="font-semibold text-gray-900 dark:text-white">December 2025</h4>
+                  <p className="text-gray-600 dark:text-gray-300">2026 Programme registration now open</p>
                 </div>
               </div>
               <div className="flex items-start">
@@ -252,43 +406,6 @@ const Program = () => {
             </div>
           </div>
         </div>
-      {/* Registration Options */}
-      <div className="bg-white dark:bg-gray-900 py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              Future Builders Registration
-            </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              Choose your registration path to join Kenya's premier National AI & Robotics Competition
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 gap-8 max-w-2xl mx-auto">
-            {/* Individual Registration */}
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-8 rounded-2xl border border-blue-200 dark:border-blue-800">
-              <div className="text-center">
-                <Users className="h-16 w-16 text-blue-600 mx-auto mb-6" />
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                  Register as Individual
-                </h3>
-                <p className="text-gray-600 dark:text-gray-300 mb-8">
-                  Join as an individual participant. Perfect for self-motivated learners and independent innovators.
-                </p>
-                <a
-                  href="https://docs.google.com/forms/d/e/1FAIpQLSfWh0Tmxc1l8O_HCD2jPqcVNBr1-5XfFvb5bU75EmWTVVOyOg/viewform?usp=publish-editor"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-blue-600 text-white px-8 py-4 rounded-lg hover:bg-blue-700 transition text-lg font-semibold inline-flex items-center justify-center w-full"
-                >
-                  <ArrowRight className="mr-2 h-5 w-5" />
-                  Sign Up Now
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* CTA Section */}
       <div className="bg-gray-900 dark:bg-black py-24">

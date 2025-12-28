@@ -11,7 +11,7 @@ const Home = () => {
   const navigate = useNavigate();
 
   const handleEnroll = () => {
-    navigate('/future-builders-registration');
+    navigate('/register-2026');
   };
 
   const featuredPosts = [
@@ -63,8 +63,8 @@ const Home = () => {
   const stats = [
     { icon: Users, value: "800+", label: "Learners Reached in 2025" },
     { icon: Code, value: "66", label: "Active Code Clubs" },
-    { icon: School, value: "CBC", label: "Curriculum Aligned" },
-    { icon: Recycle, value: "PET", label: "Recycling Program" }
+    { icon: Recycle, value: "13", label: "PET Recycling Machines" },
+    { icon: School, value: "3", label: "National Bootcamps" }
   ];
 
   const aiFeatures = [
@@ -125,32 +125,32 @@ const Home = () => {
               <Robot className="h-24 w-24 text-green-400 mx-auto animate-pulse-slow" />
             </div>
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6">
-              Inclusive AI & Robotics Education
+              Empowering 4 Million Youth Across Africa
             </h1>
             <div className="typing-container mb-8">
               <p className="typing-effect text-2xl md:text-3xl text-green-100 mx-auto">
-                66 Code Clubs • 800+ Learners • Locally Fabricated Solutions
+                By 2030 through AI, Robotics, and Sustainable Innovation
               </p>
             </div>
             <p className="text-xl text-white/90 mb-8 max-w-3xl mx-auto">
-              Delivering hands-on technology education with locally fabricated robotics kits across Kenya.
+              Building on our transformative 2025 achievements - 800+ learners, 66 Code Clubs, 13 PET recycling machines.
               <br />
-              <strong className="text-green-300">Aligned with CBC • Powered by Digital Fabrication • Accessible to All</strong>
+              <strong className="text-green-300">Join our 2026 rollout • CBC Aligned • Inclusive Design • Locally Fabricated</strong>
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <button
-                onClick={handleEnroll}
+              <Link
+                to="/register-2026"
                 className="group bg-primary-600 text-white px-8 py-4 rounded-lg hover:bg-primary-700 transition text-lg font-semibold flex items-center justify-center shadow-lg"
               >
                 <Rocket className="mr-2 h-5 w-5 group-hover:animate-bounce" />
-                JOIN A CODE CLUB
-              </button>
+                REGISTER FOR 2026 PROGRAMME
+              </Link>
               <Link
-                to="/microsoft"
+                to="/impact-2025"
                 className="group bg-white/10 backdrop-blur-lg text-white px-8 py-4 rounded-lg hover:bg-white/20 transition text-lg font-semibold flex items-center justify-center"
               >
                 <School className="mr-2 h-5 w-5" />
-                EXPLORE OUR PROGRAMS
+                VIEW 2025 IMPACT REPORT
               </Link>
             </div>
           </div>
@@ -215,6 +215,55 @@ const Home = () => {
         </div>
       </div>
 
+      {/* 2025 Achievements Highlight */}
+      <div className="section bg-gradient-to-br from-blue-50 to-emerald-50 dark:from-blue-900/20 dark:to-emerald-900/20">
+        <div className="container">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">2025: A Year of Transformation</h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              Partnership with Microsoft ADC enabled unprecedented growth and impact across Kenya
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg text-center">
+              <div className="text-3xl font-bold text-blue-600 mb-2">3</div>
+              <div className="text-gray-600 dark:text-gray-300 mb-1">National Bootcamps</div>
+              <div className="text-sm text-gray-500">April, August, Nov-Dec</div>
+            </div>
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg text-center">
+              <div className="text-3xl font-bold text-emerald-600 mb-2">800+</div>
+              <div className="text-gray-600 dark:text-gray-300 mb-1">Students Trained</div>
+              <div className="text-sm text-gray-500">50+ teachers included</div>
+            </div>
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg text-center">
+              <div className="text-3xl font-bold text-purple-600 mb-2">66</div>
+              <div className="text-gray-600 dark:text-gray-300 mb-1">Code Clubs Active</div>
+              <div className="text-sm text-gray-500">Raspberry Pi partnership</div>
+            </div>
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg text-center">
+              <div className="text-3xl font-bold text-orange-600 mb-2">13</div>
+              <div className="text-gray-600 dark:text-gray-300 mb-1">PET Machines Deployed</div>
+              <div className="text-sm text-gray-500">Sustainable innovation</div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-r from-blue-600 to-emerald-600 rounded-xl p-8 text-center">
+            <h3 className="text-2xl font-bold text-white mb-4">Microsoft ADC Partnership Impact</h3>
+            <p className="text-blue-100 mb-6 max-w-2xl mx-auto">
+              Technical enablement, AI learning resources, and mentorship that made 2025 our most successful year yet
+            </p>
+            <Link
+              to="/impact-2025"
+              className="bg-white text-blue-600 px-6 py-3 rounded-lg hover:bg-gray-100 transition font-semibold inline-flex items-center"
+            >
+              <Award className="mr-2 h-5 w-5" />
+              View Full 2025 Impact Report
+            </Link>
+          </div>
+        </div>
+      </div>
+
       {/* African AI Impact Section */}
       <div className="section bg-gradient-to-r from-gray-900 to-primary-900 dark:from-black dark:to-primary-950 text-white">
         <div className="container">
@@ -272,13 +321,13 @@ const Home = () => {
               <div>
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Our Mission</h3>
                 <p className="text-xl text-gray-700 dark:text-gray-300 leading-relaxed">
-                  Delivering inclusive, hands-on AI and robotics education across Kenya using locally fabricated solutions, digital fabrication, and Code Clubs aligned with national curriculum frameworks.
+                  Empowering 4 million youth across Africa by 2030 through inclusive, hands-on AI and robotics education with locally fabricated solutions and sustainable innovation.
                 </p>
               </div>
             </div>
             <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
               <p className="text-lg text-gray-600 dark:text-gray-400 italic">
-                "We're delivering inclusive, hands-on AI and robotics education that ensures no learner is left behind — from locally fabricated kits to accessible technology solutions."
+                "Our 2025 achievements - 800+ learners, 66 Code Clubs, 13 PET recycling machines - are just the beginning. By 2030, we'll empower 4 million youth across Africa with inclusive AI and robotics education."
               </p>
               <div className="mt-4">
                 <p className="text-lg font-medium text-gray-900 dark:text-white">Kevin Irungu</p>
@@ -313,13 +362,13 @@ const Home = () => {
         <div className="absolute inset-0 bg-grid-white/10 bg-[size:20px_20px]" />
         <div className="relative container text-center">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Future Builders Season 1
+            Ready for 2026?
           </h2>
           <p className="text-xl text-white/90 mb-6 max-w-3xl mx-auto">
-            National AI & Robotics Competition
+            AI & Robotics Programme Registration Now Open
           </p>
           <p className="text-lg text-white/80 mb-8 max-w-2xl mx-auto">
-            Registration Opens November 2025 • Let's build the future together — one school, one robot, one idea at a time.
+            Join our mission to empower 4 million youth across Africa by 2030 • Building on our transformative 2025 achievements
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
@@ -327,7 +376,7 @@ const Home = () => {
               className="group bg-white text-primary-600 px-8 py-4 rounded-lg hover:bg-gray-100 transition text-lg font-semibold flex items-center justify-center shadow-lg"
             >
               <School className="mr-2 h-5 w-5 group-hover:animate-bounce" />
-              Register Your School
+              Register for 2026 Programme
             </button>
             <Link
               to="/about"

@@ -22,7 +22,7 @@ const Services = () => {
   const navigate = useNavigate();
 
   const handleEnroll = () => {
-    navigate('/bootcamp-enrollment');
+    navigate('/register-2026');
   };
 
   const mainPrograms = [
@@ -43,7 +43,7 @@ const Services = () => {
     {
       icon: Code,
       title: "Code Clubs (Raspberry Pi)",
-      description: "66 active Code Clubs across Kenya in partnership with Raspberry Pi Foundation for secondary schools.",
+      description: "60+ schools engaged across Kenya in partnership with Raspberry Pi Foundation for secondary schools.",
       features: [
         "Raspberry Pi computing education",
         "Python programming",
