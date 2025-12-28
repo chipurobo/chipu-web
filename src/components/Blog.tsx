@@ -16,13 +16,24 @@ interface BlogPost {
 
 const blogPosts: BlogPost[] = [
   {
+    id: '7',
+    title: 'Inclusive AI & Robotics Bootcamps – November–December 2025',
+    excerpt: 'Closing the year with impact: Over 130 students and 50 teachers trained in inclusive AI, robotics, and PET recycling across two weeks of national workshops.',
+    author: 'Kevin Irungu',
+    date: 'December 20, 2025',
+    readTime: '6 min read',
+    image: '/img/blog/inclusive.jpg',
+    category: 'Bootcamp Impact',
+    icon: Brain
+  },
+  {
     id: '1',
     title: 'AI Literacy Workshop at Alliance Girls High School',
     excerpt: 'Empowering young women in technology through hands-on AI workshops and practical demonstrations at one of Kenya\'s premier national schools.',
     author: 'Cindy Mugire',
     date: 'March 28, 2025',
     readTime: '4 min read',
-    image: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&h=400&fit=crop',
+    image: '/img/blog/inclusive2.jpg',
     category: 'School Outreach',
     icon: School
   },
@@ -33,7 +44,7 @@ const blogPosts: BlogPost[] = [
     author: 'Kevin Irungu',
     date: 'March 25, 2025',
     readTime: '5 min read',
-    image: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800&h=400&fit=crop',
+    image: '/img/blog/inclusive3.jpeg',
     category: 'School Outreach',
     icon: Brain
   },
@@ -44,7 +55,7 @@ const blogPosts: BlogPost[] = [
     author: 'Anthony Mwangi',
     date: 'March 22, 2025',
     readTime: '6 min read',
-    image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&h=400&fit=crop',
+    image: '/img/blog/inclusive4.jpeg',
     category: 'Higher Education',
     icon: GraduationCap
   },
@@ -55,7 +66,7 @@ const blogPosts: BlogPost[] = [
     author: 'Jeffery Mulee',
     date: 'March 20, 2025',
     readTime: '4 min read',
-    image: 'https://images.unsplash.com/photo-1571260899304-425eee4c7efc?w=800&h=400&fit=crop',
+    image: '/img/blog/inclusive5.jpeg',
     category: 'School Outreach',
     icon: Users
   },
@@ -66,7 +77,7 @@ const blogPosts: BlogPost[] = [
     author: 'David Muguchia',
     date: 'March 18, 2025',
     readTime: '5 min read',
-    image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&h=400&fit=crop',
+    image: '/img/blog/inclusive6.jpeg',
     category: 'School Outreach',
     icon: School
   },
@@ -77,7 +88,7 @@ const blogPosts: BlogPost[] = [
     author: 'Microsoft ADC Team',
     date: 'April 15, 2025',
     readTime: '7 min read',
-    image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&h=400&fit=crop',
+    image: '/img/blog/inclusive.jpg',
     category: 'AI & Robotics',
     icon: Brain
   }
