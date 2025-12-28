@@ -16,10 +16,18 @@ const Home = () => {
 
   const featuredPosts = [
     {
+      id: '7',
+      title: 'Inclusive AI & Robotics Bootcamps – November–December 2025',
+      excerpt: 'Closing the year with impact: Over 130 students and 50 teachers trained in inclusive AI, robotics, and PET recycling across two weeks of national workshops.',
+      image: '/img/blog/inclusive.jpg',
+      category: 'Bootcamp Impact',
+      icon: Brain
+    },
+    {
       id: 'august-bootcamp',
       title: 'August 2025 Microsoft ADC Bootcamp Success',
       excerpt: 'Over 150 learners and teachers participated in our intensive AI and Robotics bootcamp, building intelligent robots and exploring computer vision.',
-      image: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e',
+      image: '/img/blog/inclusive2.jpg',
       category: 'Bootcamp',
       icon: Rocket
     },
@@ -27,17 +35,9 @@ const Home = () => {
       id: 'pet-recycling',
       title: 'From Waste to Innovation: PET Recycling Initiative',
       excerpt: 'Our PET recycling machines are transforming plastic waste into 3D printing filament, creating robot parts while empowering communities.',
-      image: 'https://images.unsplash.com/photo-1532996122724-e3c354a0b15b',
+      image: '/img/blog/inclusive3.jpeg',
       category: 'Sustainability',
       icon: Recycle
-    },
-    {
-      id: 'code-clubs',
-      title: '10 Code Clubs Launched Across Kenya',
-      excerpt: 'In partnership with Raspberry Pi Foundation, we\'re bringing coding education to 123 schools by 2026, starting with 10 active clubs.',
-      image: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f',
-      category: 'Education',
-      icon: Code
     }
   ];
 
