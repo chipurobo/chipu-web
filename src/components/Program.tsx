@@ -324,6 +324,51 @@ const Program = () => {
           </div>
         </div>
 
+        {/* CyberBrick Section */}
+        <div className="bg-gradient-to-br from-yellow-50 to-orange-100 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-12 mb-24">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+              CyberBrick
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              Modular building, recycled plastics, and engineering principles for Junior Secondary learners.
+            </p>
+          </div>
+
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 mb-8">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center">
+                  <Cpu className="h-8 w-8 text-yellow-600 dark:text-yellow-400 mr-3" />
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Workshop Sessions (Term 1 Only)</h3>
+                </div>
+                <Clock className="h-6 w-6 text-gray-400" />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Venue</h4>
+                  <p className="text-gray-600 dark:text-gray-300">Hosted exclusively at the ChipuRobo Workshop (January–April 2026)</p>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Activities</h4>
+                  <p className="text-gray-600 dark:text-gray-300">Students use PET-recycled filament with Bambu Lab 3D printers to build structural models and solve real-world engineering challenges.</p>
+                </div>
+              </div>
+
+              <p className="text-gray-700 dark:text-gray-300 mb-6">
+                CyberBrick introduces learners to sustainable digital fabrication and modular engineering using 3D-printed parts made from recycled PET. It focuses on creativity, STEM principles, and project-based collaboration.
+              </p>
+
+              <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
+                <p className="text-yellow-800 dark:text-yellow-200 font-medium">
+                  Open for Term 1 participation at the ChipuRobo Workshop only. School rollout to begin in Term 2 under the Maker Space program.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Program Features */}
         <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-12 mb-24">
           <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-12">
