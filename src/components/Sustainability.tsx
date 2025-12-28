@@ -5,13 +5,8 @@ const Sustainability = () => {
   const processSteps = [
     {
       icon: Package,
-      title: "PET Waste Collection",
-      description: "We collect plastic bottles from communities, keeping waste out of landfills and waterways"
-    },
-    {
-      icon: Factory,
-      title: "Recycling & Processing",
-      description: "Our PET recycling machines transform waste plastic into high-quality 3D printing filament"
+      title: "PET Waste Collection & Processing",
+      description: "We collect plastic bottles from communities and transform them into high-quality 3D printing filament"
     },
     {
       icon: Sparkles,
@@ -44,7 +39,7 @@ const Sustainability = () => {
     {
       icon: Globe,
       metric: "Pan-African",
-      label: "Expansion to more countries underway"
+      label: "Expansion to more countries underway with sustainable innovation focus"
     }
   ];
 
@@ -110,7 +105,7 @@ const Sustainability = () => {
           <p className="text-xl text-center text-gray-600 dark:text-gray-300 mb-16">
             From plastic bottles to intelligent robots
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {processSteps.map((step, index) => (
               <div key={index} className="relative">
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg h-full">
@@ -138,7 +133,7 @@ const Sustainability = () => {
           <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-12">
             Our Environmental Impact
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {impact.map((item, index) => (
               <div key={index} className="text-center">
                 <item.icon className="h-12 w-12 text-green-600 dark:text-green-400 mx-auto mb-4" />

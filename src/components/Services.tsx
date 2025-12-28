@@ -130,64 +130,90 @@ const Services = () => {
   return (
     <div className="bg-gray-50 dark:bg-gray-900">
       {/* Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-gray-900 to-primary-900 dark:from-black dark:to-primary-950">
+      <section 
+        className="relative overflow-hidden bg-gradient-to-r from-gray-900 to-primary-900 dark:from-black dark:to-primary-950"
+        aria-labelledby="services-hero-title"
+      >
         <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-grid-white/10 bg-[size:20px_20px]" />
+          <div className="absolute inset-0 bg-grid-white/10 bg-[size:20px_20px]" aria-hidden="true" />
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
+            <h1 
+              id="services-hero-title"
+              className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 dyslexic-text"
+            >
               Our Programs
             </h1>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto dyslexic-text">
               Inclusive AI and robotics education with locally fabricated kits, Code Clubs, and CBC alignment across Kenya
             </p>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Main Programs */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24" aria-labelledby="main-programs-title">
         <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Featured Programs</h2>
-          <p className="text-xl text-gray-600 dark:text-gray-300">
+          <h2 id="main-programs-title" className="text-3xl font-bold text-gray-900 dark:text-white mb-4 dyslexic-text">
+            Featured Programs
+          </h2>
+          <p className="text-xl text-gray-600 dark:text-gray-300 dyslexic-text">
             Choose the program that best fits your learning goals
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {mainPrograms.map((program, index) => (
-            <div 
+            <article 
               key={index} 
-              className="group relative bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden transform transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl"
+              className="group relative bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden transform transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl border border-gray-200 dark:border-gray-700"
+              aria-labelledby={`program-title-${index}`}
             >
-              <div className={`absolute inset-0 bg-gradient-to-br ${program.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
+              <div className={`absolute inset-0 bg-gradient-to-br ${program.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} aria-hidden="true" />
               
               <div className="p-8">
                 <div className="flex items-center mb-6">
-                  <program.icon className="h-8 w-8 text-primary-600 dark:text-primary-400" />
-                  <h3 className="text-2xl font-semibold text-gray-900 dark:text-white ml-3">{program.title}</h3>
+                  <div className="bg-primary-100 dark:bg-primary-900/30 p-3 rounded-lg mr-4">
+                    <program.icon className="h-8 w-8 text-primary-600 dark:text-primary-400" aria-hidden="true" />
+                  </div>
+                  <h3 id={`program-title-${index}`} className="text-2xl font-semibold text-gray-900 dark:text-white dyslexic-text">
+                    {program.title}
+                  </h3>
                 </div>
                 
-                <p className="text-gray-600 dark:text-gray-300 mb-6">{program.description}</p>
+                <p className="text-gray-600 dark:text-gray-300 mb-6 dyslexic-text">{program.description}</p>
                 
                 <div className="space-y-4 mb-8">
-                  {program.features.map((feature, idx) => (
-                    <div key={idx} className="flex items-center text-gray-700 dark:text-gray-300">
-                      <ChevronRight className="h-5 w-5 text-primary-600 dark:text-primary-400 mr-2" />
-                      <span>{feature}</span>
-                    </div>
-                  ))}
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-3 dyslexic-text">Program Features:</h4>
+                  <ul className="space-y-3" role="list">
+                    {program.features.map((feature, idx) => (
+                      <li key={idx} className="flex items-start" role="listitem">
+                        <div className="bg-green-100 dark:bg-green-900/30 p-1 rounded-full mr-3 mt-1 flex-shrink-0">
+                          <ChevronRight className="h-4 w-4 text-green-600 dark:text-green-400" aria-hidden="true" />
+                        </div>
+                        <span className="text-gray-700 dark:text-gray-300 dyslexic-text">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
 
-                <div className="border-t border-gray-200 dark:border-gray-700 pt-6 space-y-3">
-                  <div className="flex items-center text-gray-600 dark:text-gray-400">
-                    <Clock className="h-5 w-5 mr-2" />
-                    <span>{program.duration}</span>
-                  </div>
-                  <div className="flex items-center text-gray-600 dark:text-gray-400">
-                    <Users className="h-5 w-5 mr-2" />
-                    <span>{program.groupSize}</span>
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                    <div className="flex items-center text-gray-600 dark:text-gray-400">
+                      <Clock className="h-5 w-5 mr-2 text-primary-600 dark:text-primary-400" aria-hidden="true" />
+                      <span className="dyslexic-text">
+                        <span className="sr-only">Duration: </span>
+                        {program.duration}
+                      </span>
+                    </div>
+                    <div className="flex items-center text-gray-600 dark:text-gray-400">
+                      <Users className="h-5 w-5 mr-2 text-primary-600 dark:text-primary-400" aria-hidden="true" />
+                      <span className="dyslexic-text">
+                        <span className="sr-only">Group size: </span>
+                        {program.groupSize}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -195,16 +221,17 @@ const Services = () => {
               <div className="p-6 bg-gray-50 dark:bg-gray-900/50">
                 <button 
                   onClick={handleEnroll}
-                  className="w-full bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition flex items-center justify-center group"
+                  className="w-full bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition flex items-center justify-center group dyslexic-text focus-visible"
+                  aria-label={`Enroll in ${program.title} program`}
                 >
                   <span>Enroll Now</span>
-                  <ArrowRight className="ml-2 h-5 w-5 transform group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="ml-2 h-5 w-5 transform group-hover:translate-x-1 transition-transform" aria-hidden="true" />
                 </button>
               </div>
-            </div>
+            </article>
           ))}
         </div>
-      </div>
+      </section>
 
       {/* Workshops */}
       <div className="bg-gray-100 dark:bg-gray-800/50 py-24">

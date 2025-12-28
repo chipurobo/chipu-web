@@ -4,6 +4,12 @@ export default {
   darkMode: 'class',
   theme: {
     extend: {
+      fontFamily: {
+        // Dyslexic-friendly fonts
+        'dyslexic': ['OpenDyslexic', 'Comic Sans MS', 'Arial', 'Helvetica', 'sans-serif'],
+        'sans': ['OpenDyslexic', 'Inter', 'system-ui', 'sans-serif'],
+        'accessibility': ['OpenDyslexic', 'Verdana', 'Tahoma', 'sans-serif'],
+      },
       colors: {
         chipurobo: {
           green: '#10b981', // ChipuRobo brand emerald green
