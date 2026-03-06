@@ -3,6 +3,54 @@ import { Users, Recycle, Code, GraduationCap, Eye, Brain, MapPin, Calendar, Down
 
 const Impact2025 = () => {
   const navigate = useNavigate();
+
+  const downloadImpactData = () => {
+    const rows: string[][] = [
+      ['ChipuRobo 2025 Impact Report'],
+      ['Microsoft ADC Partnership — National AI & Robotics Program'],
+      [],
+      ['=== KEY ACHIEVEMENTS ==='],
+      ['Metric', 'Description', 'Details'],
+      ['3 National Bootcamps', 'April, August, and November-December AI & Robotics bootcamps across Kenya', '800+ students, 50+ teachers trained'],
+      ['13 PET Recycling Machines', 'Deployed across Kenya converting plastic waste to 3D printing filament', 'Sustainable innovation in action'],
+      ['66 Code Clubs Launched', 'In partnership with Raspberry Pi Foundation across secondary schools', 'Growing computing education network'],
+      ['Inclusive Education Pioneer', 'Braille challenges, KSL integration, and low-vision LMS development', 'No learner left behind'],
+      [],
+      ['=== BOOTCAMP SERIES ==='],
+      ['Month', 'Title', 'Location', 'Participants', 'Focus'],
+      ['April 2025', 'Foundation Bootcamp', 'Nairobi', '250+ learners', 'AI fundamentals and robotics introduction'],
+      ['August 2025', 'Advanced AI & Robotics', 'Multi-county reach', '350+ learners', 'Computer vision and automation'],
+      ['Nov-Dec 2025', 'Inclusive Technology Summit', 'National program', '200+ learners, 50+ teachers', 'Accessibility and inclusive design'],
+      [],
+      ['=== INCLUSIVE EDUCATION INITIATIVES ==='],
+      ['Initiative', 'Description'],
+      ['Braille Robotics', 'Tactile robotics challenges and Braille programming interfaces for visually impaired students'],
+      ['KSL Integration', 'Kenyan Sign Language integrated into curriculum materials for deaf and hard-of-hearing learners'],
+      ['Low-Vision LMS', 'Specialized Learning Management System with high contrast, screen reader compatibility, and adaptive interfaces'],
+      [],
+      ['=== TESTIMONIALS ==='],
+      ['Quote', 'Author', 'Role'],
+    ];
+
+    testimonials.forEach(t => {
+      rows.push([t.quote, t.author, t.role]);
+    });
+
+    rows.push([], ['Report generated on', new Date().toLocaleDateString()]);
+
+    const csvContent = rows
+      .map(row => row.map(cell => `"${(cell ?? '').replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'ChipuRobo_2025_Impact_Report.csv';
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   const achievements = [
     {
       icon: GraduationCap,
@@ -89,13 +137,22 @@ const Impact2025 = () => {
               A year of transformation: From 3 national bootcamps to 66 Code Clubs, 
               13 PET recycling machines, and pioneering inclusive education across Kenya.
             </p>
-            <Link
-              to="/microsoft"
-              className="bg-white text-primary-900 px-8 py-4 rounded-lg hover:bg-gray-100 transition text-lg font-semibold flex items-center justify-center mx-auto shadow-lg"
-            >
-              <Download className="mr-2 h-5 w-5" />
-              View Full Report
-            </Link>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button
+                onClick={downloadImpactData}
+                className="bg-white text-primary-900 px-8 py-4 rounded-lg hover:bg-gray-100 transition text-lg font-semibold flex items-center justify-center shadow-lg"
+              >
+                <Download className="mr-2 h-5 w-5" />
+                Download Impact Data (CSV)
+              </button>
+              <Link
+                to="/microsoft"
+                className="bg-white/10 backdrop-blur-lg text-white px-8 py-4 rounded-lg hover:bg-white/20 transition text-lg font-semibold flex items-center justify-center"
+              >
+                <ExternalLink className="mr-2 h-5 w-5" />
+                View Full Report
+              </Link>
+            </div>
           </div>
         </div>
       </div>
