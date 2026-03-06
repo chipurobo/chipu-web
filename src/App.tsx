@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from './contexts/ThemeContext';
 import Navbar from './components/Navbar';
@@ -15,6 +15,7 @@ import Program from './components/Program';
 import Sustainability from './components/Sustainability';
 import Impact2025 from './components/Impact2025';
 import EmailRegistration2026 from './components/EmailRegistration2026';
+import NotFound from './components/NotFound';
 
 function App() {
   // Accessibility: Announce route changes to screen readers
@@ -25,6 +26,11 @@ function App() {
         const currentPath = window.location.pathname;
         const pageName = getPageTitle(currentPath);
         routeAnnouncement.textContent = `Navigated to ${pageName} page`;
+
+        // Update document title for SEO
+        document.title = pageName === 'Home'
+          ? 'ChipuRobo - Robotics & AI Education'
+          : `${pageName} | ChipuRobo`;
         
         // Focus main content for screen readers
         const mainContent = document.getElementById('main-content');
@@ -93,6 +99,7 @@ function App() {
               <Route path="/microsoft" element={<Microsoft />} />
               <Route path="/impact-2025" element={<Impact2025 />} />
               <Route path="/register-2026" element={<EmailRegistration2026 />} />
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
 

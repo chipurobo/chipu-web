@@ -1,6 +1,5 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Rocket, Users, School, Award, Calendar, TrendingUp, GraduationCap, CheckCircle, Code, Brain, Cpu, Zap, Target, Eye, Cog } from 'lucide-react';
+import { Rocket, Users, School, Award, Calendar, TrendingUp, GraduationCap, CheckCircle, Code, Brain, Target, Eye, Cog } from 'lucide-react';
 
 const Microsoft = () => {
   const navigate = useNavigate();
@@ -203,22 +202,27 @@ const Microsoft = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {learningModules.map((module, index) => {
-              const colors = ['blue', 'emerald', 'purple', 'orange'];
-              const colorClass = colors[index % colors.length];
+              const colorStyles = [
+                { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-600 dark:text-blue-400', badge: 'bg-blue-50 dark:bg-blue-900/20' },
+                { bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-600 dark:text-emerald-400', badge: 'bg-emerald-50 dark:bg-emerald-900/20' },
+                { bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-600 dark:text-purple-400', badge: 'bg-purple-50 dark:bg-purple-900/20' },
+                { bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-600 dark:text-orange-400', badge: 'bg-orange-50 dark:bg-orange-900/20' },
+              ];
+              const colors = colorStyles[index % colorStyles.length];
               return (
                 <article 
                   key={index} 
                   className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-shadow"
                   aria-labelledby={`module-title-${index}`}
                 >
-                  <div className={`bg-${colorClass}-100 dark:bg-${colorClass}-900/30 p-4 rounded-lg w-fit mb-6`}>
-                    <module.icon className={`h-10 w-10 text-${colorClass}-600 dark:text-${colorClass}-400`} aria-hidden="true" />
+                  <div className={`${colors.bg} p-4 rounded-lg w-fit mb-6`}>
+                    <module.icon className={`h-10 w-10 ${colors.text}`} aria-hidden="true" />
                   </div>
                   <h3 id={`module-title-${index}`} className="text-xl font-bold text-gray-900 dark:text-white mb-3 dyslexic-text">
                     {module.title}
                   </h3>
-                  <div className={`bg-${colorClass}-50 dark:bg-${colorClass}-900/20 px-3 py-2 rounded-lg inline-block mb-6`}>
-                    <p className={`text-${colorClass}-600 dark:text-${colorClass}-400 font-semibold text-sm dyslexic-text`}>
+                  <div className={`${colors.badge} px-3 py-2 rounded-lg inline-block mb-6`}>
+                    <p className={`${colors.text} font-semibold text-sm dyslexic-text`}>
                       <span className="sr-only">Duration: </span>{module.hours}
                     </p>
                   </div>

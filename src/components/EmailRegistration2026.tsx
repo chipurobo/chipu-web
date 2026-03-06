@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { School, User, CheckSquare, MessageSquare, Mail, MapPin, Copy, ChevronDown, ChevronUp, Check } from 'lucide-react';
+import { useState } from 'react';
+import { CheckSquare, MessageSquare, Mail, Copy, ChevronDown, ChevronUp, Check } from 'lucide-react';
 
 const EmailRegistration2026 = () => {
   const [isTemplateExpanded, setIsTemplateExpanded] = useState(false);
