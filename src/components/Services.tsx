@@ -1,10 +1,8 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Code, 
   Notebook as Robot, 
   Cpu, 
-  Calendar, 
   Clock, 
   Users, 
   Award, 

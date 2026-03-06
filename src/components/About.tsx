@@ -1,5 +1,4 @@
-import React from 'react';
-import { Target, Users, Lightbulb, Award, GraduationCap, Rocket, Globe, MapPin, Heart, Recycle } from 'lucide-react';
+import { Target, Users, Lightbulb, GraduationCap, Globe, MapPin, Recycle } from 'lucide-react';
 
 const About = () => {
   const achievements = [

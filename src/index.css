@@ -100,6 +100,15 @@
   animation: spin-slow 10s linear infinite;
 }
 
+@keyframes scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-scroll {
+  animation: scroll 20s linear infinite;
+}
+
 /* Hero section styles */
 .hero-gradient {
   @apply bg-gradient-to-r from-gray-900 to-primary-900 dark:from-black dark:to-primary-950;

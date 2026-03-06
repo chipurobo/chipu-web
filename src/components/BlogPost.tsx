@@ -1,46 +1,26 @@
-import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Calendar, Clock, User, ArrowLeft } from 'lucide-react';
+import { getBlogPostById } from '../data/blogPosts';
 
 const BlogPost = () => {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
+  const post = id ? getBlogPostById(id) : undefined;
 
-  // This would typically come from an API or database
-  const post = {
-    id: '1',
-    title: 'Revolutionizing African Agriculture with AI-Powered Robotics',
-    content: `
-      <p>Africa's agricultural sector stands at a pivotal moment, facing both unprecedented challenges and opportunities. Through our innovative AI and robotics programs at ChipuRobo, we're witnessing a transformation in how young African innovators approach agricultural challenges.</p>
-
-      <h2>The Challenge</h2>
-      <p>Small-scale farmers across East Africa face numerous challenges, from unpredictable weather patterns to crop diseases. Traditional farming methods, while valuable, often struggle to keep pace with these evolving challenges.</p>
-
-      <h2>Our Innovation</h2>
-      <p>Our students have developed an AI-powered robot that can:</p>
-      <ul>
-        <li>Monitor crop health in real-time</li>
-        <li>Detect early signs of plant diseases</li>
-        <li>Provide precise irrigation recommendations</li>
-        <li>Optimize resource utilization</li>
-      </ul>
-
-      <h2>Impact and Results</h2>
-      <p>Initial trials with local farming communities have shown promising results:</p>
-      <ul>
-        <li>30% reduction in water usage</li>
-        <li>45% improvement in early disease detection</li>
-        <li>20% increase in crop yield</li>
-      </ul>
-
-      <h2>Looking Ahead</h2>
-      <p>This is just the beginning of our journey to revolutionize African agriculture through technology. By combining traditional farming knowledge with cutting-edge AI and robotics, we're creating solutions that are both innovative and culturally relevant.</p>
-    `,
-    author: 'Anthony Mwangi',
-    date: 'March 15, 2025',
-    readTime: '5 min read',
-    image: 'https://images.unsplash.com/photo-1563089145-599997674d42',
-    category: 'Agriculture'
-  };
+  if (!post) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Post Not Found</h1>
+        <p className="text-gray-600 dark:text-gray-300 mb-8">The blog post you're looking for doesn't exist.</p>
+        <Link
+          to="/blog"
+          className="inline-flex items-center text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Blog
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24">

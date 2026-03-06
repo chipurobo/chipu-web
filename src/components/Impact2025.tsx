@@ -1,7 +1,8 @@
-import React from 'react';
-import { Award, Users, Recycle, Code, GraduationCap, Eye, Brain, MapPin, Calendar, Download, ExternalLink } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Users, Recycle, Code, GraduationCap, Eye, Brain, MapPin, Calendar, Download, ExternalLink } from 'lucide-react';
 
 const Impact2025 = () => {
+  const navigate = useNavigate();
   const achievements = [
     {
       icon: GraduationCap,
@@ -88,10 +89,13 @@ const Impact2025 = () => {
               A year of transformation: From 3 national bootcamps to 66 Code Clubs, 
               13 PET recycling machines, and pioneering inclusive education across Kenya.
             </p>
-            <button className="bg-white text-primary-900 px-8 py-4 rounded-lg hover:bg-gray-100 transition text-lg font-semibold flex items-center justify-center mx-auto shadow-lg">
+            <Link
+              to="/microsoft"
+              className="bg-white text-primary-900 px-8 py-4 rounded-lg hover:bg-gray-100 transition text-lg font-semibold flex items-center justify-center mx-auto shadow-lg"
+            >
               <Download className="mr-2 h-5 w-5" />
-              Download Full Report (PDF)
-            </button>
+              View Full Report
+            </Link>
           </div>
         </div>
       </div>
@@ -223,14 +227,22 @@ const Impact2025 = () => {
             AI learning resources, and mentorship that made this transformative year possible.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="bg-white text-blue-600 px-8 py-3 rounded-lg hover:bg-gray-100 transition font-semibold flex items-center justify-center">
+            <a
+              href="https://www.microsoft.com/en-us/madc"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-white text-blue-600 px-8 py-3 rounded-lg hover:bg-gray-100 transition font-semibold flex items-center justify-center"
+            >
               <ExternalLink className="mr-2 h-5 w-5" />
               Learn About Microsoft ADC
-            </button>
-            <button className="bg-white/20 backdrop-blur-lg text-white px-8 py-3 rounded-lg hover:bg-white/30 transition font-semibold flex items-center justify-center">
+            </a>
+            <Link
+              to="/microsoft"
+              className="bg-white/20 backdrop-blur-lg text-white px-8 py-3 rounded-lg hover:bg-white/30 transition font-semibold flex items-center justify-center"
+            >
               <Download className="mr-2 h-5 w-5" />
               Partnership Impact Report
-            </button>
+            </Link>
           </div>
         </div>
       </div>
@@ -242,7 +254,10 @@ const Impact2025 = () => {
           <p className="text-xl text-green-100 mb-8">
             Join us as we expand to reach 4 million youth across Africa by 2030
           </p>
-          <button className="bg-white text-emerald-600 px-8 py-4 rounded-lg hover:bg-gray-100 transition text-lg font-semibold">
+          <button
+            onClick={() => navigate('/register-2026')}
+            className="bg-white text-emerald-600 px-8 py-4 rounded-lg hover:bg-gray-100 transition text-lg font-semibold"
+          >
             Register for 2026 Programme
           </button>
         </div>

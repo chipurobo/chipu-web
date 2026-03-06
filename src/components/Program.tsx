@@ -1,4 +1,3 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Rocket, Calendar, Users, Award, Code, Brain, Eye, Target, CheckCircle, Clock, Trophy, BookOpen, Cpu, ArrowRight } from 'lucide-react';
 
@@ -84,16 +83,6 @@ const Program = () => {
     }
   ];
 
-  const whatYouGet = [
-    "Complete robotics kit for hands-on learning",
-    "Raspberry Pi computing platform",
-    "AI camera for computer vision projects",
-    "3D-printed parts from recycled PET plastic",
-    "Bootcamp training at Microsoft ADC (Nairobi)",
-    "Digital curriculum and learning resources",
-    "Certificate upon program completion",
-    "Entry to national KSEF robotics competition"
-  ];
 
   return (
     <div className="bg-white dark:bg-gray-900">

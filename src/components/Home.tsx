@@ -1,11 +1,5 @@
-import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Brain, Award, Users, Notebook as Robot, Cpu, Code, GraduationCap, School, Zap, BrainCircuit as Circuit, Globe, Heart, Leaf, ArrowRight, Rocket, Recycle, MapPin, Target } from 'lucide-react';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay, Pagination } from 'swiper/modules';
-import 'swiper/css';
-import 'swiper/css/pagination';
-import 'swiper/css/autoplay';
+import { Brain, Award, Users, Notebook as Robot, Code, School, Globe, Heart, Leaf, ArrowRight, Rocket, Recycle, Target } from 'lucide-react';
 
 const Home = () => {
   const navigate = useNavigate();

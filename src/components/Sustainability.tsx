@@ -1,4 +1,4 @@
-import React from 'react';
+import { Link } from 'react-router-dom';
 import { Recycle, Factory, Zap, Leaf, Users, Heart, Globe, ArrowRight, Package, Cpu, Sparkles } from 'lucide-react';
 
 const Sustainability = () => {
@@ -251,20 +251,20 @@ const Sustainability = () => {
             Whether you're a school, community organization, or partner, you can be part of our waste-to-innovation movement
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
-              href="/contact"
+            <Link
+              to="/contact"
               className="bg-white text-green-600 px-8 py-4 rounded-lg hover:bg-gray-100 transition text-lg font-semibold inline-flex items-center justify-center"
             >
               <Heart className="mr-2 h-5 w-5" />
               Partner With Us
-            </a>
-            <a
-              href="/enroll"
+            </Link>
+            <Link
+              to="/register-2026"
               className="bg-white/10 backdrop-blur-lg text-white px-8 py-4 rounded-lg hover:bg-white/20 transition text-lg font-semibold inline-flex items-center justify-center"
             >
               <Leaf className="mr-2 h-5 w-5" />
               Learn More
-            </a>
+            </Link>
           </div>
         </div>
       </div>
