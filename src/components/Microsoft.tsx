@@ -1,0 +1,427 @@
+import { useNavigate } from 'react-router-dom';
+import { Rocket, Users, School, Award, Calendar, TrendingUp, GraduationCap, CheckCircle, Code, Brain, Target, Eye, Cog } from 'lucide-react';
+
+const Microsoft = () => {
+  const navigate = useNavigate();
+
+  const programImpact = [
+    {
+      icon: Users,
+      metric: "800+",
+      label: "Total Learners & Teachers",
+      detail: "Across all bootcamps"
+    },
+    {
+      icon: School,
+      metric: "80",
+      label: "Schools Engaged",
+      detail: "National & county institutions"
+    },
+    {
+      icon: GraduationCap,
+      metric: "200+",
+      label: "April Participants",
+      detail: "Learners & teachers"
+    },
+    {
+      icon: Rocket,
+      metric: "150+",
+      label: "August Participants",
+      detail: "Learners & teachers"
+    },
+    {
+      icon: Code,
+      metric: "100+",
+      label: "December Participants",
+      detail: "Learners & teachers"
+    },
+    {
+      icon: Award,
+      metric: "6",
+      label: "Partner Organizations",
+      detail: "Collaborative ecosystem"
+    }
+  ];
+
+  const aprilCohort = [
+    { name: "Starehe Girls Centre", students: 35, teachers: 3 },
+    { name: "Starehe Boys Centre", students: 35, teachers: 3 },
+    { name: "The Excellence School", students: 30, teachers: 2 },
+    { name: "Moi Girls School Nairobi", students: 30, teachers: 3 },
+    { name: "Limuru Girls High School", students: 35, teachers: 2 },
+    { name: "Nairobi School", students: 30, teachers: 2 }
+  ];
+
+  const augustCohort = [
+    { name: "Alliance Girls High School", students: 25, teachers: 2 },
+    { name: "Alliance Boys High School", students: 25, teachers: 2 },
+    { name: "Crawford International School", students: 20, teachers: 2 },
+    { name: "Hillcrest School", students: 20, teachers: 2 },
+    { name: "Treeside School", students: 20, teachers: 2 },
+    { name: "New Horizon Schools", students: 20, teachers: 2 }
+  ];
+
+  const decemberCohort = [
+    { name: "Starehe Boys Centre", students: 9, teachers: 2 },
+    { name: "Starehe Girls Centre", students: 12, teachers: 2 },
+    { name: "Alliance Girls High School", students: 9, teachers: 2 },
+    { name: "Bungoma School", students: 9, teachers: 2 },
+    { name: "Riara School", students: 6, teachers: 1 },
+    { name: "Various Other Schools", students: 85, teachers: 8 },
+    { name: "Home School Students", students: 10, teachers: 1 }
+  ];
+
+  const learningModules = [
+    {
+      icon: Brain,
+      title: "AI Fundamentals",
+      hours: "8 hours",
+      topics: ["Machine learning basics", "Computer vision", "Object detection"]
+    },
+    {
+      icon: Code,
+      title: "Python Programming",
+      hours: "6 hours",
+      topics: ["Raspberry Pi", "Sensor integration", "Robot control"]
+    },
+    {
+      icon: Cog,
+      title: "Robotics Engineering",
+      hours: "10 hours",
+      topics: ["Hardware assembly", "Circuit design", "System integration"]
+    },
+    {
+      icon: Eye,
+      title: "Computer Vision",
+      hours: "6 hours",
+      topics: ["Gesture recognition", "Tracking algorithms", "AI cameras"]
+    },
+    {
+      icon: Target,
+      title: "Waste Recycling",
+      hours: "6 hours",
+      topics: ["Assembling waste recycling PET machine", "Creating filament from plastic", "Using plastic to 3D print"]
+    }
+  ];
+
+  const outcomes = [
+    { metric: "30+", label: "AI-powered robots built", icon: Rocket },
+    { metric: "100%", label: "Hands-on learning time", icon: Target },
+    { metric: "30 hrs", label: "Average training duration", icon: TrendingUp },
+    { metric: "500+", label: "Certificates awarded", icon: Award },
+    { metric: "10+", label: "Plastic recycling PET welders", icon: Cog }
+  ];
+
+  return (
+    <div className="bg-white dark:bg-gray-900">
+      {/* Hero Section */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-blue-600 to-indigo-700 dark:from-blue-700 dark:to-indigo-800">
+        <div className="absolute inset-0 bg-grid-white/10 bg-[size:20px_20px]" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+          <div className="text-center">
+            <div className="inline-flex items-center bg-green-400/20 backdrop-blur-lg px-4 py-2 rounded-full text-white mb-6">
+              <CheckCircle className="h-5 w-5 mr-2" />
+              <span className="font-semibold dyslexic-text">2025 Programme Completed Successfully</span>
+            </div>
+            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 dyslexic-text">
+              2025 Impact Report
+              <br />
+              Microsoft ADC Partnership
+            </h1>
+            <p className="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto mb-8 dyslexic-text">
+              Three transformative bootcamps completed - setting the foundation for 2026 national expansion
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <div className="bg-white/10 backdrop-blur-lg px-6 py-3 rounded-lg">
+                <p className="text-3xl font-bold text-white dyslexic-text">800+</p>
+                <p className="text-white/80 dyslexic-text">Lives Impacted</p>
+              </div>
+              <div className="bg-white/10 backdrop-blur-lg px-6 py-3 rounded-lg">
+                <p className="text-3xl font-bold text-white dyslexic-text">80</p>
+                <p className="text-white/80 dyslexic-text">Schools Reached</p>
+              </div>
+              <div className="bg-white/10 backdrop-blur-lg px-6 py-3 rounded-lg">
+                <p className="text-3xl font-bold text-white dyslexic-text">3</p>
+                <p className="text-white/80 dyslexic-text">Bootcamps Completed</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Program Impact Grid */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+            Program Impact at a Glance
+          </h2>
+          <p className="text-xl text-gray-600 dark:text-gray-300">
+            Data from December bootcamps
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+          {programImpact.map((item, index) => (
+            <div key={index} className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+              <item.icon className="h-12 w-12 text-blue-600 dark:text-blue-400 mb-4" />
+              <p className="text-5xl font-bold text-gray-900 dark:text-white mb-2">{item.metric}</p>
+              <p className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-1">{item.label}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{item.detail}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Learning Outcomes */}
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-12">
+          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-8 text-center">
+            Measurable Learning Outcomes
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {outcomes.map((outcome, index) => (
+              <div key={index} className="text-center">
+                <outcome.icon className="h-10 w-10 text-blue-600 dark:text-blue-400 mx-auto mb-3" />
+                <p className="text-3xl font-bold text-gray-900 dark:text-white mb-1">{outcome.metric}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">{outcome.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Curriculum Breakdown */}
+      <section className="bg-gray-50 dark:bg-gray-800 py-24" aria-labelledby="curriculum-title">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 id="curriculum-title" className="text-3xl font-bold text-gray-900 dark:text-white mb-4 dyslexic-text">
+              Comprehensive Curriculum
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300 dyslexic-text">
+              30+ hours of intensive hands-on training per bootcamp
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {learningModules.map((module, index) => {
+              const colorStyles = [
+                { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-600 dark:text-blue-400', badge: 'bg-blue-50 dark:bg-blue-900/20' },
+                { bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-600 dark:text-emerald-400', badge: 'bg-emerald-50 dark:bg-emerald-900/20' },
+                { bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-600 dark:text-purple-400', badge: 'bg-purple-50 dark:bg-purple-900/20' },
+                { bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-600 dark:text-orange-400', badge: 'bg-orange-50 dark:bg-orange-900/20' },
+              ];
+              const colors = colorStyles[index % colorStyles.length];
+              return (
+                <article 
+                  key={index} 
+                  className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-shadow"
+                  aria-labelledby={`module-title-${index}`}
+                >
+                  <div className={`${colors.bg} p-4 rounded-lg w-fit mb-6`}>
+                    <module.icon className={`h-10 w-10 ${colors.text}`} aria-hidden="true" />
+                  </div>
+                  <h3 id={`module-title-${index}`} className="text-xl font-bold text-gray-900 dark:text-white mb-3 dyslexic-text">
+                    {module.title}
+                  </h3>
+                  <div className={`${colors.badge} px-3 py-2 rounded-lg inline-block mb-6`}>
+                    <p className={`${colors.text} font-semibold text-sm dyslexic-text`}>
+                      <span className="sr-only">Duration: </span>{module.hours}
+                    </p>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3 dyslexic-text">Topics Covered:</h4>
+                    <ul className="space-y-3" role="list">
+                      {module.topics.map((topic, idx) => (
+                        <li key={idx} className="flex items-start" role="listitem">
+                          <div className="bg-green-100 dark:bg-green-900/30 p-1 rounded-full mr-3 mt-1 flex-shrink-0">
+                            <CheckCircle className="h-3 w-3 text-green-600 dark:text-green-400" aria-hidden="true" />
+                          </div>
+                          <span className="text-sm text-gray-600 dark:text-gray-400 dyslexic-text">{topic}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Cohort Breakdown */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+        <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-16">
+          Participating Schools & Numbers
+        </h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 mb-16">
+          {/* April Cohort */}
+          <div>
+            <div className="bg-blue-100 dark:bg-blue-900/30 px-4 py-2 rounded-lg inline-block mb-6">
+              <h3 className="text-xl font-bold text-blue-900 dark:text-blue-300">April 2025 Cohort</h3>
+            </div>
+            <div className="space-y-4">
+              {aprilCohort.map((school, index) => (
+                <div key={index} className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{school.name}</h4>
+                  <div className="flex gap-6">
+                    <div>
+                      <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{school.students}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Students</p>
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-green-600 dark:text-green-400">{school.teachers}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Teachers</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                <p className="text-lg font-bold text-gray-900 dark:text-white">
+                  Total: 195 students + 15 teachers = 210 participants
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* August Cohort */}
+          <div>
+            <div className="bg-indigo-100 dark:bg-indigo-900/30 px-4 py-2 rounded-lg inline-block mb-6">
+              <h3 className="text-xl font-bold text-indigo-900 dark:text-indigo-300">August 2025 Cohort</h3>
+            </div>
+            <div className="space-y-4">
+              {augustCohort.map((school, index) => (
+                <div key={index} className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{school.name}</h4>
+                  <div className="flex gap-6">
+                    <div>
+                      <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{school.students}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Students</p>
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-green-600 dark:text-green-400">{school.teachers}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Teachers</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <div className="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-lg">
+                <p className="text-lg font-bold text-gray-900 dark:text-white">
+                  Total: 130 students + 12 teachers = 142 participants
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* December Cohort */}
+          <div>
+            <div className="bg-green-100 dark:bg-green-900/30 px-4 py-2 rounded-lg inline-block mb-6">
+              <h3 className="text-xl font-bold text-green-900 dark:text-green-300">December 2025 Cohort</h3>
+            </div>
+            <div className="space-y-4">
+              {decemberCohort.map((school, index) => (
+                <div key={index} className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{school.name}</h4>
+                  <div className="flex gap-6">
+                    <div>
+                      <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{school.students}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Students</p>
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-green-600 dark:text-green-400">{school.teachers}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Teachers</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                <p className="text-lg font-bold text-gray-900 dark:text-white">
+                  Total: 140 students + 18 teachers = 158 participants
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Workshop Logistics */}
+      <div className="bg-gray-50 dark:bg-gray-800 py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-16">
+            Workshop Format & Logistics
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="bg-white dark:bg-gray-900 p-8 rounded-xl shadow-lg">
+              <Calendar className="h-10 w-10 text-blue-600 dark:text-blue-400 mb-4" />
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Duration</h3>
+              <p className="text-gray-600 dark:text-gray-300">3-day intensive bootcamp</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">10:00 AM - 3:30 PM daily</p>
+            </div>
+            <div className="bg-white dark:bg-gray-900 p-8 rounded-xl shadow-lg">
+              <School className="h-10 w-10 text-blue-600 dark:text-blue-400 mb-4" />
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Venue</h3>
+              <p className="text-gray-600 dark:text-gray-300">Microsoft ADC Garage</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Westlands, Nairobi</p>
+            </div>
+            <div className="bg-white dark:bg-gray-900 p-8 rounded-xl shadow-lg">
+              <Award className="h-10 w-10 text-blue-600 dark:text-blue-400 mb-4" />
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Certification</h3>
+              <p className="text-gray-600 dark:text-gray-300">CEMASTEA validated</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">100% completion rate</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Partnership & Next Steps */}
+      <div className="bg-gradient-to-r from-gray-900 to-blue-900 dark:from-black dark:to-blue-950 py-24">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl font-bold text-white mb-6 dyslexic-text">
+            From 2025 Success to 2026 Scale-Up
+          </h2>
+          <p className="text-xl text-gray-200 mb-8 dyslexic-text">
+            Our successful Microsoft ADC partnership in 2025 proved our model works. Three bootcamps, 800+ participants trained, and transformative results achieved. Now we're ready for nationwide expansion.
+          </p>
+          <p className="text-lg text-gray-300 mb-8 dyslexic-text">
+            The 2026 programme runs from January to April, aligning with the Kenya Science and Engineering Fair (KSEF) calendar. Term 1 introduces robotics, Term 2 covers AI and computer vision, and the programme culminates in a national judging round by KSEF in April. Schools across all 47 counties are encouraged to express interest and register early to participate.
+          </p>
+          <p className="text-lg text-gray-300 mb-8 dyslexic-text">
+            Interested schools can register for Season 2 of the programme using the button below or reach out via email for more details.
+          </p>
+          <button
+            onClick={() => navigate('/register-2026')}
+            className="bg-white text-blue-600 px-8 py-4 rounded-lg hover:bg-gray-100 transition text-lg font-semibold inline-flex items-center dyslexic-text"
+          >
+            <Rocket className="mr-2 h-5 w-5" />
+            Register for 2026 Programme
+          </button>
+        </div>
+      </div>
+
+      {/* Contact */}
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
+        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Get Involved</h2>
+        <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
+          For media inquiries, partnership opportunities, or school participation
+        </p>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+          <a href="mailto:chipurobo@gmail.com" className="text-blue-600 dark:text-blue-400 hover:underline text-lg font-medium">
+            chipurobo@gmail.com
+          </a>
+          <span className="hidden sm:inline text-gray-400">|</span>
+          <a href="mailto:support@ekitabu.com" className="text-blue-600 dark:text-blue-400 hover:underline text-lg font-medium">
+            support@ekitabu.com
+          </a>
+        </div>
+        <a
+          href="https://drive.google.com/file/d/1W3exC0mLa67oK7PsB1sVRJR_hlg36S_MiRXLha7jXB0/view"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition font-semibold"
+        >
+          View FAQ Document
+        </a>
+      </div>
+    </div>
+  );
+};
+
+export default Microsoft;
