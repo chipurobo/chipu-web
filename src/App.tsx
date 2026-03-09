@@ -11,9 +11,12 @@ import Blog from './components/Blog';
 import BlogPost from './components/BlogPost';
 import Footer from './components/Footer';
 import Microsoft from './components/Microsoft';
-import Program from './components/Program';
+import KSEF from './components/KSEF';
+import JSS from './components/JSS';
+import ADCBootcamp from './components/ADCBootcamp';
+import Hackathons from './components/Hackathons';
 import Sustainability from './components/Sustainability';
-import Impact2025 from './components/Impact2025';
+import Impact from './components/Impact';
 import EmailRegistration2026 from './components/EmailRegistration2026';
 import NotFound from './components/NotFound';
 
@@ -51,14 +54,17 @@ function App() {
     switch (path) {
       case '/': return 'Home';
       case '/about': return 'About ChipuRobo';
-      case '/program': return 'AI & Robotics Program';
+      case '/ksef': return 'KSEF Program';
+      case '/jss': return 'JSS Program';
+      case '/adc-bootcamp': return 'ADC Bootcamp';
+      case '/hackathons': return 'Hackathons';
       case '/sustainability': return 'Sustainability';
       case '/team': return 'Our Team';
       case '/services': return 'Our Services';
       case '/contact': return 'Contact Us';
       case '/blog': return 'Blog';
       case '/microsoft': return 'Microsoft Partnership';
-      case '/impact-2025': return '2025 Impact Report';
+      case '/impact': return 'Impact Report';
       case '/register-2026': return '2026 Registration';
       default: return 'ChipuRobo';
     }
@@ -89,7 +95,10 @@ function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/about" element={<About />} />
-              <Route path="/program" element={<Program />} />
+              <Route path="/ksef" element={<KSEF />} />
+              <Route path="/jss" element={<JSS />} />
+              <Route path="/adc-bootcamp" element={<ADCBootcamp />} />
+              <Route path="/hackathons" element={<Hackathons />} />
               <Route path="/sustainability" element={<Sustainability />} />
               <Route path="/team" element={<Team />} />
               <Route path="/services" element={<Services />} />
@@ -97,7 +106,7 @@ function App() {
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:id" element={<BlogPost />} />
               <Route path="/microsoft" element={<Microsoft />} />
-              <Route path="/impact-2025" element={<Impact2025 />} />
+              <Route path="/impact" element={<Impact />} />
               <Route path="/register-2026" element={<EmailRegistration2026 />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

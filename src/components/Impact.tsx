@@ -1,12 +1,12 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { Users, Recycle, Code, GraduationCap, Eye, Brain, MapPin, Calendar, Download, ExternalLink } from 'lucide-react';
 
-const Impact2025 = () => {
+const Impact = () => {
   const navigate = useNavigate();
 
   const downloadImpactData = () => {
     const rows: string[][] = [
-      ['ChipuRobo 2025 Impact Report'],
+      ['ChipuRobo Impact Report'],
       ['Microsoft ADC Partnership — National AI & Robotics Program'],
       [],
       ['=== KEY ACHIEVEMENTS ==='],
@@ -46,7 +46,7 @@ const Impact2025 = () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = 'ChipuRobo_2025_Impact_Report.csv';
+    link.download = 'ChipuRobo_Impact_Report.csv';
     link.click();
     URL.revokeObjectURL(url);
   };
@@ -60,21 +60,21 @@ const Impact2025 = () => {
     },
     {
       icon: Recycle,
-      title: "13 PET Recycling Machines",
-      description: "Deployed across Kenya converting plastic waste to 3D printing filament",
-      stats: "Sustainable innovation in action"
-    },
-    {
-      icon: Code,
-      title: "66 Code Clubs Launched",
-      description: "In partnership with Raspberry Pi Foundation across secondary schools",
-      stats: "Growing computing education network"
+      title: "♻️ Sustainable Innovation & Manufacturing",
+      description: "KSEF science projects developed PET recycling machines converting plastic waste into 3D printing filament for ADC Bootcamp prototyping sessions",
+      stats: "13 machines deployed + youth entrepreneurship programs launched"
     },
     {
       icon: Eye,
-      title: "Inclusive Education Pioneer",
-      description: "Braille challenges, KSL integration, and low-vision LMS development",
-      stats: "No learner left behind"
+      title: "🎓 Inclusive & Accessible AI Education",
+      description: "Hackathon teams created robotics kits with Braille labels, JSS program videos with KSL integration, and AI programs specifically designed for deaf, blind, and neurodiverse learners",
+      stats: "Ensuring no learner is left behind in AI education"
+    },
+    {
+      icon: Brain,
+      title: "🤖 Real-World Automation Applications",
+      description: "KSEF research projects developed student-built robots that identify and sort classroom materials using computer vision through ADC Bootcamp community initiatives",
+      stats: "From classroom learning to practical automation"
     }
   ];
 
@@ -128,7 +128,7 @@ const Impact2025 = () => {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
-              2025 Impact Report
+              Impact Report
             </h1>
             <p className="text-xl md:text-2xl text-blue-100 mb-8 max-w-4xl mx-auto">
               Microsoft ADC Partnership • National AI & Robotics Program
@@ -160,7 +160,7 @@ const Impact2025 = () => {
       {/* Impact Statistics */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
         <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">2025 by the Numbers</h2>
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Program by the Numbers</h2>
           <p className="text-xl text-gray-600 dark:text-gray-300">Measurable impact across Kenya</p>
         </div>
 
@@ -181,7 +181,7 @@ const Impact2025 = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">National Bootcamp Series</h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300">Three transformative programs throughout 2025</p>
+            <p className="text-xl text-gray-600 dark:text-gray-300">Transformative programs delivering impact nationwide</p>
           </div>
 
           <div className="space-y-8">
@@ -323,4 +323,4 @@ const Impact2025 = () => {
   );
 };
 
-export default Impact2025;
+export default Impact;

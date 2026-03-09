@@ -87,18 +87,18 @@ const Home = () => {
   const africanAIUseCase = [
     {
       title: "♻️ Sustainable Innovation & Manufacturing",
-      description: "PET recycling machines turn plastic waste into 3D printing filament while students prototype real products for community tech projects",
-      impact: "13 machines deployed + youth entrepreneurship programs"
+      description: "KSEF science projects developed PET recycling machines converting plastic waste into 3D printing filament for ADC Bootcamp prototyping sessions",
+      impact: "13 machines deployed + youth entrepreneurship programs launched"
     },
     {
       title: "🎓 Inclusive & Accessible AI Education",
-      description: "Robotics kits with Braille labels, KSL-integrated videos, and AI programs designed for deaf, blind, and neurodiverse learners",
+      description: "Hackathon teams created robotics kits with Braille labels, JSS program videos with KSL integration, and AI programs specifically designed for deaf, blind, and neurodiverse learners",
       impact: "Ensuring no learner is left behind in AI education"
     },
     {
       title: "🤖 Real-World Automation Applications",
-      description: "AI-enabled robots teaching object detection in classrooms plus IoT smart farming towers with sensors and environmental control",
-      impact: "From classroom learning to agricultural innovation"
+      description: "KSEF research projects developed student-built robots that identify and sort classroom materials using computer vision through ADC Bootcamp community initiatives",
+      impact: "From classroom learning to practical automation"
     }
   ];
 
@@ -140,11 +140,11 @@ const Home = () => {
                 REGISTER FOR 2026 PROGRAMME
               </Link>
               <Link
-                to="/impact-2025"
+                to="/impact"
                 className="group bg-white/10 backdrop-blur-lg text-white px-8 py-4 rounded-lg hover:bg-white/20 transition text-lg font-semibold flex items-center justify-center"
               >
                 <School className="mr-2 h-5 w-5" />
-                VIEW 2025 IMPACT REPORT
+                VIEW IMPACT REPORT
               </Link>
             </div>
           </div>
@@ -248,11 +248,11 @@ const Home = () => {
               Technical enablement, AI learning resources, and mentorship that made 2025 our most successful year yet
             </p>
             <Link
-              to="/impact-2025"
+              to="/impact"
               className="bg-white text-blue-600 px-6 py-3 rounded-lg hover:bg-gray-100 transition font-semibold inline-flex items-center"
             >
               <Award className="mr-2 h-5 w-5" />
-              View Full 2025 Impact Report
+              View Full Impact Report
             </Link>
           </div>
         </div>
