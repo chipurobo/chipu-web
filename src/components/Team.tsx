@@ -3,22 +3,10 @@ import { Github, Linkedin, Mail, GraduationCap, Building2, BrainCircuit, Wallet,
 const Team = () => {
   const teamMembers = [
     {
-      name: "Kevin Irungu",
-      role: "Co-Founder & CEO",
-      photo: "/img/kevin.jpeg",
-      bio: "Kevin Irungu is a visionary leader passionate about robotics and STEAM education. With over six years of experience in coding and a deep understanding of robotics applications in the African context, Kevin has been pivotal in making robotics accessible and relevant across the continent. Under his leadership, ChipuRobo is driving innovation and empowering young minds to explore the exciting world of technology and engineering.",
-      icon: Users,
-      social: {
-        linkedin: "https://www.linkedin.com/in/kevin-irungu-b63a6a97/",
-        github: "#",
-        email: "kevin@chipurobo.com"
-      }
-    },
-    {
       name: "Jeffery Mulee",
-      role: "Co-Founder & CMO",
+      role: "Co-Founder & Outreach Lead",
       photo: "/img/jeffery.jpeg",
-      bio: "Jeffery Mulee is both a dynamic leader and a dedicated student, currently pursuing a degree in International Business Administration at USIU Africa. As Chief Marketing Officer, Jeffery leverages his academic knowledge and real-world experience to craft compelling marketing strategies that elevate ChipuRobo's profile and outreach. His dual role as a student and a co-founder showcases the balance of education and practical application, inspiring young innovators.",
+      bio: "Jeffery Mulee is a co-founder who drives outreach and partnerships with schools and communities, expanding ChipuRobo's reach across Kenya and beyond. Currently pursuing International Business Administration at USIU Africa, Jeffery combines academic knowledge with practical experience to build meaningful relationships with educational institutions and create pathways for students to engage with technology.",
       icon: Building2,
       social: {
         linkedin: "#",
@@ -27,10 +15,10 @@ const Team = () => {
       }
     },
     {
-      name: "Cindy Mugure",
-      role: "Co-Founder & CTO",
+      name: "Cindy Gachuhi",
+      role: "Co-Founder & Technology Integration",
       photo: "/img/babacindy.jpeg",
-      bio: "Cindy Mugure is an integral part of the ChipuRobo team, serving as Chief Technology Officer while also pursuing a Bachelor of Science in Computer Science at Strathmore University. Her role involves leading the technological development of ChipuRobo's educational tools, ensuring they are cutting-edge and effective. Cindy's commitment to both her studies and her work at ChipuRobo exemplifies the importance of continuous learning and passion for technology.",
+      bio: "Cindy Gachuhi is a co-founder who contributes a student-centered perspective and technical insight to ChipuRobo, helping integrate emerging technologies and data-driven approaches into the organization's programs. As a Computer Science student at Strathmore University, Cindy bridges the gap between academic research and practical implementation, ensuring ChipuRobo's educational tools remain cutting-edge and effective.",
       icon: BrainCircuit,
       social: {
         linkedin: "https://www.linkedin.com/in/jeffery-ngui-36969b168/",
@@ -39,37 +27,15 @@ const Team = () => {
       }
     },
     {
-      name: "Davies Maina",
-      role: "Digital Marketing Specialist",
-      bio: "Davies Maina is a Digital Marketing specialist focusing on Social Media Management, Content Creation, and Management. With years of experience, Davies helps businesses build their online presence and reach their target audience. He crafts tailored content strategies that drive engagement, boost brand awareness, and increase conversions through compelling copy, eye-catching graphics, and impactful videos.",
-      icon: Share2,
-      social: {
-        linkedin: "https://www.linkedin.com/in/davies-maina-3620b213b/",
-        github: "#",
-        email: "davies@chipurobo.com"
-      }
-    },
-    {
       name: "David Muguchia",
-      role: "Co-Founder & CFO",
+      role: "Co-Founder & Financial Strategy",
       photo: "/img/daview.jpeg",
-      bio: "David Muguchia serves as Chief Financial Architect at ChipuRobo, bringing his expertise in financial management to the team. His strategic planning and oversight ensure that ChipuRobo is financially robust, enabling the company to expand its educational outreach and impact. David's background in finance makes him a crucial asset in managing the organization's growth. Holding a degree in finance, David excels in merging financial strategy with technological solutions to drive innovation and growth.",
+      bio: "David Muguchia is a co-founder who oversees financial strategy to ensure the sustainability and growth of ChipuRobo initiatives. With his background in finance and strategic planning, David manages the organization's financial health while enabling expansion of educational outreach and impact. His expertise in merging financial strategy with technological solutions drives innovation and sustainable growth across all programs.",
       icon: Wallet,
       social: {
         linkedin: "https://www.linkedin.com/in/david-muguchia-082072224/",
         github: "#",
         email: "dwightndungu@gmail.com"
-      }
-    },
-    {
-      name: "Allan Kamau",
-      role: "Full-Stack Developer & AI Enthusiast",
-      bio: "Allan Kamau is a Computer Science Student at Strathmore University and a skilled Full-Stack Developer with a passion for AI & Robotics. As a Chipurobo Trainee, Allan brings fresh perspectives and technical expertise to the team, contributing to the development of innovative educational tools and platforms that empower the next generation of tech enthusiasts.",
-      icon: Code,
-      social: {
-        linkedin: "https://www.linkedin.com/in/allan-kamau-b47880308/",
-        github: "#",
-        email: "allan@chipurobo.com"
       }
     },
     {
@@ -85,13 +51,47 @@ const Team = () => {
     },
     {
       name: "Ryan Muuo",
-      role: "Workshop Manager — Software Engineer & STEM Educator",
-      bio: "Ryan is the Workshop Manager and leads the base of operations. He is a software engineer and STEM educator who manages workshops, maintains equipment, develops hands-on curriculum, and mentors students in robotics and coding to deliver consistent, high-quality learning experiences.",
+      role: "Workshop Lead & Operations Manager",
+      bio: "Ryan serves as workshop lead and manages the base of operations for ChipuRobo. As a software engineer and STEM educator, Ryan oversees workshops, maintains equipment, develops hands-on curriculum, and mentors students in robotics and coding to deliver consistent, high-quality learning experiences across all programs.",
       icon: Building2,
       social: {
         linkedin: "https://www.linkedin.com/in/ryan-muuo-1a889817a/",
         github: "#",
         email: "ryanmuuo91@chipurobo.com"
+      }
+    },
+    {
+      name: "Allan Kamau",
+      role: "Training Lead & AI Specialist",
+      bio: "Allan Kamau serves as training lead, bringing fresh perspectives and technical expertise to ChipuRobo's educational programs. As a Computer Science student at Strathmore University and skilled full-stack developer with a passion for AI & robotics, Allan contributes to the development of innovative educational tools and leads training sessions that empower the next generation of tech enthusiasts.",
+      icon: Code,
+      social: {
+        linkedin: "https://www.linkedin.com/in/allan-kamau-b47880308/",
+        github: "#",
+        email: "allan@chipurobo.com"
+      }
+    },
+    {
+      name: "Kevin Irungu",
+      role: "Co-Founder & STEM Training Expert",
+      photo: "/img/kevin.jpeg",
+      bio: "Kevin Irungu is a seasoned STEM trainer and software development expert who co-founded ChipuRobo with a vision to make robotics and AI education accessible across Africa. With extensive experience in coding and educational technology, Kevin leads the team in designing programs that equip young people with real-world technology skills through hands-on learning experiences.",
+      icon: Users,
+      social: {
+        linkedin: "https://www.linkedin.com/in/kevin-irungu-b63a6a97/",
+        github: "#",
+        email: "kevin@chipurobo.com"
+      }
+    },
+    {
+      name: "Davies Maina",
+      role: "Digital Marketing Specialist",
+      bio: "Davies Maina is a Digital Marketing specialist focusing on Social Media Management, Content Creation, and Management. With years of experience, Davies helps businesses build their online presence and reach their target audience. He crafts tailored content strategies that drive engagement, boost brand awareness, and increase conversions through compelling copy, eye-catching graphics, and impactful videos.",
+      icon: Share2,
+      social: {
+        linkedin: "https://www.linkedin.com/in/davies-maina-3620b213b/",
+        github: "#",
+        email: "davies@chipurobo.com"
       }
     }
   ];
@@ -100,8 +100,8 @@ const Team = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
       <div className="text-center mb-16">
         <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Our Team</h1>
-        <p className="text-xl text-gray-600 dark:text-gray-300">
-          Meet the passionate innovators and educators behind ChipuRobo
+        <p className="text-xl text-gray-600 dark:text-gray-300 max-w-4xl mx-auto">
+          The ChipuRobo team brings together expertise in technology, education, finance, and community engagement to advance practical AI and STEM learning across Africa. Co-founded by Kevin Irungu, Jeffery Mulee, Cindy Gachuhi, and David Muguchia, the team designs programs that equip young people with real-world technology skills.
         </p>
       </div>
 

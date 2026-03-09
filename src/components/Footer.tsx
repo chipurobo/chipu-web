@@ -20,6 +20,7 @@ const Footer = () => {
             <ul className="space-y-4">
               <li><Link to="/" className="text-gray-400 hover:text-green-500 transition">Home</Link></li>
               <li><Link to="/about" className="text-gray-400 hover:text-green-500 transition">About</Link></li>
+              <li><Link to="/team" className="text-gray-400 hover:text-green-500 transition">Team</Link></li>
               <li><Link to="/ksef" className="text-gray-400 hover:text-green-500 transition">KSEF</Link></li>
               <li><Link to="/jss" className="text-gray-400 hover:text-green-500 transition">JSS</Link></li>
               <li><Link to="/adc-bootcamp" className="text-gray-400 hover:text-green-500 transition">ADC Bootcamp</Link></li>

@@ -63,7 +63,7 @@ Best regards,
 
   const programOptions = [
     { id: 'codeclub', label: 'Code Club (Raspberry Pi Computing)', description: 'Weekly coding sessions with Raspberry Pi' },
-    { id: 'bootcamp', label: 'AI & Robotics Bootcamp', description: '3-day intensive training aligned with national AI curriculum' },
+    { id: 'bootcamp', label: 'AI & Robotics Bootcamp', description: '4-day intensive training aligned with national AI curriculum' },
     { id: 'makerspace', label: 'Maker Space Setup', description: 'Digital fabrication and 3D printing lab' },
     { id: 'teacher-training', label: 'Teacher Professional Development', description: 'Training aligned with CEMASTEA and KSEF frameworks' },
     { id: 'inclusive', label: 'Inclusive Technology Program', description: 'Accessibility-focused STEM education' }
