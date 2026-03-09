@@ -13,8 +13,11 @@ const Navbar = () => {
   const navigationLinks = [
     { to: '/', label: 'Home' },
     { to: '/about', label: 'About' },
-    { to: '/program', label: 'Programs' },
-    { to: '/impact-2025', label: '2025 Impact' },
+    { to: '/ksef', label: 'KSEF' },
+    { to: '/jss', label: 'JSS' },
+    { to: '/adc-bootcamp', label: 'ADC Bootcamp' },
+    { to: '/hackathons', label: 'Hackathons' },
+    { to: '/impact', label: 'Impact' },
     { to: '/contact', label: 'Contact' }
   ];
 
@@ -37,7 +40,7 @@ const Navbar = () => {
             <button
               onClick={toggleMenu}
               className="ml-2 p-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 focus-visible"
-              aria-expanded={isMenuOpen}
+              aria-expanded={isMenuOpen.toString()}
               aria-controls="mobile-menu"
               aria-label={isMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
             >
@@ -76,8 +79,8 @@ const Navbar = () => {
       <div 
         id="mobile-menu"
         className={`md:hidden transition-all duration-300 ${isMenuOpen ? 'block opacity-100' : 'hidden opacity-0'}`}
-        role="menu"
-        aria-labelledby="mobile-menu"
+        role="navigation"
+        aria-label="Mobile navigation"
       >
         <div className="px-2 pt-2 pb-3 space-y-1 bg-white dark:bg-gray-900 shadow-lg border-t border-gray-200 dark:border-gray-700">
           {navigationLinks.map((link) => (
@@ -86,7 +89,6 @@ const Navbar = () => {
               to={link.to}
               className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-800 dyslexic-text focus-visible transition-colors"
               onClick={() => setIsMenuOpen(false)}
-              role="menuitem"
             >
               {link.label}
             </Link>
@@ -95,7 +97,6 @@ const Navbar = () => {
             to="/register-2026"
             className="block mx-3 mt-4 mb-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition font-semibold text-center dyslexic-text focus-visible"
             onClick={() => setIsMenuOpen(false)}
-            role="menuitem"
             aria-label="Register for 2026 program"
           >
             Register 2026
