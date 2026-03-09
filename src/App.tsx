@@ -35,7 +35,7 @@ function App() {
         // Focus main content for screen readers
         const mainContent = document.getElementById('main-content');
         if (mainContent) {
-          mainContent.focus();
+          mainContent.focus({ preventScroll: true });
         }
       }
     };
