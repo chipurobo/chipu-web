@@ -164,7 +164,7 @@ Best regards,
             <div className="bg-white dark:bg-gray-700 rounded-lg p-6 border border-gray-200 dark:border-gray-600">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center">
-                  <Mail className="mr-3 h-5 w-5 text-blue-600 dark:text-blue-400" aria-hidden="true" />
+                  <Mail className="mr-3 h-5 w-5 text-green-600 dark:text-green-400" aria-hidden="true" />
                   <span className="font-medium text-gray-900 dark:text-white dyslexic-text">
                     Send to: <span className="text-primary-600 dark:text-primary-400 font-bold">chipurobo@gmail.com</span>
                   </span>
@@ -221,14 +221,14 @@ Best regards,
               </div>
               
               {/* Instructions */}
-              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-b-xl border-t border-gray-200 dark:border-gray-600">
+              <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-b-xl border-t border-gray-200 dark:border-gray-600">
                 <div className="flex items-start">
-                  <div className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-lg mr-3 mt-0.5">
-                    <MessageSquare className="h-4 w-4 text-blue-600 dark:text-blue-400" aria-hidden="true" />
+                    <div className="bg-green-100 dark:bg-green-900/30 p-2 rounded-lg mr-3 mt-0.5">
+                    <MessageSquare className="h-4 w-4 text-green-600 dark:text-green-400" aria-hidden="true" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-blue-900 dark:text-blue-200 mb-2 dyslexic-text">How to Use This Template:</h4>
-                    <ol className="text-blue-800 dark:text-blue-300 text-sm space-y-1 dyslexic-text" role="list">
+                    <h4 className="font-semibold text-green-900 dark:text-green-200 mb-2 dyslexic-text">How to Use This Template:</h4>
+                    <ol className="text-green-800 dark:text-green-300 text-sm space-y-1 dyslexic-text" role="list">
                       <li role="listitem">1. Click the "Copy Template" button above</li>
                       <li role="listitem">2. Open your email client (Gmail, Outlook, etc.)</li>
                       <li role="listitem">3. Create a new email to chipurobo@gmail.com</li>

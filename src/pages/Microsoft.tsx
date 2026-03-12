@@ -115,7 +115,7 @@ const Microsoft = () => {
   return (
     <div className="bg-white dark:bg-gray-900">
       {/* Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-blue-600 to-indigo-700 dark:from-blue-700 dark:to-indigo-800">
+      <div className="relative overflow-hidden bg-gradient-to-br from-[#012414] via-[#026b45] to-[#0fb274] dark:from-black dark:via-[#022c22] dark:to-[#047857]">
         <div className="absolute inset-0 bg-grid-white/10 bg-[size:20px_20px]" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center">

@@ -66,7 +66,7 @@ const About = () => {
               </p>
             </div>
             
-            <div className="bg-white dark:bg-gray-700 p-6 rounded-lg border-l-4 border-blue-500 shadow-sm">
+            <div className="bg-white dark:bg-gray-700 p-6 rounded-lg border-l-4 border-green-500 shadow-sm">
               <p className="text-lg leading-relaxed text-gray-700 dark:text-gray-300 dyslexic-text">
                 Programs such as AI Literacy Bootcamps and Raspberry Pi-powered Code Clubs reach learners of every ability with Braille and KSL-ready tools.
               </p>

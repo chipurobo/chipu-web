@@ -123,7 +123,7 @@ const Impact = () => {
   return (
     <div className="bg-white dark:bg-gray-900">
       {/* Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-primary-900 via-blue-900 to-emerald-900">
+      <div className="relative overflow-hidden bg-gradient-to-r from-[#012414] via-[#024f33] to-[#0ea463]">
         <div className="absolute inset-0 bg-grid-white/10 bg-[size:20px_20px]" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center">
@@ -177,7 +177,7 @@ const Impact = () => {
       </div>
 
       {/* Bootcamp Timeline */}
-      <div className="bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-800 dark:to-gray-900 py-24">
+      <div className="bg-gradient-to-r from-gray-50 to-green-50 dark:from-gray-800 dark:to-gray-900 py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">National Bootcamp Series</h2>
@@ -205,7 +205,7 @@ const Impact = () => {
                     <p className="text-gray-700 dark:text-gray-300">{bootcamp.focus}</p>
                   </div>
                   <div className="mt-4 md:mt-0">
-                    <div className="bg-gradient-to-r from-primary-500 to-blue-500 text-white px-6 py-2 rounded-full font-semibold">
+                    <div className="bg-gradient-to-r from-primary-500 to-emerald-600 text-white px-6 py-2 rounded-full font-semibold">
                       Completed ✓
                     </div>
                   </div>
