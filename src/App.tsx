@@ -1,24 +1,24 @@
 import { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from './contexts/ThemeContext';
-import Navbar from './components/Navbar';
-import Home from './components/Home';
-import About from './components/About';
-import Team from './components/Team';
-import Services from './components/Services';
-import Contact from './components/Contact';
-import Blog from './components/Blog';
-import BlogPost from './components/BlogPost';
-import Footer from './components/Footer';
-import Microsoft from './components/Microsoft';
-import KSEF from './components/KSEF';
-import JSS from './components/JSS';
-import ADCBootcamp from './components/ADCBootcamp';
-import Hackathons from './components/Hackathons';
-import Sustainability from './components/Sustainability';
-import Impact from './components/Impact';
-import EmailRegistration2026 from './components/EmailRegistration2026';
-import NotFound from './components/NotFound';
+import Navbar from './components/layout/Navbar';
+import Footer from './components/layout/Footer';
+import Home from './pages/Home';
+import About from './pages/About';
+import Team from './pages/Team';
+import Services from './pages/Services';
+import Contact from './pages/Contact';
+import Blog from './pages/Blog';
+import BlogPost from './pages/BlogPost';
+import Microsoft from './pages/Microsoft';
+import KSEF from './pages/KSEF';
+import JSS from './pages/JSS';
+import ADCBootcamp from './pages/ADCBootcamp';
+import Hackathons from './pages/Hackathons';
+import Sustainability from './pages/Sustainability';
+import Impact from './pages/Impact';
+import EmailRegistration2026 from './pages/EmailRegistration2026';
+import NotFound from './pages/NotFound';
 
 function App() {
   // Accessibility: Announce route changes to screen readers
