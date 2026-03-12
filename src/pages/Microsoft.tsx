@@ -163,7 +163,7 @@ const Microsoft = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
           {programImpact.map((item, index) => (
             <div key={index} className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
-              <item.icon className="h-12 w-12 text-blue-600 dark:text-blue-400 mb-4" />
+              <item.icon className="h-12 w-12 text-green-600 dark:text-green-400 mb-4" />
               <p className="text-5xl font-bold text-gray-900 dark:text-white mb-2">{item.metric}</p>
               <p className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-1">{item.label}</p>
               <p className="text-sm text-gray-500 dark:text-gray-400">{item.detail}</p>
@@ -172,14 +172,14 @@ const Microsoft = () => {
         </div>
 
         {/* Learning Outcomes */}
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-12">
+        <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-12">
           <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-8 text-center">
             Measurable Learning Outcomes
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {outcomes.map((outcome, index) => (
               <div key={index} className="text-center">
-                <outcome.icon className="h-10 w-10 text-blue-600 dark:text-blue-400 mx-auto mb-3" />
+                <outcome.icon className="h-10 w-10 text-green-600 dark:text-green-400 mx-auto mb-3" />
                 <p className="text-3xl font-bold text-gray-900 dark:text-white mb-1">{outcome.metric}</p>
                 <p className="text-sm text-gray-600 dark:text-gray-300">{outcome.label}</p>
               </div>
@@ -203,10 +203,10 @@ const Microsoft = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {learningModules.map((module, index) => {
               const colorStyles = [
-                { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-600 dark:text-blue-400', badge: 'bg-blue-50 dark:bg-blue-900/20' },
+                { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-600 dark:text-green-400', badge: 'bg-green-50 dark:bg-green-900/20' },
                 { bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-600 dark:text-emerald-400', badge: 'bg-emerald-50 dark:bg-emerald-900/20' },
-                { bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-600 dark:text-purple-400', badge: 'bg-purple-50 dark:bg-purple-900/20' },
-                { bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-600 dark:text-orange-400', badge: 'bg-orange-50 dark:bg-orange-900/20' },
+                { bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-600 dark:text-teal-400', badge: 'bg-teal-50 dark:bg-teal-900/20' },
+                { bg: 'bg-lime-100 dark:bg-lime-900/30', text: 'text-lime-600 dark:text-lime-400', badge: 'bg-lime-50 dark:bg-lime-900/20' },
               ];
               const colors = colorStyles[index % colorStyles.length];
               return (
@@ -255,8 +255,8 @@ const Microsoft = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 mb-16">
           {/* April Cohort */}
           <div>
-            <div className="bg-blue-100 dark:bg-blue-900/30 px-4 py-2 rounded-lg inline-block mb-6">
-              <h3 className="text-xl font-bold text-blue-900 dark:text-blue-300">April 2025 Cohort</h3>
+            <div className="bg-green-100 dark:bg-green-900/30 px-4 py-2 rounded-lg inline-block mb-6">
+              <h3 className="text-xl font-bold text-green-900 dark:text-green-300">April 2025 Cohort</h3>
             </div>
             <div className="space-y-4">
               {aprilCohort.map((school, index) => (
@@ -264,7 +264,7 @@ const Microsoft = () => {
                   <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{school.name}</h4>
                   <div className="flex gap-6">
                     <div>
-                      <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{school.students}</p>
+                       <p className="text-2xl font-bold text-green-600 dark:text-green-400">{school.students}</p>
                       <p className="text-sm text-gray-600 dark:text-gray-400">Students</p>
                     </div>
                     <div>
@@ -274,7 +274,7 @@ const Microsoft = () => {
                   </div>
                 </div>
               ))}
-              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+               <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
                 <p className="text-lg font-bold text-gray-900 dark:text-white">
                   Total: 195 students + 15 teachers = 210 participants
                 </p>
@@ -284,8 +284,8 @@ const Microsoft = () => {
 
           {/* August Cohort */}
           <div>
-            <div className="bg-indigo-100 dark:bg-indigo-900/30 px-4 py-2 rounded-lg inline-block mb-6">
-              <h3 className="text-xl font-bold text-indigo-900 dark:text-indigo-300">August 2025 Cohort</h3>
+            <div className="bg-emerald-100 dark:bg-emerald-900/30 px-4 py-2 rounded-lg inline-block mb-6">
+              <h3 className="text-xl font-bold text-emerald-900 dark:text-emerald-300">August 2025 Cohort</h3>
             </div>
             <div className="space-y-4">
               {augustCohort.map((school, index) => (
@@ -293,7 +293,7 @@ const Microsoft = () => {
                   <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{school.name}</h4>
                   <div className="flex gap-6">
                     <div>
-                      <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{school.students}</p>
+                       <p className="text-2xl font-bold text-green-600 dark:text-green-400">{school.students}</p>
                       <p className="text-sm text-gray-600 dark:text-gray-400">Students</p>
                     </div>
                     <div>
@@ -303,7 +303,7 @@ const Microsoft = () => {
                   </div>
                 </div>
               ))}
-              <div className="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-lg">
+               <div className="bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-lg">
                 <p className="text-lg font-bold text-gray-900 dark:text-white">
                   Total: 130 students + 12 teachers = 142 participants
                 </p>
@@ -322,7 +322,7 @@ const Microsoft = () => {
                   <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{school.name}</h4>
                   <div className="flex gap-6">
                     <div>
-                      <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{school.students}</p>
+                       <p className="text-2xl font-bold text-green-600 dark:text-green-400">{school.students}</p>
                       <p className="text-sm text-gray-600 dark:text-gray-400">Students</p>
                     </div>
                     <div>
@@ -343,26 +343,26 @@ const Microsoft = () => {
       </div>
 
       {/* Workshop Logistics */}
-      <div className="bg-gray-50 dark:bg-gray-800 py-24">
+            <div className="bg-gray-50 dark:bg-gray-800 py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-16">
             Workshop Format & Logistics
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <div className="bg-white dark:bg-gray-900 p-8 rounded-xl shadow-lg">
-              <Calendar className="h-10 w-10 text-blue-600 dark:text-blue-400 mb-4" />
+              <Calendar className="h-10 w-10 text-green-600 dark:text-green-400 mb-4" />
               <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Duration</h3>
               <p className="text-gray-600 dark:text-gray-300">3-day intensive bootcamp</p>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">10:00 AM - 3:30 PM daily</p>
             </div>
             <div className="bg-white dark:bg-gray-900 p-8 rounded-xl shadow-lg">
-              <School className="h-10 w-10 text-blue-600 dark:text-blue-400 mb-4" />
+              <School className="h-10 w-10 text-green-600 dark:text-green-400 mb-4" />
               <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Venue</h3>
               <p className="text-gray-600 dark:text-gray-300">Microsoft ADC Garage</p>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Westlands, Nairobi</p>
             </div>
             <div className="bg-white dark:bg-gray-900 p-8 rounded-xl shadow-lg">
-              <Award className="h-10 w-10 text-blue-600 dark:text-blue-400 mb-4" />
+              <Award className="h-10 w-10 text-green-600 dark:text-green-400 mb-4" />
               <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Certification</h3>
               <p className="text-gray-600 dark:text-gray-300">CEMASTEA validated</p>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">100% completion rate</p>
@@ -372,7 +372,7 @@ const Microsoft = () => {
       </div>
 
       {/* Partnership & Next Steps */}
-      <div className="bg-gradient-to-r from-gray-900 to-blue-900 dark:from-black dark:to-blue-950 py-24">
+      <div className="bg-gradient-to-r from-[#012414] via-[#035f3f] to-[#0ea463] dark:from-black dark:via-[#022c22] dark:to-[#047857] py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold text-white mb-6 dyslexic-text">
             From 2025 Success to 2026 Scale-Up
@@ -388,7 +388,7 @@ const Microsoft = () => {
           </p>
           <button
             onClick={() => navigate('/register-2026')}
-            className="bg-white text-blue-600 px-8 py-4 rounded-lg hover:bg-gray-100 transition text-lg font-semibold inline-flex items-center dyslexic-text"
+            className="bg-white text-green-700 px-8 py-4 rounded-lg hover:bg-gray-100 transition text-lg font-semibold inline-flex items-center dyslexic-text"
           >
             <Rocket className="mr-2 h-5 w-5" />
             Register for 2026 Programme
@@ -403,11 +403,11 @@ const Microsoft = () => {
           For media inquiries, partnership opportunities, or school participation
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-          <a href="mailto:chipurobo@gmail.com" className="text-blue-600 dark:text-blue-400 hover:underline text-lg font-medium">
+          <a href="mailto:chipurobo@gmail.com" className="text-green-700 dark:text-green-400 hover:underline text-lg font-medium">
             chipurobo@gmail.com
           </a>
           <span className="hidden sm:inline text-gray-400">|</span>
-          <a href="mailto:support@ekitabu.com" className="text-blue-600 dark:text-blue-400 hover:underline text-lg font-medium">
+          <a href="mailto:support@ekitabu.com" className="text-green-700 dark:text-green-400 hover:underline text-lg font-medium">
             support@ekitabu.com
           </a>
         </div>
@@ -415,7 +415,7 @@ const Microsoft = () => {
           href="https://drive.google.com/file/d/1W3exC0mLa67oK7PsB1sVRJR_hlg36S_MiRXLha7jXB0/view"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition font-semibold"
+          className="inline-block bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition font-semibold"
         >
           View FAQ Document
         </a>

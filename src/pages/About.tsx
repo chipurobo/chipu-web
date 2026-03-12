@@ -49,7 +49,7 @@ const About = () => {
           Inclusive AI & Robotics Education
         </h1>
         <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 max-w-4xl mx-auto dyslexic-text">
-          Delivering hands-on technology education with locally fabricated robotics kits across Kenya
+          We deliver practical AI and robotics lessons with locally fabricated kits across Kenya.
         </p>
       </section>
 
@@ -62,19 +62,19 @@ const About = () => {
           <div className="max-w-4xl mx-auto space-y-6">
             <div className="bg-white dark:bg-gray-700 p-6 rounded-lg border-l-4 border-emerald-500 shadow-sm">
               <p className="text-xl leading-relaxed text-gray-700 dark:text-gray-300 dyslexic-text">
-                ChipuRobo delivers inclusive, hands-on AI and robotics education across Kenya, focusing on locally fabricated robotics kits and digital fabrication. We bridge the gap between traditional education and emerging technologies through practical, accessible learning experiences.
+                ChipuRobo offers inclusive, hands-on AI and robotics education using locally fabricated kits to bridge classrooms and emerging tech.
               </p>
             </div>
             
             <div className="bg-white dark:bg-gray-700 p-6 rounded-lg border-l-4 border-blue-500 shadow-sm">
               <p className="text-lg leading-relaxed text-gray-700 dark:text-gray-300 dyslexic-text">
-                Our programs include AI Literacy Bootcamps, Code Clubs in secondary schools powered by Raspberry Pi Foundation, and innovative inclusive robotics initiatives that reach learners of all abilities. We've pioneered accessibility solutions including Braille challenges and inclusive technology tools.
+                Programs such as AI Literacy Bootcamps and Raspberry Pi-powered Code Clubs reach learners of every ability with Braille and KSL-ready tools.
               </p>
             </div>
             
-            <div className="bg-white dark:bg-gray-700 p-6 rounded-lg border-l-4 border-purple-500 shadow-sm">
+            <div className="bg-white dark:bg-gray-700 p-6 rounded-lg border-l-4 border-green-500 shadow-sm">
               <p className="text-lg leading-relaxed font-medium text-gray-700 dark:text-gray-300 dyslexic-text">
-                Through partnerships with eKitabu, Microsoft ADC, Raspberry Pi Foundation, and CEMASTEA, we're aligned with national frameworks like KSEF and the Competency-Based Curriculum (CBC). Our PET recycling program transforms plastic waste into 3D printing materials, creating a sustainable learning ecosystem.
+                Partnerships with eKitabu, Microsoft ADC, Raspberry Pi, and CEMASTEA align us to CBC and fuel PET recycling labs that supply filament for classes.
               </p>
             </div>
           </div>
@@ -94,10 +94,10 @@ const About = () => {
             </h3>
             <div className="space-y-4">
               <p className="text-gray-600 dark:text-gray-300 dyslexic-text">
-                To deliver inclusive, hands-on AI and robotics education across Kenya using locally fabricated solutions.
+                Deliver inclusive AI and robotics training with locally built equipment.
               </p>
               <p className="text-gray-600 dark:text-gray-300 dyslexic-text">
-                We integrate digital fabrication with national curriculum frameworks, establish Code Clubs in secondary schools, and ensure accessibility for learners of all abilities through innovative technology solutions.
+                We weave digital fabrication into CBC, launch Code Clubs, and design accessible kits for every learner.
               </p>
             </div>
           </article>
@@ -111,10 +111,10 @@ const About = () => {
             </h3>
             <div className="space-y-4">
               <p className="text-gray-600 dark:text-gray-300 dyslexic-text">
-                Building Kenya's leading inclusive technology education network.
+                Build Kenya's leading inclusive tech education network.
               </p>
               <p className="text-gray-600 dark:text-gray-300 dyslexic-text">
-                We envision a future where every Kenyan student has access to quality AI and robotics education, with locally fabricated tools and inclusive design that ensures no learner is left behind.
+                Every student should access AI and robotics through locally fabricated, inclusive tools.
               </p>
             </div>
           </article>
@@ -128,7 +128,7 @@ const About = () => {
             Milestones That Matter
           </h2>
           <p className="text-xl text-gray-600 dark:text-gray-300 dyslexic-text">
-            Our journey from August to October 2025
+            Highlights from August to October 2025
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -159,7 +159,7 @@ const About = () => {
             What Drives Us
           </h2>
           <p className="text-xl text-gray-200 max-w-3xl mx-auto dyslexic-text">
-            The principles guiding our Pan-African robotics movement
+            Principles powering our Pan-African robotics work
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

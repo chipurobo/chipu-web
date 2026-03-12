@@ -36,7 +36,7 @@ const Services = () => {
       ],
       duration: "5-day intensive",
       groupSize: "15-20 students",
-      color: "from-blue-500 to-cyan-500"
+      color: "from-emerald-500 to-green-500"
     },
     {
       icon: Code,
@@ -50,7 +50,7 @@ const Services = () => {
       ],
       duration: "Weekly sessions",
       groupSize: "12-18 students",
-      color: "from-purple-500 to-pink-500"
+      color: "from-green-600 to-emerald-700"
     },
     {
       icon: Robot,
@@ -74,21 +74,21 @@ const Services = () => {
       title: "PET Recycling Program",
       description: "Converting plastic waste into 3D printing materials for robotics education",
       schedule: "Ongoing community initiative",
-      color: "from-amber-500 to-orange-500"
+      color: "from-green-400 to-emerald-500"
     },
     {
       icon: Globe,
       title: "Teacher Training",
       description: "Professional development for educators in AI and robotics integration",
       schedule: "Quarterly workshops with CEMASTEA",
-      color: "from-indigo-500 to-violet-500"
+      color: "from-teal-500 to-green-600"
     },
     {
       icon: Zap,
       title: "Digital Fabrication",
       description: "3D printing and maker skills using locally sourced materials",
       schedule: "Integrated into all programs",
-      color: "from-rose-500 to-red-500"
+      color: "from-green-700 to-green-900"
     }
   ];
 

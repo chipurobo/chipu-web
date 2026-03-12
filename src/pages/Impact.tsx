@@ -130,7 +130,7 @@ const Impact = () => {
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
               Impact Report
             </h1>
-            <p className="text-xl md:text-2xl text-blue-100 mb-8 max-w-4xl mx-auto">
+            <p className="text-xl md:text-2xl text-green-100 mb-8 max-w-4xl mx-auto">
               Microsoft ADC Partnership • National AI & Robotics Program
             </p>
             <p className="text-lg text-white/90 mb-8 max-w-3xl mx-auto">
@@ -224,8 +224,8 @@ const Impact = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-8 rounded-xl">
-            <Eye className="h-12 w-12 text-blue-600 mb-4" />
+          <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-8 rounded-xl">
+            <Eye className="h-12 w-12 text-green-600 mb-4" />
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">Braille Robotics</h3>
             <p className="text-gray-700 dark:text-gray-300">
               Developed tactile robotics challenges and Braille programming interfaces, 
@@ -242,8 +242,8 @@ const Impact = () => {
             </p>
           </div>
 
-          <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 p-8 rounded-xl">
-            <Brain className="h-12 w-12 text-purple-600 mb-4" />
+          <div className="bg-gradient-to-br from-green-50 to-lime-50 dark:from-green-900/20 dark:to-lime-900/20 p-8 rounded-xl">
+            <Brain className="h-12 w-12 text-green-600 mb-4" />
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">Low-Vision LMS</h3>
             <p className="text-gray-700 dark:text-gray-300">
               Developed specialized Learning Management System features with high contrast, 
@@ -277,9 +277,9 @@ const Impact = () => {
 
       {/* Microsoft Partnership Highlight */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-12 text-center">
+        <div className="bg-gradient-to-r from-[#012414] via-[#047857] to-[#10b981] rounded-2xl p-12 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">Microsoft ADC Partnership</h2>
-          <p className="text-xl text-blue-100 mb-8 max-w-3xl mx-auto">
+          <p className="text-xl text-green-100 mb-8 max-w-3xl mx-auto">
             Our strategic partnership with Microsoft ADC provided technical enablement, 
             AI learning resources, and mentorship that made this transformative year possible.
           </p>
@@ -288,7 +288,7 @@ const Impact = () => {
               href="https://www.microsoft.com/en-us/madc"
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-white text-blue-600 px-8 py-3 rounded-lg hover:bg-gray-100 transition font-semibold flex items-center justify-center"
+              className="bg-white text-green-700 px-8 py-3 rounded-lg hover:bg-gray-100 transition font-semibold flex items-center justify-center"
             >
               <ExternalLink className="mr-2 h-5 w-5" />
               Learn About Microsoft ADC

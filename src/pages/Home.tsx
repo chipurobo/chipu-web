@@ -12,7 +12,7 @@ const Home = () => {
     {
       id: '7',
       title: 'Inclusive AI & Robotics Bootcamps – November–December 2025',
-      excerpt: 'Closing the year with impact: Over 130 students and 50 teachers trained in inclusive AI, robotics, and PET recycling across two weeks of national workshops.',
+      excerpt: 'Trained 130 students and 50 teachers in inclusive AI, robotics, and PET recycling workshops.',
       image: '/img/blog/inclusive.jpg',
       category: 'Bootcamp Impact',
       icon: Brain
@@ -20,7 +20,7 @@ const Home = () => {
     {
       id: 'august-bootcamp',
       title: 'August 2025 Microsoft ADC Bootcamp Success',
-      excerpt: 'Over 150 learners and teachers participated in our intensive AI and Robotics bootcamp, building intelligent robots and exploring computer vision.',
+      excerpt: '150+ learners and teachers built AI-powered robots and explored computer vision at Microsoft ADC.',
       image: '/img/blog/inclusive2.jpg',
       category: 'Bootcamp',
       icon: Rocket
@@ -28,7 +28,7 @@ const Home = () => {
     {
       id: 'pet-recycling',
       title: 'From Waste to Innovation: PET Recycling Initiative',
-      excerpt: 'Our PET recycling machines are transforming plastic waste into 3D printing filament, creating robot parts while empowering communities.',
+      excerpt: 'PET recycling machines turn waste into 3D-printable robot parts while funding community programs.',
       image: '/img/blog/inclusive3.jpeg',
       category: 'Sustainability',
       icon: Recycle
@@ -87,18 +87,18 @@ const Home = () => {
   const africanAIUseCase = [
     {
       title: "♻️ Sustainable Innovation & Manufacturing",
-      description: "KSEF science projects developed PET recycling machines converting plastic waste into 3D printing filament for ADC Bootcamp prototyping sessions",
-      impact: "13 machines deployed + youth entrepreneurship programs launched"
+      description: "KSEF teams built PET recycling machines that supply filament for ADC bootcamp prototypes.",
+      impact: "13 machines deployed plus youth micro-enterprises."
     },
     {
       title: "🎓 Inclusive & Accessible AI Education",
-      description: "Hackathon teams created robotics kits with Braille labels, JSS program videos with KSL integration, and AI programs specifically designed for deaf, blind, and neurodiverse learners",
-      impact: "Ensuring no learner is left behind in AI education"
+      description: "Hackathon projects delivered Braille kits, KSL videos, and neurodiverse-friendly AI lessons.",
+      impact: "Every learner can engage with robotics."
     },
     {
       title: "🤖 Real-World Automation Applications",
-      description: "KSEF research projects developed student-built robots that identify and sort classroom materials using computer vision through ADC Bootcamp community initiatives",
-      impact: "From classroom learning to practical automation"
+      description: "Students now design robots that sort materials with computer vision and solve campus tasks.",
+      impact: "Class concepts move straight into automation."
     }
   ];
 
@@ -126,10 +126,10 @@ const Home = () => {
                 By 2030 through AI, Robotics, and Sustainable Innovation
               </p>
             </div>
-            <p className="text-xl text-white/90 mb-8 max-w-3xl mx-auto">
-              Building on our transformative 2025 achievements - 800+ learners, 66 Code Clubs, 13 PET recycling machines.
+             <p className="text-xl text-white/90 mb-8 max-w-3xl mx-auto">
+              2025 delivered 800+ learners, 66 Code Clubs, and 13 PET recycling machines.
               <br />
-              <strong className="text-green-300">Join our 2026 rollout • CBC Aligned • Inclusive Design • Locally Fabricated</strong>
+              <strong className="text-green-300">Join the 2026 rollout • CBC aligned • Inclusive • Locally fabricated</strong>
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Link
@@ -156,7 +156,7 @@ const Home = () => {
         <div className="container">
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Latest From ChipuRobo</h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300">Milestones from our Pan-African robotics movement</p>
+            <p className="text-xl text-gray-600 dark:text-gray-300">Fresh wins from across our Pan-African robotics movement.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
             {featuredPosts.map((post) => (
@@ -215,13 +215,13 @@ const Home = () => {
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">2025: A Year of Transformation</h2>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              Partnership with Microsoft ADC enabled unprecedented growth and impact across Kenya
+              The Microsoft ADC partnership unlocked national reach and tangible student outcomes.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
             <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg text-center">
-              <div className="text-3xl font-bold text-blue-600 mb-2 dyslexic-text">3</div>
+              <div className="text-3xl font-bold text-green-600 mb-2 dyslexic-text">3</div>
               <div className="text-gray-600 dark:text-gray-300 mb-1 dyslexic-text">National Bootcamps</div>
               <div className="text-sm text-gray-500 dyslexic-text">April, August, Nov-Dec</div>
             </div>
@@ -231,12 +231,12 @@ const Home = () => {
               <div className="text-sm text-gray-500 dyslexic-text">50+ teachers included</div>
             </div>
             <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg text-center">
-              <div className="text-3xl font-bold text-purple-600 mb-2 dyslexic-text">66</div>
+              <div className="text-3xl font-bold text-green-600 mb-2 dyslexic-text">66</div>
               <div className="text-gray-600 dark:text-gray-300 mb-1 dyslexic-text">Code Clubs Active</div>
               <div className="text-sm text-gray-500 dyslexic-text">Raspberry Pi partnership</div>
             </div>
             <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg text-center">
-              <div className="text-3xl font-bold text-orange-600 mb-2 dyslexic-text">13</div>
+              <div className="text-3xl font-bold text-green-600 mb-2 dyslexic-text">13</div>
               <div className="text-gray-600 dark:text-gray-300 mb-1 dyslexic-text">PET Machines Deployed</div>
               <div className="text-sm text-gray-500 dyslexic-text">Sustainable innovation</div>
             </div>
@@ -244,12 +244,12 @@ const Home = () => {
 
           <div className="bg-gradient-to-r from-blue-600 to-emerald-600 rounded-xl p-8 text-center">
             <h3 className="text-2xl font-bold text-white mb-4">Microsoft ADC Partnership Impact</h3>
-            <p className="text-blue-100 mb-6 max-w-2xl mx-auto">
-              Technical enablement, AI learning resources, and mentorship that made 2025 our most successful year yet
+            <p className="text-green-100 mb-6 max-w-2xl mx-auto">
+              ADC provided mentors, labs, and curriculum support for our 2025 surge.
             </p>
             <Link
               to="/impact"
-              className="bg-white text-blue-600 px-6 py-3 rounded-lg hover:bg-gray-100 transition font-semibold inline-flex items-center"
+                className="bg-white text-green-700 px-6 py-3 rounded-lg hover:bg-gray-100 transition font-semibold inline-flex items-center"
             >
               <Award className="mr-2 h-5 w-5" />
               View Full Impact Report
@@ -270,7 +270,7 @@ const Home = () => {
               A Pan-African Innovation Ecosystem
             </h2>
             <p className="text-xl text-gray-200 max-w-3xl mx-auto dyslexic-text">
-              We're not just teaching robotics — we're building Africa's innovation ecosystem, connecting learners, teachers, and innovators across the continent through AI-driven education.
+              We teach robotics while building Africa's innovation ecosystem through AI-driven education.
             </p>
           </div>
 
@@ -282,8 +282,8 @@ const Home = () => {
               {africanAIUseCase.map((useCase, index) => {
                 const colorClasses = [
                   { bg: 'bg-emerald-500/20', border: 'border-emerald-400/30 hover:border-emerald-400/50', text: 'text-emerald-400', dot: 'bg-emerald-400' },
-                  { bg: 'bg-blue-500/20', border: 'border-blue-400/30 hover:border-blue-400/50', text: 'text-blue-400', dot: 'bg-blue-400' },
-                  { bg: 'bg-purple-500/20', border: 'border-purple-400/30 hover:border-purple-400/50', text: 'text-purple-400', dot: 'bg-purple-400' }
+                  { bg: 'bg-green-500/20', border: 'border-green-400/30 hover:border-green-400/50', text: 'text-green-400', dot: 'bg-green-400' },
+                  { bg: 'bg-teal-500/20', border: 'border-teal-400/30 hover:border-teal-400/50', text: 'text-teal-400', dot: 'bg-teal-400' }
                 ];
                 const colors = colorClasses[index % colorClasses.length];
                 return (
