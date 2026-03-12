@@ -228,7 +228,7 @@ const Contact = () => {
               {/* Technical Support Card */}
               <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                 <div className="flex items-start">
-                  <div className="bg-gradient-to-br from-purple-500 to-purple-600 p-4 rounded-xl mr-6 flex-shrink-0">
+                  <div className="bg-gradient-to-br from-green-500 to-green-600 p-4 rounded-xl mr-6 flex-shrink-0">
                     <Wrench className="h-8 w-8 text-white" aria-hidden="true" />
                   </div>
                   <div className="flex-1">
@@ -236,19 +236,19 @@ const Contact = () => {
                     <p className="text-gray-600 dark:text-gray-400 mb-6 dyslexic-text">
                       Need help with robotics kits, software, or technical issues? Our support team is here to help.
                     </p>
-                    <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4">
-                      <p className="text-sm font-medium text-purple-900 dark:text-purple-200 mb-3 dyslexic-text">Include in your email:</p>
+                    <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
+                      <p className="text-sm font-medium text-green-900 dark:text-green-200 mb-3 dyslexic-text">Include in your email:</p>
                       <ul className="space-y-2">
-                        <li className="flex items-center text-purple-800 dark:text-purple-300 text-sm dyslexic-text">
-                          <div className="w-2 h-2 bg-purple-500 rounded-full mr-3 flex-shrink-0"></div>
+                        <li className="flex items-center text-green-800 dark:text-green-300 text-sm dyslexic-text">
+                          <div className="w-2 h-2 bg-green-500 rounded-full mr-3 flex-shrink-0"></div>
                           Detailed description of the issue
                         </li>
-                        <li className="flex items-center text-purple-800 dark:text-purple-300 text-sm dyslexic-text">
-                          <div className="w-2 h-2 bg-purple-500 rounded-full mr-3 flex-shrink-0"></div>
+                        <li className="flex items-center text-green-800 dark:text-green-300 text-sm dyslexic-text">
+                          <div className="w-2 h-2 bg-green-500 rounded-full mr-3 flex-shrink-0"></div>
                           Any error messages or screenshots
                         </li>
-                        <li className="flex items-center text-purple-800 dark:text-purple-300 text-sm dyslexic-text">
-                          <div className="w-2 h-2 bg-purple-500 rounded-full mr-3 flex-shrink-0"></div>
+                        <li className="flex items-center text-green-800 dark:text-green-300 text-sm dyslexic-text">
+                          <div className="w-2 h-2 bg-green-500 rounded-full mr-3 flex-shrink-0"></div>
                           Your school and contact information
                         </li>
                       </ul>
