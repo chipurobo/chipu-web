@@ -10,7 +10,7 @@ const Contact = () => {
   return (
     <div className="bg-white dark:bg-gray-900">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary-600 via-blue-600 to-emerald-600">
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#012414] via-[#035f3f] to-[#0ea463]">
         <div className="absolute inset-0 bg-grid-white/10 bg-[size:20px_20px]" aria-hidden="true" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center mb-16">
@@ -20,7 +20,7 @@ const Contact = () => {
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 dyslexic-text">
               Let's Connect
             </h1>
-            <p className="text-xl md:text-2xl text-blue-100 mb-8 max-w-4xl mx-auto dyslexic-text">
+            <p className="text-xl md:text-2xl text-green-100 mb-8 max-w-4xl mx-auto dyslexic-text">
               Ready to bring AI and robotics education to your school? We're here to help you start your journey.
             </p>
             
@@ -30,7 +30,7 @@ const Contact = () => {
                 <div key={index} className="bg-white/10 backdrop-blur-lg rounded-lg p-6 hover:bg-white/20 transition-all duration-300">
                   <stat.icon className="h-8 w-8 text-white mx-auto mb-3" aria-hidden="true" />
                   <div className="text-2xl font-bold text-white mb-1 dyslexic-text">{stat.value}</div>
-                  <div className="text-blue-200 text-sm dyslexic-text">{stat.label}</div>
+                  <div className="text-green-100 text-sm dyslexic-text">{stat.label}</div>
                 </div>
               ))}
             </div>
@@ -50,33 +50,33 @@ const Contact = () => {
             </div>
             
             <div className="space-y-6">
-              <div className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg p-6 border border-blue-200 dark:border-blue-700">
+              <div className="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-lg p-6 border border-green-200 dark:border-green-700">
                 <div className="flex items-start">
-                  <div className="bg-blue-600 p-3 rounded-lg mr-4 flex-shrink-0">
+                  <div className="bg-green-600 p-3 rounded-lg mr-4 flex-shrink-0">
                     <Mail className="h-6 w-6 text-white" aria-hidden="true" />
                   </div>
                   <div className="flex-1">
-                    <p className="font-medium text-blue-900 dark:text-blue-200 mb-2 dyslexic-text">Primary Email</p>
+                    <p className="font-medium text-green-900 dark:text-green-200 mb-2 dyslexic-text">Primary Email</p>
                     <a 
                       href="mailto:chipurobo@gmail.com" 
-                      className="text-blue-700 dark:text-blue-300 hover:text-blue-800 dark:hover:text-blue-200 transition-colors dyslexic-text break-all"
+                      className="text-green-700 dark:text-green-300 hover:text-green-800 dark:hover:text-green-200 transition-colors dyslexic-text break-all"
                     >
                       chipurobo@gmail.com
                     </a>
-                    <p className="text-blue-600 dark:text-blue-400 text-sm mt-2 dyslexic-text">Response within 48 hours</p>
+                    <p className="text-green-600 dark:text-green-400 text-sm mt-2 dyslexic-text">Response within 48 hours</p>
                   </div>
                 </div>
               </div>
               
-              <div className="bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-lg p-6 border border-purple-200 dark:border-purple-700">
+              <div className="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-lg p-6 border border-green-200 dark:border-green-700">
                 <div className="flex items-start">
-                  <div className="bg-purple-600 p-3 rounded-lg mr-4 flex-shrink-0">
+                  <div className="bg-green-600 p-3 rounded-lg mr-4 flex-shrink-0">
                     <MapPin className="h-6 w-6 text-white" aria-hidden="true" />
                   </div>
                   <div className="flex-1">
-                    <p className="font-medium text-purple-900 dark:text-purple-200 mb-2 dyslexic-text">Location</p>
-                    <p className="text-purple-700 dark:text-purple-300 dyslexic-text">Nairobi Railway Museum</p>
-                    <p className="text-purple-600 dark:text-purple-400 text-sm mt-2 dyslexic-text">Serving all 47 counties</p>
+                    <p className="font-medium text-green-900 dark:text-green-200 mb-2 dyslexic-text">Location</p>
+                    <p className="text-green-700 dark:text-green-300 dyslexic-text">Nairobi Railway Museum</p>
+                    <p className="text-green-600 dark:text-green-400 text-sm mt-2 dyslexic-text">Serving all 47 counties</p>
                   </div>
                 </div>
               </div>
@@ -95,7 +95,7 @@ const Contact = () => {
                 </a>
                 <a 
                   href="#" 
-                  className="bg-gradient-to-r from-purple-500 to-pink-500 p-3 rounded-full text-white hover:from-purple-600 hover:to-pink-600 transition-colors"
+                  className="bg-gradient-to-r from-green-500 to-emerald-600 p-3 rounded-full text-white hover:from-green-600 hover:to-emerald-700 transition-colors"
                   aria-label="Follow us on Instagram"
                 >
                   <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
