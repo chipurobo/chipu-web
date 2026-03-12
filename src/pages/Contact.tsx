@@ -131,7 +131,7 @@ const Contact = () => {
           </div>
           
           {/* Email Instructions */}
-          <div className="bg-gradient-to-r from-primary-50 to-blue-50 dark:from-primary-900/20 dark:to-blue-900/20 rounded-xl p-8 mb-8 border border-primary-200 dark:border-primary-700">
+          <div className="bg-gradient-to-r from-primary-50 to-green-50 dark:from-primary-900/20 dark:to-green-900/20 rounded-xl p-8 mb-8 border border-primary-200 dark:border-primary-700">
             <div className="text-center">
               <div className="bg-primary-600 p-4 rounded-full w-fit mx-auto mb-4">
                 <Mail className="h-8 w-8 text-white" aria-hidden="true" />
@@ -160,7 +160,7 @@ const Contact = () => {
               {/* General Inquiries Card */}
               <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                 <div className="flex items-start">
-                  <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-xl mr-6 flex-shrink-0">
+                  <div className="bg-gradient-to-br from-green-500 to-green-600 p-4 rounded-xl mr-6 flex-shrink-0">
                     <User className="h-8 w-8 text-white" aria-hidden="true" />
                   </div>
                   <div className="flex-1">
@@ -168,19 +168,19 @@ const Contact = () => {
                     <p className="text-gray-600 dark:text-gray-400 mb-6 dyslexic-text">
                       Questions about our mission, programs, or how to get involved with ChipuRobo.
                     </p>
-                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
-                      <p className="text-sm font-medium text-blue-900 dark:text-blue-200 mb-3 dyslexic-text">Include in your email:</p>
+                    <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
+                      <p className="text-sm font-medium text-green-900 dark:text-green-200 mb-3 dyslexic-text">Include in your email:</p>
                       <ul className="space-y-2">
-                        <li className="flex items-center text-blue-800 dark:text-blue-300 text-sm dyslexic-text">
-                          <div className="w-2 h-2 bg-blue-500 rounded-full mr-3 flex-shrink-0"></div>
+                        <li className="flex items-center text-green-800 dark:text-green-300 text-sm dyslexic-text">
+                          <div className="w-2 h-2 bg-green-500 rounded-full mr-3 flex-shrink-0"></div>
                           Your name and organization
                         </li>
-                        <li className="flex items-center text-blue-800 dark:text-blue-300 text-sm dyslexic-text">
-                          <div className="w-2 h-2 bg-blue-500 rounded-full mr-3 flex-shrink-0"></div>
+                        <li className="flex items-center text-green-800 dark:text-green-300 text-sm dyslexic-text">
+                          <div className="w-2 h-2 bg-green-500 rounded-full mr-3 flex-shrink-0"></div>
                           Contact information
                         </li>
-                        <li className="flex items-center text-blue-800 dark:text-blue-300 text-sm dyslexic-text">
-                          <div className="w-2 h-2 bg-blue-500 rounded-full mr-3 flex-shrink-0"></div>
+                        <li className="flex items-center text-green-800 dark:text-green-300 text-sm dyslexic-text">
+                          <div className="w-2 h-2 bg-green-500 rounded-full mr-3 flex-shrink-0"></div>
                           Brief description of your inquiry
                         </li>
                       </ul>
