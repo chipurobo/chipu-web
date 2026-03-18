@@ -73,7 +73,7 @@ function App() {
   return (
     <ThemeProvider>
       <Router>
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 font-dyslexic">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
           {/* Skip to main content link for keyboard navigation */}
           <a
             href="#main-content"
