@@ -56,38 +56,38 @@ const About = () => {
       </section>
 
       {/* Story Section */}
-      <section className="section" aria-labelledby="about-story-title">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-gradient-to-br from-emerald-50 to-green-50 dark:from-gray-800 dark:to-gray-900 p-10 sm:p-14 rounded-2xl border border-emerald-200/50 dark:border-gray-700">
-            <h2 id="about-story-title" className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-10">
-              Our Story
-            </h2>
-            <div className="max-w-4xl mx-auto space-y-5">
-              <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border-l-4 border-emerald-500 shadow-soft-sm">
-                <p className="text-lg leading-relaxed text-gray-700 dark:text-gray-300">
-                  ChipuRobo offers inclusive, hands-on AI and robotics education using locally fabricated kits to bridge classrooms and emerging tech.
-                </p>
-              </div>
-              <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border-l-4 border-blue-500 shadow-soft-sm">
-                <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                  Programs such as AI Literacy Bootcamps and Raspberry Pi-powered Code Clubs reach learners of every ability with Braille and KSL-ready tools.
-                </p>
-              </div>
-              <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border-l-4 border-green-500 shadow-soft-sm">
-                <p className="text-gray-700 dark:text-gray-300 leading-relaxed font-medium">
-                  Partnerships with eKitabu, Microsoft ADC, Raspberry Pi, and CEMASTEA align us to CBC and fuel PET recycling labs that supply filament for classes.
-                </p>
-              </div>
+      <section className="mb-24" aria-labelledby="about-story-title">
+        <div className="bg-gradient-to-br from-emerald-50 to-green-50 dark:from-gray-800 dark:to-gray-900 p-12 rounded-2xl border border-emerald-200 dark:border-gray-700">
+          <h2 id="about-story-title" className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-8 dyslexic-text">
+            Our Story
+          </h2>
+          <div className="max-w-4xl mx-auto space-y-6">
+            <div className="bg-white dark:bg-gray-700 p-6 rounded-lg border-l-4 border-emerald-500 shadow-sm">
+              <p className="text-xl leading-relaxed text-gray-700 dark:text-gray-300 dyslexic-text">
+                ChipuRobo offers inclusive, hands-on AI and robotics education using locally fabricated kits to bridge classrooms and emerging tech.
+              </p>
+            </div>
+            
+            <div className="bg-white dark:bg-gray-700 p-6 rounded-lg border-l-4 border-green-500 shadow-sm">
+              <p className="text-lg leading-relaxed text-gray-700 dark:text-gray-300 dyslexic-text">
+                Programs such as AI Literacy Bootcamps and Raspberry Pi-powered Code Clubs reach learners of every ability with Braille and KSL-ready tools.
+              </p>
+            </div>
+            
+            <div className="bg-white dark:bg-gray-700 p-6 rounded-lg border-l-4 border-green-500 shadow-sm">
+              <p className="text-lg leading-relaxed font-medium text-gray-700 dark:text-gray-300 dyslexic-text">
+                Partnerships with eKitabu, Microsoft ADC, Raspberry Pi, and CEMASTEA align us to CBC and fuel PET recycling labs that supply filament for classes.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
       {/* Mission & Vision */}
-      <section className="section-alt" aria-labelledby="mission-vision-title">
+      <section className="mb-24" aria-labelledby="mission-vision-title">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 id="mission-vision-title" className="sr-only">Mission and Vision</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             <article className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-soft-md border border-gray-100 dark:border-gray-700/50 hover:shadow-soft-lg transition-all duration-300">
               <div className="bg-primary-50 dark:bg-primary-900/30 p-3 rounded-xl w-fit mb-6">
                 <Target className="h-10 w-10 text-primary-600 dark:text-primary-400" aria-hidden="true" />
