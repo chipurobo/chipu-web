@@ -37,76 +37,84 @@ const ADCBootcamp = () => {
 
   return (
     <div className="bg-white dark:bg-gray-900">
-      <section className="relative overflow-hidden bg-gradient-to-r from-[#011b10] via-[#064e3b] to-[#0f9d58] dark:from-black dark:via-[#022c22] dark:to-[#047857]">
-        <div className="absolute inset-0 bg-grid-white/10 bg-[size:20px_20px]" />
-        <div className="relative max-w-5xl mx-auto px-6 py-20 text-center text-white">
-          <div className="inline-flex items-center bg-white/20 px-4 py-2 rounded-full mb-5">
-            <Calendar className="h-4 w-4 mr-2" />
-            April • August • December Bootcamps
+      <section className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-900 to-emerald-900/80 dark:from-black dark:to-primary-950">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(16,185,129,0.1),transparent_70%)]" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-28 lg:py-32">
+          <div className="text-center text-white">
+            <div className="inline-flex items-center bg-white/5 border border-white/10 px-4 py-2 rounded-full mb-5">
+              <Calendar className="h-4 w-4 mr-2" />
+              April • August • December Bootcamps
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-3">Microsoft ADC Bootcamps</h1>
+            <p className="text-lg text-gray-300 mb-8 max-w-3xl mx-auto">
+              Compact holiday sprints mixing robotics, AI, and demo days right inside Microsoft Africa Data Centres.
+            </p>
+            <button
+              onClick={() => navigate('/contact')}
+              className="bg-white text-green-700 px-8 py-3 rounded-xl font-semibold inline-flex items-center justify-center mx-auto transition-all duration-200 hover:shadow-soft-xl"
+            >
+              <Monitor className="h-5 w-5 mr-2" />
+              Reserve Slots
+            </button>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-3">Microsoft ADC Bootcamps</h1>
-          <p className="text-lg md:text-xl mb-8">
-            Compact holiday sprints mixing robotics, AI, and demo days right inside Microsoft Africa Data Centres.
-          </p>
-          <button
-            onClick={() => navigate('/contact')}
-            className="bg-white text-green-700 px-8 py-3 rounded-lg font-semibold inline-flex items-center justify-center mx-auto"
-          >
-            <Monitor className="h-5 w-5 mr-2" />
-            Reserve Slots
-          </button>
         </div>
       </section>
 
-      <section className="max-w-5xl mx-auto px-6 py-16 grid gap-6 md:grid-cols-3">
-        {bootcampSessions.map((session) => (
-          <article key={session.label} className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{session.label}</h2>
-              <span className="text-sm font-medium bg-gray-900/10 dark:bg-white/10 px-3 py-1 rounded-full">{session.badge}</span>
-            </div>
-            <p className="text-gray-600 dark:text-gray-300 text-sm">{session.blurb}</p>
-          </article>
-        ))}
+      <section className="py-20 sm:py-28 lg:py-32">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid gap-6 md:grid-cols-3">
+          {bootcampSessions.map((session) => (
+            <article key={session.label} className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-soft-md border border-gray-100 dark:border-gray-700/50 transition-all duration-300 hover:shadow-soft-lg hover:-translate-y-1.5">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{session.label}</h2>
+                <span className="text-sm font-medium bg-gray-900/10 dark:bg-white/5 px-3 py-1 rounded-full">{session.badge}</span>
+              </div>
+              <p className="text-gray-600 dark:text-gray-400 text-sm">{session.blurb}</p>
+            </article>
+          ))}
+        </div>
       </section>
 
-      <section className="max-w-5xl mx-auto px-6 pb-12 grid gap-6 md:grid-cols-2">
-        {fastFacts.map((fact) => (
-          <div key={fact.title} className="flex items-start bg-gradient-to-br from-green-50/60 to-white dark:from-gray-800 dark:to-gray-900 rounded-2xl p-6 border border-green-100 dark:border-gray-700">
-            <fact.icon className="h-10 w-10 text-green-600 dark:text-green-400 mr-4" />
-            <div>
-              <p className="text-lg font-semibold text-gray-900 dark:text-white">{fact.title}</p>
-              <p className="text-gray-600 dark:text-gray-300 text-sm">{fact.detail}</p>
+      <section className="pb-20 sm:pb-28">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid gap-6 md:grid-cols-2">
+          {fastFacts.map((fact) => (
+            <div key={fact.title} className="flex items-start bg-gradient-to-br from-green-50/60 to-white dark:from-gray-800 dark:to-gray-900 rounded-xl p-6 border border-green-100 dark:border-gray-700/50 transition-all duration-300">
+              <fact.icon className="h-10 w-10 text-green-600 dark:text-green-400 mr-4" />
+              <div>
+                <p className="text-lg font-semibold text-gray-900 dark:text-white">{fact.title}</p>
+                <p className="text-gray-600 dark:text-gray-400 text-sm">{fact.detail}</p>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </section>
 
-      <section className="max-w-3xl mx-auto px-6 pb-16">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-xl border border-gray-100 dark:border-gray-700">
-          <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">Quick Readiness Checklist</h3>
-          <ul className="space-y-3">
-            {readinessSteps.map((step) => (
-              <li key={step} className="flex items-start text-gray-700 dark:text-gray-200 text-sm">
-                <CheckCircle className="h-4 w-4 text-green-500 mr-2 mt-0.5" />
-                {step}
-              </li>
-            ))}
-          </ul>
-          <div className="mt-6 flex flex-wrap gap-4">
-            <button
-              onClick={() => navigate('/register-2026')}
-              className="bg-green-600 text-white px-5 py-2 rounded-lg font-semibold"
-            >
-              <Rocket className="h-4 w-4 mr-2 inline" />
-              Register Interest
-            </button>
-            <button
-              onClick={() => navigate('/about')}
-              className="px-5 py-2 rounded-lg border border-green-200 dark:border-gray-600 text-gray-700 dark:text-gray-200"
-            >
-              Learn About ChipuRobo
-            </button>
+      <section className="pb-20 sm:pb-28">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-soft-md border border-gray-100 dark:border-gray-700/50">
+            <h3 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white mb-4">Quick Readiness Checklist</h3>
+            <ul className="space-y-3">
+              {readinessSteps.map((step) => (
+                <li key={step} className="flex items-start text-gray-600 dark:text-gray-400 text-sm">
+                  <CheckCircle className="h-4 w-4 text-green-500 mr-2 mt-0.5" />
+                  {step}
+                </li>
+              ))}
+            </ul>
+            <div className="mt-6 flex flex-wrap gap-4">
+              <button
+                onClick={() => navigate('/register-2026')}
+                className="bg-green-600 text-white px-5 py-2 rounded-xl font-semibold transition-all duration-200 hover:shadow-soft-md"
+              >
+                <Rocket className="h-4 w-4 mr-2 inline" />
+                Register Interest
+              </button>
+              <button
+                onClick={() => navigate('/about')}
+                className="px-5 py-2 rounded-xl border border-green-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 transition-all duration-200 hover:shadow-soft-md"
+              >
+                Learn About ChipuRobo
+              </button>
+            </div>
           </div>
         </div>
       </section>

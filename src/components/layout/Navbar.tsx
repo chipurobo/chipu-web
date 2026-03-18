@@ -1,10 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import ThemeToggle from '../common/ThemeToggle';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -22,16 +31,23 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className="bg-white dark:bg-gray-900 shadow-sm dark:shadow-gray-800 transition-colors relative" aria-label="Main navigation">
+    <nav
+      className={`sticky top-0 z-50 transition-all duration-300 ${
+        isScrolled
+          ? 'bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl shadow-soft-sm'
+          : 'bg-white dark:bg-gray-900'
+      }`}
+      aria-label="Main navigation"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <Link 
-            to="/" 
-            className="flex items-center focus-visible" 
+          <Link
+            to="/"
+            className="flex items-center focus-visible"
             aria-label="ChipuRobo home"
           >
             <img src="/img/logo.png" alt="ChipuRobo Logo" className="h-8 w-8" />
-            <span className="ml-2 text-xl font-semibold text-gray-900 dark:text-white dyslexic-text">ChipuRobo</span>
+            <span className="ml-2 text-xl font-bold text-gray-900 dark:text-white">ChipuRobo</span>
           </Link>
 
           {/* Mobile menu button */}
@@ -39,7 +55,7 @@ const Navbar = () => {
             <ThemeToggle />
             <button
               onClick={toggleMenu}
-              className="ml-2 p-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 focus-visible"
+              className="ml-2 p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 focus-visible transition-colors"
               aria-expanded={isMenuOpen}
               aria-controls="mobile-menu"
               aria-label={isMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
@@ -53,19 +69,19 @@ const Navbar = () => {
           </div>
 
           {/* Desktop menu */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-1">
             {navigationLinks.map((link) => (
-              <Link 
+              <Link
                 key={link.to}
-                to={link.to} 
-                className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 dyslexic-text focus-visible transition-colors"
+                to={link.to}
+                className="relative px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 focus-visible transition-colors after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:h-0.5 after:w-0 hover:after:w-3/4 after:bg-emerald-500 after:transition-all after:duration-300 after:rounded-full"
               >
                 {link.label}
               </Link>
             ))}
-            <Link 
-              to="/register-2026" 
-              className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition font-semibold dyslexic-text focus-visible"
+            <Link
+              to="/register-2026"
+              className="ml-2 bg-primary-600 text-white px-5 py-2 rounded-lg hover:bg-primary-700 transition-all duration-200 font-semibold text-sm focus-visible hover:shadow-soft-md"
               aria-label="Register for 2026 program"
             >
               Register 2026
@@ -76,18 +92,20 @@ const Navbar = () => {
       </div>
 
       {/* Mobile menu */}
-      <div 
+      <div
         id="mobile-menu"
-        className={`md:hidden transition-all duration-300 ${isMenuOpen ? 'block opacity-100' : 'hidden opacity-0'}`}
+        className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
+          isMenuOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
+        }`}
         role="navigation"
         aria-label="Mobile navigation"
       >
-        <div className="px-2 pt-2 pb-3 space-y-1 bg-white dark:bg-gray-900 shadow-lg border-t border-gray-200 dark:border-gray-700">
+        <div className="px-4 pt-2 pb-4 space-y-1 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-t border-gray-200/50 dark:border-gray-700/50">
           {navigationLinks.map((link) => (
             <Link
               key={link.to}
               to={link.to}
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-800 dyslexic-text focus-visible transition-colors"
+              className="block px-4 py-2.5 rounded-lg text-base font-medium text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-gray-50 dark:hover:bg-gray-800 focus-visible transition-colors"
               onClick={() => setIsMenuOpen(false)}
             >
               {link.label}
@@ -95,7 +113,7 @@ const Navbar = () => {
           ))}
           <Link
             to="/register-2026"
-            className="block mx-3 mt-4 mb-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition font-semibold text-center dyslexic-text focus-visible"
+            className="block mx-1 mt-3 mb-2 px-4 py-2.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-all font-semibold text-center focus-visible"
             onClick={() => setIsMenuOpen(false)}
             aria-label="Register for 2026 program"
           >

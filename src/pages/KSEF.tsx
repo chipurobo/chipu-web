@@ -27,95 +27,104 @@ const KSEF = () => {
 
   return (
     <div className="bg-white dark:bg-gray-900">
-      <section className="relative overflow-hidden bg-gradient-to-r from-[#012b1c] via-[#047857] to-[#10b981] dark:from-black dark:via-[#022c22] dark:to-[#047857]">
-        <div className="absolute inset-0 bg-grid-white/10 bg-[size:20px_20px]" />
-        <div className="relative max-w-4xl mx-auto px-6 py-16 text-center text-white">
-          <div className="inline-flex items-center bg-white/20 px-4 py-2 rounded-full mb-4">
-            <Calendar className="h-4 w-4 mr-2" /> Term 1 Research Sprint
+      <section className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-900 to-emerald-900/80 dark:from-black dark:to-primary-950">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(16,185,129,0.1),transparent_70%)]" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-28 lg:py-32">
+          <div className="text-center text-white">
+            <div className="inline-flex items-center bg-white/5 border border-white/10 px-4 py-2 rounded-full mb-4">
+              <Calendar className="h-4 w-4 mr-2" /> Term 1 Research Sprint
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-3">KSEF Program</h1>
+            <p className="text-lg text-gray-300 mb-8 max-w-3xl mx-auto">
+              Year-long support that gets Junior and Senior students exhibition-ready and keeps them iterating past April nationals.
+            </p>
+            <button
+              onClick={() => navigate('/register-2026')}
+              className="bg-white text-green-700 px-7 py-3 rounded-xl font-semibold inline-flex items-center justify-center transition-all duration-200 hover:shadow-soft-xl"
+            >
+              <Rocket className="h-5 w-5 mr-2" />
+              Join 2026 Cohort
+            </button>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-3">KSEF Program</h1>
-          <p className="text-lg md:text-xl mb-8">
-            Year-long support that gets Junior and Senior students exhibition-ready and keeps them iterating past April nationals.
-          </p>
-          <button
-            onClick={() => navigate('/register-2026')}
-            className="bg-white text-green-700 px-7 py-3 rounded-lg font-semibold inline-flex items-center justify-center"
-          >
-            <Rocket className="h-5 w-5 mr-2" />
-            Join 2026 Cohort
-          </button>
         </div>
       </section>
 
-      <section className="max-w-4xl mx-auto px-6 py-14 grid gap-6 md:grid-cols-3">
-        {highlights.map((item) => (
-          <article key={item.title} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-6 shadow-sm">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{item.title}</h2>
-            <p className="text-sm text-gray-600 dark:text-gray-300">{item.detail}</p>
-          </article>
-        ))}
+      <section className="py-20 sm:py-28 lg:py-32">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid gap-6 md:grid-cols-3">
+          {highlights.map((item) => (
+            <article key={item.title} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700/50 p-6 shadow-soft-md transition-all duration-300 hover:shadow-soft-lg hover:-translate-y-1.5">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{item.title}</h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400">{item.detail}</p>
+            </article>
+          ))}
+        </div>
       </section>
 
-      <section className="max-w-4xl mx-auto px-6 pb-14">
-        <div className="bg-gradient-to-br from-green-50/70 to-white dark:from-gray-800 dark:to-gray-900 rounded-2xl p-8 border border-green-100 dark:border-gray-700">
-          <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center">
-            <Beaker className="h-6 w-6 text-green-600 dark:text-green-400 mr-2" />
-            Four-Step Timeline
-          </h3>
-          <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-6">
-            {timeline.map((point) => (
-              <div key={point.month} className="p-4 bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-100 dark:border-gray-700 text-center">
-                <p className="text-sm font-semibold text-green-600 dark:text-green-300">{point.month}</p>
-                <p className="text-xs text-gray-600 dark:text-gray-300 mt-2">{point.note}</p>
-              </div>
-            ))}
+      <section className="pb-20 sm:pb-28">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-gradient-to-br from-green-50/70 to-white dark:from-gray-800 dark:to-gray-900 rounded-xl p-8 border border-green-100 dark:border-gray-700/50">
+            <h3 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white mb-6 flex items-center">
+              <Beaker className="h-6 w-6 text-green-600 dark:text-green-400 mr-2" />
+              Four-Step Timeline
+            </h3>
+            <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-6">
+              {timeline.map((point) => (
+                <div key={point.month} className="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-soft-md border border-gray-100 dark:border-gray-700/50 text-center transition-all duration-300">
+                  <p className="text-sm font-semibold text-green-600 dark:text-green-300">{point.month}</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">{point.note}</p>
+                </div>
+              ))}
+            </div>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-6 text-center">
+              Nationals typically land in April, but ChipuRobo labs and mentors stay active through December so projects can evolve year-round.
+            </p>
           </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-6 text-center">
-            Nationals typically land in April, but ChipuRobo labs and mentors stay active through December so projects can evolve year-round.
-          </p>
         </div>
       </section>
 
-      <section className="max-w-4xl mx-auto px-6 pb-16 grid gap-6 md:grid-cols-2">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-green-50 dark:border-gray-700">
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
-            <Target className="h-5 w-5 text-emerald-500 mr-2" />
-            What Learners Gain
-          </h3>
-          <ul className="space-y-3 text-sm text-gray-600 dark:text-gray-300">
-            <li>Structured research logs that mirror CBC assessment.</li>
-            <li>Prototype time with sensors, PET recycling labs, and AI kits.</li>
-            <li>Pitch coaching ahead of school and regional juries.</li>
-          </ul>
-        </div>
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-green-50 dark:border-gray-700">
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
-            <BookOpen className="h-5 w-5 text-green-500 mr-2" />
-            Included Extras
-          </h3>
-          <ul className="space-y-3 text-sm text-gray-600 dark:text-gray-300">
-            {extras.map((extra) => (
-              <li key={extra} className="flex items-start">
-                <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 mr-2" />
-                {extra}
-              </li>
-            ))}
-          </ul>
+      <section className="pb-20 sm:pb-28">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid gap-6 md:grid-cols-2">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-100 dark:border-gray-700/50 shadow-soft-md transition-all duration-300 hover:shadow-soft-lg hover:-translate-y-1.5">
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
+              <Target className="h-5 w-5 text-emerald-500 mr-2" />
+              What Learners Gain
+            </h3>
+            <ul className="space-y-3 text-sm text-gray-600 dark:text-gray-400">
+              <li>Structured research logs that mirror CBC assessment.</li>
+              <li>Prototype time with sensors, PET recycling labs, and AI kits.</li>
+              <li>Pitch coaching ahead of school and regional juries.</li>
+            </ul>
+          </div>
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-100 dark:border-gray-700/50 shadow-soft-md transition-all duration-300 hover:shadow-soft-lg hover:-translate-y-1.5">
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
+              <BookOpen className="h-5 w-5 text-green-500 mr-2" />
+              Included Extras
+            </h3>
+            <ul className="space-y-3 text-sm text-gray-600 dark:text-gray-400">
+              {extras.map((extra) => (
+                <li key={extra} className="flex items-start">
+                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 mr-2" />
+                  {extra}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </section>
 
-      <section className="bg-[#022c22] dark:bg-black py-16">
-        <div className="max-w-3xl mx-auto px-6 text-center text-white">
+      <section className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-900 to-emerald-900/80 dark:from-black dark:to-primary-950 py-20 sm:py-28 lg:py-32">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(16,185,129,0.1),transparent_70%)]" />
+        <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
           <Award className="h-12 w-12 text-yellow-300 mx-auto mb-4" />
-          <h3 className="text-3xl font-semibold mb-3">Launch Your KSEF Exhibit</h3>
-          <p className="text-base mb-8">
+          <h3 className="text-3xl font-semibold tracking-tight mb-3">Launch Your KSEF Exhibit</h3>
+          <p className="text-lg text-gray-300 mb-8">
             We distill the sprawling research cycle into a simple sprint so schools can compete without burning extra hours.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
-            <button onClick={() => navigate('/register-2026')} className="bg-white text-green-700 px-6 py-3 rounded-lg font-semibold">
+            <button onClick={() => navigate('/register-2026')} className="bg-white text-green-700 px-6 py-3 rounded-xl font-semibold transition-all duration-200 hover:shadow-soft-xl">
               Register Now
             </button>
-            <button onClick={() => navigate('/contact')} className="border border-white/40 px-6 py-3 rounded-lg">
+            <button onClick={() => navigate('/contact')} className="border border-white/10 px-6 py-3 rounded-xl transition-all duration-200 hover:shadow-soft-md">
               Talk to the Team
             </button>
           </div>
