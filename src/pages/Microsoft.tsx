@@ -118,6 +118,9 @@ const Microsoft = () => {
       <section className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-900 to-emerald-900/80 dark:from-black dark:to-primary-950">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(16,185,129,0.1),transparent_70%)]" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-28 lg:py-32">
+      <div className="relative overflow-hidden bg-gradient-to-br from-[#012414] via-[#026b45] to-[#0fb274] dark:from-black dark:via-[#022c22] dark:to-[#047857]">
+        <div className="absolute inset-0 bg-grid-white/10 bg-[size:20px_20px]" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center">
             <div className="inline-flex items-center bg-green-400/10 border border-white/10 backdrop-blur-lg px-4 py-2 rounded-full text-white mb-6">
               <CheckCircle className="h-5 w-5 mr-2" />

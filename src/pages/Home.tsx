@@ -212,6 +212,7 @@ const Home = () => {
 
       {/* 2025 Achievements Highlight */}
       <div className="section bg-white dark:bg-gray-900">
+      <div className="section bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20">
         <div className="container">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">2025: A Year of Transformation</h2>
@@ -244,6 +245,7 @@ const Home = () => {
           </div>
 
           <div className="bg-gradient-to-r from-blue-600 to-emerald-600 rounded-2xl p-8 sm:p-10 text-center">
+          <div className="bg-gradient-to-r from-[#012f1c] via-[#047857] to-[#0ea463] rounded-xl p-8 text-center">
             <h3 className="text-2xl font-bold text-white mb-4">Microsoft ADC Partnership Impact</h3>
             <p className="text-green-100 mb-6 max-w-2xl mx-auto">
               ADC provided mentors, labs, and curriculum support for our 2025 surge.
