@@ -101,47 +101,106 @@ const Home = () => {
 
   return (
     <div className="bg-white dark:bg-gray-900">
-      {/* Hero Section */}
-      <div className="relative hero-gradient overflow-hidden">
-        <div className="absolute inset-0">
-          <div className="relative h-full circuit-background">
-            <div className="tech-ring"></div>
-            <div className="tech-ring"></div>
-            <div className="tech-ring"></div>
+      {/* Hero Section — Light, editorial style */}
+      <section className="relative overflow-hidden bg-white dark:bg-gray-900">
+        {/* Decorative rings */}
+        <div className="absolute -left-32 top-1/2 -translate-y-1/2 w-[500px] h-[500px] hidden lg:block" aria-hidden="true">
+          <div className="absolute inset-0 rounded-full border-[3px] border-emerald-500/20" />
+          <div className="absolute inset-6 rounded-full border-[3px] border-primary-500/20" />
+          <div className="absolute inset-12 rounded-full border-[3px] border-emerald-600/15" />
+          <div className="absolute inset-[4.5rem] rounded-full border-[3px] border-primary-400/10" />
+        </div>
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28 lg:py-36">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            {/* Left — Text */}
+            <div>
+              <div className="inline-flex items-center bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/50 px-4 py-2 rounded-full text-emerald-700 dark:text-emerald-400 text-sm font-medium mb-6">
+                <Robot className="h-4 w-4 mr-2" aria-hidden="true" />
+                AI &amp; Robotics Education in Africa
+              </div>
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6">
+                <span className="text-gray-900 dark:text-white">Empowering </span>
+                <span className="text-primary-600 dark:text-primary-400">4 Million Youth</span>
+                <span className="text-gray-900 dark:text-white"> Across Africa</span>
+              </h1>
+              <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 mb-4 max-w-xl leading-relaxed">
+                By 2030 through hands-on AI, robotics, and sustainable innovation — CBC aligned, inclusive, and locally fabricated.
+              </p>
+              <p className="text-base text-gray-500 dark:text-gray-500 mb-8 max-w-lg">
+                2025 delivered 800+ learners, 66 Code Clubs, and 13 PET recycling machines across Kenya.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Link
+                  to="/ksef"
+                  className="group bg-primary-600 text-white px-7 py-3.5 rounded-xl hover:bg-primary-700 transition-all duration-200 text-base font-semibold inline-flex items-center justify-center shadow-lg hover:shadow-soft-xl"
+                >
+                  KSEF 2026
+                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+                <Link
+                  to="/impact"
+                  className="group text-gray-700 dark:text-gray-300 px-7 py-3.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 text-base font-semibold inline-flex items-center justify-center border border-gray-300 dark:border-gray-700"
+                >
+                  <School className="mr-2 h-5 w-5" />
+                  View Impact Report
+                </Link>
+              </div>
+            </div>
+
+            {/* Right — Image collage */}
+            <div className="relative hidden sm:block">
+              {/* Background decorative card */}
+              <div className="absolute inset-4 bg-gray-100 dark:bg-gray-800 rounded-2xl -rotate-3" aria-hidden="true" />
+
+              {/* Main image */}
+              <div className="relative z-10 rounded-2xl overflow-hidden shadow-soft-xl">
+                <img
+                  src="/img/blog/inclusive.jpg"
+                  alt="Students building robots at a ChipuRobo bootcamp"
+                  className="w-full h-[340px] sm:h-[400px] object-cover"
+                />
+              </div>
+
+              {/* Floating top-right image */}
+              <div className="absolute -top-6 -right-4 z-20 w-40 h-40 sm:w-48 sm:h-48 rounded-2xl overflow-hidden shadow-soft-lg border-4 border-white dark:border-gray-900 rotate-3">
+                <img
+                  src="/img/blog/inclusive2.jpg"
+                  alt="AI robotics workshop in progress"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+
+              {/* Floating bottom-right image */}
+              <div className="absolute -bottom-6 -right-2 z-20 w-44 h-44 sm:w-52 sm:h-52 rounded-2xl overflow-hidden shadow-soft-lg border-4 border-white dark:border-gray-900 -rotate-2">
+                <img
+                  src="/img/blog/inclusive3.jpeg"
+                  alt="Students with PET recycling machine"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+
+              {/* Stats badge */}
+              <div className="absolute bottom-8 -left-6 z-30 bg-white dark:bg-gray-800 rounded-xl shadow-soft-lg px-5 py-4 border border-gray-100 dark:border-gray-700/50">
+                <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">800+</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Learners in 2025</p>
+              </div>
+            </div>
           </div>
         </div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 lg:py-40">
-          <div className="text-center">
-            <div className="inline-block animate-float mb-8">
-              <Robot className="h-20 w-20 text-green-400 mx-auto opacity-80" />
-            </div>
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-white mb-6 tracking-tight">
-              Empowering 4 Million Youth Across Africa
-            </h1>
-            <p className="text-xl md:text-2xl text-green-100/90 mb-4 max-w-3xl mx-auto font-light">
-              By 2030 through AI, Robotics, and Sustainable Innovation
-            </p>
-            <p className="text-lg text-white/80 mb-10 max-w-3xl mx-auto">
-              2025 delivered 800+ learners, 66 Code Clubs, and 13 PET recycling machines.
-              <br />
-              <strong className="text-green-300">CBC aligned &bull; Inclusive &bull; Locally fabricated &bull; Pan-African</strong>
-            </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <Link
-                to="/ksef"
-                className="group bg-primary-600 text-white px-8 py-4 rounded-xl hover:bg-primary-700 transition-all duration-200 text-lg font-semibold flex items-center justify-center shadow-lg hover:shadow-soft-xl"
-              >
-                <Calendar className="mr-2 h-5 w-5 group-hover:animate-bounce" />
-                KSEF 2026
-              </Link>
-              <Link
-                to="/impact"
-                className="group bg-white/10 backdrop-blur-lg text-white px-8 py-4 rounded-xl hover:bg-white/20 transition-all duration-200 text-lg font-semibold flex items-center justify-center border border-white/20"
-              >
-                <School className="mr-2 h-5 w-5" />
-                VIEW IMPACT REPORT
-              </Link>
-            </div>
+      </section>
+
+      {/* Stats bar */}
+      <div className="bg-gray-900 dark:bg-black">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+            {stats.map((stat, index) => (
+              <div key={index} className="text-center">
+                <stat.icon className="h-7 w-7 text-emerald-400 mx-auto mb-3" aria-hidden="true" />
+                <p className="text-3xl font-bold text-white mb-1">{stat.value}</p>
+                <p className="text-sm text-gray-400 font-medium">{stat.label}</p>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -337,21 +396,6 @@ const Home = () => {
           </div>
         </div>
       </section>
-
-      {/* Stats Section */}
-      <div className="section-alt">
-        <div className="container">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-            {stats.map((stat, index) => (
-              <div key={index} className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-soft-md border border-gray-100 dark:border-gray-700/50 text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-soft-lg">
-                <stat.icon className="h-10 w-10 text-primary-600 dark:text-primary-400 mx-auto mb-4" />
-                <p className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-2">{stat.value}</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">{stat.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
 
       {/* Mission Section */}
       <div className="section bg-white dark:bg-gray-900">
