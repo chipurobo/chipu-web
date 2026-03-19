@@ -24,7 +24,7 @@ const Navbar = () => {
     { to: '/about', label: 'About' },
     { to: '/ksef', label: 'KSEF' },
     { to: '/jss', label: 'JSS' },
-    { to: '/adc-bootcamp', label: 'ADC Bootcamp' },
+    { to: '/bootcamps', label: 'Bootcamps' },
     { to: '/hackathons', label: 'Hackathons' },
     { to: '/impact', label: 'Impact' },
     { to: '/podcast', label: 'Podcast' },

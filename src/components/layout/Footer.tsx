@@ -41,10 +41,10 @@ const Footer = () => {
                 { to: '/team', label: 'Team' },
                 { to: '/ksef', label: 'KSEF' },
                 { to: '/jss', label: 'JSS' },
-                { to: '/adc-bootcamp', label: 'ADC Bootcamp' },
+                { to: '/bootcamps', label: 'Bootcamps' },
                 { to: '/hackathons', label: 'Hackathons' },
                 { to: '/impact', label: 'Impact' },
-                { to: '/register-2026', label: 'Register 2026' },
+                { to: '/podcast', label: 'Podcast' },
               ].map((link) => (
                 <li key={link.to}>
                   <Link to={link.to} className="text-gray-400 hover:text-emerald-400 hover:translate-x-1 inline-block transition-all duration-200 text-sm">
