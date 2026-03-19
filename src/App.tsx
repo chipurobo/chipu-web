@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Analytics } from '@vercel/analytics/react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './contexts/ThemeContext';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
@@ -15,6 +14,7 @@ import Microsoft from './pages/Microsoft';
 import KSEF from './pages/KSEF';
 import JSS from './pages/JSS';
 import ADCBootcamp from './pages/ADCBootcamp';
+import Bootcamps from './pages/Bootcamps';
 import Hackathons from './pages/Hackathons';
 import Sustainability from './pages/Sustainability';
 import Impact from './pages/Impact';
@@ -58,7 +58,8 @@ function App() {
       case '/about': return 'About ChipuRobo';
       case '/ksef': return 'KSEF Program';
       case '/jss': return 'JSS Program';
-      case '/adc-bootcamp': return 'ADC Bootcamp';
+      case '/bootcamps': return 'Bootcamps';
+      case '/adc-bootcamp': return 'Bootcamps';
       case '/hackathons': return 'Hackathons';
       case '/sustainability': return 'Sustainability';
       case '/team': return 'Our Team';
@@ -100,7 +101,8 @@ function App() {
               <Route path="/about" element={<About />} />
               <Route path="/ksef" element={<KSEF />} />
               <Route path="/jss" element={<JSS />} />
-              <Route path="/adc-bootcamp" element={<ADCBootcamp />} />
+              <Route path="/bootcamps" element={<Bootcamps />} />
+              <Route path="/adc-bootcamp" element={<Navigate to="/bootcamps" replace />} />
               <Route path="/hackathons" element={<Hackathons />} />
               <Route path="/sustainability" element={<Sustainability />} />
               <Route path="/team" element={<Team />} />
@@ -121,7 +123,6 @@ function App() {
             <Footer />
           </footer>
         </div>
-        <Analytics />
       </Router>
     </ThemeProvider>
   );

@@ -1,12 +1,7 @@
-import { useNavigate, Link } from 'react-router-dom';
-import { Brain, Award, Users, Notebook as Robot, Code, School, Globe, Heart, Leaf, ArrowRight, Rocket, Recycle, Target } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Brain, Award, Users, Notebook as Robot, Code, School, Globe, Heart, Leaf, ArrowRight, Rocket, Recycle, Target, Calendar } from 'lucide-react';
 
 const Home = () => {
-  const navigate = useNavigate();
-
-  const handleEnroll = () => {
-    navigate('/register-2026');
-  };
 
   const featuredPosts = [
     {
@@ -129,15 +124,15 @@ const Home = () => {
             <p className="text-lg text-white/80 mb-10 max-w-3xl mx-auto">
               2025 delivered 800+ learners, 66 Code Clubs, and 13 PET recycling machines.
               <br />
-              <strong className="text-green-300">Join the 2026 rollout &bull; CBC aligned &bull; Inclusive &bull; Locally fabricated</strong>
+              <strong className="text-green-300">CBC aligned &bull; Inclusive &bull; Locally fabricated &bull; Pan-African</strong>
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Link
-                to="/register-2026"
+                to="/ksef"
                 className="group bg-primary-600 text-white px-8 py-4 rounded-xl hover:bg-primary-700 transition-all duration-200 text-lg font-semibold flex items-center justify-center shadow-lg hover:shadow-soft-xl"
               >
-                <Rocket className="mr-2 h-5 w-5 group-hover:animate-bounce" />
-                REGISTER FOR 2026 PROGRAMME
+                <Calendar className="mr-2 h-5 w-5 group-hover:animate-bounce" />
+                KSEF 2026
               </Link>
               <Link
                 to="/impact"
@@ -412,22 +407,22 @@ const Home = () => {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.08),transparent_70%)]" />
         <div className="relative container text-center py-24 sm:py-32">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">
-            Ready for 2026?
+            2026 Programmes Are Loading
           </h2>
           <p className="text-xl text-white/90 mb-4 max-w-3xl mx-auto">
-            AI & Robotics Programme Registration Now Open
+            KSEF, bootcamps, hackathons, and Code Clubs — all expanding this year.
           </p>
           <p className="text-base text-white/70 mb-10 max-w-2xl mx-auto">
             Join our mission to empower 4 million youth across Africa by 2030 &bull; Building on our transformative 2025 achievements
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button
-              onClick={handleEnroll}
+            <Link
+              to="/ksef"
               className="group bg-white text-primary-600 px-8 py-4 rounded-xl hover:bg-gray-50 transition-all duration-200 text-lg font-semibold flex items-center justify-center shadow-lg hover:shadow-soft-xl"
             >
-              <School className="mr-2 h-5 w-5 group-hover:animate-bounce" />
-              Register for 2026 Programme
-            </button>
+              <Calendar className="mr-2 h-5 w-5 group-hover:animate-bounce" />
+              KSEF 2026 Countdown
+            </Link>
             <Link
               to="/about"
               className="group bg-white/10 backdrop-blur-lg text-white px-8 py-4 rounded-xl hover:bg-white/20 transition-all duration-200 text-lg font-semibold flex items-center justify-center border border-white/20"

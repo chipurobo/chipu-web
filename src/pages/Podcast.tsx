@@ -164,9 +164,7 @@ const Podcast = () => {
                 <p>
                   Africa's technology education landscape is growing fast, but
                   the stories behind that growth are rarely told. The people
-                  doing the work — teachers adapting curricula, researchers
-                  publishing from under-resourced labs, founders building with
-                  local constraints — are not often heard outside their
+                  doing the work — are not often heard outside their
                   immediate communities.
                 </p>
                 <p>
