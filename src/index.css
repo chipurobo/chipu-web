@@ -1,11 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 @import url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/open-dyslexic-regular.css');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Accessibility and Dyslexic-friendly styles */
 @layer base {
   :root {
     --primary-50: #ecfdf5;
@@ -20,9 +19,19 @@
     --primary-900: #064e3b;
   }
 
-  /* Dyslexic-friendly font defaults */
+  html {
+    scroll-behavior: smooth;
+  }
+
   * {
-    font-family: 'OpenDyslexic', 'Inter', system-ui, sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  /* Dyslexic-friendly opt-in */
+  .dyslexic-mode * {
+    font-family: 'OpenDyslexic', 'Comic Sans MS', 'Arial', sans-serif;
+    letter-spacing: 0.05em;
+    line-height: 1.6;
   }
 
   /* Screen reader only class */
@@ -68,6 +77,21 @@
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
     }
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  body {
+    @apply bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-gray-900 dark:text-white tracking-tight;
+  }
+
+  p {
+    @apply text-gray-600 dark:text-gray-300 leading-relaxed;
   }
 }
 
@@ -87,7 +111,11 @@
   to { transform: rotate(360deg); }
 }
 
-/* Custom classes */
+@keyframes scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
 .animate-float {
   animation: float 3s ease-in-out infinite;
 }
@@ -98,11 +126,6 @@
 
 .animate-spin-slow {
   animation: spin-slow 10s linear infinite;
-}
-
-@keyframes scroll {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
 }
 
 .animate-scroll {
@@ -123,7 +146,7 @@
   right: 0;
   bottom: 0;
   opacity: 0.1;
-  background-image: 
+  background-image:
     linear-gradient(to right, rgba(255,255,255,0.1) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(255,255,255,0.1) 1px, transparent 1px);
   background-size: 30px 30px;
@@ -157,35 +180,23 @@
   transform: translate(-50%, -50%);
 }
 
-/* Global fade-in animation */
 @layer utilities {
   .animate-fadeIn {
     animation: fadeIn 1s ease-in-out;
   }
-}
 
-/* Updated base styles for warmth */
-@layer base {
-  body {
-    @apply bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white;
-  }
-
-  h1, h2, h3, h4, h5, h6 {
-    @apply text-gray-900 dark:text-white;
-  }
-
-  p {
-    @apply text-gray-700 dark:text-gray-200;
+  .glass {
+    @apply bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-white/20 dark:border-gray-700/30;
   }
 }
 
 @layer components {
   .card {
-    @apply bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden transform transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl;
+    @apply bg-white dark:bg-gray-800 rounded-xl shadow-soft-md border border-gray-100 dark:border-gray-700/50 overflow-hidden transform transition-all duration-300 hover:-translate-y-1.5 hover:shadow-soft-lg;
   }
 
   .card-header {
-    @apply bg-gradient-to-r from-green-500 to-green-700 text-white p-4 rounded-t-lg;
+    @apply bg-gradient-to-r from-green-500 to-green-700 text-white p-4 rounded-t-xl;
   }
 
   .card-body {
@@ -193,7 +204,7 @@
   }
 
   .card-footer {
-    @apply bg-gray-100 dark:bg-gray-700 p-4 rounded-b-lg text-center;
+    @apply bg-gray-50 dark:bg-gray-700/50 p-4 rounded-b-xl text-center;
   }
 
   .card:hover .card-header {
@@ -201,20 +212,23 @@
   }
 
   .section {
-    @apply bg-gray-50 dark:bg-gray-900 py-16 sm:py-24;
+    @apply py-20 sm:py-28 lg:py-32;
+  }
+
+  .section-alt {
+    @apply bg-gray-50 dark:bg-gray-800/50 py-20 sm:py-28 lg:py-32;
   }
 
   .container {
     @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
   }
 
-  /* Card content styles */
   .card h1, .card h2, .card h3, .card h4, .card h5, .card h6 {
     @apply text-gray-900 dark:text-white;
   }
 
   .card p {
-    @apply text-gray-700 dark:text-gray-200;
+    @apply text-gray-600 dark:text-gray-300;
   }
 
   .card a {
@@ -223,28 +237,27 @@
 
   /* Form styles */
   .form-input {
-    @apply bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600;
+    @apply bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 rounded-lg;
   }
 
   .form-label {
-    @apply text-gray-700 dark:text-gray-200;
+    @apply text-gray-700 dark:text-gray-200 font-medium;
   }
 
-  /* Updated button styles for warmth */
   .btn-primary {
-    @apply bg-green-500 text-white hover:bg-green-600 dark:bg-green-400 dark:hover:bg-green-500;
+    @apply bg-green-500 text-white hover:bg-green-600 dark:bg-green-400 dark:hover:bg-green-500 rounded-lg font-semibold transition-all duration-200;
   }
 
   .btn-secondary {
-    @apply bg-gray-200 text-gray-900 hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600;
+    @apply bg-gray-200 text-gray-900 hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 rounded-lg font-medium transition-all duration-200;
   }
 }
 
 @layer utilities {
   .to-primary-900 {
-    --tw-gradient-to: #14532d; /* primary-900 */
+    --tw-gradient-to: #14532d;
   }
   .to-primary-950 {
-    --tw-gradient-to: #052e16; /* primary-950 */
+    --tw-gradient-to: #052e16;
   }
 }
