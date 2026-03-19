@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 import { ThemeProvider } from './contexts/ThemeContext';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
@@ -117,6 +118,7 @@ function App() {
             <Footer />
           </footer>
         </div>
+        <Analytics />
       </Router>
     </ThemeProvider>
   );
