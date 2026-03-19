@@ -27,6 +27,7 @@ const Navbar = () => {
     { to: '/adc-bootcamp', label: 'ADC Bootcamp' },
     { to: '/hackathons', label: 'Hackathons' },
     { to: '/impact', label: 'Impact' },
+    { to: '/podcast', label: 'Podcast' },
     { to: '/contact', label: 'Contact' }
   ];
 
@@ -79,13 +80,6 @@ const Navbar = () => {
                 {link.label}
               </Link>
             ))}
-            <Link
-              to="/register-2026"
-              className="ml-2 bg-primary-600 text-white px-5 py-2 rounded-lg hover:bg-primary-700 transition-all duration-200 font-semibold text-sm focus-visible hover:shadow-soft-md"
-              aria-label="Register for 2026 program"
-            >
-              Register 2026
-            </Link>
             <ThemeToggle />
           </div>
         </div>
@@ -111,14 +105,6 @@ const Navbar = () => {
               {link.label}
             </Link>
           ))}
-          <Link
-            to="/register-2026"
-            className="block mx-1 mt-3 mb-2 px-4 py-2.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-all font-semibold text-center focus-visible"
-            onClick={() => setIsMenuOpen(false)}
-            aria-label="Register for 2026 program"
-          >
-            Register 2026
-          </Link>
         </div>
       </div>
     </nav>
