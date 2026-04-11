@@ -1,21 +1,8 @@
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, Clock, User, ArrowRight, BookOpen } from 'lucide-react';
 import { blogPosts } from '../data/blogPosts';
 
 const Blog = () => {
-  const [posts, setPosts] = useState<BlogPostData[]>(fallbackPosts);
-
-  useEffect(() => {
-    let isMounted = true;
-    fetchBlogPosts().then((docs) => {
-      if (!isMounted || docs.length === 0) return;
-      setPosts(docs.map(mapBlogPostFromCms));
-    });
-    return () => {
-      isMounted = false;
-    };
-  }, []);
 
   return (
     <div className="bg-white dark:bg-gray-900">

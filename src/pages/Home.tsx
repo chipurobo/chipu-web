@@ -2,6 +2,12 @@ import { Link } from 'react-router-dom';
 import { Brain, Award, Users, Notebook as Robot, Code, School, Globe, Heart, Leaf, ArrowRight, Rocket, Recycle, Target, Calendar } from 'lucide-react';
 
 const Home = () => {
+  const stats = [
+    { icon: Users, value: '800+', label: 'Learners Reached in 2025' },
+    { icon: Code, value: '66', label: 'Active Code Clubs' },
+    { icon: Recycle, value: '13', label: 'PET Recycling Machines' },
+    { icon: School, value: '3', label: 'National Bootcamps' },
+  ];
 
   const featuredPosts = [
     {
