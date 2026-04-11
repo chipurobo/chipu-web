@@ -60,7 +60,7 @@ function App() {
       case '/jss': return 'JSS Program';
       case '/bootcamps': return 'Bootcamps';
       case '/adc-bootcamp': return 'Bootcamps';
-      case '/hackathons': return 'Hackathons';
+      case '/finsec': return 'FinSec Hackathon';
       case '/sustainability': return 'Sustainability';
       case '/team': return 'Our Team';
       case '/services': return 'Our Services';
@@ -103,7 +103,8 @@ function App() {
               <Route path="/jss" element={<JSS />} />
               <Route path="/bootcamps" element={<Bootcamps />} />
               <Route path="/adc-bootcamp" element={<Navigate to="/bootcamps" replace />} />
-              <Route path="/hackathons" element={<Hackathons />} />
+              <Route path="/finsec" element={<Hackathons />} />
+              <Route path="/hackathons" element={<Navigate to="/finsec" replace />} />
               <Route path="/sustainability" element={<Sustainability />} />
               <Route path="/team" element={<Team />} />
               <Route path="/services" element={<Services />} />

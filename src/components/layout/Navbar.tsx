@@ -25,7 +25,7 @@ const Navbar = () => {
     { to: '/ksef', label: 'KSEF' },
     { to: '/jss', label: 'JSS' },
     { to: '/bootcamps', label: 'Bootcamps' },
-    { to: '/hackathons', label: 'Hackathons' },
+    { to: '/finsec', label: 'FinSec' },
     { to: '/impact', label: 'Impact' },
     { to: '/podcast', label: 'Podcast' },
     { to: '/contact', label: 'Contact' }
