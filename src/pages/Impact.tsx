@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { Users, Recycle, GraduationCap, Eye, Brain, MapPin, Calendar, Download, ExternalLink } from 'lucide-react';
+import { Users, Recycle, Code, GraduationCap, Eye, Brain, MapPin, Calendar, Download, ExternalLink } from 'lucide-react';
 
 const Impact = () => {
   const navigate = useNavigate();
@@ -87,7 +87,7 @@ const Impact = () => {
       focus: "AI fundamentals and robotics introduction"
     },
     {
-      month: "August 2025", 
+      month: "August 2025",
       title: "Advanced AI & Robotics",
       location: "Multi-county reach",
       participants: "350+ learners",
@@ -123,31 +123,31 @@ const Impact = () => {
   return (
     <div className="bg-white dark:bg-gray-900">
       {/* Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-[#012414] via-[#024f33] to-[#0ea463]">
-        <div className="absolute inset-0 bg-grid-white/10 bg-[size:20px_20px]" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+      <section className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-900 to-emerald-900/80 dark:from-black dark:to-primary-950">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(16,185,129,0.1),transparent_70%)]" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-28 lg:py-32">
           <div className="text-center">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white mb-6">
               Impact Report
             </h1>
-            <p className="text-xl md:text-2xl text-green-100 mb-8 max-w-4xl mx-auto">
+            <p className="text-lg text-gray-300 mb-4 max-w-4xl mx-auto">
               Microsoft ADC Partnership • National AI & Robotics Program
             </p>
-            <p className="text-lg text-white/90 mb-8 max-w-3xl mx-auto">
-              A year of transformation: From 3 national bootcamps to 66 Code Clubs, 
+            <p className="text-lg text-gray-300 mb-8 max-w-3xl mx-auto">
+              A year of transformation: From 3 national bootcamps to 66 Code Clubs,
               13 PET recycling machines, and pioneering inclusive education across Kenya.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
                 onClick={downloadImpactData}
-                className="bg-white text-primary-900 px-8 py-4 rounded-lg hover:bg-gray-100 transition text-lg font-semibold flex items-center justify-center shadow-lg"
+                className="bg-white text-primary-900 px-8 py-4 rounded-xl hover:bg-gray-100 transition-all duration-200 text-lg font-semibold flex items-center justify-center hover:shadow-soft-xl"
               >
                 <Download className="mr-2 h-5 w-5" />
                 Download Impact Data (CSV)
               </button>
               <Link
                 to="/microsoft"
-                className="bg-white/10 backdrop-blur-lg text-white px-8 py-4 rounded-lg hover:bg-white/20 transition text-lg font-semibold flex items-center justify-center"
+                className="bg-white/5 border border-white/10 backdrop-blur-lg text-white px-8 py-4 rounded-xl hover:bg-white/10 transition-all duration-200 text-lg font-semibold flex items-center justify-center"
               >
                 <ExternalLink className="mr-2 h-5 w-5" />
                 View Full Report
@@ -155,57 +155,59 @@ const Impact = () => {
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Impact Statistics */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Program by the Numbers</h2>
-          <p className="text-xl text-gray-600 dark:text-gray-300">Measurable impact across Kenya</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {achievements.map((achievement, index) => (
-            <div key={index} className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg text-center transform hover:scale-105 transition duration-300">
-              <achievement.icon className="h-12 w-12 text-primary-600 dark:text-primary-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{achievement.title}</h3>
-              <p className="text-gray-600 dark:text-gray-300 mb-3">{achievement.description}</p>
-              <p className="text-primary-600 dark:text-primary-400 font-semibold">{achievement.stats}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Bootcamp Timeline */}
-      <div className="bg-gradient-to-r from-gray-50 to-green-50 dark:from-gray-800 dark:to-gray-900 py-24">
+      <section className="py-20 sm:py-28 lg:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">National Bootcamp Series</h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300">Transformative programs delivering impact nationwide</p>
+            <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white mb-4">Program by the Numbers</h2>
+            <p className="text-lg text-gray-600 dark:text-gray-400">Measurable impact across Kenya</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {achievements.map((achievement, index) => (
+              <div key={index} className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-soft-md border border-gray-100 dark:border-gray-700/50 text-center transition-all duration-300 hover:shadow-soft-lg hover:-translate-y-1.5">
+                <achievement.icon className="h-12 w-12 text-primary-600 dark:text-primary-400 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{achievement.title}</h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-3">{achievement.description}</p>
+                <p className="text-primary-600 dark:text-primary-400 font-semibold">{achievement.stats}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Bootcamp Timeline */}
+      <section className="section-alt">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white mb-4">National Bootcamp Series</h2>
+            <p className="text-lg text-gray-600 dark:text-gray-400">Transformative programs delivering impact nationwide</p>
           </div>
 
           <div className="space-y-8">
             {bootcampHighlights.map((bootcamp, index) => (
-              <div key={index} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 transform hover:scale-[1.02] transition duration-300">
+              <div key={index} className="bg-white dark:bg-gray-800 rounded-xl shadow-soft-md border border-gray-100 dark:border-gray-700/50 p-8 transition-all duration-300 hover:shadow-soft-lg hover:-translate-y-1.5">
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
                   <div className="flex-1">
                     <div className="flex items-center mb-4">
                       <Calendar className="h-6 w-6 text-primary-600 dark:text-primary-400 mr-3" />
                       <span className="text-primary-600 dark:text-primary-400 font-semibold">{bootcamp.month}</span>
                     </div>
-                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{bootcamp.title}</h3>
-                    <div className="flex items-center text-gray-600 dark:text-gray-300 mb-2">
+                    <h3 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white mb-2">{bootcamp.title}</h3>
+                    <div className="flex items-center text-gray-600 dark:text-gray-400 mb-2">
                       <MapPin className="h-4 w-4 mr-2" />
                       {bootcamp.location}
                     </div>
-                    <div className="flex items-center text-gray-600 dark:text-gray-300 mb-3">
+                    <div className="flex items-center text-gray-600 dark:text-gray-400 mb-3">
                       <Users className="h-4 w-4 mr-2" />
                       {bootcamp.participants}
                     </div>
-                    <p className="text-gray-700 dark:text-gray-300">{bootcamp.focus}</p>
+                    <p className="text-gray-600 dark:text-gray-400">{bootcamp.focus}</p>
                   </div>
                   <div className="mt-4 md:mt-0">
-                    <div className="bg-gradient-to-r from-primary-500 to-emerald-600 text-white px-6 py-2 rounded-full font-semibold">
+                    <div className="bg-gradient-to-r from-primary-500 to-blue-500 text-white px-6 py-2 rounded-full font-semibold">
                       Completed ✓
                     </div>
                   </div>
@@ -214,56 +216,59 @@ const Impact = () => {
             ))}
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Inclusive Education Focus */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Pioneering Inclusive Education</h2>
-          <p className="text-xl text-gray-600 dark:text-gray-300">Breaking barriers, building accessibility</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-8 rounded-xl">
-            <Eye className="h-12 w-12 text-green-600 mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">Braille Robotics</h3>
-            <p className="text-gray-700 dark:text-gray-300">
-              Developed tactile robotics challenges and Braille programming interfaces, 
-              ensuring students with visual impairments can fully participate in AI education.
-            </p>
-          </div>
-
-          <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-8 rounded-xl">
-            <Users className="h-12 w-12 text-green-600 mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">KSL Integration</h3>
-            <p className="text-gray-700 dark:text-gray-300">
-              Integrated Kenyan Sign Language (KSL) into our curriculum materials and training, 
-              making robotics education accessible to deaf and hard-of-hearing learners.
-            </p>
-          </div>
-
-          <div className="bg-gradient-to-br from-green-50 to-lime-50 dark:from-green-900/20 dark:to-lime-900/20 p-8 rounded-xl">
-            <Brain className="h-12 w-12 text-green-600 mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">Low-Vision LMS</h3>
-            <p className="text-gray-700 dark:text-gray-300">
-              Developed specialized Learning Management System features with high contrast, 
-              screen reader compatibility, and adaptive interfaces for low-vision learners.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Testimonials */}
-      <div className="bg-gradient-to-r from-gray-900 to-primary-900 dark:from-black dark:to-primary-950 py-24">
+      <section className="py-20 sm:py-28 lg:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-white mb-4">Voices from the Field</h2>
-            <p className="text-xl text-gray-200">Impact stories from educators and communities</p>
+            <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white mb-4">Pioneering Inclusive Education</h2>
+            <p className="text-lg text-gray-600 dark:text-gray-400">Breaking barriers, building accessibility</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-8 rounded-xl border border-gray-100 dark:border-gray-700/50">
+              <Eye className="h-12 w-12 text-green-600 mb-4" />
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">Braille Robotics</h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Developed tactile robotics challenges and Braille programming interfaces,
+                ensuring students with visual impairments can fully participate in AI education.
+              </p>
+            </div>
+
+            <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-8 rounded-xl border border-gray-100 dark:border-gray-700/50">
+              <Users className="h-12 w-12 text-green-600 mb-4" />
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">KSL Integration</h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Integrated Kenyan Sign Language (KSL) into our curriculum materials and training,
+                making robotics education accessible to deaf and hard-of-hearing learners.
+              </p>
+            </div>
+
+            <div className="bg-gradient-to-br from-green-50 to-lime-50 dark:from-green-900/20 dark:to-lime-900/20 p-8 rounded-xl border border-gray-100 dark:border-gray-700/50">
+              <Brain className="h-12 w-12 text-green-600 mb-4" />
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">Low-Vision LMS</h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Developed specialized Learning Management System features with high contrast,
+                screen reader compatibility, and adaptive interfaces for low-vision learners.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-900 to-emerald-900/80 dark:from-black dark:to-primary-950 py-20 sm:py-28 lg:py-32">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(16,185,129,0.1),transparent_70%)]" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold tracking-tight text-white mb-4">Voices from the Field</h2>
+            <p className="text-lg text-gray-300">Impact stories from educators and communities</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
-              <div key={index} className="bg-white/10 backdrop-blur-lg rounded-xl p-8 hover:bg-white/20 transition">
+              <div key={index} className="bg-white/5 border border-white/10 backdrop-blur-lg rounded-xl p-8 hover:bg-white/10 transition-all duration-300">
                 <p className="text-gray-200 text-lg italic mb-6">"{testimonial.quote}"</p>
                 <div>
                   <p className="text-white font-semibold">{testimonial.author}</p>
@@ -273,52 +278,58 @@ const Impact = () => {
             ))}
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Microsoft Partnership Highlight */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-        <div className="bg-gradient-to-r from-[#012414] via-[#047857] to-[#10b981] rounded-2xl p-12 text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">Microsoft ADC Partnership</h2>
-          <p className="text-xl text-green-100 mb-8 max-w-3xl mx-auto">
-            Our strategic partnership with Microsoft ADC provided technical enablement, 
-            AI learning resources, and mentorship that made this transformative year possible.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
-              href="https://www.microsoft.com/en-us/madc"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-white text-green-700 px-8 py-3 rounded-lg hover:bg-gray-100 transition font-semibold flex items-center justify-center"
-            >
-              <ExternalLink className="mr-2 h-5 w-5" />
-              Learn About Microsoft ADC
-            </a>
-            <Link
-              to="/microsoft"
-              className="bg-white/20 backdrop-blur-lg text-white px-8 py-3 rounded-lg hover:bg-white/30 transition font-semibold flex items-center justify-center"
-            >
-              <Download className="mr-2 h-5 w-5" />
-              Partnership Impact Report
-            </Link>
+      <section className="py-20 sm:py-28 lg:py-32">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-gradient-to-br from-gray-900 via-gray-900 to-emerald-900/80 rounded-xl p-12 text-center relative overflow-hidden">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(16,185,129,0.1),transparent_70%)]" />
+            <div className="relative">
+              <h2 className="text-3xl font-bold tracking-tight text-white mb-4">Microsoft ADC Partnership</h2>
+              <p className="text-lg text-gray-300 mb-8 max-w-3xl mx-auto">
+                Our strategic partnership with Microsoft ADC provided technical enablement,
+                AI learning resources, and mentorship that made this transformative year possible.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <a
+                  href="https://www.microsoft.com/en-us/madc"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-white text-green-700 px-8 py-3 rounded-xl hover:bg-gray-100 transition-all duration-200 font-semibold flex items-center justify-center hover:shadow-soft-xl"
+                >
+                  <ExternalLink className="mr-2 h-5 w-5" />
+                  Learn About Microsoft ADC
+                </a>
+                <Link
+                  to="/microsoft"
+                  className="bg-white/5 border border-white/10 backdrop-blur-lg text-white px-8 py-3 rounded-xl hover:bg-white/10 transition-all duration-200 font-semibold flex items-center justify-center"
+                >
+                  <Download className="mr-2 h-5 w-5" />
+                  Partnership Impact Report
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Call to Action */}
-      <div className="bg-gradient-to-r from-emerald-600 to-green-600 py-16">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">Ready for 2026?</h2>
-          <p className="text-xl text-green-100 mb-8">
+      <section className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-900 to-emerald-900/80 dark:from-black dark:to-primary-950 py-20 sm:py-28">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(16,185,129,0.1),transparent_70%)]" />
+        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl font-bold tracking-tight text-white mb-4">Ready for 2026?</h2>
+          <p className="text-lg text-gray-300 mb-8">
             Join us as we expand to reach 4 million youth across Africa by 2030
           </p>
           <button
             onClick={() => navigate('/register-2026')}
-            className="bg-white text-emerald-600 px-8 py-4 rounded-lg hover:bg-gray-100 transition text-lg font-semibold"
+            className="bg-white text-emerald-600 px-8 py-4 rounded-xl hover:bg-gray-100 transition-all duration-200 text-lg font-semibold hover:shadow-soft-xl"
           >
             Register for 2026 Programme
           </button>
         </div>
-      </div>
+      </section>
     </div>
   );
 };

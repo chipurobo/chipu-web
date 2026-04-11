@@ -5,18 +5,17 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        // Dyslexic-friendly fonts
+        'sans': ['Inter', 'system-ui', 'sans-serif'],
         'dyslexic': ['OpenDyslexic', 'Comic Sans MS', 'Arial', 'Helvetica', 'sans-serif'],
-        'sans': ['OpenDyslexic', 'Inter', 'system-ui', 'sans-serif'],
         'accessibility': ['OpenDyslexic', 'Verdana', 'Tahoma', 'sans-serif'],
       },
       colors: {
         chipurobo: {
-          green: '#10b981', // ChipuRobo brand emerald green
-          warmGreen: '#22c55e', // Warmer sustainability green
-          white: '#ffffff', // White
-          black: '#000000', // Black
-          grey: '#6b7280', // Metallic grey
+          green: '#10b981',
+          warmGreen: '#22c55e',
+          white: '#ffffff',
+          black: '#000000',
+          grey: '#6b7280',
         },
         primary: {
           50: '#fff7ed',
@@ -31,6 +30,26 @@ export default {
           900: '#7c2d12',
           950: '#431407',
         },
+      },
+      boxShadow: {
+        'soft-sm': '0 2px 8px rgba(0, 0, 0, 0.06)',
+        'soft-md': '0 4px 16px rgba(0, 0, 0, 0.08)',
+        'soft-lg': '0 8px 30px rgba(0, 0, 0, 0.10)',
+        'soft-xl': '0 16px 50px rgba(0, 0, 0, 0.14)',
+      },
+      keyframes: {
+        fadeInUp: {
+          '0%': { opacity: '0', transform: 'translateY(20px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        slideIn: {
+          '0%': { opacity: '0', transform: 'translateX(-10px)' },
+          '100%': { opacity: '1', transform: 'translateX(0)' },
+        },
+      },
+      animation: {
+        'fade-in-up': 'fadeInUp 0.6s ease-out',
+        'slide-in': 'slideIn 0.4s ease-out',
       },
     },
   },

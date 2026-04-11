@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './contexts/ThemeContext';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
@@ -14,11 +14,13 @@ import Microsoft from './pages/Microsoft';
 import KSEF from './pages/KSEF';
 import JSS from './pages/JSS';
 import ADCBootcamp from './pages/ADCBootcamp';
+import Bootcamps from './pages/Bootcamps';
 import Hackathons from './pages/Hackathons';
 import Sustainability from './pages/Sustainability';
 import Impact from './pages/Impact';
 import EmailRegistration2026 from './pages/EmailRegistration2026';
 import NotFound from './pages/NotFound';
+import Podcast from './pages/Podcast';
 
 function App() {
   // Accessibility: Announce route changes to screen readers
@@ -56,7 +58,8 @@ function App() {
       case '/about': return 'About ChipuRobo';
       case '/ksef': return 'KSEF Program';
       case '/jss': return 'JSS Program';
-      case '/adc-bootcamp': return 'ADC Bootcamp';
+      case '/bootcamps': return 'Bootcamps';
+      case '/adc-bootcamp': return 'Bootcamps';
       case '/hackathons': return 'Hackathons';
       case '/sustainability': return 'Sustainability';
       case '/team': return 'Our Team';
@@ -66,6 +69,7 @@ function App() {
       case '/microsoft': return 'Microsoft Partnership';
       case '/impact': return 'Impact Report';
       case '/register-2026': return '2026 Registration';
+      case '/podcast': return 'Africa Builds Podcast';
       default: return 'ChipuRobo';
     }
   };
@@ -73,7 +77,7 @@ function App() {
   return (
     <ThemeProvider>
       <Router>
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 font-dyslexic">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
           {/* Skip to main content link for keyboard navigation */}
           <a
             href="#main-content"
@@ -97,7 +101,8 @@ function App() {
               <Route path="/about" element={<About />} />
               <Route path="/ksef" element={<KSEF />} />
               <Route path="/jss" element={<JSS />} />
-              <Route path="/adc-bootcamp" element={<ADCBootcamp />} />
+              <Route path="/bootcamps" element={<Bootcamps />} />
+              <Route path="/adc-bootcamp" element={<Navigate to="/bootcamps" replace />} />
               <Route path="/hackathons" element={<Hackathons />} />
               <Route path="/sustainability" element={<Sustainability />} />
               <Route path="/team" element={<Team />} />
@@ -108,6 +113,7 @@ function App() {
               <Route path="/microsoft" element={<Microsoft />} />
               <Route path="/impact" element={<Impact />} />
               <Route path="/register-2026" element={<EmailRegistration2026 />} />
+              <Route path="/podcast" element={<Podcast />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
