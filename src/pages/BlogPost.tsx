@@ -1,10 +1,27 @@
+import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Calendar, Clock, User, ArrowLeft } from 'lucide-react';
-import { getBlogPostById } from '../data/blogPosts';
+import { getBlogPostById, type BlogPostData } from '../data/blogPosts';
+import { fetchBlogPostBySlug } from '../services/cmsClient';
+import { mapBlogPostFromCms } from '../utils/mapBlogPost';
 
 const BlogPost = () => {
   const { id } = useParams<{ id: string }>();
-  const post = id ? getBlogPostById(id) : undefined;
+  const [post, setPost] = useState<BlogPostData | undefined>(() =>
+    id ? getBlogPostById(id) : undefined
+  );
+
+  useEffect(() => {
+    let isMounted = true;
+    if (!id) return undefined;
+    fetchBlogPostBySlug(id).then((doc) => {
+      if (!isMounted || !doc) return;
+      setPost(mapBlogPostFromCms(doc));
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, [id]);
 
   if (!post) {
     return (

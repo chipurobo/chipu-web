@@ -1,7 +1,36 @@
+import { useEffect, useState } from 'react';
 import { Github, Linkedin, Mail } from 'lucide-react';
-import { teamMembers } from '../data/teamMembers';
+import { teamMembers as fallbackTeam } from '../data/teamMembers';
+import { fetchTeamMembers } from '../services/cmsClient';
+import type { CmsTeamMember } from '../types/cms';
+import type { TeamMember as FallbackTeamMember } from '../data/teamMembers';
+import { getMediaUrl } from '../utils/cmsHelpers';
+
+const mapMember = (member: CmsTeamMember): FallbackTeamMember => ({
+  name: member.name,
+  role: member.role,
+  bio: member.bio,
+  photo: getMediaUrl(member.photo),
+  social: {
+    linkedin: member.social?.linkedin || '#',
+    github: member.social?.github || '#',
+    email: member.social?.email || 'hello@chipurobo.com',
+  },
+});
 
 const Team = () => {
+  const [members, setMembers] = useState<FallbackTeamMember[]>(fallbackTeam);
+
+  useEffect(() => {
+    let isMounted = true;
+    fetchTeamMembers().then((docs) => {
+      if (!isMounted || docs.length === 0) return;
+      setMembers(docs.map(mapMember));
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
@@ -13,7 +42,7 @@ const Team = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {teamMembers.map((member, index) => (
+        {members.map((member, index) => (
           <div 
             key={index}
             className="group relative bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden transform transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl"

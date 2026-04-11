@@ -26,3 +26,6 @@ dist-ssr
 .DS_Store
 **/.DS_Store
 .env
+
+# Claude Desktop worktrees
+.claude/

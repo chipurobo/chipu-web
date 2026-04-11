@@ -1,12 +1,60 @@
+import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import type { LucideIcon } from 'lucide-react';
 import { Brain, Award, Users, Notebook as Robot, Code, School, Globe, Heart, Leaf, ArrowRight, Rocket, Recycle, Target } from 'lucide-react';
+import { fetchSiteSettings } from '../services/cmsClient';
+
+const fallbackHeroContent = {
+  title: 'Empowering 4 Million Youth Across Africa',
+  eyebrow: 'By 2030 through AI, Robotics, and Sustainable Innovation',
+  highlight: 'Join the 2026 rollout • CBC aligned • Inclusive • Locally fabricated',
+  description: '2025 delivered 800+ learners, 66 Code Clubs, and 13 PET recycling machines.',
+  ctaLabel: 'REGISTER FOR 2026 PROGRAMME',
+  ctaHref: '/register-2026',
+};
+
+type HeroStat = {
+  icon: LucideIcon;
+  value: string;
+  label: string;
+};
+
+const fallbackStats: HeroStat[] = [
+  { icon: Users, value: '800+', label: 'Learners Reached in 2025' },
+  { icon: Code, value: '66', label: 'Active Code Clubs' },
+  { icon: Recycle, value: '13', label: 'PET Recycling Machines' },
+  { icon: School, value: '3', label: 'National Bootcamps' },
+];
 
 const Home = () => {
   const navigate = useNavigate();
+  const [heroContent, setHeroContent] = useState(fallbackHeroContent);
+  const [stats, setStats] = useState(fallbackStats);
 
   const handleEnroll = () => {
     navigate('/register-2026');
   };
+
+  useEffect(() => {
+    fetchSiteSettings().then((settings) => {
+      if (settings?.hero) {
+        setHeroContent((prev) => ({
+          ...prev,
+          ...settings.hero,
+        }));
+      }
+
+      if (settings?.stats?.length) {
+        setStats(
+          settings.stats.map((stat, index) => ({
+            icon: fallbackStats[index % fallbackStats.length].icon,
+            value: stat.value,
+            label: stat.label,
+          }))
+        );
+      }
+    });
+  }, []);
 
   const featuredPosts = [
     {
@@ -52,13 +100,6 @@ const Home = () => {
       name: "CEMASTEA",
       role: "KSEF alignment, teacher training, and curriculum validation",
     }
-  ];
-
-  const stats = [
-    { icon: Users, value: "800+", label: "Learners Reached in 2025" },
-    { icon: Code, value: "66", label: "Active Code Clubs" },
-    { icon: Recycle, value: "13", label: "PET Recycling Machines" },
-    { icon: School, value: "3", label: "National Bootcamps" }
   ];
 
   const aiFeatures = [
@@ -119,25 +160,25 @@ const Home = () => {
               <Robot className="h-24 w-24 text-green-400 mx-auto animate-pulse-slow" />
             </div>
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6">
-              Empowering 4 Million Youth Across Africa
+              {heroContent.title}
             </h1>
             <div className="typing-container mb-8">
               <p className="typing-effect text-2xl md:text-3xl text-green-100 mx-auto">
-                By 2030 through AI, Robotics, and Sustainable Innovation
+                {heroContent.eyebrow || 'By 2030 through AI, Robotics, and Sustainable Innovation'}
               </p>
             </div>
              <p className="text-xl text-white/90 mb-8 max-w-3xl mx-auto">
-              2025 delivered 800+ learners, 66 Code Clubs, and 13 PET recycling machines.
+              {heroContent.description}
               <br />
-              <strong className="text-green-300">Join the 2026 rollout • CBC aligned • Inclusive • Locally fabricated</strong>
+              <strong className="text-green-300">{heroContent.highlight}</strong>
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Link
-                to="/register-2026"
+                to={heroContent.ctaHref || '/register-2026'}
                 className="group bg-primary-600 text-white px-8 py-4 rounded-lg hover:bg-primary-700 transition text-lg font-semibold flex items-center justify-center shadow-lg"
               >
                 <Rocket className="mr-2 h-5 w-5 group-hover:animate-bounce" />
-                REGISTER FOR 2026 PROGRAMME
+                {heroContent.ctaLabel || 'REGISTER FOR 2026 PROGRAMME'}
               </Link>
               <Link
                 to="/impact"

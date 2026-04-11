@@ -1,8 +1,24 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, Clock, User, ArrowRight } from 'lucide-react';
-import { blogPosts } from '../data/blogPosts';
+import { blogPosts as fallbackPosts, type BlogPostData } from '../data/blogPosts';
+import { fetchBlogPosts } from '../services/cmsClient';
+import { mapBlogPostFromCms } from '../utils/mapBlogPost';
 
 const Blog = () => {
+  const [posts, setPosts] = useState<BlogPostData[]>(fallbackPosts);
+
+  useEffect(() => {
+    let isMounted = true;
+    fetchBlogPosts().then((docs) => {
+      if (!isMounted || docs.length === 0) return;
+      setPosts(docs.map(mapBlogPostFromCms));
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
     <div className="bg-white dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
@@ -14,7 +30,7 @@ const Blog = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {blogPosts.map((post) => (
+          {posts.map((post) => (
             <article 
               key={post.id}
               className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden transition-transform hover:scale-105"
