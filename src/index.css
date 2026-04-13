@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700;800&display=swap');
 @import url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/open-dyslexic-regular.css');
 
 @tailwind base;
@@ -17,6 +17,9 @@
     --primary-700: #047857;
     --primary-800: #065f46;
     --primary-900: #064e3b;
+    --warm-bg: #f5f0e8;
+    --warm-bg-alt: #ede5d8;
+    --cream: #faf8f5;
   }
 
   html {
@@ -83,7 +86,7 @@
   }
 
   body {
-    @apply bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white;
+    @apply bg-warm-50 dark:bg-gray-900 text-gray-900 dark:text-white;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -93,6 +96,174 @@
   p {
     @apply text-gray-600 dark:text-gray-300 leading-relaxed;
   }
+}
+
+/* Display headings — serif */
+.heading-display {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+/* Corner bracket frame — tnkr.ai style */
+.bracket-frame {
+  position: relative;
+  padding: 1.5rem;
+}
+
+.bracket-frame::before,
+.bracket-frame::after {
+  content: '';
+  position: absolute;
+  width: 2rem;
+  height: 2rem;
+  border-color: #374151;
+  pointer-events: none;
+}
+
+.bracket-frame::before {
+  top: 0;
+  left: 0;
+  border-top: 2px solid;
+  border-left: 2px solid;
+  border-color: inherit;
+}
+
+.bracket-frame::after {
+  bottom: 0;
+  right: 0;
+  border-bottom: 2px solid;
+  border-right: 2px solid;
+  border-color: inherit;
+}
+
+/* Extended bracket with all four corners */
+.bracket-frame-full {
+  position: relative;
+}
+
+.bracket-frame-full::before,
+.bracket-frame-full::after {
+  content: '';
+  position: absolute;
+  width: 2.5rem;
+  height: 2.5rem;
+  pointer-events: none;
+}
+
+.bracket-frame-full::before {
+  top: -0.5rem;
+  left: -0.5rem;
+  border-top: 2px solid #9ca3af;
+  border-left: 2px solid #9ca3af;
+}
+
+.bracket-frame-full::after {
+  top: -0.5rem;
+  right: -0.5rem;
+  border-top: 2px solid #9ca3af;
+  border-right: 2px solid #9ca3af;
+}
+
+.bracket-corners-bottom::before,
+.bracket-corners-bottom::after {
+  content: '';
+  position: absolute;
+  width: 2.5rem;
+  height: 2.5rem;
+  pointer-events: none;
+}
+
+.bracket-corners-bottom::before {
+  bottom: -0.5rem;
+  left: -0.5rem;
+  border-bottom: 2px solid #9ca3af;
+  border-left: 2px solid #9ca3af;
+}
+
+.bracket-corners-bottom::after {
+  bottom: -0.5rem;
+  right: -0.5rem;
+  border-bottom: 2px solid #9ca3af;
+  border-right: 2px solid #9ca3af;
+}
+
+/* Dashed border frame — tnkr style */
+.dashed-frame {
+  border: 2px dashed #d1d5db;
+  border-radius: 0;
+}
+
+/* Faded code background */
+.code-bg {
+  position: relative;
+  overflow: hidden;
+}
+
+.code-bg::before {
+  content: 'import { Robot } from "chipurobo"\nconst learners = await train(800)\nfunction buildFuture(youth) {\n  return empower(youth, AI)\n}\n// 66 Code Clubs active\n// 13 PET machines deployed';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  font-family: 'Courier New', monospace;
+  font-size: 0.875rem;
+  line-height: 2;
+  color: rgba(0, 0, 0, 0.06);
+  white-space: pre;
+  pointer-events: none;
+  padding: 2rem;
+}
+
+/* Collaborative cursor badge */
+.cursor-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.375rem 0.875rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: white;
+  position: absolute;
+  white-space: nowrap;
+}
+
+.cursor-badge::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-bottom: 8px solid currentColor;
+  transform: rotate(-15deg);
+}
+
+.cursor-badge-teal {
+  background-color: #0d9488;
+}
+
+.cursor-badge-teal::before {
+  border-bottom-color: #0d9488;
+}
+
+.cursor-badge-terracotta {
+  background-color: #d44820;
+}
+
+.cursor-badge-terracotta::before {
+  border-bottom-color: #d44820;
+}
+
+.cursor-badge-amber {
+  background-color: #d97706;
+}
+
+.cursor-badge-amber::before {
+  border-bottom-color: #d97706;
 }
 
 /* Custom animations */
@@ -116,8 +287,17 @@
   100% { transform: translateX(-50%); }
 }
 
+@keyframes float-gentle {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-6px) rotate(1deg); }
+}
+
 .animate-float {
   animation: float 3s ease-in-out infinite;
+}
+
+.animate-float-gentle {
+  animation: float-gentle 4s ease-in-out infinite;
 }
 
 .animate-pulse-slow {
@@ -129,7 +309,7 @@
 }
 
 .animate-scroll {
-  animation: scroll 20s linear infinite;
+  animation: scroll 25s linear infinite;
 }
 
 /* Hero section styles */
@@ -216,11 +396,28 @@
   }
 
   .section-alt {
-    @apply bg-gray-50 dark:bg-gray-800/50 py-20 sm:py-28 lg:py-32;
+    @apply bg-warm-100 dark:bg-gray-800/50 py-20 sm:py-28 lg:py-32;
   }
 
   .container {
     @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Warm button styles matching tnkr terracotta CTAs */
+  .btn-cta {
+    @apply bg-terracotta-500 text-white px-7 py-3.5 rounded-lg font-semibold inline-flex items-center justify-center transition-all duration-200;
+  }
+
+  .btn-cta:hover {
+    @apply bg-terracotta-600 shadow-soft-lg;
+  }
+
+  .btn-outline {
+    @apply border-2 border-gray-800 dark:border-gray-300 text-gray-800 dark:text-gray-300 px-7 py-3.5 rounded-lg font-semibold inline-flex items-center justify-center transition-all duration-200;
+  }
+
+  .btn-outline:hover {
+    @apply bg-gray-800 text-white dark:bg-gray-300 dark:text-gray-900;
   }
 
   .card h1, .card h2, .card h3, .card h4, .card h5, .card h6 {

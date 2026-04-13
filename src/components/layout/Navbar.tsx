@@ -28,15 +28,15 @@ const Navbar = () => {
     { to: '/finsec', label: 'FinSec' },
     { to: '/impact', label: 'Impact' },
     { to: '/podcast', label: 'Podcast' },
-    { to: '/contact', label: 'Contact' }
+    { to: '/contact', label: 'Contact' },
   ];
 
   return (
     <nav
       className={`sticky top-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? 'bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl shadow-soft-sm'
-          : 'bg-white dark:bg-gray-900'
+          ? 'bg-warm-50/90 dark:bg-gray-900/90 backdrop-blur-xl shadow-soft-sm'
+          : 'bg-warm-50 dark:bg-gray-900'
       }`}
       aria-label="Main navigation"
     >
@@ -56,7 +56,7 @@ const Navbar = () => {
             <ThemeToggle />
             <button
               onClick={toggleMenu}
-              className="ml-2 p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 focus-visible transition-colors"
+              className="ml-2 p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-warm-200 dark:hover:bg-gray-800 focus-visible transition-colors"
               aria-expanded={isMenuOpen}
               aria-controls="mobile-menu"
               aria-label={isMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
@@ -75,7 +75,7 @@ const Navbar = () => {
               <Link
                 key={link.to}
                 to={link.to}
-                className="relative px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 focus-visible transition-colors after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:h-0.5 after:w-0 hover:after:w-3/4 after:bg-emerald-500 after:transition-all after:duration-300 after:rounded-full"
+                className="relative px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-teal-700 dark:hover:text-teal-400 focus-visible transition-colors after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:h-0.5 after:w-0 hover:after:w-3/4 after:bg-teal-600 after:transition-all after:duration-300 after:rounded-full"
               >
                 {link.label}
               </Link>
@@ -94,12 +94,12 @@ const Navbar = () => {
         role="navigation"
         aria-label="Mobile navigation"
       >
-        <div className="px-4 pt-2 pb-4 space-y-1 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-t border-gray-200/50 dark:border-gray-700/50">
+        <div className="px-4 pt-2 pb-4 space-y-1 bg-warm-50/95 dark:bg-gray-900/95 backdrop-blur-xl border-t border-warm-200 dark:border-gray-700/50">
           {navigationLinks.map((link) => (
             <Link
               key={link.to}
               to={link.to}
-              className="block px-4 py-2.5 rounded-lg text-base font-medium text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-gray-50 dark:hover:bg-gray-800 focus-visible transition-colors"
+              className="block px-4 py-2.5 rounded-lg text-base font-medium text-gray-700 dark:text-gray-300 hover:text-teal-700 dark:hover:text-teal-400 hover:bg-warm-100 dark:hover:bg-gray-800 focus-visible transition-colors"
               onClick={() => setIsMenuOpen(false)}
             >
               {link.label}

@@ -5,7 +5,7 @@ const Footer = () => {
   return (
     <footer className="bg-gray-900 dark:bg-gray-950 text-white">
       {/* Accent bar */}
-      <div className="h-1 bg-gradient-to-r from-emerald-500 via-primary-500 to-emerald-500" />
+      <div className="h-1 bg-gradient-to-r from-teal-500 via-terracotta-500 to-teal-500" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
@@ -19,13 +19,13 @@ const Footer = () => {
               Delivering inclusive AI and robotics education across Kenya with locally fabricated solutions and Code Clubs.
             </p>
             <div className="flex space-x-4 mt-6">
-              <a href="#" className="p-2.5 rounded-full bg-gray-800 text-gray-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition-all duration-200" aria-label="Facebook">
+              <a href="#" className="p-2.5 rounded-full bg-gray-800 text-gray-400 hover:bg-teal-500/10 hover:text-teal-400 transition-all duration-200" aria-label="Facebook">
                 <Facebook className="h-5 w-5" />
               </a>
-              <a href="#" className="p-2.5 rounded-full bg-gray-800 text-gray-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition-all duration-200" aria-label="Twitter">
+              <a href="#" className="p-2.5 rounded-full bg-gray-800 text-gray-400 hover:bg-teal-500/10 hover:text-teal-400 transition-all duration-200" aria-label="Twitter">
                 <Twitter className="h-5 w-5" />
               </a>
-              <a href="#" className="p-2.5 rounded-full bg-gray-800 text-gray-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition-all duration-200" aria-label="LinkedIn">
+              <a href="#" className="p-2.5 rounded-full bg-gray-800 text-gray-400 hover:bg-teal-500/10 hover:text-teal-400 transition-all duration-200" aria-label="LinkedIn">
                 <Linkedin className="h-5 w-5" />
               </a>
             </div>
@@ -42,12 +42,12 @@ const Footer = () => {
                 { to: '/ksef', label: 'KSEF' },
                 { to: '/jss', label: 'JSS' },
                 { to: '/bootcamps', label: 'Bootcamps' },
-                { to: '/hackathons', label: 'Hackathons' },
+                { to: '/finsec', label: 'FinSec Hackathon' },
                 { to: '/impact', label: 'Impact' },
                 { to: '/podcast', label: 'Podcast' },
               ].map((link) => (
                 <li key={link.to}>
-                  <Link to={link.to} className="text-gray-400 hover:text-emerald-400 hover:translate-x-1 inline-block transition-all duration-200 text-sm">
+                  <Link to={link.to} className="text-gray-400 hover:text-teal-400 hover:translate-x-1 inline-block transition-all duration-200 text-sm">
                     {link.label}
                   </Link>
                 </li>
@@ -71,17 +71,17 @@ const Footer = () => {
             <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-300 mb-6">Contact</h3>
             <div className="space-y-3 text-sm">
               <p className="text-gray-400">
-                Email: <a href="mailto:chipurobo@gmail.com" className="hover:text-emerald-400 transition-colors">chipurobo@gmail.com</a>
+                Email: <a href="mailto:chipurobo@gmail.com" className="hover:text-teal-400 transition-colors">chipurobo@gmail.com</a>
               </p>
               <p className="text-gray-400">
-                Phone: <a href="tel:+254700000000" className="hover:text-emerald-400 transition-colors">+254 700 000 000</a>
+                Phone: <a href="tel:+254700000000" className="hover:text-teal-400 transition-colors">+254 700 000 000</a>
               </p>
             </div>
           </div>
         </div>
 
         <div className="mt-16 pt-8 border-t border-gray-800 text-center">
-          <p className="text-gray-500 text-sm">&copy; {new Date().getFullYear()} <span className="font-semibold text-emerald-500">ChipuRobo</span>. All rights reserved.</p>
+          <p className="text-gray-500 text-sm">&copy; {new Date().getFullYear()} <span className="font-semibold text-teal-500">ChipuRobo</span>. All rights reserved.</p>
         </div>
       </div>
     </footer>
