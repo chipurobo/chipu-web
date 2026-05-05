@@ -25,7 +25,7 @@ const Navbar = () => {
     { to: '/ksef', label: 'KSEF' },
     { to: '/jss', label: 'JSS' },
     { to: '/bootcamps', label: 'Bootcamps' },
-    { to: '/finsec', label: 'FinSec' },
+    { to: '/braille-challenge', label: 'Braille' },
     { to: '/impact', label: 'Impact' },
     { to: '/podcast', label: 'Podcast' },
     { to: '/contact', label: 'Contact' },
@@ -47,8 +47,21 @@ const Navbar = () => {
             className="flex items-center focus-visible"
             aria-label="ChipuRobo home"
           >
-            <img src="/img/logo.png" alt="ChipuRobo Logo" className="h-8 w-8" />
-            <span className="ml-2 text-xl font-bold text-gray-900 dark:text-white">ChipuRobo</span>
+            <picture>
+              <source srcSet="/img/logo.webp" type="image/webp" />
+              <img
+                src="/img/logo.png"
+                alt="ChipuRobo Logo"
+                width={32}
+                height={32}
+                className="h-8 w-8 pixel-crisp"
+                fetchPriority="high"
+                decoding="async"
+              />
+            </picture>
+            <span className="ml-3 font-pixel text-xs sm:text-sm tracking-wider text-gray-900 dark:text-teal-300 uppercase">
+              ChipuRobo<span className="text-teal-500">_</span>
+            </span>
           </Link>
 
           {/* Mobile menu button */}
@@ -75,7 +88,7 @@ const Navbar = () => {
               <Link
                 key={link.to}
                 to={link.to}
-                className="relative px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-teal-700 dark:hover:text-teal-400 focus-visible transition-colors after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:h-0.5 after:w-0 hover:after:w-3/4 after:bg-teal-600 after:transition-all after:duration-300 after:rounded-full"
+                className="relative px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white focus-visible transition-colors lowercase tracking-wide after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:h-px after:w-0 hover:after:w-3/4 after:bg-gray-900 dark:after:bg-white after:transition-all after:duration-200"
               >
                 {link.label}
               </Link>

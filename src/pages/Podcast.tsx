@@ -55,44 +55,44 @@ const Podcast = () => {
   return (
     <div>
       {/* ===== A. HERO SECTION ===== */}
-      <section className="relative hero-gradient overflow-hidden">
-        <div className="circuit-background" aria-hidden="true" />
-        <div className="tech-ring tech-ring-1" aria-hidden="true" />
-        <div className="tech-ring tech-ring-2" aria-hidden="true" />
-        <div className="tech-ring tech-ring-3" aria-hidden="true" />
+      <section className="relative overflow-hidden bg-warm-50 dark:bg-gray-900 border-b border-warm-200 dark:border-gray-800">
+        <div className="code-bg absolute inset-0 opacity-30 dark:opacity-15" aria-hidden="true" />
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-28 lg:py-36">
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-24">
           <div className="text-center max-w-3xl mx-auto">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 mb-8">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-terracotta-50 dark:bg-terracotta-900/20 border border-terracotta-200 dark:border-terracotta-800/40 mb-6">
               <Mic
-                className="h-8 w-8 text-emerald-400 animate-float"
+                className="h-6 w-6 text-terracotta-600 dark:text-terracotta-400 animate-float"
                 aria-hidden="true"
               />
             </div>
 
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white tracking-tight mb-6">
+            <p className="font-pixel text-[0.55rem] sm:text-[0.65rem] tracking-[0.25em] text-terracotta-600 dark:text-terracotta-400 mb-5 uppercase">
+              // podcast
+            </p>
+
+            <h1 className="heading-display text-3xl md:text-4xl lg:text-5xl text-gray-900 dark:text-white mb-6">
               Africa Builds
             </h1>
 
-            <p className="text-xl md:text-2xl text-gray-300 font-medium mb-4">
-              Conversations with the people shaping how Africa learns and builds
-              technology.
+            <p className="text-lg md:text-xl text-gray-700 dark:text-gray-300 font-medium mb-4">
+              Conversations with the people shaping how Africa learns and builds technology.
             </p>
 
-            <p className="text-base text-gray-400 mb-6 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-base text-gray-600 dark:text-gray-400 mb-6 max-w-2xl mx-auto leading-relaxed">
               Each episode will feature a teacher, founder, researcher, engineer, or
               policymaker working on technology education across the continent.
               No pitches. No hype. Just honest conversations about what it takes
               to build.
             </p>
 
-            <p className="text-sm text-gray-500 mb-10">
+            <p className="text-sm text-gray-500 dark:text-gray-500 mb-8">
               Available on YouTube and Spotify
             </p>
 
-            <div className="inline-flex items-center bg-white/10 backdrop-blur-sm border border-white/20 text-white px-6 py-3 rounded-xl text-lg font-semibold">
+            <div className="inline-flex items-center bg-white dark:bg-gray-800 border border-warm-200 dark:border-gray-700 text-gray-900 dark:text-white px-6 py-3 rounded-lg text-base font-semibold">
               <Bell
-                className="mr-2 h-5 w-5 text-emerald-400"
+                className="mr-2 h-5 w-5 text-terracotta-600 dark:text-terracotta-400"
                 aria-hidden="true"
               />
               Coming Soon
@@ -110,7 +110,7 @@ const Podcast = () => {
           <div className="max-w-3xl mx-auto text-center">
             <h2
               id="coming-soon-title"
-              className="text-3xl font-bold text-gray-900 dark:text-white mb-4"
+              className="heading-display text-3xl font-bold text-gray-900 dark:text-white mb-4"
             >
               We Are Getting Ready
             </h2>
@@ -155,7 +155,7 @@ const Podcast = () => {
             <div>
               <h2
                 id="about-podcast-title"
-                className="text-3xl font-bold text-gray-900 dark:text-white mb-6"
+                className="heading-display text-3xl font-bold text-gray-900 dark:text-white mb-6"
               >
                 Why This Podcast Exists
               </h2>
@@ -242,7 +242,7 @@ const Podcast = () => {
           <div className="text-center mb-16">
             <h2
               id="guest-types-title"
-              className="text-3xl font-bold text-gray-900 dark:text-white mb-4"
+              className="heading-display text-3xl font-bold text-gray-900 dark:text-white mb-4"
             >
               Who We Will Talk To
             </h2>
@@ -290,7 +290,7 @@ const Podcast = () => {
           <div className="text-center">
             <h2
               id="podcast-cta-title"
-              className="text-3xl font-bold text-white mb-4"
+              className="heading-display text-3xl font-bold text-white mb-4"
             >
               Stay Tuned
             </h2>

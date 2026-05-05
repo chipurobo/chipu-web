@@ -82,16 +82,16 @@ const KSEF = () => {
   const { timeLeft, status } = countdown;
 
   return (
-    <div className="bg-white dark:bg-gray-900">
-      <section className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-900 to-emerald-900/80 dark:from-black dark:to-primary-950">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(16,185,129,0.1),transparent_70%)]" />
+    <div className="bg-warm-50 dark:bg-gray-900">
+      <section className="relative overflow-hidden bg-warm-50 dark:bg-gray-900 border-b border-warm-200 dark:border-gray-800">
+        <div className="code-bg absolute inset-0 opacity-30 dark:opacity-15" aria-hidden="true" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-28 lg:py-32">
           <div className="text-center text-white">
             <div className="inline-flex items-center bg-white/5 border border-white/10 px-4 py-2 rounded-full mb-4">
               <Calendar className="h-4 w-4 mr-2" /> March 29 – April 5, 2026
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-3">KSEF Program</h1>
-            <p className="text-lg text-gray-300 mb-10 max-w-3xl mx-auto">
+            <h1 className="heading-display text-4xl md:text-5xl font-bold tracking-tight mb-3">KSEF Program</h1>
+            <p className="text-lg text-gray-700 dark:text-gray-300 mb-10 max-w-3xl mx-auto">
               Year-long support that gets Junior and Senior students exhibition-ready and keeps them iterating past April nationals.
             </p>
 
@@ -147,15 +147,15 @@ const KSEF = () => {
 
       <section className="pb-20 sm:pb-28">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-gradient-to-br from-green-50/70 to-white dark:from-gray-800 dark:to-gray-900 rounded-xl p-8 border border-green-100 dark:border-gray-700/50">
+          <div className="bg-gradient-to-br from-warm-100 to-warm-50 dark:from-gray-800 dark:to-gray-900 rounded-xl p-8 border border-gray-200 dark:border-gray-700">
             <h3 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white mb-6 flex items-center">
-              <Beaker className="h-6 w-6 text-green-600 dark:text-green-400 mr-2" />
+              <Beaker className="h-6 w-6 text-teal-600 dark:text-teal-400 mr-2" />
               Four-Step Timeline
             </h3>
             <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-6">
               {timeline.map((point) => (
                 <div key={point.month} className="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-soft-md border border-gray-100 dark:border-gray-700/50 text-center transition-all duration-300">
-                  <p className="text-sm font-semibold text-green-600 dark:text-green-300">{point.month}</p>
+                  <p className="text-sm font-semibold text-teal-600 dark:text-teal-300">{point.month}</p>
                   <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">{point.note}</p>
                 </div>
               ))}
@@ -197,7 +197,7 @@ const KSEF = () => {
         </div>
       </section>
 
-      <section className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-900 to-emerald-900/80 dark:from-black dark:to-primary-950 py-20 sm:py-28 lg:py-32">
+      <section className="relative overflow-hidden bg-warm-50 dark:bg-gray-900 border-b border-warm-200 dark:border-gray-800 py-20 sm:py-28 lg:py-32">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(16,185,129,0.1),transparent_70%)]" />
         <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
           <Award className="h-12 w-12 text-yellow-300 mx-auto mb-4" />
@@ -205,7 +205,7 @@ const KSEF = () => {
           <p className="text-lg text-gray-300 mb-8">
             We distill the sprawling research cycle into a simple sprint so schools can compete without burning extra hours.
           </p>
-          <button onClick={() => navigate('/contact')} className="bg-white text-green-700 px-6 py-3 rounded-xl font-semibold transition-all duration-200 hover:shadow-soft-xl">
+          <button onClick={() => navigate('/contact')} className="bg-terracotta-500 hover:bg-terracotta-600 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 hover:shadow-soft-xl">
             Talk to the Team
           </button>
         </div>

@@ -8,29 +8,29 @@ const Contact = () => {
   ];
 
   return (
-    <div className="bg-white dark:bg-gray-900">
+    <div className="bg-warm-50 dark:bg-gray-900">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#012414] via-[#035f3f] to-[#0ea463]">
-        <div className="absolute inset-0 bg-grid-white/10 bg-[size:20px_20px]" aria-hidden="true" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-          <div className="text-center mb-16">
+      <section className="relative overflow-hidden bg-warm-50 dark:bg-gray-900 border-b border-warm-200 dark:border-gray-800">
+        <div className="code-bg absolute inset-0 opacity-30 dark:opacity-15" aria-hidden="true" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-24">
+          <div className="text-center mb-12">
             <div className="inline-block mb-6">
-              <MessageSquare className="h-16 w-16 text-white mx-auto animate-pulse-slow" aria-hidden="true" />
+              <MessageSquare className="h-12 w-12 text-terracotta-600 dark:text-terracotta-400 mx-auto" aria-hidden="true" />
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 dyslexic-text">
+            <h1 className="heading-display text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-6">
               Let's Connect
             </h1>
-            <p className="text-xl md:text-2xl text-green-100 mb-8 max-w-4xl mx-auto dyslexic-text">
-              Ready to bring AI and robotics education to your school? We're here to help you start your journey.
+            <p className="text-lg md:text-xl text-gray-700 dark:text-gray-300 mb-10 max-w-3xl mx-auto">
+              Ready to bring AI and robotics education to your school? We're here to help you start.
             </p>
-            
-            {/* Quick Stats */}
+
+            {/* Quick Stats — bracket-framed mini-cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
               {contactStats.map((stat, index) => (
-                <div key={index} className="bg-white/10 backdrop-blur-lg rounded-lg p-6 hover:bg-white/20 transition-all duration-300">
-                  <stat.icon className="h-8 w-8 text-white mx-auto mb-3" aria-hidden="true" />
-                  <div className="text-2xl font-bold text-white mb-1 dyslexic-text">{stat.value}</div>
-                  <div className="text-green-100 text-sm dyslexic-text">{stat.label}</div>
+                <div key={index} className="bg-white dark:bg-gray-800 border border-warm-200 dark:border-gray-700/50 rounded-lg p-6 hover:-translate-y-1 transition-all duration-300">
+                  <stat.icon className="h-7 w-7 text-terracotta-600 dark:text-terracotta-400 mx-auto mb-3" aria-hidden="true" />
+                  <div className="font-pixel text-base text-gray-900 dark:text-white mb-2">{stat.value}</div>
+                  <div className="text-gray-600 dark:text-gray-400 text-sm">{stat.label}</div>
                 </div>
               ))}
             </div>
@@ -45,7 +45,7 @@ const Contact = () => {
           <div className="lg:col-span-1">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8 h-fit sticky top-8">
               <div className="text-center mb-8">
-                <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3 dyslexic-text">Get In Touch</h2>
+                <h2 className="heading-display text-2xl font-semibold text-gray-900 dark:text-white mb-3 dyslexic-text">Get In Touch</h2>
                 <p className="text-gray-600 dark:text-gray-300 dyslexic-text">We're here to help you bring innovation to your classroom</p>
               </div>
               
@@ -122,7 +122,7 @@ const Contact = () => {
           {/* Contact Form Column */}
           <div className="lg:col-span-2">
             <div className="mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4 dyslexic-text">
+              <h2 className="heading-display text-3xl font-bold text-gray-900 dark:text-white mb-4 dyslexic-text">
                 How Can We Help You?
               </h2>
               <p className="text-lg text-gray-600 dark:text-gray-300 dyslexic-text">
@@ -131,9 +131,9 @@ const Contact = () => {
             </div>
 
             {/* Email Instructions */}
-            <div className="bg-gradient-to-r from-primary-50 to-blue-50 dark:from-primary-900/20 dark:to-blue-900/20 rounded-xl p-8 mb-12 border border-primary-200 dark:border-primary-800">
+            <div className="bg-gradient-to-r from-warm-100 to-warm-50 dark:from-teal-900/20 dark:to-gray-900 rounded-xl p-8 mb-12 border border-gray-200 dark:border-gray-700">
               <div className="text-center">
-                <div className="bg-primary-600 p-4 rounded-xl w-fit mx-auto mb-6">
+                <div className="bg-teal-600 p-4 rounded-xl w-fit mx-auto mb-6">
                   <Mail className="h-8 w-8 text-white" aria-hidden="true" />
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 dyslexic-text">
@@ -152,7 +152,7 @@ const Contact = () => {
 
             {/* Inquiry Type Cards */}
             <div className="space-y-6">
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6 dyslexic-text">
+              <h3 className="heading-display text-xl font-semibold text-gray-900 dark:text-white mb-6 dyslexic-text">
                 What type of inquiry do you have?
               </h3>
 

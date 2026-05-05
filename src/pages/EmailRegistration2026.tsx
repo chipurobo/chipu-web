@@ -70,10 +70,10 @@ Best regards,
   ];
 
   return (
-    <div className="bg-white dark:bg-gray-900">
+    <div className="bg-warm-50 dark:bg-gray-900">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-900 to-emerald-900/80 dark:from-black dark:to-primary-950">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(16,185,129,0.1),transparent_70%)]" />
+      <section className="relative overflow-hidden bg-warm-50 dark:bg-gray-900 border-b border-warm-200 dark:border-gray-800">
+        <div className="code-bg absolute inset-0 opacity-30 dark:opacity-15" aria-hidden="true" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-28 lg:py-32">
           <div className="text-center">
             <div className="mb-8">
@@ -81,16 +81,16 @@ Best regards,
                 🚀 Building on 2025 Success - Registration Now Open
               </span>
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white mb-6">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 dark:text-white mb-6 heading-display">
               Register for ChipuRobo 2026 – Season 2
             </h1>
-            <p className="text-lg text-gray-300 mb-8 max-w-4xl mx-auto">
+            <p className="text-lg text-gray-700 dark:text-gray-300 mb-8 max-w-4xl mx-auto">
               We're launching Season 2 of the ChipuRobo Programme — empowering 100 new schools across 47 counties through inclusive, hands-on AI and robotics learning.
             </p>
             <div className="bg-white/5 border border-white/10 backdrop-blur-lg rounded-xl p-6 max-w-3xl mx-auto">
               <div className="flex items-center justify-center mb-4">
                 <Mail className="h-8 w-8 text-white mr-3" aria-hidden="true" />
-                <h2 className="text-2xl font-bold text-white">Ready to Transform Your School?</h2>
+                <h2 className="text-2xl font-bold text-white heading-display">Ready to Transform Your School?</h2>
               </div>
               <p className="text-gray-300 text-lg mb-4">
                 Registration for the 2026 programme is simple - just send us an email with your school information:
@@ -108,7 +108,7 @@ Best regards,
       <section className="py-20 sm:py-28 lg:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 dark:text-white mb-6">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 dark:text-white mb-6 heading-display">
               Available Programs for 2026
             </h2>
             <p className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
@@ -137,13 +137,13 @@ Best regards,
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center">
                 <MessageSquare className="mr-3 h-6 w-6 text-primary-600" aria-hidden="true" />
-                <h2 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+                <h2 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white heading-display">
                   Email Template for Registration
                 </h2>
               </div>
               <button
                 onClick={() => setIsTemplateExpanded(!isTemplateExpanded)}
-                className="flex items-center px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-all duration-200 focus-visible hover:shadow-soft-md"
+                className="flex items-center px-4 py-2 bg-terracotta-500 text-white rounded-xl hover:bg-terracotta-600 transition-all duration-200 focus-visible hover:shadow-soft-md"
                 aria-expanded={isTemplateExpanded}
                 aria-controls="email-template-content"
               >
@@ -248,7 +248,7 @@ Best regards,
           <div className="text-center bg-gradient-to-br from-gray-900 via-gray-900 to-emerald-900/80 rounded-xl p-8 text-white relative overflow-hidden">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(16,185,129,0.1),transparent_70%)]" />
             <div className="relative">
-              <h2 className="text-3xl font-bold tracking-tight mb-4">Ready to Get Started?</h2>
+              <h2 className="text-3xl font-bold tracking-tight mb-4 heading-display text-gray-900 dark:text-white">Ready to Get Started?</h2>
               <p className="text-lg mb-6 text-gray-300">
                 Be part of 100+ schools joining Season 2 of the ChipuRobo Programme in 2026
               </p>

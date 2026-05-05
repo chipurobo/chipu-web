@@ -126,22 +126,22 @@ const Services = () => {
   ];
 
   return (
-    <div className="bg-white dark:bg-gray-900">
+    <div className="bg-warm-50 dark:bg-gray-900">
       {/* Hero Section */}
       <section
-        className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-900 to-emerald-900/80 dark:from-black dark:to-primary-950"
+        className="relative overflow-hidden bg-warm-50 dark:bg-gray-900 border-b border-warm-200 dark:border-gray-800"
         aria-labelledby="services-hero-title"
       >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(16,185,129,0.1),transparent_70%)]" />
+        <div className="code-bg absolute inset-0 opacity-30 dark:opacity-15" aria-hidden="true" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-28 lg:py-32">
           <div className="text-center">
             <h1
               id="services-hero-title"
-              className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 tracking-tight"
+              className="heading-display text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6 tracking-tight"
             >
               Our Programs
             </h1>
-            <p className="text-lg text-gray-300 max-w-3xl mx-auto">
+            <p className="text-lg text-gray-700 dark:text-gray-300 max-w-3xl mx-auto">
               Inclusive AI and robotics education with locally fabricated kits, Code Clubs, and CBC alignment across Kenya
             </p>
           </div>
@@ -152,8 +152,8 @@ const Services = () => {
       <section className="section" aria-labelledby="main-programs-title">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 id="main-programs-title" className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-              Featured Programs
+            <h2 id="main-programs-title" className="heading-display text-3xl font-bold text-gray-900 dark:text-white mb-4">
+              Featured <span className="text-gray-400 dark:text-gray-500">Programs</span>
             </h2>
             <p className="text-lg text-gray-600 dark:text-gray-400">
               Choose the program that best fits your learning goals
@@ -171,8 +171,8 @@ const Services = () => {
 
                 <div className="relative p-8">
                   <div className="flex items-center mb-6">
-                    <div className="bg-primary-50 dark:bg-primary-900/30 p-3 rounded-xl mr-4">
-                      <program.icon className="h-7 w-7 text-primary-600 dark:text-primary-400" aria-hidden="true" />
+                    <div className="bg-teal-50 dark:bg-teal-900/30 p-3 rounded-xl mr-4">
+                      <program.icon className="h-7 w-7 text-teal-600 dark:text-teal-400" aria-hidden="true" />
                     </div>
                     <h3 id={`program-title-${index}`} className="text-xl font-semibold text-gray-900 dark:text-white">
                       {program.title}
@@ -198,11 +198,11 @@ const Services = () => {
                   <div className="border-t border-gray-100 dark:border-gray-700/50 pt-5">
                     <div className="grid grid-cols-2 gap-3 text-sm">
                       <div className="flex items-center text-gray-500 dark:text-gray-400">
-                        <Clock className="h-4 w-4 mr-2 text-primary-600 dark:text-primary-400" aria-hidden="true" />
+                        <Clock className="h-4 w-4 mr-2 text-teal-600 dark:text-teal-400" aria-hidden="true" />
                         <span className="text-xs">{program.duration}</span>
                       </div>
                       <div className="flex items-center text-gray-500 dark:text-gray-400">
-                        <Users className="h-4 w-4 mr-2 text-primary-600 dark:text-primary-400" aria-hidden="true" />
+                        <Users className="h-4 w-4 mr-2 text-teal-600 dark:text-teal-400" aria-hidden="true" />
                         <span className="text-xs">{program.groupSize}</span>
                       </div>
                     </div>
@@ -212,7 +212,7 @@ const Services = () => {
                 <div className="p-6 bg-gray-50 dark:bg-gray-900/50">
                   <button
                     onClick={handleEnroll}
-                    className="w-full bg-primary-600 text-white px-6 py-3 rounded-xl hover:bg-primary-700 transition-all duration-200 flex items-center justify-center group/btn font-semibold text-sm focus-visible"
+                    className="w-full bg-teal-600 text-white px-6 py-3 rounded-xl hover:bg-teal-700 transition-all duration-200 flex items-center justify-center group/btn font-semibold text-sm focus-visible"
                     aria-label={`Enroll in ${program.title} program`}
                   >
                     <span>Enroll Now</span>
@@ -229,7 +229,7 @@ const Services = () => {
       <div className="section-alt">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Additional Workshops</h2>
+            <h2 className="heading-display text-3xl font-bold text-gray-900 dark:text-white mb-4">Additional <span className="text-gray-400 dark:text-gray-500">Workshops</span></h2>
             <p className="text-lg text-gray-600 dark:text-gray-400">
               Flexible learning options to fit your schedule
             </p>
@@ -246,7 +246,7 @@ const Services = () => {
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{workshop.title}</h3>
                 <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm">{workshop.description}</p>
-                <p className="text-primary-600 dark:text-primary-400 font-medium text-sm">{workshop.schedule}</p>
+                <p className="text-teal-600 dark:text-teal-400 font-medium text-sm">{workshop.schedule}</p>
               </div>
             ))}
           </div>
@@ -257,7 +257,7 @@ const Services = () => {
       <div className="section">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Why Choose Our Programs?</h2>
+            <h2 className="heading-display text-3xl font-bold text-gray-900 dark:text-white mb-4">Why Choose Our <span className="text-gray-400 dark:text-gray-500">Programs</span>?</h2>
             <p className="text-lg text-gray-600 dark:text-gray-400">
               Experience the ChipuRobo advantage
             </p>
@@ -269,8 +269,8 @@ const Services = () => {
                 key={index}
                 className="flex items-start p-6 bg-white dark:bg-gray-800 rounded-xl shadow-soft-sm border border-gray-100 dark:border-gray-700/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-soft-md"
               >
-                <div className="flex-shrink-0 bg-primary-50 dark:bg-primary-900/30 p-2.5 rounded-xl">
-                  <benefit.icon className="h-6 w-6 text-primary-600 dark:text-primary-400" />
+                <div className="flex-shrink-0 bg-teal-50 dark:bg-teal-900/30 p-2.5 rounded-xl">
+                  <benefit.icon className="h-6 w-6 text-teal-600 dark:text-teal-400" />
                 </div>
                 <div className="ml-4">
                   <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-1">{benefit.title}</h3>
@@ -283,7 +283,7 @@ const Services = () => {
       </div>
 
       {/* CTA Section */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-primary-600 via-emerald-600 to-emerald-700 dark:from-primary-700 dark:to-emerald-800">
+      <div className="relative overflow-hidden bg-gray-900 dark:bg-black">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.08),transparent_70%)]" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-24">
           <div className="text-center">
@@ -292,7 +292,7 @@ const Services = () => {
             </h2>
             <button
               onClick={handleEnroll}
-              className="bg-white text-primary-600 px-8 py-4 rounded-xl hover:bg-gray-50 transition-all duration-200 text-lg font-semibold inline-flex items-center group hover:shadow-soft-xl"
+              className="bg-terracotta-500 hover:bg-terracotta-600 text-white px-8 py-4 rounded-xl transition-all duration-200 text-lg font-semibold inline-flex items-center group hover:shadow-soft-xl"
             >
               <span>Enroll Now</span>
               <ArrowRight className="ml-2 h-5 w-5 transform group-hover:translate-x-1 transition-transform" />

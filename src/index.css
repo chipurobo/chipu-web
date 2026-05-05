@@ -1,6 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700;800&display=swap');
-@import url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/open-dyslexic-regular.css');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -20,19 +17,37 @@
     --warm-bg: #f5f0e8;
     --warm-bg-alt: #ede5d8;
     --cream: #faf8f5;
+    --footer-bg: #111827; /* gray-900, matches Footer */
   }
 
+  /* Match the footer background at the document root so any
+     overscroll past the footer reveals the footer color, not the
+     page cream/warm-50 — fixes the "white strip after footer" bug. */
   html {
     scroll-behavior: smooth;
+    background-color: var(--footer-bg);
   }
 
+  /* === Default body type: OpenDyslexic ===
+     Headings stay pixel (Press Start 2P) for the robotic feel; the
+     rest of the site uses OpenDyslexic, which is easier to read for
+     dyslexic users and gives the page a distinctive character to
+     contrast the 8-bit headings. The .font-mono utility still
+     resolves to VT323 for explicitly terminal-style elements. */
   * {
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: 'OpenDyslexic', 'Comic Sans MS', system-ui, sans-serif;
   }
 
-  /* Dyslexic-friendly opt-in */
+  body {
+    letter-spacing: 0.01em;
+    line-height: 1.55;
+  }
+
+  /* Legacy alias — `.dyslexic-mode` is now redundant since the whole
+     site is OpenDyslexic by default, but we keep the class around so
+     existing markup doesn't break. */
   .dyslexic-mode * {
-    font-family: 'OpenDyslexic', 'Comic Sans MS', 'Arial', sans-serif;
+    font-family: 'OpenDyslexic', 'Comic Sans MS', 'Arial', sans-serif !important;
     letter-spacing: 0.05em;
     line-height: 1.6;
   }
@@ -83,27 +98,65 @@
     html {
       scroll-behavior: auto;
     }
+    /* Stop the blinking terminal cursor & status dots */
+    .terminal-cursor::after,
+    .term-chip::before {
+      animation: none !important;
+      opacity: 1 !important;
+    }
   }
 
   body {
     @apply bg-warm-50 dark:bg-gray-900 text-gray-900 dark:text-white;
   }
 
+  /* Headings → 8-bit pixel font.
+     Press Start 2P has very wide metrics; we counter that with
+     reduced letter-spacing and tighter line-height. */
   h1, h2, h3, h4, h5, h6 {
-    @apply text-gray-900 dark:text-white tracking-tight;
+    @apply text-gray-900 dark:text-white;
+    font-family: 'Press Start 2P', monospace;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+    word-spacing: -0.1em;
+  }
+
+  /* Smaller headings stay in OpenDyslexic — Press Start 2P at <1rem
+     is unreadable, and OpenDyslexic gives them a clear, accessible
+     read while staying distinct from the body text via weight. */
+  h4, h5, h6 {
+    font-family: 'OpenDyslexic', 'Comic Sans MS', system-ui, sans-serif;
+    letter-spacing: 0.01em;
+    font-weight: 700;
   }
 
   p {
-    @apply text-gray-600 dark:text-gray-300 leading-relaxed;
+    @apply text-gray-700 dark:text-gray-300 leading-relaxed;
   }
+
+  /* Make the cream body text a touch deeper for legibility against
+     the cream background, since VT323 is a thin pixel font. */
+  .text-gray-600 { color: #374151; }
+  .dark .text-gray-600 { color: #d1d5db; }
 }
 
-/* Display headings — serif */
+/* === Display headings: 8-bit pixel ===
+   Press Start 2P characters are much wider/taller than typical fonts,
+   so existing Tailwind size classes (text-5xl, text-6xl, ...) blow out
+   layouts. We cap apparent size with a clamp() that respects viewport
+   width while staying readable. Per-element overrides still win. */
 .heading-display {
-  font-family: 'DM Serif Display', Georgia, serif;
+  font-family: 'Press Start 2P', monospace;
   font-weight: 400;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.04em;
+  line-height: 1.25;
+  word-spacing: -0.15em;
+  text-transform: uppercase;
 }
+
+h1.heading-display { font-size: clamp(1.5rem, 4.5vw, 3rem) !important; line-height: 1.2 !important; }
+h2.heading-display { font-size: clamp(1.125rem, 3vw, 2rem) !important; line-height: 1.25 !important; }
+h3.heading-display { font-size: clamp(1rem, 2vw, 1.5rem) !important; line-height: 1.3 !important; }
 
 /* Corner bracket frame — tnkr.ai style */
 .bracket-frame {
@@ -368,9 +421,140 @@
   .glass {
     @apply bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-white/20 dark:border-gray-700/30;
   }
+
+  /* === Robotic / CRT utilities === */
+
+  /* Sharp pixel rendering — keeps text edges blocky, no smoothing */
+  .pixel-crisp {
+    image-rendering: pixelated;
+    -webkit-font-smoothing: none;
+    -moz-osx-font-smoothing: none;
+    text-rendering: geometricPrecision;
+  }
+
+  /* Teal CRT glow on text — subtle in light mode, brighter in dark */
+  .glow-teal {
+    color: #14b8a6;
+    text-shadow:
+      0 0 6px rgba(20, 184, 166, 0.55),
+      0 0 14px rgba(20, 184, 166, 0.25);
+  }
+
+  .glow-yellow {
+    /* used sparingly for important alerts/markers */
+    color: #fbbf24;
+    text-shadow:
+      0 0 6px rgba(251, 191, 36, 0.55),
+      0 0 14px rgba(251, 191, 36, 0.25);
+  }
+
+  /* Hard pixel-style drop shadow */
+  .shadow-pixel {
+    box-shadow: 4px 4px 0 0 rgba(17, 24, 39, 1);
+  }
+
+  .shadow-pixel-teal {
+    box-shadow: 4px 4px 0 0 #0f766e;
+  }
+
+  /* Scanline overlay — apply to dark sections */
+  .scanlines {
+    position: relative;
+    isolation: isolate;
+  }
+  .scanlines::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.03) 0,
+      rgba(255, 255, 255, 0.03) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    mix-blend-mode: overlay;
+    z-index: 1;
+  }
+
+  /* Circuit-board grid background — works on dark sections */
+  .circuit-grid {
+    background-image:
+      linear-gradient(rgba(20, 184, 166, 0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(20, 184, 166, 0.07) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  .circuit-grid-light {
+    background-image:
+      linear-gradient(rgba(15, 118, 110, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(15, 118, 110, 0.06) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  /* Blinking terminal cursor */
+  .terminal-cursor::after {
+    content: '_';
+    display: inline-block;
+    margin-left: 0.15em;
+    color: #14b8a6;
+    animation: blink 1s steps(1) infinite;
+  }
+}
+
+@keyframes blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+@keyframes scanline-sweep {
+  0%   { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
 }
 
 @layer components {
+  /* === Robotic terminal/status pill === */
+  .term-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.75rem;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.625rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border: 2px solid currentColor;
+    border-radius: 2px;
+    background: rgba(15, 23, 42, 0.85);
+    color: #14b8a6;
+  }
+
+  .term-chip::before {
+    content: '';
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    background: currentColor;
+    border-radius: 50%;
+    box-shadow: 0 0 6px currentColor;
+    animation: blink 1.5s ease-in-out infinite;
+  }
+
+  /* Pixel-style card with hard shadow */
+  .pixel-card {
+    @apply bg-white dark:bg-gray-800 transition-all duration-150;
+    border: 2px solid #0f172a;
+    border-radius: 2px;
+    box-shadow: 6px 6px 0 0 #0f172a;
+  }
+  .dark .pixel-card { border-color: #0d9488; box-shadow: 6px 6px 0 0 #0d9488; }
+  .pixel-card:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 8px 8px 0 0 #0f172a;
+  }
+  .dark .pixel-card:hover { box-shadow: 8px 8px 0 0 #0d9488; }
+
   .card {
     @apply bg-white dark:bg-gray-800 rounded-xl shadow-soft-md border border-gray-100 dark:border-gray-700/50 overflow-hidden transform transition-all duration-300 hover:-translate-y-1.5 hover:shadow-soft-lg;
   }
@@ -403,21 +587,52 @@
     @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
   }
 
-  /* Warm button styles matching tnkr terracotta CTAs */
+  /* === Robotic CTA buttons ===
+     Square corners, pixel font, hard pixel shadow that "presses" on
+     hover. Terracotta primary, teal-bordered outline. */
   .btn-cta {
-    @apply bg-terracotta-500 text-white px-7 py-3.5 rounded-lg font-semibold inline-flex items-center justify-center transition-all duration-200;
+    @apply bg-terracotta-500 text-white px-6 py-3 inline-flex items-center justify-center transition-all duration-150;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border-radius: 2px;
+    border: 2px solid #0f172a;
+    box-shadow: 4px 4px 0 0 #0f172a;
   }
 
   .btn-cta:hover {
-    @apply bg-terracotta-600 shadow-soft-lg;
+    @apply bg-terracotta-600;
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 0 #0f172a;
+  }
+
+  .btn-cta:active {
+    transform: translate(4px, 4px);
+    box-shadow: 0 0 0 0 #0f172a;
   }
 
   .btn-outline {
-    @apply border-2 border-gray-800 dark:border-gray-300 text-gray-800 dark:text-gray-300 px-7 py-3.5 rounded-lg font-semibold inline-flex items-center justify-center transition-all duration-200;
+    @apply text-gray-900 dark:text-teal-300 px-6 py-3 inline-flex items-center justify-center transition-all duration-150;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border-radius: 2px;
+    border: 2px solid #0d9488;
+    background: transparent;
+    box-shadow: 4px 4px 0 0 #0d9488;
   }
 
   .btn-outline:hover {
-    @apply bg-gray-800 text-white dark:bg-gray-300 dark:text-gray-900;
+    @apply bg-teal-600 text-white border-teal-600;
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 0 #0f766e;
+  }
+
+  .btn-outline:active {
+    transform: translate(4px, 4px);
+    box-shadow: 0 0 0 0 #0d9488;
   }
 
   .card h1, .card h2, .card h3, .card h4, .card h5, .card h6 {

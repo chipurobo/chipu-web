@@ -60,7 +60,9 @@ function App() {
       case '/jss': return 'JSS Program';
       case '/bootcamps': return 'Bootcamps';
       case '/adc-bootcamp': return 'Bootcamps';
-      case '/finsec': return 'FinSec Hackathon';
+      case '/braille-challenge': return 'Braille Challenge Hackathon';
+      case '/finsec': return 'Braille Challenge Hackathon';
+      case '/hackathons': return 'Braille Challenge Hackathon';
       case '/sustainability': return 'Sustainability';
       case '/team': return 'Our Team';
       case '/services': return 'Our Services';
@@ -77,7 +79,14 @@ function App() {
   return (
     <ThemeProvider>
       <Router>
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        {/*
+          flex flex-col + min-h-screen + main:flex-1 keeps the footer
+          glued to the bottom on short pages, and the wrapper bg matches
+          the body so there's no color "gap" above the footer. The html
+          element bg (set in index.css) takes care of any overscroll
+          past the footer.
+        */}
+        <div className="min-h-screen flex flex-col bg-warm-50 dark:bg-gray-900">
           {/* Skip to main content link for keyboard navigation */}
           <a
             href="#main-content"
@@ -85,17 +94,17 @@ function App() {
           >
             Skip to main content
           </a>
-          
+
           {/* Route announcements for screen readers */}
           <div id="route-announcer" className="sr-only" aria-live="polite" role="status"></div>
-          
+
           {/* Header */}
           <header role="banner">
             <Navbar />
           </header>
 
           {/* Main content */}
-          <main id="main-content" role="main" tabIndex={-1} className="focus:outline-none">
+          <main id="main-content" role="main" tabIndex={-1} className="flex-1 focus:outline-none">
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/about" element={<About />} />
@@ -103,8 +112,10 @@ function App() {
               <Route path="/jss" element={<JSS />} />
               <Route path="/bootcamps" element={<Bootcamps />} />
               <Route path="/adc-bootcamp" element={<Navigate to="/bootcamps" replace />} />
-              <Route path="/finsec" element={<Hackathons />} />
-              <Route path="/hackathons" element={<Navigate to="/finsec" replace />} />
+              <Route path="/braille-challenge" element={<Hackathons />} />
+              {/* Legacy routes — redirect to current hackathon */}
+              <Route path="/finsec" element={<Navigate to="/braille-challenge" replace />} />
+              <Route path="/hackathons" element={<Navigate to="/braille-challenge" replace />} />
               <Route path="/sustainability" element={<Sustainability />} />
               <Route path="/team" element={<Team />} />
               <Route path="/services" element={<Services />} />

@@ -38,17 +38,17 @@ const About = () => {
   ];
 
   return (
-    <div className="bg-white dark:bg-gray-900">
+    <div className="bg-warm-50 dark:bg-gray-900">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-900 to-emerald-900/80 dark:from-black dark:to-primary-950">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(16,185,129,0.1),transparent_70%)]" />
+      <section className="relative overflow-hidden bg-warm-50 dark:bg-gray-900 border-b border-warm-200 dark:border-gray-800">
+        <div className="code-bg absolute inset-0 opacity-30 dark:opacity-15" aria-hidden="true" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-28 lg:py-32">
           <div className="text-center">
-            <MapPin className="h-12 w-12 text-emerald-400 mx-auto mb-6" aria-hidden="true" />
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">
+            <MapPin className="h-12 w-12 text-terracotta-600 dark:text-terracotta-400 mx-auto mb-6" aria-hidden="true" />
+            <h1 className="heading-display text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 tracking-tight">
               Inclusive AI & Robotics Education
             </h1>
-            <p className="text-lg text-gray-300 max-w-3xl mx-auto">
+            <p className="text-lg text-gray-700 dark:text-gray-300 max-w-3xl mx-auto">
               We deliver practical AI and robotics lessons with locally fabricated kits across Kenya.
             </p>
           </div>
@@ -57,7 +57,7 @@ const About = () => {
 
       {/* Story Section */}
       <section className="mb-24" aria-labelledby="about-story-title">
-        <div className="bg-gradient-to-br from-emerald-50 to-green-50 dark:from-gray-800 dark:to-gray-900 p-12 rounded-2xl border border-emerald-200 dark:border-gray-700">
+        <div className="bg-gradient-to-br from-warm-100 to-warm-50 dark:from-gray-800 dark:to-gray-900 p-12 rounded-2xl border border-gray-200 dark:border-gray-700">
           <h2 id="about-story-title" className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-8 dyslexic-text">
             Our Story
           </h2>
@@ -89,8 +89,8 @@ const About = () => {
           <h2 id="mission-vision-title" className="sr-only">Mission and Vision</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             <article className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-soft-md border border-gray-100 dark:border-gray-700/50 hover:shadow-soft-lg transition-all duration-300">
-              <div className="bg-primary-50 dark:bg-primary-900/30 p-3 rounded-xl w-fit mb-6">
-                <Target className="h-10 w-10 text-primary-600 dark:text-primary-400" aria-hidden="true" />
+              <div className="bg-teal-50 dark:bg-teal-900/30 p-3 rounded-xl w-fit mb-6">
+                <Target className="h-10 w-10 text-teal-600 dark:text-teal-400" aria-hidden="true" />
               </div>
               <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
                 Our Mission
@@ -106,8 +106,8 @@ const About = () => {
             </article>
 
             <article className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-soft-md border border-gray-100 dark:border-gray-700/50 hover:shadow-soft-lg transition-all duration-300">
-              <div className="bg-green-50 dark:bg-green-900/30 p-3 rounded-xl w-fit mb-6">
-                <Globe className="h-10 w-10 text-green-600 dark:text-green-400" aria-hidden="true" />
+              <div className="bg-teal-50 dark:bg-teal-900/30 p-3 rounded-xl w-fit mb-6">
+                <Globe className="h-10 w-10 text-teal-600 dark:text-teal-400" aria-hidden="true" />
               </div>
               <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
                 Our Vision
@@ -129,8 +129,8 @@ const About = () => {
       <section className="section" aria-labelledby="achievements-title">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 id="achievements-title" className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-              Milestones That Matter
+            <h2 id="achievements-title" className="heading-display text-3xl font-bold text-gray-900 dark:text-white mb-4">
+              Milestones <span className="text-gray-400 dark:text-gray-500">That Matter</span>
             </h2>
             <p className="text-lg text-gray-600 dark:text-gray-400">
               Highlights from August to October 2025
@@ -143,8 +143,8 @@ const About = () => {
                 className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-soft-md border border-gray-100 dark:border-gray-700/50 text-center transition-all duration-300 hover:-translate-y-1.5 hover:shadow-soft-lg"
                 aria-labelledby={`achievement-title-${index}`}
               >
-                <div className="bg-primary-50 dark:bg-primary-900/30 p-3 rounded-xl w-fit mx-auto mb-6">
-                  <achievement.icon className="h-10 w-10 text-primary-600 dark:text-primary-400" aria-hidden="true" />
+                <div className="bg-teal-50 dark:bg-teal-900/30 p-3 rounded-xl w-fit mx-auto mb-6">
+                  <achievement.icon className="h-10 w-10 text-teal-600 dark:text-teal-400" aria-hidden="true" />
                 </div>
                 <h3 id={`achievement-title-${index}`} className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
                   {achievement.title}
@@ -160,9 +160,9 @@ const About = () => {
 
       {/* Values */}
       <section className="mx-4 sm:mx-6 lg:mx-8 mb-20 sm:mb-28 lg:mb-32">
-        <div className="max-w-7xl mx-auto bg-gradient-to-br from-gray-900 via-gray-900 to-emerald-900/80 dark:from-black dark:to-primary-950 rounded-2xl p-10 sm:p-14" aria-labelledby="values-title">
+        <div className="max-w-7xl mx-auto bg-gray-900 dark:bg-black rounded-2xl p-10 sm:p-14 scanlines" aria-labelledby="values-title">
           <div className="text-center mb-12">
-            <h2 id="values-title" className="text-3xl font-bold text-white mb-4">
+            <h2 id="values-title" className="heading-display text-3xl font-bold text-white mb-4">
               What Drives Us
             </h2>
             <p className="text-lg text-gray-300 max-w-3xl mx-auto">

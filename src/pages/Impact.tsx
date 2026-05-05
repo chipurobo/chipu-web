@@ -121,13 +121,13 @@ const Impact = () => {
   ];
 
   return (
-    <div className="bg-white dark:bg-gray-900">
+    <div className="bg-warm-50 dark:bg-gray-900">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-900 to-emerald-900/80 dark:from-black dark:to-primary-950">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(16,185,129,0.1),transparent_70%)]" />
+      <section className="relative overflow-hidden bg-warm-50 dark:bg-gray-900 border-b border-warm-200 dark:border-gray-800">
+        <div className="code-bg absolute inset-0 opacity-30 dark:opacity-15" aria-hidden="true" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-28 lg:py-32">
           <div className="text-center">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white mb-6">
+            <h1 className="heading-display text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white mb-6">
               Impact Report
             </h1>
             <p className="text-lg text-gray-300 mb-4 max-w-4xl mx-auto">
@@ -140,7 +140,7 @@ const Impact = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
                 onClick={downloadImpactData}
-                className="bg-white text-primary-900 px-8 py-4 rounded-xl hover:bg-gray-100 transition-all duration-200 text-lg font-semibold flex items-center justify-center hover:shadow-soft-xl"
+                className="bg-terracotta-500 hover:bg-terracotta-600 text-white px-8 py-4 rounded-xl transition-all duration-200 text-lg font-semibold flex items-center justify-center hover:shadow-soft-xl"
               >
                 <Download className="mr-2 h-5 w-5" />
                 Download Impact Data (CSV)
@@ -161,17 +161,17 @@ const Impact = () => {
       <section className="py-20 sm:py-28 lg:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white mb-4">Program by the Numbers</h2>
+            <h2 className="heading-display text-3xl font-bold tracking-tight text-gray-900 dark:text-white mb-4">Program by the Numbers</h2>
             <p className="text-lg text-gray-600 dark:text-gray-400">Measurable impact across Kenya</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {achievements.map((achievement, index) => (
               <div key={index} className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-soft-md border border-gray-100 dark:border-gray-700/50 text-center transition-all duration-300 hover:shadow-soft-lg hover:-translate-y-1.5">
-                <achievement.icon className="h-12 w-12 text-primary-600 dark:text-primary-400 mx-auto mb-4" />
+                <achievement.icon className="h-12 w-12 text-teal-600 dark:text-teal-400 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{achievement.title}</h3>
                 <p className="text-gray-600 dark:text-gray-400 mb-3">{achievement.description}</p>
-                <p className="text-primary-600 dark:text-primary-400 font-semibold">{achievement.stats}</p>
+                <p className="text-teal-600 dark:text-teal-400 font-semibold">{achievement.stats}</p>
               </div>
             ))}
           </div>
@@ -182,7 +182,7 @@ const Impact = () => {
       <section className="section-alt">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white mb-4">National Bootcamp Series</h2>
+            <h2 className="heading-display text-3xl font-bold tracking-tight text-gray-900 dark:text-white mb-4">National Bootcamp Series</h2>
             <p className="text-lg text-gray-600 dark:text-gray-400">Transformative programs delivering impact nationwide</p>
           </div>
 
@@ -192,8 +192,8 @@ const Impact = () => {
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
                   <div className="flex-1">
                     <div className="flex items-center mb-4">
-                      <Calendar className="h-6 w-6 text-primary-600 dark:text-primary-400 mr-3" />
-                      <span className="text-primary-600 dark:text-primary-400 font-semibold">{bootcamp.month}</span>
+                      <Calendar className="h-6 w-6 text-teal-600 dark:text-teal-400 mr-3" />
+                      <span className="text-teal-600 dark:text-teal-400 font-semibold">{bootcamp.month}</span>
                     </div>
                     <h3 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white mb-2">{bootcamp.title}</h3>
                     <div className="flex items-center text-gray-600 dark:text-gray-400 mb-2">
@@ -222,13 +222,13 @@ const Impact = () => {
       <section className="py-20 sm:py-28 lg:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white mb-4">Pioneering Inclusive Education</h2>
+            <h2 className="heading-display text-3xl font-bold tracking-tight text-gray-900 dark:text-white mb-4">Pioneering Inclusive Education</h2>
             <p className="text-lg text-gray-600 dark:text-gray-400">Breaking barriers, building accessibility</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-8 rounded-xl border border-gray-100 dark:border-gray-700/50">
-              <Eye className="h-12 w-12 text-green-600 mb-4" />
+            <div className="bg-teal-50 dark:bg-teal-900/30 p-8 rounded-xl border border-gray-100 dark:border-gray-700/50">
+              <Eye className="h-12 w-12 text-teal-600 dark:text-teal-400 mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">Braille Robotics</h3>
               <p className="text-gray-600 dark:text-gray-400">
                 Developed tactile robotics challenges and Braille programming interfaces,
@@ -236,8 +236,8 @@ const Impact = () => {
               </p>
             </div>
 
-            <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-8 rounded-xl border border-gray-100 dark:border-gray-700/50">
-              <Users className="h-12 w-12 text-green-600 mb-4" />
+            <div className="bg-teal-50 dark:bg-teal-900/30 p-8 rounded-xl border border-gray-100 dark:border-gray-700/50">
+              <Users className="h-12 w-12 text-teal-600 dark:text-teal-400 mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">KSL Integration</h3>
               <p className="text-gray-600 dark:text-gray-400">
                 Integrated Kenyan Sign Language (KSL) into our curriculum materials and training,
@@ -245,8 +245,8 @@ const Impact = () => {
               </p>
             </div>
 
-            <div className="bg-gradient-to-br from-green-50 to-lime-50 dark:from-green-900/20 dark:to-lime-900/20 p-8 rounded-xl border border-gray-100 dark:border-gray-700/50">
-              <Brain className="h-12 w-12 text-green-600 mb-4" />
+            <div className="bg-teal-50 dark:bg-teal-900/30 p-8 rounded-xl border border-gray-100 dark:border-gray-700/50">
+              <Brain className="h-12 w-12 text-teal-600 dark:text-teal-400 mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">Low-Vision LMS</h3>
               <p className="text-gray-600 dark:text-gray-400">
                 Developed specialized Learning Management System features with high contrast,
@@ -258,11 +258,10 @@ const Impact = () => {
       </section>
 
       {/* Testimonials */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-900 to-emerald-900/80 dark:from-black dark:to-primary-950 py-20 sm:py-28 lg:py-32">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(16,185,129,0.1),transparent_70%)]" />
+      <section className="relative overflow-hidden bg-gray-900 dark:bg-black py-20 sm:py-28 lg:py-32">
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold tracking-tight text-white mb-4">Voices from the Field</h2>
+            <h2 className="heading-display text-3xl font-bold tracking-tight text-white mb-4">Voices from the Field</h2>
             <p className="text-lg text-gray-300">Impact stories from educators and communities</p>
           </div>
 
@@ -283,10 +282,9 @@ const Impact = () => {
       {/* Microsoft Partnership Highlight */}
       <section className="py-20 sm:py-28 lg:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-gradient-to-br from-gray-900 via-gray-900 to-emerald-900/80 rounded-xl p-12 text-center relative overflow-hidden">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(16,185,129,0.1),transparent_70%)]" />
+          <div className="bg-gray-900 dark:bg-black rounded-xl p-12 text-center relative overflow-hidden">
             <div className="relative">
-              <h2 className="text-3xl font-bold tracking-tight text-white mb-4">Microsoft ADC Partnership</h2>
+              <h2 className="heading-display text-3xl font-bold tracking-tight text-white mb-4">Microsoft ADC Partnership</h2>
               <p className="text-lg text-gray-300 mb-8 max-w-3xl mx-auto">
                 Our strategic partnership with Microsoft ADC provided technical enablement,
                 AI learning resources, and mentorship that made this transformative year possible.
@@ -296,7 +294,7 @@ const Impact = () => {
                   href="https://www.microsoft.com/en-us/madc"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-white text-green-700 px-8 py-3 rounded-xl hover:bg-gray-100 transition-all duration-200 font-semibold flex items-center justify-center hover:shadow-soft-xl"
+                  className="bg-terracotta-500 hover:bg-terracotta-600 text-white px-8 py-3 rounded-xl transition-all duration-200 font-semibold flex items-center justify-center hover:shadow-soft-xl"
                 >
                   <ExternalLink className="mr-2 h-5 w-5" />
                   Learn About Microsoft ADC
@@ -315,16 +313,15 @@ const Impact = () => {
       </section>
 
       {/* Call to Action */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-900 to-emerald-900/80 dark:from-black dark:to-primary-950 py-20 sm:py-28">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(16,185,129,0.1),transparent_70%)]" />
+      <section className="relative overflow-hidden bg-gray-900 dark:bg-black py-20 sm:py-28">
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-white mb-4">Ready for 2026?</h2>
+          <h2 className="heading-display text-3xl font-bold tracking-tight text-white mb-4">Ready for 2026?</h2>
           <p className="text-lg text-gray-300 mb-8">
             Join us as we expand to reach 4 million youth across Africa by 2030
           </p>
           <button
             onClick={() => navigate('/register-2026')}
-            className="bg-white text-emerald-600 px-8 py-4 rounded-xl hover:bg-gray-100 transition-all duration-200 text-lg font-semibold hover:shadow-soft-xl"
+            className="bg-terracotta-500 hover:bg-terracotta-600 text-white px-8 py-4 rounded-xl transition-all duration-200 text-lg font-semibold hover:shadow-soft-xl"
           >
             Register for 2026 Programme
           </button>

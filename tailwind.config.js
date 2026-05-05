@@ -5,9 +5,17 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        'sans': ['Inter', 'system-ui', 'sans-serif'],
-        'display': ['"DM Serif Display"', 'Georgia', 'serif'],
-        'dyslexic': ['OpenDyslexic', 'Comic Sans MS', 'Arial', 'Helvetica', 'sans-serif'],
+        // Default body — OpenDyslexic for accessibility + character
+        'sans': ['OpenDyslexic', '"Comic Sans MS"', 'system-ui', 'sans-serif'],
+        'dyslexic': ['OpenDyslexic', '"Comic Sans MS"', 'Arial', 'Helvetica', 'sans-serif'],
+        // Robotic / pixel headings & display
+        'pixel': ['"Press Start 2P"', 'monospace', 'system-ui'],
+        'display': ['"Press Start 2P"', '"DM Serif Display"', 'Georgia', 'serif'],
+        // Explicit terminal/code use only — opt-in via `font-mono`
+        'mono': ['VT323', '"Share Tech Mono"', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+        'mono-clean': ['"Share Tech Mono"', 'VT323', 'ui-monospace', 'monospace'],
+        // Legacy escape hatches
+        'inter': ['Inter', 'system-ui', 'sans-serif'],
         'accessibility': ['OpenDyslexic', 'Verdana', 'Tahoma', 'sans-serif'],
       },
       colors: {

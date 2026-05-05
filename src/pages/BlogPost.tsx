@@ -9,11 +9,11 @@ const BlogPost = () => {
   if (!post) {
     return (
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-28 text-center">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Post Not Found</h1>
+        <h1 className="heading-display text-3xl font-bold text-gray-900 dark:text-white mb-4">Post Not Found</h1>
         <p className="text-gray-600 dark:text-gray-300 mb-8">The blog post you're looking for doesn't exist.</p>
         <Link
           to="/blog"
-          className="inline-flex items-center text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium transition-colors"
+          className="inline-flex items-center text-terracotta-600 dark:text-terracotta-400 hover:text-terracotta-700 dark:hover:text-terracotta-300 font-medium transition-colors"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Blog
@@ -27,7 +27,7 @@ const BlogPost = () => {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <Link
           to="/blog"
-          className="inline-flex items-center text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 mb-8 font-medium text-sm transition-colors"
+          className="inline-flex items-center text-terracotta-600 dark:text-terracotta-400 hover:text-terracotta-700 dark:hover:text-terracotta-300 mb-8 font-medium text-sm transition-colors"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Blog
@@ -35,21 +35,28 @@ const BlogPost = () => {
 
         <article className="bg-white dark:bg-gray-800 rounded-xl shadow-soft-lg border border-gray-100 dark:border-gray-700/50 overflow-hidden">
           <div className="relative h-80 sm:h-96 overflow-hidden">
-            <img
-              src={post.image}
-              alt={post.title}
-              className="w-full h-full object-cover"
-            />
+            <picture>
+              <source srcSet={post.image.replace(/\.(jpe?g|png)$/i, '.webp')} type="image/webp" />
+              <img
+                src={post.image}
+                alt={post.title}
+                width={1200}
+                height={674}
+                fetchPriority="high"
+                decoding="async"
+                className="w-full h-full object-cover"
+              />
+            </picture>
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
             <div className="absolute bottom-6 left-6">
-              <span className="bg-primary-500/90 backdrop-blur-sm text-white px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wide">
+              <span className="bg-terracotta-500/90 backdrop-blur-sm text-white px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wide">
                 {post.category}
               </span>
             </div>
           </div>
 
           <div className="p-8 sm:p-10">
-            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-6 tracking-tight">
+            <h1 className="heading-display text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-6 tracking-tight">
               {post.title}
             </h1>
 

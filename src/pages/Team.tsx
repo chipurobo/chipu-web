@@ -3,15 +3,15 @@ import { teamMembers } from '../data/teamMembers';
 
 const Team = () => {
   return (
-    <div className="bg-white dark:bg-gray-900">
+    <div className="bg-warm-50 dark:bg-gray-900">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-900 to-emerald-900/80 dark:from-black dark:to-primary-950">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(16,185,129,0.1),transparent_70%)]" />
+      <section className="relative overflow-hidden bg-warm-50 dark:bg-gray-900 border-b border-warm-200 dark:border-gray-800">
+        <div className="code-bg absolute inset-0 opacity-30 dark:opacity-15" aria-hidden="true" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-28 lg:py-32">
           <div className="text-center">
-            <Users className="h-12 w-12 text-emerald-400 mx-auto mb-6" aria-hidden="true" />
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">Our Team</h1>
-            <p className="text-lg text-gray-300 max-w-3xl mx-auto">
+            <Users className="h-12 w-12 text-terracotta-600 dark:text-terracotta-400 mx-auto mb-6" aria-hidden="true" />
+            <h1 className="heading-display text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 tracking-tight">Our Team</h1>
+            <p className="text-lg text-gray-700 dark:text-gray-300 max-w-3xl mx-auto">
               The ChipuRobo team brings together expertise in technology, education, finance, and community engagement to advance practical AI and STEM learning across Africa.
             </p>
           </div>
@@ -30,11 +30,18 @@ const Team = () => {
                 {/* Circular Photo */}
                 <div className="pt-8 pb-4">
                   {member.photo ? (
-                    <img
-                      src={member.photo}
-                      alt={member.name}
-                      className="w-28 h-28 rounded-full object-cover object-center mx-auto ring-4 ring-emerald-500/20 group-hover:ring-emerald-500/40 transition-all duration-300"
-                    />
+                    <picture>
+                      <source srcSet={member.photo.replace(/\.(jpe?g|png|JPG|JPEG|PNG)$/i, '.webp')} type="image/webp" />
+                      <img
+                        src={member.photo}
+                        alt={member.name}
+                        width={112}
+                        height={112}
+                        loading="lazy"
+                        decoding="async"
+                        className="w-28 h-28 rounded-full object-cover object-center mx-auto ring-4 ring-teal-500/20 group-hover:ring-teal-500/40 transition-all duration-300"
+                      />
+                    </picture>
                   ) : (
                     <div className="w-28 h-28 rounded-full bg-gray-100 dark:bg-gray-700 mx-auto flex items-center justify-center">
                       <Users className="h-10 w-10 text-gray-400" />
@@ -45,7 +52,7 @@ const Team = () => {
                 {/* Content */}
                 <div className="px-6 pb-2">
                   <h2 className="text-xl font-bold text-gray-900 dark:text-white">{member.name}</h2>
-                  <p className="text-emerald-600 dark:text-emerald-400 font-medium text-sm mt-1">{member.role}</p>
+                  <p className="text-teal-600 dark:text-teal-400 font-medium text-sm mt-1">{member.role}</p>
                 </div>
 
                 <div className="px-6 pb-4">
@@ -59,21 +66,21 @@ const Team = () => {
                   <div className="flex justify-center space-x-3 pt-4">
                     <a
                       href={member.social.linkedin}
-                      className="p-2.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all duration-200"
+                      className="p-2.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-teal-50 dark:hover:bg-teal-900/30 hover:text-teal-600 dark:hover:text-teal-400 transition-all duration-200"
                       aria-label={`${member.name} on LinkedIn`}
                     >
                       <Linkedin className="h-4 w-4" />
                     </a>
                     <a
                       href={member.social.github}
-                      className="p-2.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all duration-200"
+                      className="p-2.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-teal-50 dark:hover:bg-teal-900/30 hover:text-teal-600 dark:hover:text-teal-400 transition-all duration-200"
                       aria-label={`${member.name} on GitHub`}
                     >
                       <Github className="h-4 w-4" />
                     </a>
                     <a
                       href={`mailto:${member.social.email}`}
-                      className="p-2.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all duration-200"
+                      className="p-2.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-teal-50 dark:hover:bg-teal-900/30 hover:text-teal-600 dark:hover:text-teal-400 transition-all duration-200"
                       aria-label={`Email ${member.name}`}
                     >
                       <Mail className="h-4 w-4" />
