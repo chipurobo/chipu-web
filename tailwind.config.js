@@ -1,7 +1,10 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
-  darkMode: 'class',
+  // Theme switching has been removed — site is single-theme (cream/warm).
+  // Setting darkMode to a non-existent selector ensures any stray `dark:`
+  // utilities never activate via the system colour-scheme preference.
+  darkMode: ['class', '.dark-mode-disabled-no-such-class'],
   theme: {
     extend: {
       fontFamily: {
