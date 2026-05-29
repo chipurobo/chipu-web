@@ -1,7 +1,7 @@
 import { Hand, BookOpen, Headphones, MapPin, Clock, Users, Calendar, ExternalLink, Mail, CheckCircle, AlertTriangle } from 'lucide-react';
 
-// TODO: replace with the live Braille Challenge registration form URL when ready.
-const REGISTRATION_URL = 'https://forms.office.com/r/pieXytidhj?origin=QRCode&qrcodeorigin=presentation';
+// Updated the registration URL to the live Braille Challenge form.
+const REGISTRATION_URL = 'https://live.braillechallenge.com/register';
 
 const tracks = [
  {
