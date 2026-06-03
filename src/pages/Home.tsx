@@ -70,7 +70,7 @@ const Home = () => {
  {/* ── Announcement pill (tnkr style) ── */}
  <div className="bg-warm-50 flex justify-center pt-6 pb-2 px-4">
  <Link
- to="/hackathons"
+ to="/kesho"
  className="group inline-flex items-center gap-2 bg-gray-800 text-white text-sm px-5 py-2.5 rounded-full hover:bg-gray-700 transition-colors"
  >
  <span className="font-pixel text-[0.55rem] tracking-widest text-teal-400">KESHO</span>

@@ -1,9 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Facebook, Twitter, Linkedin } from 'lucide-react';
-import { getCurrentHackathonNavLabel } from '../../data/hackathons';
 
 const Footer = () => {
-  const hackathonLabel = getCurrentHackathonNavLabel();
  return (
  <footer className="bg-gray-900 text-white scanlines">
  {/* Accent bar */}
@@ -55,7 +53,7 @@ const Footer = () => {
  { to: '/about', label: 'About' },
  { to: '/about#team', label: 'Staff' },
  { to: '/programs', label: 'Programs' },
- { to: '/hackathons', label: `${hackathonLabel} Hackathon` },
+ { to: '/kesho', label: 'Kesho Hackathon' },
  { to: '/impact', label: 'Impact' },
  { to: '/podcast', label: 'Podcast' },
  { to: '/contact', label: 'Contact' },

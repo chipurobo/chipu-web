@@ -14,7 +14,6 @@ import Microsoft from './pages/Microsoft';
 import InclusiveRobotics from './pages/InclusiveRobotics';
 import MicrosoftBootcamps from './pages/MicrosoftBootcamps';
 import Hackathons from './pages/Hackathons';
-import { getCurrentHackathonNavLabel, allHackathonSlugs } from './data/hackathons';
 import Sustainability from './pages/Sustainability';
 import Impact from './pages/Impact';
 import EmailRegistration2026 from './pages/EmailRegistration2026';
@@ -56,15 +55,21 @@ function App() {
       case '/programs': return 'Programs';
       case '/inclusive-robotics': return 'Programs';
       case '/microsoft-bootcamps': return 'Microsoft Bootcamps';
+      // === CURRENT HACKATHON: Kesho ===
+      // When a new hackathon comes around, change these case labels and the
+      // routes below to match the new event slug.
+      case '/kesho': return 'Kesho Hackathon';
       case '/hackathons':
       case '/hackathon':
-        return `${getCurrentHackathonNavLabel()} Hackathon`;
+      case '/braille-challenge':
+      case '/finsec':
+      case '/kesho-hackathon':
+        return 'Kesho Hackathon';
       // Legacy paths — same redirect destinations as the route table below
       case '/ksef': return 'Programs';
       case '/jss': return 'Programs';
       case '/bootcamps': return 'Microsoft Bootcamps';
       case '/adc-bootcamp': return 'Microsoft Bootcamps';
-      case '/finsec': return 'Hackathons';
       // Standalone pages
       case '/sustainability': return 'Sustainability';
       case '/team': return 'Our Team';
@@ -118,22 +123,14 @@ function App() {
             <Route path="/inclusive-robotics" element={<Navigate to="/programs" replace />} />
             <Route path="/microsoft-bootcamps" element={<MicrosoftBootcamps />} />
 
-            {/* Hackathons — one page renders whichever event is current
-                (driven by src/data/hackathons.ts). Past/known slugs all
-                redirect to /hackathons so any old QR code or referrer
-                still lands correctly. */}
-            <Route path="/hackathons" element={<Hackathons />} />
-            <Route path="/hackathon" element={<Navigate to="/hackathons" replace />} />
-            {allHackathonSlugs().map((slug) => (
-              <Route
-                key={slug}
-                path={`/${slug}`}
-                element={<Navigate to="/hackathons" replace />}
-              />
-            ))}
-            {/* Legacy hackathon slugs that pre-date the data file */}
-            <Route path="/kesho-hackathon" element={<Navigate to="/hackathons" replace />} />
-            <Route path="/finsec" element={<Navigate to="/hackathons" replace />} />
+            {/* === CURRENT HACKATHON: Kesho === */}
+            <Route path="/kesho" element={<Hackathons />} />
+            {/* Legacy and alternate URLs all redirect to the current event. */}
+            <Route path="/hackathons" element={<Navigate to="/kesho" replace />} />
+            <Route path="/hackathon" element={<Navigate to="/kesho" replace />} />
+            <Route path="/kesho-hackathon" element={<Navigate to="/kesho" replace />} />
+            <Route path="/braille-challenge" element={<Navigate to="/kesho" replace />} />
+            <Route path="/finsec" element={<Navigate to="/kesho" replace />} />
 
             {/* Legacy program routes — KSEF, JSS, Bootcamps now live inside Inclusive Robotics
                 stages, so redirect to the relevant anchor. */}

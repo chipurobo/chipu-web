@@ -1,16 +1,15 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
-import { getCurrentHackathonNavLabel } from '../../data/hackathons';
 
-// The hackathon nav label tracks whichever event is currently active in
-// src/data/hackathons.ts — flip the status field there and the navbar
-// (and page title) update on next render. URL stays /hackathons.
+// === CURRENT HACKATHON: Kesho ===
+// When a new hackathon comes around, change the `to` and `label` of the
+// hackathon nav item below to match the new event slug & name.
 const navigationLinks = [
   { to: '/', label: 'Home' },
   { to: '/about', label: 'About' },
   { to: '/programs', label: 'Programs' },
-  { to: '/hackathons', label: getCurrentHackathonNavLabel() },
+  { to: '/kesho', label: 'Kesho' },
   { to: '/impact', label: 'Impact' },
   { to: '/podcast', label: 'Podcast' },
   { to: '/contact', label: 'Contact' },
