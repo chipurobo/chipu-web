@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { BookOpen } from 'lucide-react';
+import { BookOpen, Calendar, Clock, User, ArrowRight } from 'lucide-react';
 import { blogPosts } from '../data/blogPosts';
 
 const Blog = () => {

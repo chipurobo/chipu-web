@@ -1,4 +1,6 @@
-import { Target, Users, Lightbulb, GraduationCap, Globe, MapPin, Recycle } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Target, Users, Lightbulb, GraduationCap, Globe, MapPin, Recycle, ArrowRight, Github, Linkedin, Mail } from 'lucide-react';
+import { teamMembers } from '../data/teamMembers';
 
 const About = () => {
  const achievements = [
@@ -158,8 +160,89 @@ const About = () => {
  </div>
  </section>
 
+ {/* Staff / Team */}
+ <section id="team" className="scroll-mt-20 py-16 sm:py-20 bg-warm-100/60 border-y border-warm-200" aria-labelledby="team-title">
+ <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+ <div className="text-center mb-12">
+ <p className="font-pixel text-[0.55rem] sm:text-[0.65rem] tracking-[0.25em] text-terracotta-600 mb-5 uppercase">
+ // staff
+ </p>
+ <h2 id="team-title" className="heading-display text-2xl md:text-3xl text-gray-900 mb-4">
+ The People Behind the Programs
+ </h2>
+ <p className="text-base text-gray-700 max-w-2xl mx-auto">
+ ChipuRobo runs because of educators, engineers, and operators who show up to the labs every week.
+ </p>
+ </div>
+
+ <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+ {teamMembers.map((member) => (
+ <div
+ key={member.name}
+ className="bg-white rounded-xl p-5 border border-gray-100 shadow-soft-sm hover:shadow-soft-md transition-all duration-300 text-center"
+ >
+ <div className="w-20 h-20 rounded-full bg-gray-100 mx-auto mb-4 flex items-center justify-center overflow-hidden ring-2 ring-teal-500/20">
+ {member.photo ? (
+ <picture>
+ <source srcSet={member.photo.replace(/\.(jpe?g|png|JPG|JPEG|PNG)$/i, '.webp')} type="image/webp" />
+ <img
+ src={member.photo}
+ alt={member.name}
+ width={80}
+ height={80}
+ loading="lazy"
+ decoding="async"
+ className="w-20 h-20 object-cover"
+ />
+ </picture>
+ ) : (
+ <Users className="h-8 w-8 text-gray-400" />
+ )}
+ </div>
+ <h3 className="text-base font-semibold text-gray-900 mb-1">{member.name}</h3>
+ <p className="text-xs text-teal-600 font-medium mb-3">{member.role}</p>
+ <p className="text-xs text-gray-600 leading-relaxed mb-4 line-clamp-3">{member.bio}</p>
+ <div className="flex justify-center gap-2 pt-3 border-t border-gray-100">
+ <a
+ href={member.social.linkedin}
+ className="p-1.5 rounded-full bg-gray-100 text-gray-500 hover:bg-teal-50 hover:text-teal-600 transition-colors"
+ aria-label={`${member.name} on LinkedIn`}
+ >
+ <Linkedin className="h-3.5 w-3.5" />
+ </a>
+ <a
+ href={member.social.github}
+ className="p-1.5 rounded-full bg-gray-100 text-gray-500 hover:bg-teal-50 hover:text-teal-600 transition-colors"
+ aria-label={`${member.name} on GitHub`}
+ >
+ <Github className="h-3.5 w-3.5" />
+ </a>
+ <a
+ href={`mailto:${member.social.email}`}
+ className="p-1.5 rounded-full bg-gray-100 text-gray-500 hover:bg-teal-50 hover:text-teal-600 transition-colors"
+ aria-label={`Email ${member.name}`}
+ >
+ <Mail className="h-3.5 w-3.5" />
+ </a>
+ </div>
+ </div>
+ ))}
+ </div>
+
+ <div className="text-center mt-10">
+ <Link
+ to="/team"
+ className="inline-flex items-center text-terracotta-600 hover:text-terracotta-700 font-medium text-sm transition-colors"
+ >
+ See full team page
+ <ArrowRight className="ml-2 h-4 w-4" />
+ </Link>
+ </div>
+ </div>
+ </section>
+
  {/* Values */}
- <section className="mx-4 sm:mx-6 lg:mx-8 mb-20 sm:mb-28 lg:mb-32">
+ <section className="mx-4 sm:mx-6 lg:mx-8 mb-20 sm:mb-28 lg:mb-32 mt-20">
  <div className="max-w-7xl mx-auto bg-gray-900 rounded-2xl p-10 sm:p-14 scanlines" aria-labelledby="values-title">
  <div className="text-center mb-12">
  <h2 id="values-title" className="heading-display text-3xl font-bold text-white mb-4">

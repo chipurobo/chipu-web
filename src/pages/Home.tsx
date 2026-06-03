@@ -70,12 +70,12 @@ const Home = () => {
  {/* ── Announcement pill (tnkr style) ── */}
  <div className="bg-warm-50 flex justify-center pt-6 pb-2 px-4">
  <Link
- to="/braille-challenge"
+ to="/hackathons"
  className="group inline-flex items-center gap-2 bg-gray-800 text-white text-sm px-5 py-2.5 rounded-full hover:bg-gray-700 transition-colors"
  >
- <span className="font-pixel text-[0.55rem] tracking-widest text-teal-400">BRAILLE</span>
- <span className="hidden sm:inline">Challenge Hackathon · 14–15 May · register now</span>
- <span className="sm:hidden">14–15 May · register</span>
+ <span className="font-pixel text-[0.55rem] tracking-widest text-teal-400">KESHO</span>
+ <span className="hidden sm:inline">Hackathon · 11–12 July 2026 · register interest</span>
+ <span className="sm:hidden">11–12 Jul · register</span>
  <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
  </Link>
  </div>
@@ -100,7 +100,7 @@ const Home = () => {
  </p>
 
  <div className="flex flex-wrap gap-5 justify-center mb-16">
- <Link to="/ksef" className="btn-cta">
+ <Link to="/inclusive-robotics" className="btn-cta">
  ▶ Get Started
  </Link>
  <Link to="/impact" className="btn-outline">
@@ -422,7 +422,7 @@ const Home = () => {
  Join the mission to empower 4 million youth across Africa by 2030.
  </p>
  <div className="flex flex-wrap gap-5 justify-center">
- <Link to="/ksef" className="btn-cta">
+ <Link to="/inclusive-robotics" className="btn-cta">
  <Calendar className="mr-2 h-4 w-4" />
  KSEF 2026
  </Link>

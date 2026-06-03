@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom';
 import { Facebook, Twitter, Linkedin } from 'lucide-react';
+import { getCurrentHackathonNavLabel } from '../../data/hackathons';
 
 const Footer = () => {
+  const hackathonLabel = getCurrentHackathonNavLabel();
  return (
  <footer className="bg-gray-900 text-white scanlines">
  {/* Accent bar */}
@@ -51,13 +53,13 @@ const Footer = () => {
  {[
  { to: '/', label: 'Home' },
  { to: '/about', label: 'About' },
- { to: '/team', label: 'Team' },
- { to: '/ksef', label: 'KSEF' },
- { to: '/jss', label: 'JSS' },
- { to: '/bootcamps', label: 'Bootcamps' },
- { to: '/braille-challenge', label: 'Braille Challenge' },
+ { to: '/about#team', label: 'Staff' },
+ { to: '/programs', label: 'Programs' },
+ { to: '/inclusive-robotics', label: 'Inclusive Robotics' },
+ { to: '/hackathons', label: `${hackathonLabel} Hackathon` },
  { to: '/impact', label: 'Impact' },
  { to: '/podcast', label: 'Podcast' },
+ { to: '/contact', label: 'Contact' },
  ].map((link) => (
  <li key={link.to}>
  <Link to={link.to} className="text-sm text-gray-400 hover:text-teal-300 hover:translate-x-1 inline-block transition-all duration-200">

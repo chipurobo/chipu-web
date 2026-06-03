@@ -1,265 +1,342 @@
-import { Hand, BookOpen, Headphones, MapPin, Clock, Users, Calendar, ExternalLink, Mail, CheckCircle, AlertTriangle } from 'lucide-react';
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  Users,
+  AlertTriangle,
+  CheckCircle,
+  Archive,
+} from 'lucide-react';
+import { getCurrentHackathon, getPastHackathons } from '../data/hackathons';
 
-// Updated the registration URL to the live Braille Challenge form.
-const REGISTRATION_URL = 'https://live.braillechallenge.com/register';
-
-const tracks = [
- {
- icon: Hand,
- title: 'Tactile Tools',
- description: 'Build affordable Braille displays, embossers, or tactile-graphic devices that classrooms can actually use.',
- color: 'text-teal-600 ',
- bg: 'bg-teal-50 ',
- },
- {
- icon: BookOpen,
- title: 'Inclusive Learning',
- description: 'Apps, games, and lesson tools designed first for blind and low-vision learners — not retrofitted for them.',
- color: 'text-terracotta-600 ',
- bg: 'bg-terracotta-50 ',
- },
- {
- icon: Headphones,
- title: 'Audio-First AI',
- description: 'AI assistants and screen-reader-friendly interfaces that work without ever needing a screen.',
- color: 'text-amber-600 ',
- bg: 'bg-amber-50 ',
- },
-];
-
-const schedule = [
- {
- day: 'Day 1 — May 14',
- items: [
- 'Opening ceremony & welcome',
- 'Track briefings & team formation',
- 'Hacking begins',
- 'Mentor office hours',
- ],
- },
- {
- day: 'Day 2 — May 15',
- items: [
- 'Final hacking sprint',
- 'Project submissions',
- 'Demo presentations',
- 'Judging & closing ceremony',
- ],
- },
-];
-
-const faq = [
- { q: 'Who can participate?', a: 'Any student aged 14–19. No prior experience with accessibility tech or coding required — just curiosity and the willingness to build for users you may not have built for before.' },
- { q: 'Do I need a team?', a: 'Teams are 3–5 members. You can come with a team or form one at the event during team formation on Day 1.' },
- { q: 'What should I bring?', a: 'A laptop (charged), charger, student ID, and enthusiasm. Meals, materials, and mentors are provided.' },
- { q: 'Is it really free?', a: 'Yes — 100% free entry. Meals, mentors, and materials are fully covered.' },
- { q: 'What if I have no coding experience?', a: 'The Braille Challenge is beginner-friendly. We provide workshops, starter templates, and dedicated mentors for each track.' },
- { q: 'Will blind and low-vision participants be welcomed?', a: 'Absolutely — they\'re central to the event. Screen readers, accessible workstations, and Braille-ready materials will be on hand. Reach out ahead of time so we can prepare anything specific you need.' },
-];
+// =============================================================
+// /hackathons — the single hackathon page.
+//
+// Renders whichever event is currently `status: 'current'` in
+// src/data/hackathons.ts. When a new hackathon starts, flip the
+// statuses in the data file — no code change needed here.
+// =============================================================
 
 const Hackathons = () => {
- return (
- <div className="bg-warm-50 ">
- {/* Hero */}
- <section className="relative overflow-hidden bg-warm-50 border-b border-warm-200 ">
- <div className="code-bg absolute inset-0 opacity-30 " aria-hidden="true" />
- <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
- <div className="max-w-3xl">
- <div className="inline-flex items-center bg-white border border-warm-200 px-4 py-1.5 rounded-full text-sm text-gray-700 mb-6">
- <span className="font-pixel text-[0.55rem] tracking-widest text-terracotta-600 mr-3">HACK</span>
- Inclusive Youth Hackathon &middot; Ages 14–19
- </div>
+  const current = getCurrentHackathon();
+  const past = getPastHackathons();
 
- <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tight leading-none mb-4 heading-display">
- <span className="text-teal-600 ">BRAILLE</span>{' '}
- <span className="text-gray-900 ">CHALLENGE</span>
- </h1>
+  // Fallback if no current event is configured.
+  if (!current) {
+    return (
+      <div className="bg-warm-50">
+        <section className="relative overflow-hidden bg-warm-50 border-b border-warm-200">
+          <div className="code-bg absolute inset-0 opacity-30" aria-hidden="true" />
+          <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 text-center">
+            <p className="font-pixel text-[0.55rem] tracking-[0.25em] text-terracotta-600 mb-5 uppercase">
+              // hackathons
+            </p>
+            <h1 className="heading-display text-3xl md:text-4xl text-gray-900 mb-6">
+              Between Events
+            </h1>
+            <p className="text-base text-gray-700 max-w-2xl mx-auto">
+              No hackathon is currently scheduled. Check back soon for the next event, or
+              browse past hackathons below.
+            </p>
+          </div>
+        </section>
+        <PastSection past={past} />
+      </div>
+    );
+  }
 
- <p className="text-xl md:text-2xl font-bold text-gray-700 tracking-wide mb-6">
- BUILD. <span className="text-teal-600 ">INCLUDE.</span> EMPOWER.
- </p>
+  return (
+    <div className="bg-warm-50">
+      {/* =================================================
+          HERO — current hackathon
+      ================================================= */}
+      <section className="relative overflow-hidden bg-warm-50 border-b border-warm-200">
+        <div className="code-bg absolute inset-0 opacity-30" aria-hidden="true" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
+          <div className="max-w-3xl">
+            <div className="inline-flex items-center bg-white border border-warm-200 px-4 py-1.5 rounded-full text-sm text-gray-700 mb-6">
+              <span className="font-pixel text-[0.55rem] tracking-widest text-terracotta-600 mr-3">
+                {current.pillTag}
+              </span>
+              {current.pill}
+            </div>
 
- <p className="text-gray-600 text-lg mb-8 max-w-xl">
- A 2-day youth hackathon focused on Braille and accessibility — building real tools that help blind and low-vision learners read, learn, and create alongside their peers.
- </p>
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tight leading-none mb-4 heading-display">
+              <span className="text-teal-600">{current.headlineWord}</span>
+              {current.headlineSubword && (
+                <>
+                  {' '}
+                  <span className="text-gray-900">{current.headlineSubword}</span>
+                </>
+              )}
+            </h1>
 
- <div className="flex flex-wrap gap-3 mb-10">
- <span className="inline-flex items-center bg-white border border-warm-200 px-4 py-2 rounded-lg text-sm text-gray-800 ">
- <Calendar className="h-4 w-4 mr-2 text-teal-600 " /> May 14–15, 2026
- </span>
- <span className="inline-flex items-center bg-white border border-warm-200 px-4 py-2 rounded-lg text-sm text-gray-800 ">
- <Clock className="h-4 w-4 mr-2 text-teal-600 " /> 8:00 AM – 4:00 PM daily
- </span>
- <span className="inline-flex items-center bg-white border border-warm-200 px-4 py-2 rounded-lg text-sm text-gray-800 ">
- <MapPin className="h-4 w-4 mr-2 text-terracotta-600 " /> Railways Museum, Nairobi
- </span>
- <span className="inline-flex items-center bg-white border border-warm-200 px-4 py-2 rounded-lg text-sm text-gray-800 ">
- <Users className="h-4 w-4 mr-2 text-teal-600 " /> Teams of 3–5
- </span>
- </div>
+            <p className="text-xl md:text-2xl font-bold text-gray-700 tracking-wide mb-3">
+              {current.tagline.first}{' '}
+              <span className="text-teal-600">{current.tagline.accent}</span>{' '}
+              {current.tagline.last}
+            </p>
 
- <div className="flex flex-wrap gap-4">
- <a
- href={REGISTRATION_URL}
- target="_blank"
- rel="noopener noreferrer"
- className="btn-cta"
- >
- Register Now <ExternalLink className="h-4 w-4 ml-2" />
- </a>
- <div className="flex items-center bg-terracotta-50 border border-terracotta-200 px-5 py-3 rounded-lg">
- <AlertTriangle className="h-4 w-4 text-terracotta-600 mr-2 flex-shrink-0" />
- <span className="text-sm text-terracotta-700 font-medium">Deadline: May 12, 2026</span>
- </div>
- </div>
- </div>
+            {current.theme && (
+              <p className="font-pixel text-[0.55rem] tracking-[0.25em] text-terracotta-600 mb-6 uppercase">
+                // theme: {current.theme.toLowerCase()}
+              </p>
+            )}
 
- {/* Free badge */}
- <div className="absolute top-8 right-8 lg:top-12 lg:right-16">
- <div className="bg-terracotta-500 text-white rounded-full h-20 w-20 flex flex-col items-center justify-center font-bold shadow-soft-lg">
- <span className="text-xs">100%</span>
- <span className="text-sm font-black">FREE</span>
- </div>
- </div>
- </div>
- </section>
+            <p className="text-gray-600 text-lg mb-8 max-w-xl leading-relaxed">
+              {current.description}
+            </p>
 
- {/* Tracks */}
- <section className="py-8 sm:py-12">
- <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
- <h2 className="text-3xl font-bold text-gray-900 mb-3 text-center heading-display">Hackathon Tracks</h2>
- <p className="text-gray-600 text-center mb-12 max-w-2xl mx-auto">
- Choose one of three challenge tracks. Each focuses on a real gap in how blind and low-vision learners access education in Kenya.
- </p>
- <div className="grid gap-6 md:grid-cols-3">
- {tracks.map((track) => (
- <div
- key={track.title}
- className="bg-white rounded-xl p-8 border border-gray-100 shadow-soft-md hover:shadow-soft-lg hover:-translate-y-1 transition-all duration-300"
- >
- <div className={`${track.bg} inline-flex p-3 rounded-xl mb-4`}>
- <track.icon className={`h-6 w-6 ${track.color}`} />
- </div>
- <h3 className="text-xl font-semibold text-gray-900 mb-2">{track.title}</h3>
- <p className="text-gray-600 ">{track.description}</p>
- </div>
- ))}
- </div>
- </div>
- </section>
+            <div className="flex flex-wrap gap-3 mb-10">
+              <span className="inline-flex items-center bg-white border border-warm-200 px-4 py-2 rounded-lg text-sm text-gray-800">
+                <Calendar className="h-4 w-4 mr-2 text-teal-600" />
+                {current.dateDisplay}
+              </span>
+              <span className="inline-flex items-center bg-white border border-warm-200 px-4 py-2 rounded-lg text-sm text-gray-800">
+                <Clock className="h-4 w-4 mr-2 text-teal-600" />
+                {current.timeDisplay}
+              </span>
+              <span className="inline-flex items-center bg-white border border-warm-200 px-4 py-2 rounded-lg text-sm text-gray-800">
+                <MapPin className="h-4 w-4 mr-2 text-terracotta-600" />
+                {current.venue}
+              </span>
+              <span className="inline-flex items-center bg-white border border-warm-200 px-4 py-2 rounded-lg text-sm text-gray-800">
+                <Users className="h-4 w-4 mr-2 text-teal-600" />
+                {current.teamSize}
+              </span>
+            </div>
 
- {/* Schedule */}
- <section className="py-8 sm:py-12 bg-gray-50 ">
- <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
- <h2 className="text-3xl font-bold text-gray-900 mb-3 text-center heading-display">2-Day Schedule</h2>
- <p className="text-gray-600 text-center mb-12">8:00 AM – 4:00 PM each day at Railways Museum, Nairobi</p>
- <div className="grid gap-6 md:grid-cols-2 max-w-4xl mx-auto">
- {schedule.map((day) => (
- <div key={day.day} className="bg-white rounded-xl p-6 border border-gray-100 ">
- <h3 className="text-lg font-semibold text-teal-600 mb-4">{day.day}</h3>
- <ul className="space-y-3">
- {day.items.map((item) => (
- <li key={item} className="flex items-start text-sm text-gray-600 ">
- <CheckCircle className="h-4 w-4 text-teal-500 mt-0.5 mr-2 flex-shrink-0" />
- {item}
- </li>
- ))}
- </ul>
- </div>
- ))}
- </div>
- </div>
- </section>
+            {current.registrationCallout && (
+              <div className="inline-flex items-center bg-terracotta-50 border border-terracotta-200 px-5 py-3 rounded-lg">
+                <AlertTriangle className="h-4 w-4 text-terracotta-600 mr-2 flex-shrink-0" />
+                <span className="text-sm text-terracotta-700 font-medium">
+                  {current.registrationCallout}
+                </span>
+              </div>
+            )}
+          </div>
 
- {/* FAQ */}
- <section className="py-8 sm:py-12">
- <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
- <h2 className="text-3xl font-bold text-gray-900 mb-12 text-center heading-display">Frequently Asked Questions</h2>
- <div className="space-y-6">
- {faq.map((item) => (
- <div key={item.q} className="border-b border-gray-200 pb-6">
- <h3 className="text-lg font-semibold text-gray-900 mb-2">{item.q}</h3>
- <p className="text-gray-600 ">{item.a}</p>
- </div>
- ))}
- </div>
- </div>
- </section>
+          {/* Free + partners badge */}
+          <div className="absolute top-8 right-4 sm:right-8 lg:top-12 lg:right-16 text-right">
+            <div className="bg-terracotta-500 text-white rounded-full h-20 w-20 flex flex-col items-center justify-center font-bold shadow-soft-lg ml-auto">
+              <span className="text-xs">100%</span>
+              <span className="text-sm font-black">FREE</span>
+            </div>
+            <p className="font-pixel text-[0.55rem] tracking-widest text-gray-500 mt-3 uppercase">
+              {current.partner}
+            </p>
+          </div>
+        </div>
+      </section>
 
- {/* Code of Conduct */}
- <section className="py-16 sm:py-20 bg-gray-50 ">
- <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
- <h2 className="text-2xl font-bold text-gray-900 mb-4 text-center heading-display">Code of Conduct</h2>
- <div className="bg-white rounded-xl p-6 border border-gray-100 ">
- <p className="text-gray-600 mb-4">
- The Braille Challenge is dedicated to providing a friendly, safe, and welcoming environment for all participants, regardless of age, disability, gender, nationality, race, religion, sexuality, or similar personal characteristic.
- </p>
- <p className="text-gray-600 mb-4">
- All attendees, sponsors, partners, volunteers, and staff are required to agree with this code of conduct. Organizers will enforce it throughout the event. We expect cooperation from all participants to ensure a safe environment for everybody.
- </p>
- <ul className="space-y-2 text-sm text-gray-600 ">
- <li className="flex items-start">
- <CheckCircle className="h-4 w-4 text-teal-500 mt-0.5 mr-2 flex-shrink-0" />
- Be respectful and inclusive in all interactions.
- </li>
- <li className="flex items-start">
- <CheckCircle className="h-4 w-4 text-teal-500 mt-0.5 mr-2 flex-shrink-0" />
- Build with — not just for — blind and low-vision users; centre their feedback.
- </li>
- <li className="flex items-start">
- <CheckCircle className="h-4 w-4 text-teal-500 mt-0.5 mr-2 flex-shrink-0" />
- Harassment of any kind will not be tolerated.
- </li>
- <li className="flex items-start">
- <CheckCircle className="h-4 w-4 text-teal-500 mt-0.5 mr-2 flex-shrink-0" />
- Report any concerns to event organizers immediately.
- </li>
- </ul>
- <p className="text-xs text-gray-500 mt-4">
- Adapted from the{' '}
- <a
- href="https://hackclub.com/conduct/"
- target="_blank"
- rel="noopener noreferrer"
- className="text-teal-600 underline hover:no-underline"
- >
- Hack Club Code of Conduct
- </a>.
- </p>
- </div>
- </div>
- </section>
+      {/* =================================================
+          TRACKS
+      ================================================= */}
+      {current.tracks.length > 0 && (
+        <section className="py-16 sm:py-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="heading-display text-2xl md:text-3xl text-gray-900 mb-3">
+                Hackathon Tracks
+              </h2>
+              <p className="text-base text-gray-600 max-w-2xl mx-auto">
+                Choose one of the challenge tracks below. Each is mentored by working professionals
+                and judged on real-world impact.
+              </p>
+            </div>
+            <div className="grid gap-6 md:grid-cols-3">
+              {current.tracks.map((t) => (
+                <div
+                  key={t.title}
+                  className="bg-white rounded-xl p-8 border border-gray-100 shadow-soft-md hover:shadow-soft-lg hover:-translate-y-1 transition-all duration-300"
+                >
+                  <div className={`${t.bg} inline-flex p-3 rounded-xl mb-4`}>
+                    <t.icon className={`h-6 w-6 ${t.color}`} />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{t.title}</h3>
+                  <p className="text-sm text-gray-600 leading-relaxed">{t.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
- {/* CTA / Register */}
- <section className="relative overflow-hidden bg-gray-900 py-8 sm:py-12 scanlines circuit-grid">
- <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(20,184,166,0.12),transparent_70%)]" />
- <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
- <h2 className="text-3xl font-bold tracking-tight mb-3 heading-display">Ready to Build, Include & Empower?</h2>
- <p className="text-lg text-gray-300 mb-8">
- Join the next generation of inclusive builders at the Braille Challenge. Free entry, meals provided, and mentors on-hand for all skill levels.
- </p>
- <div className="flex flex-wrap gap-4 justify-center mb-8">
- <a
- href={REGISTRATION_URL}
- target="_blank"
- rel="noopener noreferrer"
- className="bg-terracotta-500 hover:bg-terracotta-600 text-white px-8 py-3.5 rounded-xl font-semibold inline-flex items-center transition-all duration-200 shadow-lg hover:shadow-terracotta-500/25"
- >
- Register Your Team <ExternalLink className="h-4 w-4 ml-2" />
- </a>
- </div>
- <div className="flex items-center justify-center gap-2 text-gray-400 text-sm">
- <Mail className="h-4 w-4" />
- <span>Questions? Email </span>
- <a href="mailto:sydiantech@gmail.com" className="text-teal-400 hover:underline">
- sydiantech@gmail.com
- </a>
- </div>
- <p className="text-gray-500 text-sm mt-6">ChipuRobo &times; eKitabu</p>
- </div>
- </section>
- </div>
- );
+      {/* =================================================
+          AUDIENCE (optional)
+      ================================================= */}
+      {current.audience && current.audience.length > 0 && (
+        <section className="py-16 sm:py-20 bg-warm-100/60 border-y border-warm-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="heading-display text-2xl md:text-3xl text-gray-900 mb-3">
+                Who's in the Room
+              </h2>
+              <p className="text-base text-gray-600 max-w-2xl mx-auto">
+                Students build alongside the people who actually work in the fields they're being
+                invited into.
+              </p>
+            </div>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {current.audience.map((a) => (
+                <article
+                  key={a.title}
+                  className="bg-white rounded-xl p-6 border border-gray-100 shadow-soft-sm hover:shadow-soft-md transition-all duration-300"
+                >
+                  <div className="bg-teal-50 inline-flex p-3 rounded-xl mb-4">
+                    <a.icon className="h-5 w-5 text-teal-600" />
+                  </div>
+                  <h3 className="text-base font-semibold text-gray-900 mb-2">{a.title}</h3>
+                  <p className="text-sm text-gray-600 leading-relaxed">{a.body}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* =================================================
+          SCHEDULE
+      ================================================= */}
+      {current.schedule.length > 0 && (
+        <section className="py-16 sm:py-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="heading-display text-2xl md:text-3xl text-gray-900 mb-3 text-center">
+              {current.schedule.length}-Day Schedule
+            </h2>
+            <p className="text-base text-gray-600 text-center mb-12 max-w-2xl mx-auto">
+              {current.timeDisplay} · {current.venue}
+            </p>
+            <div className={`grid gap-6 max-w-4xl mx-auto ${current.schedule.length === 2 ? 'md:grid-cols-2' : 'md:grid-cols-3'}`}>
+              {current.schedule.map((day) => (
+                <div key={day.day} className="bg-white rounded-xl p-6 border border-gray-100 shadow-soft-md">
+                  <h3 className="text-base font-semibold text-teal-600 mb-4">{day.day}</h3>
+                  <ul className="space-y-3">
+                    {day.items.map((item) => (
+                      <li key={item} className="flex items-start text-sm text-gray-600">
+                        <CheckCircle className="h-4 w-4 text-teal-500 mt-0.5 mr-2 flex-shrink-0" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* =================================================
+          HOST BLOCK (optional)
+      ================================================= */}
+      {current.hostBlock && (
+        <section className="py-16 sm:py-20 bg-warm-100/60 border-y border-warm-200">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="bg-white rounded-2xl p-8 sm:p-10 border border-gray-100 shadow-soft-md">
+              <p className="font-pixel text-[0.55rem] tracking-[0.25em] text-terracotta-600 mb-5 uppercase">
+                {current.hostBlock.eyebrow}
+              </p>
+              <h2 className="heading-display text-xl md:text-2xl text-gray-900 mb-4">
+                {current.hostBlock.title}
+              </h2>
+              <p className="text-gray-700 leading-relaxed">{current.hostBlock.body}</p>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* =================================================
+          FAQ
+      ================================================= */}
+      {current.faq.length > 0 && (
+        <section className="py-16 sm:py-20">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="heading-display text-2xl md:text-3xl text-gray-900 mb-10 text-center">FAQ</h2>
+            <div className="space-y-6">
+              {current.faq.map((item) => (
+                <div key={item.q} className="border-b border-gray-200 pb-6">
+                  <h3 className="text-base font-semibold text-gray-900 mb-2">{item.q}</h3>
+                  <p className="text-gray-600 leading-relaxed">{item.a}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* =================================================
+          PAST EVENTS — archive
+      ================================================= */}
+      <PastSection past={past} />
+
+    </div>
+  );
 };
+
+// =============================================================
+// Past hackathons archive — reusable across the empty + filled states.
+// =============================================================
+
+const PastSection = ({ past }: { past: ReturnType<typeof getPastHackathons> }) => {
+  if (past.length === 0) return null;
+
+  return (
+    <section id="archive" className="scroll-mt-20 py-16 sm:py-20 bg-warm-100/60 border-y border-warm-200">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center gap-3 mb-8">
+          <span className="font-pixel text-[0.6rem] sm:text-[0.65rem] tracking-widest text-gray-500 uppercase">
+            // archive
+          </span>
+          <span className="h-px flex-1 bg-warm-200" aria-hidden="true" />
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {past.map((p) => (
+            <article
+              key={p.slug}
+              className="bg-white rounded-xl border border-gray-100 shadow-soft-sm p-6"
+            >
+              <div className="inline-flex items-center gap-2 mb-4">
+                <Archive className="h-3.5 w-3.5 text-gray-400" />
+                <span className="font-pixel text-[0.55rem] tracking-widest text-gray-500 uppercase">
+                  Past · {p.headlineWord}
+                </span>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">{p.title}</h3>
+              <p className="text-sm text-gray-600 leading-relaxed mb-4">{p.shortBlurb}</p>
+              <div className="text-xs text-gray-500 space-y-1.5 mb-4">
+                <p className="flex items-center">
+                  <Calendar className="h-3.5 w-3.5 mr-2" />
+                  {p.dateDisplay}
+                </p>
+                <p className="flex items-center">
+                  <MapPin className="h-3.5 w-3.5 mr-2" />
+                  {p.venue}
+                </p>
+              </div>
+              {/* Tracks summary */}
+              {p.tracks.length > 0 && (
+                <div className="pt-4 border-t border-gray-100">
+                  <p className="font-pixel text-[0.55rem] tracking-widest text-gray-500 mb-2 uppercase">
+                    Tracks
+                  </p>
+                  <ul className="text-xs text-gray-600 space-y-1">
+                    {p.tracks.map((t) => (
+                      <li key={t.title}>· {t.title}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// Tiny shim so the unused-import linter doesn't yell at the secondary
+// imports used only inside the archived state.
+void ArrowLeft;
 
 export default Hackathons;
