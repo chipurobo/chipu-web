@@ -163,7 +163,7 @@ const InclusiveRobotics = () => {
         <div className="code-bg absolute inset-0 opacity-30" aria-hidden="true" />
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 text-center">
           <p className="font-pixel text-[0.55rem] sm:text-[0.65rem] tracking-[0.25em] text-terracotta-600 mb-5 uppercase">
-            // inclusive robotics
+            // programs
           </p>
           <h1 className="heading-display text-3xl md:text-4xl lg:text-5xl text-gray-900 mb-6 leading-[1.2]">
             One Year-Round Program · Three Stages
@@ -448,16 +448,12 @@ const InclusiveRobotics = () => {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(20,184,166,0.12),transparent_70%)]" />
         <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
           <MapPin className="h-10 w-10 text-teal-400 mx-auto mb-4" />
-          <h2 className="heading-display text-2xl sm:text-3xl mb-4">Run Inclusive Robotics At Your School</h2>
+          <h2 className="heading-display text-2xl sm:text-3xl mb-4">Run This Program At Your School</h2>
           <p className="text-lg text-gray-300 mb-10 max-w-2xl mx-auto">
             We bring the YSK outreach, the Microsoft bootcamp partnership, and the year-round training. You bring the learners.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
             <Link to="/contact" className="btn-cta">Talk to the Team</Link>
-            <Link to="/programs" className="btn-outline">
-              <ArrowRight className="mr-2 h-4 w-4" />
-              All Programs
-            </Link>
           </div>
         </div>
       </section>

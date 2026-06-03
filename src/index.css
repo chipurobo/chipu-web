@@ -114,18 +114,14 @@
  }
  }
 
- /* Body bg matches html (and the footer). The cream surface comes from
-    the App wrapper (`<div class="min-h-screen flex flex-col bg-warm-50">`),
-    which is `min-h-screen` so it always covers the visible viewport. By
-    setting body bg to the footer color rather than `transparent`, we
-    cover the edge case where Mac WebKit paints `body` (not `html`) for
-    overscroll bounce — the bounce always reveals footer color now. The
-    `overscroll-behavior-y: none` on `html` further clamps the bounce. */
+ /* Body's bg is transparent so html's footer-color bg shows through any
+    overscroll bounce. `overscroll-behavior-y: none` also clamps the bounce
+    so the document literally cannot scroll past its edges — that's the
+    primary defense; html/body bg colors are the safety net. */
  body {
  @apply text-gray-900;
- background-color: var(--footer-bg);
+ background-color: transparent;
  overscroll-behavior-y: none;
- min-height: 100vh;
  }
 
  /* Headings → 8-bit pixel font.

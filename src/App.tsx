@@ -10,7 +10,7 @@ import Contact from './pages/Contact';
 import Blog from './pages/Blog';
 import BlogPost from './pages/BlogPost';
 import Microsoft from './pages/Microsoft';
-import Programs from './pages/Programs';
+// Programs page IS the (formerly Inclusive Robotics) three-stage page.
 import InclusiveRobotics from './pages/InclusiveRobotics';
 import MicrosoftBootcamps from './pages/MicrosoftBootcamps';
 import Hackathons from './pages/Hackathons';
@@ -54,14 +54,14 @@ function App() {
       case '/': return 'Home';
       case '/about': return 'About ChipuRobo';
       case '/programs': return 'Programs';
-      case '/inclusive-robotics': return 'Inclusive Robotics';
+      case '/inclusive-robotics': return 'Programs';
       case '/microsoft-bootcamps': return 'Microsoft Bootcamps';
       case '/hackathons':
       case '/hackathon':
         return `${getCurrentHackathonNavLabel()} Hackathon`;
       // Legacy paths — same redirect destinations as the route table below
-      case '/ksef': return 'Inclusive Robotics';
-      case '/jss': return 'Inclusive Robotics';
+      case '/ksef': return 'Programs';
+      case '/jss': return 'Programs';
       case '/bootcamps': return 'Microsoft Bootcamps';
       case '/adc-bootcamp': return 'Microsoft Bootcamps';
       case '/finsec': return 'Hackathons';
@@ -111,9 +111,11 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
 
-            {/* Programs umbrella + Inclusive Robotics */}
-            <Route path="/programs" element={<Programs />} />
-            <Route path="/inclusive-robotics" element={<InclusiveRobotics />} />
+            {/* Programs IS the three-stage page (Outreach / Microsoft Bootcamps /
+                Training Across the Year). What used to be /inclusive-robotics
+                now lives at /programs; the old slug redirects. */}
+            <Route path="/programs" element={<InclusiveRobotics />} />
+            <Route path="/inclusive-robotics" element={<Navigate to="/programs" replace />} />
             <Route path="/microsoft-bootcamps" element={<MicrosoftBootcamps />} />
 
             {/* Hackathons — one page renders whichever event is current
@@ -135,8 +137,8 @@ function App() {
 
             {/* Legacy program routes — KSEF, JSS, Bootcamps now live inside Inclusive Robotics
                 stages, so redirect to the relevant anchor. */}
-            <Route path="/ksef" element={<Navigate to="/inclusive-robotics#year-round" replace />} />
-            <Route path="/jss" element={<Navigate to="/inclusive-robotics#year-round" replace />} />
+            <Route path="/ksef" element={<Navigate to="/programs#year-round" replace />} />
+            <Route path="/jss" element={<Navigate to="/programs#year-round" replace />} />
             <Route path="/bootcamps" element={<Navigate to="/microsoft-bootcamps" replace />} />
             <Route path="/adc-bootcamp" element={<Navigate to="/microsoft-bootcamps" replace />} />
 

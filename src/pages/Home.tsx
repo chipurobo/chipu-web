@@ -100,7 +100,7 @@ const Home = () => {
  </p>
 
  <div className="flex flex-wrap gap-5 justify-center mb-16">
- <Link to="/inclusive-robotics" className="btn-cta">
+ <Link to="/programs" className="btn-cta">
  ▶ Get Started
  </Link>
  <Link to="/impact" className="btn-outline">
@@ -421,7 +421,7 @@ const Home = () => {
  Join the mission to empower 4 million youth across Africa by 2030.
  </p>
  <div className="flex flex-wrap gap-5 justify-center">
- <Link to="/inclusive-robotics" className="btn-cta">
+ <Link to="/programs" className="btn-cta">
  <Calendar className="mr-2 h-4 w-4" />
  KSEF 2026
  </Link>
