@@ -1,4 +1,4 @@
-import { Github, Linkedin, Mail, Users } from 'lucide-react';
+import { Linkedin, Users } from 'lucide-react';
 import { teamMembers } from '../data/teamMembers';
 
 const Team = () => {
@@ -63,27 +63,15 @@ const Team = () => {
 
  {/* Social Links */}
  <div className="px-6 pb-6 pt-2 border-t border-gray-100 mt-2">
- <div className="flex justify-center space-x-3 pt-4">
+ <div className="flex justify-center pt-4">
  <a
  href={member.social.linkedin}
+ target="_blank"
+ rel="noopener noreferrer"
  className="p-2.5 rounded-full bg-gray-100 text-gray-500 hover:bg-teal-50 hover:text-teal-600 transition-all duration-200"
  aria-label={`${member.name} on LinkedIn`}
  >
  <Linkedin className="h-4 w-4" />
- </a>
- <a
- href={member.social.github}
- className="p-2.5 rounded-full bg-gray-100 text-gray-500 hover:bg-teal-50 hover:text-teal-600 transition-all duration-200"
- aria-label={`${member.name} on GitHub`}
- >
- <Github className="h-4 w-4" />
- </a>
- <a
- href={`mailto:${member.social.email}`}
- className="p-2.5 rounded-full bg-gray-100 text-gray-500 hover:bg-teal-50 hover:text-teal-600 transition-all duration-200"
- aria-label={`Email ${member.name}`}
- >
- <Mail className="h-4 w-4" />
  </a>
  </div>
  </div>

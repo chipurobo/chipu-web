@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Target, Users, Lightbulb, GraduationCap, Globe, MapPin, Recycle, ArrowRight, Github, Linkedin, Mail } from 'lucide-react';
+import { Target, Users, Lightbulb, GraduationCap, Globe, MapPin, Recycle, ArrowRight, Linkedin } from 'lucide-react';
 import { teamMembers } from '../data/teamMembers';
 
 const About = () => {
@@ -202,27 +202,15 @@ const About = () => {
  <h3 className="text-base font-semibold text-gray-900 mb-1">{member.name}</h3>
  <p className="text-xs text-teal-600 font-medium mb-3">{member.role}</p>
  <p className="text-xs text-gray-600 leading-relaxed mb-4 line-clamp-3">{member.bio}</p>
- <div className="flex justify-center gap-2 pt-3 border-t border-gray-100">
+ <div className="flex justify-center pt-3 border-t border-gray-100">
  <a
  href={member.social.linkedin}
+ target="_blank"
+ rel="noopener noreferrer"
  className="p-1.5 rounded-full bg-gray-100 text-gray-500 hover:bg-teal-50 hover:text-teal-600 transition-colors"
  aria-label={`${member.name} on LinkedIn`}
  >
  <Linkedin className="h-3.5 w-3.5" />
- </a>
- <a
- href={member.social.github}
- className="p-1.5 rounded-full bg-gray-100 text-gray-500 hover:bg-teal-50 hover:text-teal-600 transition-colors"
- aria-label={`${member.name} on GitHub`}
- >
- <Github className="h-3.5 w-3.5" />
- </a>
- <a
- href={`mailto:${member.social.email}`}
- className="p-1.5 rounded-full bg-gray-100 text-gray-500 hover:bg-teal-50 hover:text-teal-600 transition-colors"
- aria-label={`Email ${member.name}`}
- >
- <Mail className="h-3.5 w-3.5" />
  </a>
  </div>
  </div>

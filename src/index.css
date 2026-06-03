@@ -20,12 +20,20 @@
  --footer-bg: #111827; /* gray-900, matches Footer */
  }
 
- /* Match the footer background at the document root so any
- overscroll past the footer reveals the footer color, not the
- page cream/warm-50 — fixes the "white strip after footer" bug. */
+ /* === Bottom-overscroll-past-footer fix ===
+    Both html AND body get the footer-colored background so that
+    whatever the browser shows during scroll bounce (different vendors
+    paint different layers) is always the footer color. The cream
+    surface comes from the App wrapper, which is `min-h-screen` so it
+    always covers the visible viewport in normal scroll.
+
+    `overscroll-behavior-y: none` on html prevents the elastic bounce
+    from showing extra space beyond the document on Mac/iOS — belt and
+    suspenders since the html/body bg already matches. */
  html {
  scroll-behavior: smooth;
  background-color: var(--footer-bg);
+ overscroll-behavior-y: none;
  }
 
  /* === Default body type: OpenDyslexic ===
@@ -106,15 +114,18 @@
  }
  }
 
- /* Body is intentionally TRANSPARENT so the html element's footer-color
-    background shows through during scroll bounce / over-scroll past the
-    footer. The cream surface visible during normal scrolling is provided
-    by the App wrapper (`<div class="min-h-screen flex flex-col bg-warm-50">`),
-    which is `min-h-screen` so it always covers the visible viewport. Setting
-    `bg-warm-50` here would cover html and the bottom overscroll bug returns. */
+ /* Body bg matches html (and the footer). The cream surface comes from
+    the App wrapper (`<div class="min-h-screen flex flex-col bg-warm-50">`),
+    which is `min-h-screen` so it always covers the visible viewport. By
+    setting body bg to the footer color rather than `transparent`, we
+    cover the edge case where Mac WebKit paints `body` (not `html`) for
+    overscroll bounce — the bounce always reveals footer color now. The
+    `overscroll-behavior-y: none` on `html` further clamps the bounce. */
  body {
  @apply text-gray-900;
- background-color: transparent;
+ background-color: var(--footer-bg);
+ overscroll-behavior-y: none;
+ min-height: 100vh;
  }
 
  /* Headings → 8-bit pixel font.

@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { Users, Recycle, Code, GraduationCap, Eye, Brain, MapPin, Calendar, Download, ExternalLink } from 'lucide-react';
+import { Users, Recycle, GraduationCap, Eye, Brain, MapPin, Calendar, Download, ExternalLink } from 'lucide-react';
 
 const Impact = () => {
  const navigate = useNavigate();
@@ -127,13 +127,13 @@ const Impact = () => {
  <div className="code-bg absolute inset-0 opacity-30 " aria-hidden="true" />
  <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-28 lg:py-32">
  <div className="text-center">
- <h1 className="heading-display text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white mb-6">
+ <h1 className="heading-display text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 mb-6">
  Impact Report
  </h1>
- <p className="text-lg text-gray-300 mb-4 max-w-4xl mx-auto">
+ <p className="text-lg text-gray-700 mb-4 max-w-4xl mx-auto">
  Microsoft ADC Partnership • National AI & Robotics Program
  </p>
- <p className="text-lg text-gray-300 mb-8 max-w-3xl mx-auto">
+ <p className="text-base text-gray-600 mb-8 max-w-3xl mx-auto">
  A year of transformation: From 3 national bootcamps to 66 Code Clubs,
  13 PET recycling machines, and pioneering inclusive education across Kenya.
  </p>
@@ -147,7 +147,7 @@ const Impact = () => {
  </button>
  <Link
  to="/microsoft"
- className="bg-white/5 border border-white/10 backdrop-blur-lg text-white px-8 py-4 rounded-xl hover:bg-white/10 transition-all duration-200 text-lg font-semibold flex items-center justify-center"
+ className="bg-white border border-gray-300 text-gray-800 px-8 py-4 rounded-xl hover:bg-warm-100 transition-all duration-200 text-lg font-semibold flex items-center justify-center"
  >
  <ExternalLink className="mr-2 h-5 w-5" />
  View Full Report

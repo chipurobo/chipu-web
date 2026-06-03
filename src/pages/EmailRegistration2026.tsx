@@ -87,17 +87,17 @@ Best regards,
  <p className="text-lg text-gray-700 mb-8 max-w-4xl mx-auto">
  We're launching Season 2 of the ChipuRobo Programme — empowering 100 new schools across 47 counties through inclusive, hands-on AI and robotics learning.
  </p>
- <div className="bg-white/5 border border-white/10 backdrop-blur-lg rounded-xl p-6 max-w-3xl mx-auto">
+ <div className="bg-white border border-warm-200 rounded-xl p-6 max-w-3xl mx-auto shadow-soft-sm">
  <div className="flex items-center justify-center mb-4">
- <Mail className="h-8 w-8 text-white mr-3" aria-hidden="true" />
- <h2 className="text-2xl font-bold text-white heading-display">Ready to Transform Your School?</h2>
+ <Mail className="h-7 w-7 text-terracotta-600 mr-3" aria-hidden="true" />
+ <h2 className="text-2xl font-bold text-gray-900 heading-display">Ready to Transform Your School?</h2>
  </div>
- <p className="text-gray-300 text-lg mb-4">
+ <p className="text-gray-700 text-base mb-4">
  Registration for the 2026 programme is simple - just send us an email with your school information:
  </p>
- <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
- <p className="text-2xl font-bold text-white">chipurobo@gmail.com</p>
- <p className="text-gray-300 mt-2">Our team will respond within 48 hours to discuss your school's needs</p>
+ <div className="bg-warm-50 border border-warm-200 rounded-xl p-4 text-center">
+ <p className="font-pixel text-lg text-gray-900">chipurobo@gmail.com</p>
+ <p className="text-sm text-gray-600 mt-2">Our team will respond within 48 hours to discuss your school's needs</p>
  </div>
  </div>
  </div>

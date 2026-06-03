@@ -335,8 +335,4 @@ const PastSection = ({ past }: { past: ReturnType<typeof getPastHackathons> }) =
   );
 };
 
-// Tiny shim so the unused-import linter doesn't yell at the secondary
-// imports used only inside the archived state.
-void ArrowLeft;
-
 export default Hackathons;

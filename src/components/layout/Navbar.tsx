@@ -46,7 +46,6 @@ const Navbar = () => {
                 width={32}
                 height={32}
                 className="h-8 w-8 pixel-crisp"
-                fetchPriority="high"
                 decoding="async"
               />
             </picture>

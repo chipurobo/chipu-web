@@ -80,7 +80,14 @@ function App() {
   };
 
   return (
-    <Router>
+    <Router
+      future={{
+        // Opt-in to React Router v7 behaviours so the v6 deprecation
+        // warnings in the console go away. Both are no-ops for v6 today.
+        v7_startTransition: true,
+        v7_relativeSplatPath: true,
+      }}
+    >
       <div className="min-h-screen flex flex-col bg-warm-50">
         {/* Skip to main content link for keyboard navigation */}
         <a

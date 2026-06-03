@@ -1,6 +1,6 @@
 import { useParams, Link } from 'react-router-dom';
 import { Calendar, Clock, User, ArrowLeft } from 'lucide-react';
-import { getBlogPostById, type BlogPostData } from '../data/blogPosts';
+import { getBlogPostById } from '../data/blogPosts';
 
 const BlogPost = () => {
  const { id } = useParams<{ id: string }>();
@@ -42,7 +42,6 @@ const BlogPost = () => {
  alt={post.title}
  width={1200}
  height={674}
- fetchPriority="high"
  decoding="async"
  className="w-full h-full object-cover"
  />

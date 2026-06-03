@@ -119,11 +119,11 @@ const Microsoft = () => {
  <div className="code-bg absolute inset-0 opacity-30 " aria-hidden="true" />
  <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-28 lg:py-32">
  <div className="text-center">
- <div className="inline-flex items-center bg-green-400/10 border border-white/10 backdrop-blur-lg px-4 py-2 rounded-full text-white mb-6">
- <CheckCircle className="h-5 w-5 mr-2" />
+ <div className="inline-flex items-center bg-white border border-warm-200 px-4 py-2 rounded-full text-gray-800 mb-6">
+ <CheckCircle className="h-5 w-5 mr-2 text-teal-600" />
  <span className="font-semibold">2025 Programme Completed Successfully</span>
  </div>
- <h1 className="heading-display text-4xl md:text-6xl font-bold tracking-tight text-white mb-6">
+ <h1 className="heading-display text-4xl md:text-6xl font-bold tracking-tight text-gray-900 mb-6">
  2025 Impact Report
  <br />
  Microsoft ADC Partnership
@@ -132,17 +132,17 @@ const Microsoft = () => {
  Three transformative bootcamps completed - setting the foundation for 2026 national expansion
  </p>
  <div className="flex flex-col sm:flex-row gap-4 justify-center">
- <div className="bg-white/5 border border-white/10 backdrop-blur-lg px-6 py-3 rounded-xl">
- <p className="text-3xl font-bold text-white">800+</p>
- <p className="text-gray-300">Lives Impacted</p>
+ <div className="bg-white border border-warm-200 px-6 py-3 rounded-xl">
+ <p className="font-pixel text-2xl text-gray-900">800+</p>
+ <p className="text-sm text-gray-600">Lives Impacted</p>
  </div>
- <div className="bg-white/5 border border-white/10 backdrop-blur-lg px-6 py-3 rounded-xl">
- <p className="text-3xl font-bold text-white">80</p>
- <p className="text-gray-300">Schools Reached</p>
+ <div className="bg-white border border-warm-200 px-6 py-3 rounded-xl">
+ <p className="font-pixel text-2xl text-gray-900">80</p>
+ <p className="text-sm text-gray-600">Schools Reached</p>
  </div>
- <div className="bg-white/5 border border-white/10 backdrop-blur-lg px-6 py-3 rounded-xl">
- <p className="text-3xl font-bold text-white">3</p>
- <p className="text-gray-300">Bootcamps Completed</p>
+ <div className="bg-white border border-warm-200 px-6 py-3 rounded-xl">
+ <p className="font-pixel text-2xl text-gray-900">3</p>
+ <p className="text-sm text-gray-600">Bootcamps Completed</p>
  </div>
  </div>
  </div>

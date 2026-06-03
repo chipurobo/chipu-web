@@ -120,7 +120,6 @@ const Home = () => {
  alt="Students building robots at a ChipuRobo bootcamp"
  width={1200}
  height={799}
- fetchPriority="high"
  decoding="async"
  className="w-full h-[300px] sm:h-[400px] md:h-[480px] object-cover"
  />
