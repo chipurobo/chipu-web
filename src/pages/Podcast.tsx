@@ -53,7 +53,7 @@ const guestTypes: GuestType[] = [
 
 const Podcast = () => {
  return (
- <div>
+ <div className="bg-warm-50">
  {/* ===== A. HERO SECTION ===== */}
  <section className="relative overflow-hidden bg-warm-50 border-b border-warm-200 ">
  <div className="code-bg absolute inset-0 opacity-30 " aria-hidden="true" />

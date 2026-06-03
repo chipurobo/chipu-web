@@ -20,20 +20,21 @@
  --footer-bg: #111827; /* gray-900, matches Footer */
  }
 
- /* === Bottom-overscroll-past-footer fix ===
-    Both html AND body get the footer-colored background so that
-    whatever the browser shows during scroll bounce (different vendors
-    paint different layers) is always the footer color. The cream
-    surface comes from the App wrapper, which is `min-h-screen` so it
-    always covers the visible viewport in normal scroll.
-
-    `overscroll-behavior-y: none` on html prevents the elastic bounce
-    from showing extra space beyond the document on Mac/iOS — belt and
-    suspenders since the html/body bg already matches. */
+ /* === Bulletproof footer overscroll fix ===
+    `html` has `overflow: hidden; height: 100%` so it does NOT scroll —
+    it's a fixed-size box. `body` becomes the dedicated scroll container
+    (rule further down) with `overflow-y: auto; height: 100%`. This
+    sandwich means:
+      • The body scrolls inside the html viewport.
+      • The body cannot bounce past its own content (no rubber-band).
+      • There's literally nothing past the footer to scroll into.
+    Works in every browser including older Safari/iOS where the
+    `overscroll-behavior` property is ignored. */
  html {
  scroll-behavior: smooth;
  background-color: var(--footer-bg);
- overscroll-behavior-y: none;
+ overflow: hidden;
+ height: 100%;
  }
 
  /* === Default body type: OpenDyslexic ===
@@ -114,14 +115,20 @@
  }
  }
 
- /* Body's bg is transparent so html's footer-color bg shows through any
-    overscroll bounce. `overscroll-behavior-y: none` also clamps the bounce
-    so the document literally cannot scroll past its edges — that's the
-    primary defense; html/body bg colors are the safety net. */
+ /* Body is the page scroll container. `height: 100%` of html (which is
+    100% of viewport), `overflow-y: auto` for vertical scroll, and
+    `overflow-x: hidden` to never produce a horizontal scrollbar from
+    stray absolutely-positioned children. The body bg is set to the
+    footer color too as a final safety net so any 1-2px paint glitch
+    at the bottom edge stays dark instead of leaking cream. */
  body {
  @apply text-gray-900;
- background-color: transparent;
- overscroll-behavior-y: none;
+ background-color: var(--footer-bg);
+ height: 100%;
+ overflow-y: auto;
+ overflow-x: hidden;
+ overscroll-behavior: none;
+ -webkit-overflow-scrolling: touch;
  }
 
  /* Headings → 8-bit pixel font.

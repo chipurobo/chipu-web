@@ -5,15 +5,6 @@ import { getCurrentHackathonNavLabel } from '../../data/hackathons';
 const Footer = () => {
   const hackathonLabel = getCurrentHackathonNavLabel();
  return (
- <>
- {/* Blend strip — a transparent-to-dark gradient that sits just above
-     the footer. Smooths the transition from whatever color the page
-     ends with (cream, gradient, emerald, etc.) into the dark footer,
-     so every page gets a clean fade instead of a hard edge. */}
- <div
- aria-hidden="true"
- className="h-16 bg-gradient-to-b from-transparent to-gray-900 pointer-events-none"
- />
  <footer className="bg-gray-900 text-white scanlines">
  {/* Accent bar */}
  <div className="h-1 bg-gradient-to-r from-teal-500 via-terracotta-500 to-teal-500" aria-hidden="true" />
@@ -114,7 +105,6 @@ const Footer = () => {
  </div>
  </div>
  </footer>
- </>
  );
 };
 
