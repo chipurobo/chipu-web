@@ -22,6 +22,7 @@ import { RequireAuth } from './dashboard/RequireAuth';
 import { DashboardLayout } from './dashboard/DashboardLayout';
 import { DashboardHome } from './dashboard/DashboardHome';
 import { Login as DashLogin } from './dashboard/Login';
+import { Welcome as DashWelcome } from './dashboard/Welcome';
 // Self-signup removed — schools are created by ChipuRobo admin.
 import { AdminSchools } from './dashboard/admin/Schools';
 import { AdminProducts } from './dashboard/admin/Products';
@@ -118,6 +119,7 @@ function App() {
               Has its own layout (no public navbar/footer). The login + signup
               pages render bare; everything else is gated by <RequireAuth>. */}
           <Route path="/dashboard/login" element={<DashLogin />} />
+          <Route path="/dashboard/welcome" element={<DashWelcome />} />
           {/* Legacy self-signup URL — redirect to login. */}
           <Route path="/dashboard/register-club" element={<Navigate to="/dashboard/login" replace />} />
           <Route

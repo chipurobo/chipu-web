@@ -1,6 +1,9 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
+import { Sparkles } from 'lucide-react';
+
+const ONBOARDING_KEY = 'chipurobo:onboarding-seen';
 
 // Self-signup is intentionally absent. Schools (and their lead-teacher
 // logins) are created by ChipuRobo admins on /dashboard/admin/schools.
@@ -21,6 +24,13 @@ export function Login() {
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // First-time visitors land on the welcome carousel.
+  useEffect(() => {
+    let seen = false;
+    try { seen = localStorage.getItem(ONBOARDING_KEY) === '1'; } catch { /* ignore */ }
+    if (!seen) navigate('/dashboard/welcome', { replace: true });
+  }, [navigate]);
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -95,8 +105,15 @@ export function Login() {
             </button>
           </form>
 
-          <div className="text-xs text-gray-500 mt-6 text-center">
-            <Link to="/" className="text-teal-700 hover:underline">
+          <div className="text-xs text-gray-500 mt-6 text-center flex flex-col gap-2">
+            <Link
+              to="/dashboard/welcome"
+              className="text-teal-700 hover:underline inline-flex items-center justify-center"
+            >
+              <Sparkles className="h-3.5 w-3.5 mr-1" />
+              Take the tour
+            </Link>
+            <Link to="/" className="text-gray-500 hover:text-gray-900">
               ← Back to chipurobo.com
             </Link>
           </div>
