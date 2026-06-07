@@ -28,6 +28,7 @@ import { AdminSchools } from './dashboard/admin/Schools';
 import { AdminProducts } from './dashboard/admin/Products';
 import { AdminOrders } from './dashboard/admin/Orders';
 import { AdminDistribute } from './dashboard/admin/Distribute';
+import { AdminEvents } from './dashboard/admin/Events';
 import { SchoolMembers } from './dashboard/school/Members';
 import { SchoolOrders } from './dashboard/school/Orders';
 import { SchoolStock } from './dashboard/school/Stock';
@@ -146,6 +147,10 @@ function App() {
             <Route
               path="admin/distribute"
               element={<RequireAuth role="admin"><AdminDistribute /></RequireAuth>}
+            />
+            <Route
+              path="admin/events"
+              element={<RequireAuth role="admin"><AdminEvents /></RequireAuth>}
             />
             <Route path="school/members" element={<SchoolMembers />} />
             <Route path="school/orders" element={<SchoolOrders />} />

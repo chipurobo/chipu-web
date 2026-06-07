@@ -21,6 +21,36 @@ export type UnitStatus =
   | 'returned'
   | 'retired';
 
+export type EventType = 'outreach' | 'bootcamp_physical' | 'bootcamp_webinar';
+
+export interface ChipuEvent {
+  id: string;
+  title: string;
+  description: string | null;
+  event_type: EventType;
+  start_at: string;
+  end_at: string | null;
+  location: string | null;
+  url: string | null;
+  created_by: string | null;
+  created_at: string;
+}
+
+export interface EventSchoolLink {
+  event_id: string;
+  school_id: string;
+  attended_at: string | null;
+  created_at: string;
+}
+
+export interface EventAttendance {
+  id: string;
+  event_id: string;
+  school_id: string;
+  student_id: string;
+  attended_at: string;
+}
+
 export interface School {
   id: string;
   name: string;
