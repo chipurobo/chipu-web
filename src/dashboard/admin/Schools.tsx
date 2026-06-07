@@ -5,15 +5,18 @@ import { KENYA_COUNTIES } from '../../lib/counties';
 import { Wrench, Plus, X, Copy, Check, KeyRound } from 'lucide-react';
 
 // =============================================================
-// Username derivation
+// Email derivation
 //
-// Single source of truth: a teacher's username IS their full name,
-// lowercased with spaces collapsed to dots. Diacritics stripped,
-// anything else removed. Examples:
-//   "Mary Wanjiku"  → "mary.wanjiku"
-//   "John O'Brien"  → "john.obrien"
-//   "Naïve Person"  → "naive.person"
+// Single source of truth: a teacher's login email IS derived from their
+// full name. We slug the full name to lowercase-dots and append a stable
+// "@chipurobo.local" domain so it can ride Supabase Auth's email-based
+// flow without the teacher needing a real inbox. Examples:
+//   "Mary Wanjiku"  → "mary.wanjiku@chipurobo.local"
+//   "John O'Brien"  → "john.obrien@chipurobo.local"
+//   "Naïve Person"  → "naive.person@chipurobo.local"
 // =============================================================
+export const CHIPUROBO_EMAIL_DOMAIN = 'chipurobo.local';
+
 function deriveUsername(fullName: string): string {
   return fullName
     .normalize('NFKD')
@@ -24,6 +27,16 @@ function deriveUsername(fullName: string): string {
     .replace(/\s+/g, '.')
     .replace(/\.+/g, '.')
     .slice(0, 32);
+}
+
+function deriveLoginEmail(fullName: string): string {
+  const u = deriveUsername(fullName);
+  return u ? `${u}@${CHIPUROBO_EMAIL_DOMAIN}` : '';
+}
+
+// Re-attach the @chipurobo.local suffix to a stored username for display.
+function usernameToLoginEmail(username: string): string {
+  return username.includes('@') ? username : `${username}@${CHIPUROBO_EMAIL_DOMAIN}`;
 }
 
 interface SchoolLead {
@@ -85,7 +98,7 @@ export function AdminSchools() {
           <h1>Schools</h1>
           <p className="text-sm text-gray-600 mt-1 max-w-2xl">
             Create schools, manage their lead-teacher credentials, and reset passwords. Schools
-            don't self-register — share the username and temp password with the teacher manually.
+            don't self-register — share the email + temp password with the teacher manually.
           </p>
         </div>
         <button
@@ -150,7 +163,7 @@ export function AdminSchools() {
               <th>Maker</th>
               <th>County</th>
               <th>Lead teacher</th>
-              <th>Username</th>
+              <th>Email (login)</th>
               <th className="text-right">Actions</th>
             </tr>
           </thead>
@@ -190,7 +203,9 @@ export function AdminSchools() {
                     )}
                   </td>
                   <td className="text-sm font-mono">
-                    {lead?.username ?? <span className="text-xs text-gray-400 italic">no lead</span>}
+                    {lead
+                      ? usernameToLoginEmail(lead.username)
+                      : <span className="text-xs text-gray-400 italic">no lead</span>}
                   </td>
                   <td className="text-right whitespace-nowrap">
                     {lead ? (
@@ -362,15 +377,15 @@ function CreateSchoolForm({
         </div>
 
         <div>
-          <label className="field-label">Username (auto)</label>
+          <label className="field-label">Email (auto)</label>
           <input
             type="text" readOnly
             className="field-input font-mono bg-warm-100 text-gray-700"
-            value={username || '— enter a full name above —'}
+            value={username ? deriveLoginEmail(fullName) : '— enter a full name above —'}
             tabIndex={-1}
           />
           <p className="field-help">
-            The teacher logs in with this. It's always lowercase first.last derived from the full name above.
+            The teacher logs in with this email. It's derived from the full name above.
           </p>
         </div>
 
@@ -451,7 +466,8 @@ function EditCredentialsPanel({
         <div>
           <h2 className="m-0">Credentials — {lead.school_name ?? '—'}</h2>
           <p className="text-sm text-gray-500 mt-0.5">
-            Teacher: {lead.full_name ?? '—'} · Username: <span className="font-mono">{lead.username}</span>
+            Teacher: {lead.full_name ?? '—'} · Email:{' '}
+            <span className="font-mono">{usernameToLoginEmail(lead.username)}</span>
           </p>
         </div>
         <button onClick={onClose} className="p-1 text-gray-500 hover:text-gray-900">
@@ -511,6 +527,7 @@ function CredentialsCard({
   onDismiss: () => void;
 }) {
   const [copied, setCopied] = useState(false);
+  const loginEmail = usernameToLoginEmail(username);
   const blob =
 `Hi,
 
@@ -518,7 +535,7 @@ Your ChipuRobo code-club dashboard is ready.
 
   School:   ${school}
   Login:    ${window.location.origin}/dashboard/login
-  Username: ${username}
+  Email:    ${loginEmail}
   Password: ${password}
 
 Please sign in and let us know if anything looks off.

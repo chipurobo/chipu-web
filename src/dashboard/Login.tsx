@@ -4,13 +4,12 @@ import { useAuth } from '../lib/auth';
 
 // Self-signup is intentionally absent. Schools (and their lead-teacher
 // logins) are created by ChipuRobo admins on /dashboard/admin/schools.
-// The teacher receives username + temp password by email manually.
+// The teacher receives email + temp password from the admin manually.
 //
-// Login is USERNAME + password. Internally we map username →
-// "<username>@chipurobo.local" before calling Supabase. If a value
-// containing "@" is typed (legacy admin accounts), we pass it through
-// unchanged.
-function usernameToEmail(input: string): string {
+// Login is EMAIL + password. The field is forgiving — if the user pastes
+// only the "username" half of their school-lead login (e.g. "mary.wanjiku"),
+// we transparently append "@chipurobo.local" before calling Supabase.
+function normaliseEmail(input: string): string {
   const v = input.trim().toLowerCase();
   return v.includes('@') ? v : `${v}@chipurobo.local`;
 }
@@ -18,7 +17,7 @@ function usernameToEmail(input: string): string {
 export function Login() {
   const navigate = useNavigate();
   const { signIn } = useAuth();
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +26,7 @@ export function Login() {
     e.preventDefault();
     setError(null);
     setSubmitting(true);
-    const { error: err } = await signIn(usernameToEmail(username), password);
+    const { error: err } = await signIn(normaliseEmail(email), password);
     setSubmitting(false);
     if (err) {
       setError(err);
@@ -58,17 +57,18 @@ export function Login() {
 
           <form onSubmit={onSubmit} className="space-y-4">
             <div>
-              <label className="field-label" htmlFor="username">Username</label>
+              <label className="field-label" htmlFor="email">Email</label>
               <input
-                id="username"
+                id="email"
                 type="text"
                 required
-                autoComplete="username"
+                autoComplete="email"
                 autoCapitalize="off"
                 spellCheck={false}
                 className="field-input"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div>
