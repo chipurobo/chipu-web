@@ -128,8 +128,8 @@ export function SchoolMembers() {
             equipment.
           </p>
         </div>
-        <div className="flex gap-3 items-center">
-          <div className="text-sm text-right">
+        <div className="flex gap-3 items-center flex-wrap w-full sm:w-auto justify-between sm:justify-end">
+          <div className="text-sm">
             <div className="text-gray-700">{activeCount} active</div>
             {inactiveCount > 0 && (
               <button

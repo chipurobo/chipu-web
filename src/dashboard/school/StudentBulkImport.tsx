@@ -188,7 +188,7 @@ export function StudentBulkImport({
             </table>
           </div>
 
-          <div className="flex justify-between items-center gap-2 pt-2 border-t border-warm-200">
+          <div className="flex justify-between items-center gap-2 pt-2 border-t border-warm-200 flex-wrap">
             <div className="text-sm text-gray-600">
               {rows.length} row(s)
               {done && (

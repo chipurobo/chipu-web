@@ -246,7 +246,7 @@ export function SchoolBulkImport({ onClose, onAllDone }: { onClose: () => void; 
             </table>
           </div>
 
-          <div className="flex justify-between items-center gap-2 pt-2 border-t border-warm-200">
+          <div className="flex justify-between items-center gap-2 pt-2 border-t border-warm-200 flex-wrap">
             <div className="text-sm text-gray-600">
               {rows.length} row(s)
               {done && (
@@ -257,7 +257,7 @@ export function SchoolBulkImport({ onClose, onAllDone }: { onClose: () => void; 
                 </>
               )}
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               {done && okCount > 0 && (
                 <button onClick={downloadResults} className="btn-secondary">
                   <Download className="h-4 w-4 mr-1.5" />

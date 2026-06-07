@@ -110,7 +110,10 @@ export function SchoolOrders() {
           </p>
           <h1>Orders</h1>
         </div>
-        <button onClick={() => setShowNew((s) => !s)} className="btn-primary">
+        <button
+          onClick={() => setShowNew((s) => !s)}
+          className="btn-primary w-full sm:w-auto justify-center"
+        >
           <Plus className="h-4 w-4 mr-1.5" />
           Place new order
         </button>

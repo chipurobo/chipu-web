@@ -104,12 +104,17 @@ export function MakerSpacesMap() {
         </div>
       )}
 
-      <div className="rounded-lg overflow-hidden border border-warm-200 shadow-sm">
+      {/* Responsive height: 60vh on phones (with sensible floor + ceiling)
+          so the map breathes without eating the whole screen. */}
+      <div
+        className="rounded-lg overflow-hidden border border-warm-200 shadow-sm"
+        style={{ height: 'min(70vh, 560px)' }}
+      >
         <MapContainer
           center={KENYA_CENTER}
           zoom={KENYA_ZOOM}
           scrollWheelZoom={false}
-          style={{ height: '480px', width: '100%' }}
+          style={{ height: '100%', width: '100%', minHeight: '320px' }}
         >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

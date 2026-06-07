@@ -155,17 +155,17 @@ export function AdminSchools() {
             don't self-register — share the email + temp password with the teacher manually.
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap w-full sm:w-auto">
           <button
             onClick={() => { setImporting(true); setCreating(false); setEditingLead(null); setLastCreated(null); }}
-            className="btn-secondary"
+            className="btn-secondary flex-1 sm:flex-none justify-center"
           >
             <Upload className="h-4 w-4 mr-1.5" />
             Bulk import
           </button>
           <button
             onClick={() => { setCreating(true); setImporting(false); setEditingLead(null); setLastCreated(null); }}
-            className="btn-primary"
+            className="btn-primary flex-1 sm:flex-none justify-center"
           >
             <Plus className="h-4 w-4 mr-1.5" />
             Create school
@@ -233,7 +233,7 @@ export function AdminSchools() {
           {schools ? `${schools.length} registered` : '…'}
         </span>
         {selected.size > 0 && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="text-sm text-gray-700">
               {selected.size} selected
             </span>
@@ -251,7 +251,7 @@ export function AdminSchools() {
               className="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-medium bg-red-600 text-white hover:bg-red-700 disabled:opacity-60"
             >
               <Trash2 className="h-3.5 w-3.5 mr-1.5" />
-              {deleting ? 'Deleting…' : `Delete ${selected.size} school(s)`}
+              {deleting ? 'Deleting…' : `Delete ${selected.size}`}
             </button>
           </div>
         )}

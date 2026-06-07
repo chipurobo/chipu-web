@@ -77,7 +77,10 @@ export function AdminProducts() {
             add a product — no need to invent one.
           </p>
         </div>
-        <button onClick={() => { setCreating(true); setEditing(null); }} className="btn-primary">
+        <button
+          onClick={() => { setCreating(true); setEditing(null); }}
+          className="btn-primary w-full sm:w-auto justify-center"
+        >
           <Plus className="h-4 w-4 mr-1.5" />
           Add product
         </button>
