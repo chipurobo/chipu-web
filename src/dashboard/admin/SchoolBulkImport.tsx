@@ -1,7 +1,7 @@
 import { useState, type ChangeEvent } from 'react';
 import { supabase } from '../../lib/supabase';
 import { KENYA_COUNTIES } from '../../lib/counties';
-import { parseSheet, parseBoolish, downloadCsv, csvCell, type SheetRow } from '../../lib/parseSheet';
+import { parseSheet, parseBoolish, downloadCsv, downloadXlsx, csvCell, type SheetRow } from '../../lib/parseSheet';
 import type { SchoolType } from '../../lib/database.types';
 import { Upload, FileSpreadsheet, Download, X, CheckCircle2, AlertCircle } from 'lucide-react';
 
@@ -144,13 +144,12 @@ export function SchoolBulkImport({ onClose, onAllDone }: { onClose: () => void; 
   };
 
   const downloadTemplate = () => {
-    const lines = [
-      'school_name,county,type,is_maker_space,full_name,phone,contact_email',
-      'Kibera Primary,Nairobi,mainstream,no,Mary Wanjiku,+254700000001,mary@kiberaprimary.ac.ke',
-      'Strathmore Maker Lab,Nairobi,integrated,yes,Peter Kamau,+254700000002,peter@strathmore.edu',
-      'Thika School for the Blind,Kiambu,special,no,Jane Achieng,+254700000003,',
-    ];
-    downloadCsv('chipurobo-schools-template.csv', lines.join('\n'));
+    downloadXlsx('chipurobo-schools-template.xlsx', [
+      ['school_name',                  'county',  'type',       'is_maker_space', 'full_name',    'phone',          'contact_email'],
+      ['Kibera Primary',               'Nairobi', 'mainstream', 'no',             'Mary Wanjiku', '+254700000001',  'mary@kiberaprimary.ac.ke'],
+      ['Strathmore Maker Lab',         'Nairobi', 'integrated', 'yes',            'Peter Kamau',  '+254700000002',  'peter@strathmore.edu'],
+      ['Thika School for the Blind',   'Kiambu',  'special',    'no',             'Jane Achieng', '+254700000003',  ''],
+    ], 'Schools');
   };
 
   const okCount = rows?.filter((r) => r.__status === 'ok').length ?? 0;
@@ -179,7 +178,7 @@ export function SchoolBulkImport({ onClose, onAllDone }: { onClose: () => void; 
         </p>
         <button onClick={downloadTemplate} type="button" className="btn-secondary !text-xs whitespace-nowrap">
           <Download className="h-3.5 w-3.5 mr-1.5" />
-          Template CSV
+          Template .xlsx
         </button>
       </div>
 

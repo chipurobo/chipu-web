@@ -1,6 +1,6 @@
 import { useState, type ChangeEvent } from 'react';
 import { supabase } from '../../lib/supabase';
-import { parseSheet, parseBoolish, downloadCsv, type SheetRow } from '../../lib/parseSheet';
+import { parseSheet, parseBoolish, downloadXlsx, type SheetRow } from '../../lib/parseSheet';
 import { Upload, FileSpreadsheet, Download, X, CheckCircle2, AlertCircle } from 'lucide-react';
 
 interface ParsedRow extends SheetRow {
@@ -83,13 +83,12 @@ export function StudentBulkImport({
   };
 
   const downloadTemplate = () => {
-    const lines = [
-      'full_name,grade,in_club',
-      'Mary Wanjiku,Grade 7,yes',
-      'Peter Kamau,Grade 6,yes',
-      'Jane Achieng,Grade 8,no',
-    ];
-    downloadCsv('chipurobo-students-template.csv', lines.join('\n'));
+    downloadXlsx('chipurobo-students-template.xlsx', [
+      ['full_name',    'grade',   'in_club'],
+      ['Mary Wanjiku', 'Grade 7', 'yes'],
+      ['Peter Kamau',  'Grade 6', 'yes'],
+      ['Jane Achieng', 'Grade 8', 'no'],
+    ], 'Students');
   };
 
   const okCount  = rows?.filter((r) => r.__status === 'ok').length ?? 0;
@@ -113,7 +112,7 @@ export function StudentBulkImport({
         </p>
         <button onClick={downloadTemplate} type="button" className="btn-secondary !text-xs whitespace-nowrap">
           <Download className="h-3.5 w-3.5 mr-1.5" />
-          Template CSV
+          Template .xlsx
         </button>
       </div>
 

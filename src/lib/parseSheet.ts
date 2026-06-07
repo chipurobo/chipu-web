@@ -74,6 +74,22 @@ export function downloadCsv(filename: string, content: string) {
   }, 0);
 }
 
+/**
+ * Build and download an .xlsx file. `rows` is an array of arrays — first
+ * row is treated as the header row. The resulting file has one sheet
+ * called "Template".
+ */
+export function downloadXlsx(
+  filename: string,
+  rows: (string | number | boolean | null)[][],
+  sheetName: string = 'Template',
+) {
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, sheetName);
+  XLSX.writeFile(wb, filename);
+}
+
 // Escape a single CSV cell.
 export function csvCell(s: string | number | boolean | null | undefined): string {
   if (s === null || s === undefined) return '';
