@@ -67,7 +67,7 @@ export function AdminProducts() {
   };
 
   return (
-    <div className="px-6 sm:px-10 py-8 space-y-6">
+    <div className="px-4 sm:px-6 lg:px-10 py-8 space-y-6">
       <div className="flex items-end justify-between gap-4 flex-wrap">
         <div>
           <p className="text-xs uppercase tracking-wider text-gray-500 mb-1">Admin</p>
@@ -132,7 +132,7 @@ export function AdminProducts() {
           <h2 className="m-0">Catalogue</h2>
           <span className="text-xs text-gray-500">{filtered?.length ?? 0}</span>
         </div>
-        <div className="card overflow-hidden">
+        <div className="card overflow-x-auto">
           <table className="data-table">
             <thead>
               <tr>

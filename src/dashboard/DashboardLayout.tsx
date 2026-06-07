@@ -1,8 +1,9 @@
-import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
 import { NotificationsProvider, NotificationToaster } from '../lib/notifications';
 import { useOrderRealtime, type OrderCounts } from '../lib/useOrderRealtime';
-import { LogOut, Home, School, Package, ClipboardList, Users, Boxes, Wrench, Send } from 'lucide-react';
+import { LogOut, Home, School, Package, ClipboardList, Users, Boxes, Wrench, Send, Menu, X } from 'lucide-react';
 
 // =============================================================
 // Admin/school dashboard shell.
@@ -11,8 +12,10 @@ import { LogOut, Home, School, Package, ClipboardList, Users, Boxes, Wrench, Sen
 //   • admin              → Schools · Products · All orders · Distribute
 //   • school_lead        → Students · Orders · Stock + (Production if maker space)
 //
-// Real-time order awareness lives in <DashboardShell>, one level inside
-// the NotificationsProvider so useOrderRealtime can emit toasts.
+// Responsive behaviour:
+//   • md+ : permanent sidebar on the left.
+//   • <md : sidebar is a slide-in drawer triggered by a hamburger in a
+//           top bar; tapping a nav item or the backdrop closes it.
 // =============================================================
 
 export function DashboardLayout() {
@@ -27,9 +30,22 @@ export function DashboardLayout() {
 function DashboardShell() {
   const { profile, school, signOut } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const isAdmin = profile?.role === 'admin';
   const isMakerSpace = !!school?.is_maker_space;
   const counts: OrderCounts = useOrderRealtime();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Auto-close the drawer on route change.
+  useEffect(() => { setMobileOpen(false); }, [location.pathname]);
+
+  // Lock body scroll while drawer is open on mobile.
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const original = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = original; };
+  }, [mobileOpen]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -37,23 +53,74 @@ function DashboardShell() {
   };
 
   return (
-    <div className="admin-zone min-h-screen bg-warm-50 flex">
-      {/* ───── Sidebar ───── */}
-      <aside className="w-60 shrink-0 border-r border-warm-200 bg-white flex flex-col">
-        <Link to="/dashboard" className="flex items-center px-5 py-5 border-b border-warm-200">
+    <div className="admin-zone min-h-screen bg-warm-50 md:flex">
+      {/* ───── Mobile top bar (md:hidden) ───── */}
+      <div className="md:hidden sticky top-0 z-30 flex items-center gap-3 border-b border-warm-200 bg-white px-3 py-2">
+        <button
+          type="button"
+          onClick={() => setMobileOpen(true)}
+          className="p-2 -ml-1 text-gray-700 hover:bg-warm-100 rounded-md"
+          aria-label="Open menu"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+        <Link to="/dashboard" className="flex items-center gap-2">
           <picture>
             <source srcSet="/img/logo.webp" type="image/webp" />
-            <img src="/img/logo.png" alt="" width={28} height={28} className="h-7 w-7 pixel-crisp" />
+            <img src="/img/logo.png" alt="" width={24} height={24} className="h-6 w-6 pixel-crisp" />
           </picture>
-          <span className="ml-2 font-pixel text-[0.65rem] tracking-wider text-gray-900 uppercase">
+          <span className="font-pixel text-[0.6rem] tracking-wider text-gray-900 uppercase">
             ChipuRobo<span className="text-teal-500">_</span>
           </span>
-          <span className="ml-auto text-[0.55rem] font-pixel tracking-widest text-terracotta-600 uppercase">
+        </Link>
+        <span className="ml-auto text-[0.55rem] font-pixel tracking-widest text-terracotta-600 uppercase">
+          {isAdmin ? 'ADMIN' : (isMakerSpace ? 'MAKER' : 'SCHOOL')}
+        </span>
+      </div>
+
+      {/* ───── Mobile backdrop ───── */}
+      {mobileOpen && (
+        <button
+          type="button"
+          onClick={() => setMobileOpen(false)}
+          className="md:hidden fixed inset-0 z-40 bg-black/30"
+          aria-label="Close menu"
+        />
+      )}
+
+      {/* ───── Sidebar (drawer on mobile, static on md+) ───── */}
+      <aside
+        className={`
+          fixed md:sticky top-0 left-0 z-50 md:z-10 h-screen md:h-screen
+          w-64 md:w-60 shrink-0 border-r border-warm-200 bg-white
+          flex flex-col transform transition-transform md:transform-none
+          ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+        `}
+      >
+        <div className="flex items-center px-5 py-5 border-b border-warm-200">
+          <Link to="/dashboard" className="flex items-center min-w-0">
+            <picture>
+              <source srcSet="/img/logo.webp" type="image/webp" />
+              <img src="/img/logo.png" alt="" width={28} height={28} className="h-7 w-7 pixel-crisp" />
+            </picture>
+            <span className="ml-2 font-pixel text-[0.65rem] tracking-wider text-gray-900 uppercase">
+              ChipuRobo<span className="text-teal-500">_</span>
+            </span>
+          </Link>
+          <span className="ml-auto text-[0.55rem] font-pixel tracking-widest text-terracotta-600 uppercase hidden md:inline">
             ADMIN
           </span>
-        </Link>
+          <button
+            type="button"
+            onClick={() => setMobileOpen(false)}
+            className="md:hidden ml-auto p-1 -mr-1 text-gray-500 hover:text-gray-900"
+            aria-label="Close menu"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
 
-        <nav className="flex-1 py-4 px-3 space-y-0.5 text-sm">
+        <nav className="flex-1 py-4 px-3 space-y-0.5 text-sm overflow-y-auto">
           <SidebarLink to="/dashboard" end icon={Home}>
             Overview
           </SidebarLink>

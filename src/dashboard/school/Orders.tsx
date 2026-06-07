@@ -101,7 +101,7 @@ export function SchoolOrders() {
   };
 
   return (
-    <div className="px-6 sm:px-10 py-8 space-y-10">
+    <div className="px-4 sm:px-6 lg:px-10 py-8 space-y-10">
       {/* Header */}
       <div className="flex items-end justify-between gap-4 flex-wrap">
         <div>
@@ -173,7 +173,7 @@ function OrdersTable({
 }) {
   const showActions = !!onMarkDelivered;
   return (
-    <div className="card overflow-hidden">
+    <div className="card overflow-x-auto">
       <table className="data-table">
         <thead>
           <tr>

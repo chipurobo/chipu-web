@@ -51,7 +51,7 @@ export function SchoolProduction() {
 
   if (!school?.is_maker_space) {
     return (
-      <div className="px-6 sm:px-10 py-12 max-w-2xl">
+      <div className="px-4 sm:px-6 lg:px-10 py-12 max-w-2xl">
         <div className="card p-8 text-center">
           <AlertCircle className="h-8 w-8 text-gray-400 mx-auto mb-3" />
           <h1 className="mb-2">Production is for maker spaces</h1>
@@ -90,7 +90,7 @@ export function SchoolProduction() {
   };
 
   return (
-    <div className="px-6 sm:px-10 py-8 space-y-10">
+    <div className="px-4 sm:px-6 lg:px-10 py-8 space-y-10">
       <div>
         <p className="text-xs uppercase tracking-wider text-gray-500 mb-1">{school.name}</p>
         <h1>Production</h1>

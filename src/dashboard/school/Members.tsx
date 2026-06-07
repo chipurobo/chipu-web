@@ -109,7 +109,7 @@ export function SchoolMembers() {
   const inactiveCount = (members?.length ?? 0) - activeCount;
 
   return (
-    <div className="px-6 sm:px-10 py-8">
+    <div className="px-4 sm:px-6 lg:px-10 py-8">
       <div className="flex items-end justify-between mb-6 gap-4 flex-wrap">
         <div>
           <p className="text-xs uppercase tracking-wider text-gray-500 mb-1">
@@ -199,7 +199,7 @@ export function SchoolMembers() {
       </div>
 
       {/* Table */}
-      <div className="card overflow-hidden">
+      <div className="card overflow-x-auto">
         <table className="data-table">
           <thead>
             <tr>

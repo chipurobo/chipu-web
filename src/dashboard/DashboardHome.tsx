@@ -13,7 +13,7 @@ export function DashboardHome() {
   const isMakerSpace = !!school?.is_maker_space;
 
   return (
-    <div className="px-6 sm:px-10 py-8 max-w-5xl">
+    <div className="px-4 sm:px-6 lg:px-10 py-8 max-w-5xl">
       <p className="text-xs uppercase tracking-wider text-gray-500 mb-1">
         {isAdmin ? 'ChipuRobo admin' : school?.name ?? 'Your dashboard'}
       </p>

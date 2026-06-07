@@ -132,7 +132,7 @@ export function AdminDistribute() {
   const delivered    = orders?.filter((o) => o.status === 'delivered')     ?? null;
 
   return (
-    <div className="px-6 sm:px-10 py-8 space-y-8">
+    <div className="px-4 sm:px-6 lg:px-10 py-8 space-y-8">
       <div>
         <p className="text-xs uppercase tracking-wider text-gray-500 mb-1">Admin</p>
         <h1>Consumable assignments</h1>

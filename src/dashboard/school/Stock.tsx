@@ -107,7 +107,7 @@ export function SchoolStock() {
   }, [school?.id]);
 
   return (
-    <div className="px-6 sm:px-10 py-8 space-y-10">
+    <div className="px-4 sm:px-6 lg:px-10 py-8 space-y-10">
       <div>
         <p className="text-xs uppercase tracking-wider text-gray-500 mb-1">
           {school?.name ?? 'Your school'}
@@ -133,7 +133,7 @@ export function SchoolStock() {
           <h2 className="m-0">Durable units</h2>
           <span className="text-xs text-gray-500">{units?.length ?? 0}</span>
         </div>
-        <div className="card overflow-hidden">
+        <div className="card overflow-x-auto">
           <table className="data-table">
             <thead>
               <tr>
@@ -201,7 +201,7 @@ export function SchoolStock() {
             {stock?.filter((s) => s.on_hand > 0).length ?? 0} products on hand
           </span>
         </div>
-        <div className="card overflow-hidden">
+        <div className="card overflow-x-auto">
           <table className="data-table">
             <thead>
               <tr>

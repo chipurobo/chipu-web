@@ -3,7 +3,7 @@ import { Construction } from 'lucide-react';
 /** Placeholder for nav links whose pages haven't been built yet. */
 export function ComingSoon({ title }: { title: string }) {
   return (
-    <div className="px-6 sm:px-10 py-12 max-w-2xl">
+    <div className="px-4 sm:px-6 lg:px-10 py-12 max-w-2xl">
       <div className="card p-8 text-center">
         <Construction className="h-8 w-8 text-gray-400 mx-auto mb-3" />
         <h1 className="mb-2">{title}</h1>
