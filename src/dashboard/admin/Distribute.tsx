@@ -1,7 +1,7 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { supabase } from '../../lib/supabase';
 import type { Order, Product, School } from '../../lib/database.types';
-import { Send, PlayCircle, Wrench, Truck, Plus, ChevronDown } from 'lucide-react';
+import { Send, PlayCircle, Wrench, Truck, Plus, ChevronDown, Inbox, PackageCheck, CheckCircle2 } from 'lucide-react';
 
 interface AssignmentRow extends Order {
   products: Pick<Product, 'id' | 'name' | 'sku' | 'is_durable'> | null;
@@ -131,16 +131,36 @@ export function AdminDistribute() {
   const shipped      = orders?.filter((o) => o.status === 'shipped')       ?? null;
   const delivered    = orders?.filter((o) => o.status === 'delivered')     ?? null;
 
+  const stats = [
+    { key: 'accepted',      label: 'Ready',        count: accepted?.length ?? 0,     accent: 'bg-amber-500'  },
+    { key: 'in_production', label: 'In production', count: inProduction?.length ?? 0, accent: 'bg-teal-500'   },
+    { key: 'shipped',       label: 'Shipped',      count: shipped?.length ?? 0,      accent: 'bg-indigo-500' },
+    { key: 'delivered',     label: 'Delivered',    count: delivered?.length ?? 0,    accent: 'bg-emerald-500' },
+  ];
+
   return (
-    <div className="px-4 sm:px-6 lg:px-10 py-8 space-y-8">
+    <div className="px-4 sm:px-6 lg:px-10 py-8 space-y-6">
+      {/* Header */}
       <div>
         <p className="text-xs uppercase tracking-wider text-gray-500 mb-1">Admin</p>
         <h1>Consumable assignments</h1>
         <p className="text-sm text-gray-600 mt-1 max-w-2xl">
-          ChipuRobo's own production line. Assigning a consumable creates an order with the same
-          accepted → in production → shipped → delivered lifecycle a maker space goes through.
-          Once the school marks it delivered, it lands in their stock.
+          ChipuRobo's own production line. Each assignment goes through the same lifecycle a maker
+          space follows. When the school marks it delivered, it lands in their stock.
         </p>
+      </div>
+
+      {/* Pipeline stats strip */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {stats.map((s) => (
+          <div key={s.key} className="card p-3 flex items-center gap-3">
+            <span className={`inline-block w-2.5 h-2.5 rounded-full ${s.accent}`} />
+            <div className="min-w-0">
+              <div className="text-2xl font-semibold text-gray-900 leading-none">{s.count}</div>
+              <div className="text-xs text-gray-500 mt-1">{s.label}</div>
+            </div>
+          </div>
+        ))}
       </div>
 
       {err && (
@@ -159,7 +179,7 @@ export function AdminDistribute() {
         <button
           type="button"
           onClick={() => setFormOpen((v) => !v)}
-          className="btn-primary"
+          className="btn-primary w-full sm:w-auto justify-center"
         >
           <Plus className="h-4 w-4 mr-1.5" />
           {formOpen ? 'Cancel new assignment' : 'New consumable assignment'}
@@ -248,98 +268,205 @@ export function AdminDistribute() {
         )}
       </section>
 
-      {/* Pipeline stages */}
-      <Section icon={PlayCircle} title="Accepted — ready to start" count={accepted?.length ?? 0}>
-        {!accepted || accepted.length === 0
-          ? <Empty>Nothing waiting.</Empty>
-          : accepted.map((o) => (
-              <AssignmentCard key={o.id} o={o}>
-                <button onClick={() => startProduction(o.id)} className="btn-primary">
-                  Start production
-                </button>
-              </AssignmentCard>
-            ))}
-      </Section>
+      {/* Kanban board — three active stages side by side on desktop, stacked on mobile */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <Column
+          title="Accepted"
+          subtitle="Ready to start"
+          icon={PlayCircle}
+          accent="amber"
+          rows={accepted}
+          emptyIcon={Inbox}
+          emptyText="Nothing waiting"
+          actionLabel="Start production"
+          actionIcon={PlayCircle}
+          onAction={startProduction}
+          actionStyle="primary"
+        />
+        <Column
+          title="In production"
+          subtitle="On the bench"
+          icon={Wrench}
+          accent="teal"
+          rows={inProduction}
+          emptyIcon={Wrench}
+          emptyText="Nothing on the bench"
+          actionLabel="Mark shipped"
+          actionIcon={Truck}
+          onAction={ship}
+          actionStyle="primary"
+        />
+        <Column
+          title="Shipped"
+          subtitle="Awaiting delivery"
+          icon={Truck}
+          accent="indigo"
+          rows={shipped}
+          emptyIcon={Truck}
+          emptyText="Nothing in transit"
+          actionLabel="Mark delivered"
+          actionIcon={PackageCheck}
+          onAction={markDelivered}
+          actionStyle="secondary"
+        />
+      </div>
 
-      <Section icon={Wrench} title="In production" count={inProduction?.length ?? 0}>
-        {!inProduction || inProduction.length === 0
-          ? <Empty>Nothing on the bench.</Empty>
-          : inProduction.map((o) => (
-              <AssignmentCard key={o.id} o={o}>
-                <button onClick={() => ship(o.id)} className="btn-primary">
-                  <Truck className="h-4 w-4 mr-1.5" />
-                  Ship
-                </button>
-              </AssignmentCard>
-            ))}
-      </Section>
+      {/* Recently delivered — slim card list, not a Kanban column */}
+      <section>
+        <div className="flex items-center gap-2 mb-3">
+          <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+          <h2 className="m-0">Recently delivered</h2>
+          <span className="text-xs text-gray-500">{delivered?.length ?? 0}</span>
+        </div>
 
-      <Section icon={Truck} title="Shipped — awaiting delivery" count={shipped?.length ?? 0}>
-        {!shipped || shipped.length === 0
-          ? <Empty>Nothing in transit.</Empty>
-          : shipped.map((o) => (
-              <AssignmentCard key={o.id} o={o}>
-                <button onClick={() => markDelivered(o.id)} className="btn-secondary">
-                  Mark delivered
-                </button>
-              </AssignmentCard>
-            ))}
-      </Section>
-
-      <Section icon={Send} title="Recently delivered" count={delivered?.length ?? 0}>
-        {!delivered || delivered.length === 0
-          ? <Empty>No deliveries yet.</Empty>
-          : delivered.slice(0, 20).map((o) => (
-              <AssignmentCard key={o.id} o={o}>
-                <span className="text-xs text-gray-500">
-                  Delivered {o.delivered_at ? new Date(o.delivered_at).toLocaleDateString() : ''}
+        {!delivered || delivered.length === 0 ? (
+          <div className="card p-6 text-center">
+            <Send className="h-6 w-6 text-gray-400 mx-auto mb-2" />
+            <p className="text-sm text-gray-500">No deliveries yet.</p>
+          </div>
+        ) : (
+          <div className="card divide-y divide-warm-200">
+            {delivered.slice(0, 20).map((o) => (
+              <div key={o.id} className="px-4 py-3 flex items-start justify-between gap-4 flex-wrap">
+                <div className="min-w-0">
+                  <div className="font-medium text-gray-900 text-sm">
+                    {o.products?.name ?? 'Unknown product'}{' '}
+                    <span className="text-gray-500 font-normal">× {o.quantity}</span>
+                  </div>
+                  <div className="text-xs text-gray-500 mt-0.5">
+                    To {o.placer?.name ?? '—'}
+                    {o.products?.sku && <> · <span className="font-mono">{o.products.sku}</span></>}
+                  </div>
+                </div>
+                <span className="text-xs text-emerald-700 inline-flex items-center gap-1 flex-shrink-0">
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  {o.delivered_at ? new Date(o.delivered_at).toLocaleDateString() : 'delivered'}
                 </span>
-              </AssignmentCard>
+              </div>
             ))}
-      </Section>
+          </div>
+        )}
+      </section>
     </div>
   );
 }
 
-function Section({
-  icon: Icon, title, count, children,
+// -----------------------------------------------------------------
+// Kanban-style column for one pipeline stage.
+// -----------------------------------------------------------------
+
+const ACCENTS = {
+  amber:  { bar: 'bg-amber-500',   tint: 'bg-amber-50',   pill: 'bg-amber-100 text-amber-800'   },
+  teal:   { bar: 'bg-teal-500',    tint: 'bg-teal-50',    pill: 'bg-teal-100 text-teal-800'     },
+  indigo: { bar: 'bg-indigo-500',  tint: 'bg-indigo-50',  pill: 'bg-indigo-100 text-indigo-800' },
+} as const;
+
+type Accent = keyof typeof ACCENTS;
+
+function Column({
+  title, subtitle, icon: Icon, accent, rows,
+  emptyIcon: EmptyIcon, emptyText,
+  actionLabel, actionIcon: ActionIcon, onAction, actionStyle,
 }: {
-  icon: typeof PlayCircle; title: string; count: number; children: React.ReactNode;
+  title: string;
+  subtitle: string;
+  icon: typeof PlayCircle;
+  accent: Accent;
+  rows: AssignmentRow[] | null;
+  emptyIcon: typeof PlayCircle;
+  emptyText: string;
+  actionLabel: string;
+  actionIcon: typeof PlayCircle;
+  onAction: (id: string) => void;
+  actionStyle: 'primary' | 'secondary';
 }) {
+  const a = ACCENTS[accent];
   return (
-    <section>
-      <div className="flex items-center gap-2 mb-3">
-        <Icon className="h-4 w-4 text-teal-700" />
-        <h2 className="m-0">{title}</h2>
-        <span className="text-xs text-gray-500">{count}</span>
+    <section className="card overflow-hidden flex flex-col">
+      <div className={`h-1 ${a.bar}`} />
+      <header className="px-4 py-3 border-b border-warm-200 flex items-center gap-2">
+        <Icon className="h-4 w-4 text-gray-700" />
+        <div className="flex-1 min-w-0">
+          <h2 className="m-0 text-sm font-semibold leading-tight">{title}</h2>
+          <p className="text-[0.7rem] text-gray-500 leading-tight">{subtitle}</p>
+        </div>
+        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${a.pill}`}>
+          {rows?.length ?? 0}
+        </span>
+      </header>
+
+      <div className="flex-1 p-3 space-y-2 min-h-[160px]">
+        {!rows && (
+          <p className="text-xs text-gray-400 italic px-2 py-3">Loading…</p>
+        )}
+        {rows && rows.length === 0 && (
+          <div className="text-center py-8 px-3">
+            <EmptyIcon className="h-7 w-7 text-gray-300 mx-auto mb-2" />
+            <p className="text-xs text-gray-500">{emptyText}</p>
+          </div>
+        )}
+        {rows?.map((o) => (
+          <AssignmentTile
+            key={o.id}
+            o={o}
+            tint={a.tint}
+            actionLabel={actionLabel}
+            actionIcon={ActionIcon}
+            onAction={() => onAction(o.id)}
+            actionStyle={actionStyle}
+          />
+        ))}
       </div>
-      <div className="space-y-3">{children}</div>
     </section>
   );
 }
 
-function Empty({ children }: { children: React.ReactNode }) {
-  return <p className="text-sm text-gray-500 italic px-4 py-3">{children}</p>;
+function AssignmentTile({
+  o, tint, actionLabel, actionIcon: ActionIcon, onAction, actionStyle,
+}: {
+  o: AssignmentRow;
+  tint: string;
+  actionLabel: string;
+  actionIcon: typeof PlayCircle;
+  onAction: () => void;
+  actionStyle: 'primary' | 'secondary';
+}) {
+  return (
+    <div className={`rounded-md border border-warm-200 ${tint} p-3`}>
+      <div className="font-medium text-gray-900 text-sm leading-tight">
+        {o.products?.name ?? 'Unknown product'}{' '}
+        <span className="text-gray-500 font-normal">× {o.quantity}</span>
+      </div>
+      <div className="text-[0.7rem] text-gray-500 mt-1 leading-snug">
+        For <span className="text-gray-700">{o.placer?.name ?? '—'}</span>
+        {o.products?.sku && <> · <span className="font-mono">{o.products.sku}</span></>}
+      </div>
+      <div className="text-[0.7rem] text-gray-400 mt-0.5">
+        placed {new Date(o.placed_at).toLocaleDateString()}
+      </div>
+      {o.notes && (
+        <Note>{o.notes}</Note>
+      )}
+      <button
+        type="button"
+        onClick={onAction}
+        className={`mt-3 w-full justify-center inline-flex items-center px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+          actionStyle === 'primary'
+            ? 'bg-gray-900 text-white hover:bg-gray-800'
+            : 'bg-white border border-warm-200 text-gray-700 hover:bg-warm-50'
+        }`}
+      >
+        <ActionIcon className="h-3.5 w-3.5 mr-1.5" />
+        {actionLabel}
+      </button>
+    </div>
+  );
 }
 
-function AssignmentCard({ o, children }: { o: AssignmentRow; children?: React.ReactNode }) {
+function Note({ children }: { children: ReactNode }) {
   return (
-    <div className="card p-4">
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div className="min-w-0">
-          <div className="font-medium text-gray-900">
-            {o.products?.name ?? 'Unknown product'} × {o.quantity}
-          </div>
-          <div className="text-xs text-gray-500 mt-0.5">
-            For {o.placer?.name ?? '—'}
-            {o.products?.sku && <> · {o.products.sku}</>}
-            {' · placed '}
-            {new Date(o.placed_at).toLocaleDateString()}
-          </div>
-          {o.notes && <div className="text-xs text-gray-600 mt-1.5 italic">"{o.notes}"</div>}
-        </div>
-        <div className="flex items-center gap-2 flex-shrink-0">{children}</div>
-      </div>
+    <div className="mt-2 text-[0.7rem] text-gray-600 italic bg-white/70 border border-warm-200 rounded px-2 py-1 leading-snug">
+      "{children}"
     </div>
   );
 }
