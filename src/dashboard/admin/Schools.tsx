@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { supabase } from '../../lib/supabase';
 import type { School, SchoolType } from '../../lib/database.types';
 import { KENYA_COUNTIES } from '../../lib/counties';
-import { Wrench, Plus, X, Copy, Check, KeyRound, Upload, Pencil } from 'lucide-react';
+import { Wrench, Plus, X, Copy, Check, KeyRound, Upload, Pencil, Trash2 } from 'lucide-react';
 import { SchoolBulkImport } from './SchoolBulkImport';
 
 // =============================================================
@@ -73,6 +73,8 @@ export function AdminSchools() {
   const [editingLead, setEditingLead]   = useState<SchoolLead | null>(null);
   const [editingSchool, setEditingSchool] = useState<School | null>(null);
   const [lastCreated, setLastCreated]   = useState<NewCreds | null>(null);
+  const [selected, setSelected]         = useState<Set<string>>(new Set());
+  const [deleting, setDeleting]         = useState(false);
 
   const load = async () => {
     const [sRes, lRes] = await Promise.all([
@@ -92,6 +94,55 @@ export function AdminSchools() {
     leads?.forEach((l) => { if (l.school_id) m.set(l.school_id, l); });
     return m;
   }, [leads]);
+
+  const toggleSelected = (id: string) => {
+    setSelected((cur) => {
+      const next = new Set(cur);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleAll = () => {
+    if (!schools) return;
+    setSelected((cur) => {
+      if (cur.size === schools.length) return new Set();
+      return new Set(schools.map((s) => s.id));
+    });
+  };
+
+  // Bulk-delete: hit admin_delete_school once per id. Each call is its own
+  // transaction so a failure on one school doesn't roll back the others.
+  const deleteSchools = async (ids: string[]) => {
+    if (ids.length === 0) return;
+    const summary = ids.length === 1
+      ? `Delete this school?\n\nThis wipes its students, orders, units, stock, and the lead-teacher login. This cannot be undone.`
+      : `Delete ${ids.length} schools?\n\nThis wipes their students, orders, units, stock, and lead-teacher logins. This cannot be undone.`;
+    if (!window.confirm(summary)) return;
+
+    setDeleting(true);
+    setErr(null);
+    const failures: { id: string; message: string }[] = [];
+    for (const id of ids) {
+      const { error } = await supabase.rpc('admin_delete_school', { p_school_id: id });
+      if (error) failures.push({ id, message: error.message });
+    }
+    setDeleting(false);
+
+    if (failures.length > 0) {
+      const sampleNames = failures
+        .map((f) => schools?.find((s) => s.id === f.id)?.name ?? f.id)
+        .slice(0, 3)
+        .join(', ');
+      setErr(
+        `${failures.length} of ${ids.length} schools couldn't be deleted (e.g. ${sampleNames}). ` +
+        `First error: ${failures[0].message}`,
+      );
+    }
+    setSelected(new Set());
+    void load();
+  };
 
   return (
     <div className="px-4 sm:px-6 lg:px-10 py-8 space-y-6">
@@ -177,14 +228,50 @@ export function AdminSchools() {
         />
       )}
 
-      <span className="text-sm text-gray-500">
-        {schools ? `${schools.length} registered` : '…'}
-      </span>
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <span className="text-sm text-gray-500">
+          {schools ? `${schools.length} registered` : '…'}
+        </span>
+        {selected.size > 0 && (
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-700">
+              {selected.size} selected
+            </span>
+            <button
+              type="button"
+              onClick={() => setSelected(new Set())}
+              className="text-xs text-gray-500 hover:text-gray-900"
+            >
+              Clear
+            </button>
+            <button
+              type="button"
+              onClick={() => deleteSchools(Array.from(selected))}
+              disabled={deleting}
+              className="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-medium bg-red-600 text-white hover:bg-red-700 disabled:opacity-60"
+            >
+              <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+              {deleting ? 'Deleting…' : `Delete ${selected.size} school(s)`}
+            </button>
+          </div>
+        )}
+      </div>
 
       <div className="card overflow-x-auto">
         <table className="data-table">
           <thead>
             <tr>
+              <th className="w-8">
+                <input
+                  type="checkbox"
+                  aria-label="Select all schools"
+                  checked={!!schools && schools.length > 0 && selected.size === schools.length}
+                  ref={(el) => {
+                    if (el) el.indeterminate = selected.size > 0 && selected.size < (schools?.length ?? 0);
+                  }}
+                  onChange={toggleAll}
+                />
+              </th>
               <th>Name</th>
               <th>Type</th>
               <th>Maker</th>
@@ -196,15 +283,24 @@ export function AdminSchools() {
           </thead>
           <tbody>
             {!schools && (
-              <tr><td colSpan={7} className="text-center text-gray-500 py-8">Loading…</td></tr>
+              <tr><td colSpan={8} className="text-center text-gray-500 py-8">Loading…</td></tr>
             )}
             {schools && schools.length === 0 && (
-              <tr><td colSpan={7} className="text-center text-gray-500 py-8">No schools yet.</td></tr>
+              <tr><td colSpan={8} className="text-center text-gray-500 py-8">No schools yet.</td></tr>
             )}
             {schools?.map((s) => {
               const lead = leadBySchool.get(s.id);
+              const isSelected = selected.has(s.id);
               return (
-                <tr key={s.id}>
+                <tr key={s.id} className={isSelected ? 'bg-warm-100/60' : ''}>
+                  <td>
+                    <input
+                      type="checkbox"
+                      aria-label={`Select ${s.name}`}
+                      checked={isSelected}
+                      onChange={() => toggleSelected(s.id)}
+                    />
+                  </td>
                   <td>
                     <div className="font-medium text-gray-900">{s.name}</div>
                   </td>
@@ -261,6 +357,14 @@ export function AdminSchools() {
                         Credentials
                       </button>
                     )}
+                    <button
+                      onClick={() => deleteSchools([s.id])}
+                      disabled={deleting}
+                      className="text-xs text-red-700 hover:underline inline-flex items-center ml-3 disabled:opacity-60"
+                    >
+                      <Trash2 className="h-3 w-3 mr-1" />
+                      Delete
+                    </button>
                   </td>
                 </tr>
               );
