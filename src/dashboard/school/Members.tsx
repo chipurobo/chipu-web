@@ -2,7 +2,8 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../lib/auth';
 import type { ClubMember } from '../../lib/database.types';
-import { UserPlus, Check, X } from 'lucide-react';
+import { UserPlus, Check, X, Upload } from 'lucide-react';
+import { StudentBulkImport } from './StudentBulkImport';
 
 /**
  * /dashboard/school/members
@@ -17,6 +18,7 @@ export function SchoolMembers() {
   const [members, setMembers] = useState<ClubMember[] | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [showInactive, setShowInactive] = useState(false);
+  const [importing, setImporting] = useState(false);
 
   // Add form
   const [addName, setAddName] = useState('');
@@ -120,22 +122,38 @@ export function SchoolMembers() {
             equipment.
           </p>
         </div>
-        <div className="text-sm text-right">
-          <div className="text-gray-700">{activeCount} active</div>
-          {inactiveCount > 0 && (
-            <button
-              onClick={() => setShowInactive((s) => !s)}
-              className="text-xs text-teal-700 hover:underline"
-            >
-              {showInactive ? 'Hide inactive' : `Show ${inactiveCount} inactive`}
-            </button>
-          )}
+        <div className="flex gap-3 items-center">
+          <div className="text-sm text-right">
+            <div className="text-gray-700">{activeCount} active</div>
+            {inactiveCount > 0 && (
+              <button
+                onClick={() => setShowInactive((s) => !s)}
+                className="text-xs text-teal-700 hover:underline"
+              >
+                {showInactive ? 'Hide inactive' : `Show ${inactiveCount} inactive`}
+              </button>
+            )}
+          </div>
+          <button onClick={() => setImporting((v) => !v)} className="btn-secondary">
+            <Upload className="h-4 w-4 mr-1.5" />
+            Bulk import
+          </button>
         </div>
       </div>
 
       {err && (
         <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2 mb-4">
           {err}
+        </div>
+      )}
+
+      {importing && school && (
+        <div className="mb-4">
+          <StudentBulkImport
+            schoolId={school.id}
+            onClose={() => setImporting(false)}
+            onAllDone={() => { void load(); }}
+          />
         </div>
       )}
 

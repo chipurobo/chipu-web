@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { supabase } from '../../lib/supabase';
 import type { School, SchoolType } from '../../lib/database.types';
 import { KENYA_COUNTIES } from '../../lib/counties';
-import { Wrench, Plus, X, Copy, Check, KeyRound } from 'lucide-react';
+import { Wrench, Plus, X, Copy, Check, KeyRound, Upload } from 'lucide-react';
+import { SchoolBulkImport } from './SchoolBulkImport';
 
 // =============================================================
 // Email derivation
@@ -68,6 +69,7 @@ export function AdminSchools() {
   const [err,     setErr]     = useState<string | null>(null);
 
   const [creating, setCreating]       = useState(false);
+  const [importing, setImporting]     = useState(false);
   const [editingLead, setEditingLead] = useState<SchoolLead | null>(null);
   const [lastCreated, setLastCreated] = useState<NewCreds | null>(null);
 
@@ -101,13 +103,22 @@ export function AdminSchools() {
             don't self-register — share the email + temp password with the teacher manually.
           </p>
         </div>
-        <button
-          onClick={() => { setCreating(true); setEditingLead(null); setLastCreated(null); }}
-          className="btn-primary"
-        >
-          <Plus className="h-4 w-4 mr-1.5" />
-          Create school
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => { setImporting(true); setCreating(false); setEditingLead(null); setLastCreated(null); }}
+            className="btn-secondary"
+          >
+            <Upload className="h-4 w-4 mr-1.5" />
+            Bulk import
+          </button>
+          <button
+            onClick={() => { setCreating(true); setImporting(false); setEditingLead(null); setLastCreated(null); }}
+            className="btn-primary"
+          >
+            <Plus className="h-4 w-4 mr-1.5" />
+            Create school
+          </button>
+        </div>
       </div>
 
       {err && (
@@ -135,6 +146,13 @@ export function AdminSchools() {
             setLastCreated(c);
             void load();
           }}
+        />
+      )}
+
+      {importing && (
+        <SchoolBulkImport
+          onClose={() => setImporting(false)}
+          onAllDone={() => { void load(); }}
         />
       )}
 
