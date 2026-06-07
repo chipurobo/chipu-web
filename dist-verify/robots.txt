@@ -1,0 +1,6 @@
+# robots.txt for chipurobo.com
+User-agent: *
+Allow: /
+Disallow: /api/
+
+Sitemap: https://chipurobo.com/sitemap.xml

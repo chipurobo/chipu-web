@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import Home from './pages/Home';
@@ -15,6 +15,23 @@ import InclusiveRobotics from './pages/InclusiveRobotics';
 import MicrosoftBootcamps from './pages/MicrosoftBootcamps';
 import Hackathons from './pages/Hackathons';
 import Sustainability from './pages/Sustainability';
+
+// === Dashboard (Supabase-backed) ===
+import { AuthProvider } from './lib/auth';
+import { RequireAuth } from './dashboard/RequireAuth';
+import { DashboardLayout } from './dashboard/DashboardLayout';
+import { DashboardHome } from './dashboard/DashboardHome';
+import { Login as DashLogin } from './dashboard/Login';
+// Self-signup removed — schools are created by ChipuRobo admin.
+import { AdminSchools } from './dashboard/admin/Schools';
+import { AdminProducts } from './dashboard/admin/Products';
+import { AdminOrders } from './dashboard/admin/Orders';
+import { AdminDistribute } from './dashboard/admin/Distribute';
+import { SchoolMembers } from './dashboard/school/Members';
+import { SchoolOrders } from './dashboard/school/Orders';
+import { SchoolStock } from './dashboard/school/Stock';
+import { SchoolProduction } from './dashboard/school/Production';
+import { ComingSoon } from './dashboard/ComingSoon';
 import Impact from './pages/Impact';
 import EmailRegistration2026 from './pages/EmailRegistration2026';
 import NotFound from './pages/NotFound';
@@ -93,26 +110,49 @@ function App() {
         v7_relativeSplatPath: true,
       }}
     >
-      <div className="min-h-screen flex flex-col bg-warm-50">
-        {/* Skip to main content link for keyboard navigation */}
-        <a
-          href="#main-content"
-          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-primary-600 text-white px-4 py-2 rounded-md z-50 transition-all focus:z-50"
-        >
-          Skip to main content
-        </a>
+      <AuthProvider>
+        <Routes>
+          {/* === Dashboard tree ===
+              Has its own layout (no public navbar/footer). The login + signup
+              pages render bare; everything else is gated by <RequireAuth>. */}
+          <Route path="/dashboard/login" element={<DashLogin />} />
+          {/* Legacy self-signup URL — redirect to login. */}
+          <Route path="/dashboard/register-club" element={<Navigate to="/dashboard/login" replace />} />
+          <Route
+            path="/dashboard"
+            element={
+              <RequireAuth>
+                <DashboardLayout />
+              </RequireAuth>
+            }
+          >
+            <Route index element={<DashboardHome />} />
+            <Route
+              path="admin/schools"
+              element={<RequireAuth role="admin"><AdminSchools /></RequireAuth>}
+            />
+            <Route
+              path="admin/products"
+              element={<RequireAuth role="admin"><AdminProducts /></RequireAuth>}
+            />
+            <Route
+              path="admin/orders"
+              element={<RequireAuth role="admin"><AdminOrders /></RequireAuth>}
+            />
+            <Route
+              path="admin/distribute"
+              element={<RequireAuth role="admin"><AdminDistribute /></RequireAuth>}
+            />
+            <Route path="school/members" element={<SchoolMembers />} />
+            <Route path="school/orders" element={<SchoolOrders />} />
+            <Route path="school/stock" element={<SchoolStock />} />
+            <Route path="school/production" element={<SchoolProduction />} />
+          </Route>
 
-        {/* Route announcements for screen readers */}
-        <div id="route-announcer" className="sr-only" aria-live="polite" role="status"></div>
-
-        {/* Header */}
-        <header role="banner">
-          <Navbar />
-        </header>
-
-        {/* Main content */}
-        <main id="main-content" role="main" tabIndex={-1} className="flex-1 focus:outline-none">
-          <Routes>
+          {/* === Public marketing site ===
+              Everything that isn't /dashboard/* gets the navbar + footer
+              chrome via <PublicLayout>. */}
+          <Route element={<PublicLayout />}>
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
 
@@ -154,15 +194,38 @@ function App() {
             <Route path="/register-2026" element={<EmailRegistration2026 />} />
             <Route path="/podcast" element={<Podcast />} />
             <Route path="*" element={<NotFound />} />
-          </Routes>
-        </main>
-
-        {/* Footer */}
-        <footer role="contentinfo">
-          <Footer />
-        </footer>
-      </div>
+          </Route>
+        </Routes>
+      </AuthProvider>
     </Router>
+  );
+}
+
+/** Layout for the public marketing site — navbar + main + footer chrome. */
+function PublicLayout() {
+  return (
+    <div className="min-h-screen flex flex-col bg-warm-50">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-primary-600 text-white px-4 py-2 rounded-md z-50 transition-all focus:z-50"
+      >
+        Skip to main content
+      </a>
+
+      <div id="route-announcer" className="sr-only" aria-live="polite" role="status"></div>
+
+      <header role="banner">
+        <Navbar />
+      </header>
+
+      <main id="main-content" role="main" tabIndex={-1} className="flex-1 focus:outline-none">
+        <Outlet />
+      </main>
+
+      <footer role="contentinfo">
+        <Footer />
+      </footer>
+    </div>
   );
 }
 

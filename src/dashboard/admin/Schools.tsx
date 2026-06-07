@@ -1,0 +1,568 @@
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { supabase } from '../../lib/supabase';
+import type { School, SchoolType } from '../../lib/database.types';
+import { KENYA_COUNTIES } from '../../lib/counties';
+import { Wrench, Plus, X, Copy, Check, KeyRound } from 'lucide-react';
+
+// =============================================================
+// Username derivation
+//
+// Single source of truth: a teacher's username IS their full name,
+// lowercased with spaces collapsed to dots. Diacritics stripped,
+// anything else removed. Examples:
+//   "Mary Wanjiku"  → "mary.wanjiku"
+//   "John O'Brien"  → "john.obrien"
+//   "Naïve Person"  → "naive.person"
+// =============================================================
+function deriveUsername(fullName: string): string {
+  return fullName
+    .normalize('NFKD')
+    .replace(/[̀-ͯ]/g, '')   // strip combining diacritics
+    .toLowerCase()
+    .replace(/[^a-z0-9\s.-]/g, '')
+    .trim()
+    .replace(/\s+/g, '.')
+    .replace(/\.+/g, '.')
+    .slice(0, 32);
+}
+
+interface SchoolLead {
+  user_id:     string;
+  username:    string;
+  full_name:   string | null;
+  phone:       string | null;
+  school_id:   string | null;
+  school_name: string | null;
+}
+
+interface NewCreds {
+  school:   string;
+  username: string;
+  password: string;
+}
+
+/**
+ * /dashboard/admin/schools
+ *
+ * Schools live here. Admin can create new ones (RPC creates auth user +
+ * school + code_club + promotes profile), see/edit every school lead's
+ * username, and reset their password. All credentials writes use
+ * SECURITY DEFINER RPCs in 20260601000010_admin_manages_credentials.sql.
+ */
+export function AdminSchools() {
+  const [schools, setSchools] = useState<School[] | null>(null);
+  const [leads,   setLeads]   = useState<SchoolLead[] | null>(null);
+  const [err,     setErr]     = useState<string | null>(null);
+
+  const [creating, setCreating]       = useState(false);
+  const [editingLead, setEditingLead] = useState<SchoolLead | null>(null);
+  const [lastCreated, setLastCreated] = useState<NewCreds | null>(null);
+
+  const load = async () => {
+    const [sRes, lRes] = await Promise.all([
+      supabase.from('schools').select('*').order('created_at', { ascending: false }),
+      supabase.rpc('admin_list_school_leads'),
+    ]);
+    if (sRes.error) setErr(sRes.error.message);
+    else setSchools(sRes.data as School[]);
+    if (lRes.error) setErr(lRes.error.message);
+    else setLeads(lRes.data as SchoolLead[]);
+  };
+
+  useEffect(() => { void load(); }, []);
+
+  const leadBySchool = useMemo(() => {
+    const m = new Map<string, SchoolLead>();
+    leads?.forEach((l) => { if (l.school_id) m.set(l.school_id, l); });
+    return m;
+  }, [leads]);
+
+  return (
+    <div className="px-6 sm:px-10 py-8 space-y-6">
+      <div className="flex items-end justify-between gap-4 flex-wrap">
+        <div>
+          <p className="text-xs uppercase tracking-wider text-gray-500 mb-1">Admin</p>
+          <h1>Schools</h1>
+          <p className="text-sm text-gray-600 mt-1 max-w-2xl">
+            Create schools, manage their lead-teacher credentials, and reset passwords. Schools
+            don't self-register — share the username and temp password with the teacher manually.
+          </p>
+        </div>
+        <button
+          onClick={() => { setCreating(true); setEditingLead(null); setLastCreated(null); }}
+          className="btn-primary"
+        >
+          <Plus className="h-4 w-4 mr-1.5" />
+          Create school
+        </button>
+      </div>
+
+      {err && (
+        <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+          {err}
+        </div>
+      )}
+
+      {lastCreated && (
+        <CredentialsCard
+          title={`${lastCreated.school} created`}
+          subtitle="This is the only time the password will be visible. Copy it and share with the teacher."
+          school={lastCreated.school}
+          username={lastCreated.username}
+          password={lastCreated.password}
+          onDismiss={() => setLastCreated(null)}
+        />
+      )}
+
+      {creating && (
+        <CreateSchoolForm
+          onClose={() => setCreating(false)}
+          onCreated={(c) => {
+            setCreating(false);
+            setLastCreated(c);
+            void load();
+          }}
+        />
+      )}
+
+      {editingLead && (
+        <EditCredentialsPanel
+          lead={editingLead}
+          onClose={() => setEditingLead(null)}
+          onSaved={(c) => {
+            setEditingLead(null);
+            if (c) setLastCreated(c);
+            void load();
+          }}
+        />
+      )}
+
+      <span className="text-sm text-gray-500">
+        {schools ? `${schools.length} registered` : '…'}
+      </span>
+
+      <div className="card overflow-hidden">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Maker</th>
+              <th>County</th>
+              <th>Lead teacher</th>
+              <th>Username</th>
+              <th className="text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {!schools && (
+              <tr><td colSpan={7} className="text-center text-gray-500 py-8">Loading…</td></tr>
+            )}
+            {schools && schools.length === 0 && (
+              <tr><td colSpan={7} className="text-center text-gray-500 py-8">No schools yet.</td></tr>
+            )}
+            {schools?.map((s) => {
+              const lead = leadBySchool.get(s.id);
+              return (
+                <tr key={s.id}>
+                  <td>
+                    <div className="font-medium text-gray-900">{s.name}</div>
+                  </td>
+                  <td>
+                    <span className={
+                      s.type === 'special' ? 'badge-terra' :
+                      s.type === 'integrated' ? 'badge-amber' :
+                      'badge-teal'
+                    }>{s.type}</span>
+                  </td>
+                  <td>
+                    {s.is_maker_space ? (
+                      <span className="badge-green inline-flex items-center">
+                        <Wrench className="h-3 w-3 mr-1" />maker
+                      </span>
+                    ) : <span className="text-xs text-gray-400">—</span>}
+                  </td>
+                  <td className="text-sm">{s.county ?? '—'}</td>
+                  <td className="text-sm">
+                    <div className="text-gray-800">{lead?.full_name ?? s.contact_name ?? '—'}</div>
+                    {(lead?.phone || s.contact_phone) && (
+                      <div className="text-xs text-gray-500">{lead?.phone ?? s.contact_phone}</div>
+                    )}
+                  </td>
+                  <td className="text-sm font-mono">
+                    {lead?.username ?? <span className="text-xs text-gray-400 italic">no lead</span>}
+                  </td>
+                  <td className="text-right whitespace-nowrap">
+                    {lead ? (
+                      <button
+                        onClick={() => { setEditingLead(lead); setCreating(false); setLastCreated(null); }}
+                        className="text-xs text-teal-700 hover:underline inline-flex items-center"
+                      >
+                        <KeyRound className="h-3 w-3 mr-1" />
+                        Credentials
+                      </button>
+                    ) : (
+                      <span className="text-xs text-gray-400">—</span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+const SCHOOL_TYPES: { value: SchoolType; label: string }[] = [
+  { value: 'mainstream', label: 'Mainstream' },
+  { value: 'integrated', label: 'Integrated' },
+  { value: 'special',    label: 'Special'    },
+];
+
+function CreateSchoolForm({
+  onClose, onCreated,
+}: {
+  onClose: () => void;
+  onCreated: (c: NewCreds) => void;
+}) {
+  const [schoolName,   setSchoolName]   = useState('');
+  const [county,       setCounty]       = useState('');
+  const [type,         setType]         = useState<SchoolType>('mainstream');
+  const [isMaker,      setIsMaker]      = useState(false);
+
+  const [fullName,     setFullName]     = useState('');
+  const [phone,        setPhone]        = useState('');
+  const [contactEmail, setContactEmail] = useState('');
+  const [password,     setPassword]     = useState(() => generatePassword());
+
+  const [submitting, setSubmitting] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  // Username is ALWAYS slug(full_name). No separate field, no override.
+  const username = useMemo(() => deriveUsername(fullName), [fullName]);
+
+  const onSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setErr(null);
+    if (username.length < 3) {
+      setSubmitting(false);
+      setErr('Full name must contain at least 3 valid characters.');
+      return;
+    }
+    const { error } = await supabase.rpc('create_school_with_lead', {
+      p_username:       username,
+      p_password:       password,
+      p_full_name:      fullName.trim(),
+      p_phone:          phone.trim(),
+      p_contact_email:  contactEmail.trim() || null,
+      p_school_name:    schoolName.trim(),
+      p_county:         county.trim() || null,
+      p_school_type:    type,
+      p_is_maker_space: isMaker,
+      // Roster starts empty; the lead teacher adds students once they log in.
+      p_member_count:   0,
+    });
+    setSubmitting(false);
+    if (error) {
+      setErr(error.message);
+    } else {
+      onCreated({
+        school: schoolName.trim(),
+        username,
+        password,
+      });
+    }
+  };
+
+  return (
+    <div className="card p-5">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="m-0">Create school</h2>
+        <button onClick={onClose} className="p-1 text-gray-500 hover:text-gray-900">
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+
+      <form onSubmit={onSubmit} className="grid sm:grid-cols-2 gap-4">
+        <div className="sm:col-span-2">
+          <p className="text-xs uppercase tracking-wider text-gray-500 mb-2">School</p>
+        </div>
+
+        <div>
+          <label className="field-label" htmlFor="sname">School name</label>
+          <input
+            id="sname" type="text" required className="field-input"
+            value={schoolName} onChange={(e) => setSchoolName(e.target.value)}
+          />
+        </div>
+
+        <div>
+          <label className="field-label" htmlFor="county">County</label>
+          <select
+            id="county" required className="field-select"
+            value={county} onChange={(e) => setCounty(e.target.value)}
+          >
+            <option value="" disabled>— select a county —</option>
+            {KENYA_COUNTIES.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="field-label" htmlFor="type">Type</label>
+          <select
+            id="type" className="field-select" value={type}
+            onChange={(e) => setType(e.target.value as SchoolType)}
+          >
+            {SCHOOL_TYPES.map((t) => (
+              <option key={t.value} value={t.value}>{t.label}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="sm:col-span-2">
+          <label className="flex items-center gap-2 text-sm text-gray-700">
+            <input type="checkbox" checked={isMaker} onChange={(e) => setIsMaker(e.target.checked)} />
+            <Wrench className="h-3.5 w-3.5 text-teal-700" />
+            This school is a maker space (fulfils orders from other schools)
+          </label>
+        </div>
+
+        <div className="sm:col-span-2 pt-2 border-t border-warm-200">
+          <p className="text-xs uppercase tracking-wider text-gray-500 mb-2">Lead teacher login</p>
+        </div>
+
+        <div>
+          <label className="field-label" htmlFor="fname">Full name</label>
+          <input
+            id="fname" type="text" required className="field-input"
+            value={fullName} onChange={(e) => setFullName(e.target.value)}
+          />
+        </div>
+
+        <div>
+          <label className="field-label" htmlFor="phone">Phone</label>
+          <input
+            id="phone" type="tel" className="field-input" placeholder="+254 …"
+            value={phone} onChange={(e) => setPhone(e.target.value)}
+          />
+        </div>
+
+        <div>
+          <label className="field-label" htmlFor="email">Teacher's email (for your records)</label>
+          <input
+            id="email" type="email" className="field-input"
+            value={contactEmail} onChange={(e) => setContactEmail(e.target.value)}
+          />
+          <p className="field-help">Optional — kept on the school record so you know how to reach them.</p>
+        </div>
+
+        <div>
+          <label className="field-label">Username (auto)</label>
+          <input
+            type="text" readOnly
+            className="field-input font-mono bg-warm-100 text-gray-700"
+            value={username || '— enter a full name above —'}
+            tabIndex={-1}
+          />
+          <p className="field-help">
+            The teacher logs in with this. It's always lowercase first.last derived from the full name above.
+          </p>
+        </div>
+
+        <div className="sm:col-span-2">
+          <label className="field-label" htmlFor="pw">Temporary password</label>
+          <div className="flex gap-2">
+            <input
+              id="pw" type="text" required minLength={8}
+              className="field-input font-mono"
+              value={password} onChange={(e) => setPassword(e.target.value)}
+            />
+            <button
+              type="button" onClick={() => setPassword(generatePassword())}
+              className="btn-secondary !px-3" title="Regenerate"
+            >↻</button>
+          </div>
+          <p className="field-help">
+            You'll see this once after saving — copy and email it to the teacher manually.
+          </p>
+        </div>
+
+        {err && (
+          <div className="sm:col-span-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+            {err}
+          </div>
+        )}
+
+        <div className="sm:col-span-2 flex justify-end gap-2 pt-2 border-t border-warm-200">
+          <button type="button" onClick={onClose} className="btn-secondary">Cancel</button>
+          <button type="submit" className="btn-primary" disabled={submitting}>
+            {submitting ? 'Creating…' : 'Create school'}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+function EditCredentialsPanel({
+  lead, onClose, onSaved,
+}: {
+  lead: SchoolLead;
+  onClose: () => void;
+  onSaved: (creds: NewCreds | null) => void;
+}) {
+  const [password, setPassword] = useState('');
+  const [err, setErr] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  // Username is locked — it's always derived from the lead's full name when
+  // the school was created. Editing it would break the "one consistent
+  // naming scheme" invariant, so we just display it read-only.
+
+  const savePassword = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!password) return;
+    setSaving(true); setErr(null);
+    const { error } = await supabase.rpc('admin_reset_lead_password', {
+      p_user_id:      lead.user_id,
+      p_new_password: password,
+    });
+    setSaving(false);
+    if (error) {
+      setErr(error.message);
+    } else {
+      onSaved({
+        school:   lead.school_name ?? '—',
+        username: lead.username,
+        password,
+      });
+      setPassword('');
+    }
+  };
+
+  return (
+    <div className="card p-5">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="m-0">Credentials — {lead.school_name ?? '—'}</h2>
+          <p className="text-sm text-gray-500 mt-0.5">
+            Teacher: {lead.full_name ?? '—'} · Username: <span className="font-mono">{lead.username}</span>
+          </p>
+        </div>
+        <button onClick={onClose} className="p-1 text-gray-500 hover:text-gray-900">
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+
+      {err && (
+        <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2 mb-3">
+          {err}
+        </div>
+      )}
+
+      <form onSubmit={savePassword} className="border border-warm-200 rounded-md p-3 bg-warm-50">
+        <h3 className="m-0 mb-2 flex items-center text-sm">
+          <KeyRound className="h-3.5 w-3.5 mr-1 text-teal-700" />
+          Reset password
+        </h3>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            minLength={8}
+            className="field-input font-mono"
+            placeholder="New password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <button
+            type="button"
+            onClick={() => setPassword(generatePassword())}
+            className="btn-secondary !px-2"
+            title="Generate"
+          >↻</button>
+        </div>
+        <p className="field-help">
+          On save you'll see the password once — copy and share it with the teacher.
+        </p>
+        <div className="flex justify-end mt-2">
+          <button
+            type="submit"
+            className="btn-primary !py-1 !px-3 !text-xs"
+            disabled={saving || password.length < 8}
+          >
+            {saving ? 'Saving…' : 'Reset password'}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+function CredentialsCard({
+  title, subtitle, school, username, password, onDismiss,
+}: {
+  title: string; subtitle: string;
+  school: string; username: string; password: string;
+  onDismiss: () => void;
+}) {
+  const [copied, setCopied] = useState(false);
+  const blob =
+`Hi,
+
+Your ChipuRobo code-club dashboard is ready.
+
+  School:   ${school}
+  Login:    ${window.location.origin}/dashboard/login
+  Username: ${username}
+  Password: ${password}
+
+Please sign in and let us know if anything looks off.
+
+— ChipuRobo`;
+
+  return (
+    <div className="card p-5 border-2 border-teal-500 bg-teal-50/40">
+      <div className="flex items-start justify-between gap-4 mb-3">
+        <div>
+          <h2 className="m-0">{title}</h2>
+          <p className="text-sm text-gray-600 mt-0.5">{subtitle}</p>
+        </div>
+        <button onClick={onDismiss} className="p-1 text-gray-500 hover:text-gray-900">
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+
+      <pre className="text-xs font-mono whitespace-pre-wrap bg-white border border-warm-200 rounded-md p-3 overflow-x-auto">
+        {blob}
+      </pre>
+
+      <div className="flex justify-end mt-3">
+        <button
+          type="button"
+          onClick={async () => {
+            await navigator.clipboard.writeText(blob);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1500);
+          }}
+          className="btn-primary"
+        >
+          {copied
+            ? <><Check className="h-4 w-4 mr-1.5" />Copied</>
+            : <><Copy className="h-4 w-4 mr-1.5"  />Copy email</>}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function generatePassword(): string {
+  const a = 'abcdefghjkmnpqrstuvwxyz23456789';
+  const len = 6;
+  const pick = () => Array.from({ length: len }, () => a[Math.floor(Math.random() * a.length)]).join('');
+  return `${pick()}-${pick()}`;
+}
