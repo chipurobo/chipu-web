@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../lib/auth';
 import type { ClubMember } from '../../lib/database.types';
-import { UserPlus, Check, X, Upload } from 'lucide-react';
+import { UserPlus, Check, X, Upload, Accessibility } from 'lucide-react';
 import { StudentBulkImport } from './StudentBulkImport';
 
 /**
@@ -24,6 +24,8 @@ export function SchoolMembers() {
   const [addName, setAddName] = useState('');
   const [addGrade, setAddGrade] = useState('');
   const [addInClub, setAddInClub] = useState(true);
+  const [addHasDisability, setAddHasDisability] = useState(false);
+  const [addDisabilityNotes, setAddDisabilityNotes] = useState('');
   const [adding, setAdding] = useState(false);
 
   // Inline edit
@@ -54,6 +56,8 @@ export function SchoolMembers() {
       full_name: addName.trim(),
       grade: addGrade.trim() || null,
       in_club: addInClub,
+      has_disability: addHasDisability,
+      disability_notes: addHasDisability ? (addDisabilityNotes.trim() || null) : null,
     });
     setAdding(false);
     if (error) {
@@ -62,6 +66,8 @@ export function SchoolMembers() {
       setAddName('');
       setAddGrade('');
       setAddInClub(true);
+      setAddHasDisability(false);
+      setAddDisabilityNotes('');
       void load();
     }
   };
@@ -159,42 +165,65 @@ export function SchoolMembers() {
 
       {/* Add */}
       <div className="card p-4 mb-6">
-        <form onSubmit={onAdd} className="flex gap-3 items-end flex-wrap">
-          <div className="flex-1 min-w-[200px]">
-            <label className="field-label" htmlFor="addName">Full name</label>
-            <input
-              id="addName"
-              type="text"
-              required
-              className="field-input"
-              placeholder="e.g. Mary Wanjiku"
-              value={addName}
-              onChange={(e) => setAddName(e.target.value)}
-            />
+        <form onSubmit={onAdd} className="space-y-3">
+          <div className="flex gap-3 items-end flex-wrap">
+            <div className="flex-1 min-w-[200px]">
+              <label className="field-label" htmlFor="addName">Full name</label>
+              <input
+                id="addName"
+                type="text"
+                required
+                className="field-input"
+                placeholder="e.g. Mary Wanjiku"
+                value={addName}
+                onChange={(e) => setAddName(e.target.value)}
+              />
+            </div>
+            <div className="w-32">
+              <label className="field-label" htmlFor="addGrade">Grade</label>
+              <input
+                id="addGrade"
+                type="text"
+                className="field-input"
+                placeholder="Grade 7"
+                value={addGrade}
+                onChange={(e) => setAddGrade(e.target.value)}
+              />
+            </div>
+            <button type="submit" className="btn-primary" disabled={adding || !addName.trim()}>
+              <UserPlus className="h-4 w-4 mr-1.5" />
+              Add student
+            </button>
           </div>
-          <div className="w-32">
-            <label className="field-label" htmlFor="addGrade">Grade</label>
-            <input
-              id="addGrade"
-              type="text"
-              className="field-input"
-              placeholder="Grade 7"
-              value={addGrade}
-              onChange={(e) => setAddGrade(e.target.value)}
-            />
+
+          <div className="flex flex-wrap gap-4 items-center">
+            <label className="flex items-center gap-1.5 text-xs text-gray-700">
+              <input
+                type="checkbox"
+                checked={addInClub}
+                onChange={(e) => setAddInClub(e.target.checked)}
+              />
+              In the code club
+            </label>
+            <label className="flex items-center gap-1.5 text-xs text-gray-700">
+              <input
+                type="checkbox"
+                checked={addHasDisability}
+                onChange={(e) => setAddHasDisability(e.target.checked)}
+              />
+              <Accessibility className="h-3.5 w-3.5 text-teal-700" />
+              Has a disability
+            </label>
+            {addHasDisability && (
+              <input
+                type="text"
+                className="field-input flex-1 min-w-[200px] !py-1 !text-xs"
+                placeholder="Notes (e.g. Visual impairment, Hearing impairment, Wheelchair)"
+                value={addDisabilityNotes}
+                onChange={(e) => setAddDisabilityNotes(e.target.value)}
+              />
+            )}
           </div>
-          <label className="flex items-center gap-1.5 text-xs text-gray-700 self-center mb-1.5">
-            <input
-              type="checkbox"
-              checked={addInClub}
-              onChange={(e) => setAddInClub(e.target.checked)}
-            />
-            In the code club
-          </label>
-          <button type="submit" className="btn-primary" disabled={adding || !addName.trim()}>
-            <UserPlus className="h-4 w-4 mr-1.5" />
-            Add student
-          </button>
         </form>
       </div>
 
@@ -206,6 +235,7 @@ export function SchoolMembers() {
               <th>Name</th>
               <th>Grade</th>
               <th>Role</th>
+              <th>Needs</th>
               <th>Joined</th>
               <th>Status</th>
               <th className="text-right">Actions</th>
@@ -213,11 +243,11 @@ export function SchoolMembers() {
           </thead>
           <tbody>
             {!visible && (
-              <tr><td colSpan={6} className="text-center text-gray-500 py-8">Loading…</td></tr>
+              <tr><td colSpan={7} className="text-center text-gray-500 py-8">Loading…</td></tr>
             )}
             {visible && visible.length === 0 && (
               <tr>
-                <td colSpan={6} className="text-center text-gray-500 py-8">
+                <td colSpan={7} className="text-center text-gray-500 py-8">
                   No students yet. Add the first one above.
                 </td>
               </tr>
@@ -246,6 +276,19 @@ export function SchoolMembers() {
                       {m.in_club
                         ? <span className="badge-teal">code club</span>
                         : <span className="badge-gray">student</span>}
+                    </td>
+                    <td>
+                      {m.has_disability ? (
+                        <span
+                          className="badge-terra inline-flex items-center"
+                          title={m.disability_notes ?? ''}
+                        >
+                          <Accessibility className="h-3 w-3 mr-1" />
+                          disability
+                        </span>
+                      ) : (
+                        <span className="text-xs text-gray-400">—</span>
+                      )}
                     </td>
                     <td className="text-xs text-gray-500">
                       {new Date(m.joined_at).toLocaleDateString()}
@@ -276,6 +319,21 @@ export function SchoolMembers() {
                       {m.in_club
                         ? <span className="badge-teal">code club</span>
                         : <span className="badge-gray">student</span>}
+                    </td>
+                    <td>
+                      {m.has_disability ? (
+                        <span
+                          className="badge-terra inline-flex items-center"
+                          title={m.disability_notes ?? ''}
+                        >
+                          <Accessibility className="h-3 w-3 mr-1" />
+                          {m.disability_notes
+                            ? m.disability_notes.slice(0, 24)
+                            : 'disability'}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-gray-400">—</span>
+                      )}
                     </td>
                     <td className="text-xs text-gray-500">
                       {new Date(m.joined_at).toLocaleDateString()}

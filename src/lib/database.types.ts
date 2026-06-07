@@ -30,8 +30,20 @@ export interface School {
   contact_name: string | null;
   contact_phone: string | null;
   contact_email: string | null;
+  latitude: number | null;
+  longitude: number | null;
   created_at: string;
   updated_at: string;
+}
+
+// Row shape returned by the public.public_maker_spaces view — visible to
+// anonymous visitors for the marketing-site map.
+export interface PublicMakerSpace {
+  id: string;
+  name: string;
+  county: string | null;
+  latitude: number;
+  longitude: number;
 }
 
 export interface CodeClub {
@@ -62,6 +74,8 @@ export interface ClubMember {
   grade: string | null;
   is_active: boolean;
   in_club: boolean;
+  has_disability: boolean;
+  disability_notes: string | null;
   joined_at: string;
   created_at: string;
 }

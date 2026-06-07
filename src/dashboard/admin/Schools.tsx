@@ -264,6 +264,8 @@ function CreateSchoolForm({
   const [county,       setCounty]       = useState('');
   const [type,         setType]         = useState<SchoolType>('mainstream');
   const [isMaker,      setIsMaker]      = useState(false);
+  const [latitude,     setLatitude]     = useState<string>('');
+  const [longitude,    setLongitude]    = useState<string>('');
 
   const [fullName,     setFullName]     = useState('');
   const [phone,        setPhone]        = useState('');
@@ -285,7 +287,18 @@ function CreateSchoolForm({
       setErr('Full name must contain at least 3 valid characters.');
       return;
     }
-    const { error } = await supabase.rpc('create_school_with_lead', {
+
+    // Parse + validate coordinates before talking to the server.
+    const lat = latitude.trim() === '' ? null : Number(latitude);
+    const lng = longitude.trim() === '' ? null : Number(longitude);
+    if ((lat !== null && (Number.isNaN(lat) || lat < -90  || lat > 90))
+     || (lng !== null && (Number.isNaN(lng) || lng < -180 || lng > 180))) {
+      setSubmitting(false);
+      setErr('Coordinates must be valid decimal degrees (lat -90..90, lng -180..180).');
+      return;
+    }
+
+    const { data, error } = await supabase.rpc('create_school_with_lead', {
       p_username:       username,
       p_password:       password,
       p_full_name:      fullName.trim(),
@@ -298,16 +311,35 @@ function CreateSchoolForm({
       // Roster starts empty; the lead teacher adds students once they log in.
       p_member_count:   0,
     });
-    setSubmitting(false);
     if (error) {
+      setSubmitting(false);
       setErr(error.message);
-    } else {
-      onCreated({
-        school: schoolName.trim(),
-        username,
-        password,
-      });
+      return;
     }
+
+    // The RPC returns a table; the row holds user_id + school_id. If coords
+    // were typed, patch them onto the school straight after creation. Admin
+    // RLS lets us update any school.
+    const row = Array.isArray(data) ? data[0] : data;
+    const schoolId: string | undefined = row?.school_id;
+    if (schoolId && (lat !== null || lng !== null)) {
+      const { error: uErr } = await supabase
+        .from('schools')
+        .update({ latitude: lat, longitude: lng })
+        .eq('id', schoolId);
+      if (uErr) {
+        setSubmitting(false);
+        setErr(`School created but coordinates failed to save: ${uErr.message}`);
+        return;
+      }
+    }
+
+    setSubmitting(false);
+    onCreated({
+      school: schoolName.trim(),
+      username,
+      password,
+    });
   };
 
   return (
@@ -364,6 +396,45 @@ function CreateSchoolForm({
             This school is a maker space (fulfils orders from other schools)
           </label>
         </div>
+
+        {isMaker && (
+          <>
+            <div>
+              <label className="field-label" htmlFor="lat">Latitude (optional)</label>
+              <input
+                id="lat"
+                type="number"
+                step="any"
+                min={-90}
+                max={90}
+                className="field-input font-mono"
+                placeholder="-1.2921"
+                value={latitude}
+                onChange={(e) => setLatitude(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="field-label" htmlFor="lng">Longitude (optional)</label>
+              <input
+                id="lng"
+                type="number"
+                step="any"
+                min={-180}
+                max={180}
+                className="field-input font-mono"
+                placeholder="36.8219"
+                value={longitude}
+                onChange={(e) => setLongitude(e.target.value)}
+              />
+              <p className="field-help">
+                Maker spaces with coordinates show up on the public maker-space map. Lookup on{' '}
+                <a href="https://www.google.com/maps" target="_blank" rel="noopener noreferrer"
+                   className="text-teal-700 hover:underline">Google Maps</a>{' '}
+                — right-click the location and copy the lat,lng pair.
+              </p>
+            </div>
+          </>
+        )}
 
         <div className="sm:col-span-2 pt-2 border-t border-warm-200">
           <p className="text-xs uppercase tracking-wider text-gray-500 mb-2">Lead teacher login</p>

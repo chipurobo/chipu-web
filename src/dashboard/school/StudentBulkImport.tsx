@@ -63,12 +63,18 @@ export function StudentBulkImport({
       const grade = (row.grade ?? row.class ?? '').trim() || null;
       // Default to "in the code club" if the column is absent (admin's common case).
       const inClub = row.in_club === undefined ? true : parseBoolish(row.in_club);
+      const hasDisability = parseBoolish(row.has_disability ?? row.disability ?? row.disabled);
+      const disabilityNotes = hasDisability
+        ? ((row.disability_notes ?? row.notes ?? '').trim() || null)
+        : null;
 
       const { error } = await supabase.from('club_members').insert({
         school_id: schoolId,
         full_name: fullName,
         grade,
         in_club:   inClub,
+        has_disability:   hasDisability,
+        disability_notes: disabilityNotes,
       });
 
       updated[i] = error
@@ -84,10 +90,10 @@ export function StudentBulkImport({
 
   const downloadTemplate = () => {
     downloadXlsx('chipurobo-students-template.xlsx', [
-      ['full_name',    'grade',   'in_club'],
-      ['Mary Wanjiku', 'Grade 7', 'yes'],
-      ['Peter Kamau',  'Grade 6', 'yes'],
-      ['Jane Achieng', 'Grade 8', 'no'],
+      ['full_name',    'grade',   'in_club', 'has_disability', 'disability_notes'],
+      ['Mary Wanjiku', 'Grade 7', 'yes',     'no',             ''],
+      ['Peter Kamau',  'Grade 6', 'yes',     'yes',            'Visual impairment'],
+      ['Jane Achieng', 'Grade 8', 'no',      'yes',            'Hearing impairment'],
     ], 'Students');
   };
 
@@ -108,7 +114,9 @@ export function StudentBulkImport({
           Upload a CSV or Excel file with one student per row. Required column:{' '}
           <code className="text-xs bg-warm-100 px-1 rounded">full_name</code>. Optional:{' '}
           <code className="text-xs bg-warm-100 px-1 rounded">grade</code>,{' '}
-          <code className="text-xs bg-warm-100 px-1 rounded">in_club</code> (yes/no — defaults to yes).
+          <code className="text-xs bg-warm-100 px-1 rounded">in_club</code> (yes/no — defaults to yes),{' '}
+          <code className="text-xs bg-warm-100 px-1 rounded">has_disability</code> (yes/no),{' '}
+          <code className="text-xs bg-warm-100 px-1 rounded">disability_notes</code> (free text).
         </p>
         <button onClick={downloadTemplate} type="button" className="btn-secondary !text-xs whitespace-nowrap">
           <Download className="h-3.5 w-3.5 mr-1.5" />
