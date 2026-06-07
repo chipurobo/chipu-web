@@ -36,14 +36,17 @@ export interface School {
   updated_at: string;
 }
 
-// Row shape returned by the public.public_maker_spaces view — visible to
-// anonymous visitors for the marketing-site map.
-export interface PublicMakerSpace {
+// Row shape returned by the public.public_schools_map view — visible to
+// anonymous visitors for the marketing-site map. Any school with
+// coordinates appears; is_maker_space tells the marker popup whether to
+// show the maker-space badge.
+export interface PublicSchoolPin {
   id: string;
   name: string;
   county: string | null;
   latitude: number;
   longitude: number;
+  is_maker_space: boolean;
 }
 
 export interface CodeClub {

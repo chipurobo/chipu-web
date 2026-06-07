@@ -33,6 +33,7 @@ import { SchoolStock } from './dashboard/school/Stock';
 import { SchoolProduction } from './dashboard/school/Production';
 import { ComingSoon } from './dashboard/ComingSoon';
 import Impact from './pages/Impact';
+import MakerSpaces from './pages/MakerSpaces';
 import EmailRegistration2026 from './pages/EmailRegistration2026';
 import NotFound from './pages/NotFound';
 import Podcast from './pages/Podcast';
@@ -95,6 +96,7 @@ function App() {
       case '/blog': return 'Blog';
       case '/microsoft': return 'Microsoft Partnership';
       case '/impact': return 'Impact Report';
+      case '/maker-spaces': return 'Maker Spaces';
       case '/register-2026': return '2026 Registration';
       case '/podcast': return 'Africa Builds Podcast';
       default: return 'ChipuRobo';
@@ -191,6 +193,7 @@ function App() {
             <Route path="/blog/:id" element={<BlogPost />} />
             <Route path="/microsoft" element={<Microsoft />} />
             <Route path="/impact" element={<Impact />} />
+            <Route path="/maker-spaces" element={<MakerSpaces />} />
             <Route path="/register-2026" element={<EmailRegistration2026 />} />
             <Route path="/podcast" element={<Podcast />} />
             <Route path="*" element={<NotFound />} />

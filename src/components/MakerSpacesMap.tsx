@@ -1,23 +1,20 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
 import { supabase } from '../lib/supabase';
-import type { PublicMakerSpace } from '../lib/database.types';
+import type { PublicSchoolPin } from '../lib/database.types';
 
 // =============================================================
-// Public ChipuRobo maker-spaces map.
+// Public ChipuRobo schools / maker-spaces map.
 //
-// • Pulls from the public.public_maker_spaces view via the anon key
-//   (no login required).
+// • Pulls from the public.public_schools_map view via the anon key
+//   (no login required). The view exposes every school that has
+//   coordinates set, plus an is_maker_space flag.
 // • Renders a Leaflet/OpenStreetMap map centred on Kenya.
-// • Each maker space is a marker with a popup naming the school + county.
-//
-// Leaflet ships its marker icons as image files but bundlers like Vite
-// don't rewrite the default URLs that point inside the package. The
-// import + mergeOptions block below tells Leaflet exactly where to find
-// the icons after bundling.
+// • Two marker colours: terracotta for maker spaces, teal for the
+//   rest. Popup gives the school name, county, and a tag.
 // =============================================================
 
 import markerIcon       from 'leaflet/dist/images/marker-icon.png';
@@ -32,40 +29,78 @@ L.Icon.Default.mergeOptions({
   shadowUrl:      markerShadow,
 });
 
-// Roughly geographic centre of Kenya — Nyandarua-ish — with a zoom that
-// fits the whole country on a typical viewport.
+// Tinted SVG marker so we can colour-code maker spaces vs other schools
+// without dragging in extra image assets.
+function coloredIcon(hex: string): L.DivIcon {
+  return L.divIcon({
+    className: 'chipurobo-map-pin',
+    html: `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="40" viewBox="0 0 28 40">
+      <path fill="${hex}" stroke="#1f2937" stroke-width="1.5"
+        d="M14 1 C 6.8 1 1 6.8 1 14 c 0 9 13 25 13 25 s 13 -16 13 -25 C 27 6.8 21.2 1 14 1 z"/>
+      <circle cx="14" cy="14" r="5" fill="#fff"/>
+    </svg>`,
+    iconSize: [28, 40],
+    iconAnchor: [14, 38],
+    popupAnchor: [0, -32],
+  });
+}
+
+const ICON_MAKER  = coloredIcon('#dc6b4a'); // terracotta-500-ish
+const ICON_SCHOOL = coloredIcon('#0d9488'); // teal-600
+
+// Roughly geographic centre of Kenya with a zoom that fits the whole
+// country on a typical viewport.
 const KENYA_CENTER: [number, number] = [-0.5, 37.5];
 const KENYA_ZOOM = 6;
 
 export function MakerSpacesMap() {
-  const [spaces, setSpaces] = useState<PublicMakerSpace[] | null>(null);
-  const [err, setErr]       = useState<string | null>(null);
+  const [pins, setPins] = useState<PublicSchoolPin[] | null>(null);
+  const [err, setErr]   = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       const { data, error } = await supabase
-        .from('public_maker_spaces')
-        .select('id, name, county, latitude, longitude');
+        .from('public_schools_map')
+        .select('id, name, county, latitude, longitude, is_maker_space');
       if (cancelled) return;
       if (error) setErr(error.message);
-      else setSpaces((data ?? []) as PublicMakerSpace[]);
+      else setPins((data ?? []) as PublicSchoolPin[]);
     })();
     return () => { cancelled = true; };
   }, []);
 
+  const counts = useMemo(() => ({
+    total:  pins?.length ?? 0,
+    makers: pins?.filter((p) => p.is_maker_space).length ?? 0,
+  }), [pins]);
+
   return (
     <div className="w-full">
       <div className="mb-3 flex items-baseline justify-between gap-3 flex-wrap">
-        <h2 className="m-0">Maker spaces across Kenya</h2>
+        <h2 className="m-0">Schools on the map</h2>
         <span className="text-xs text-gray-500">
-          {spaces ? `${spaces.length} on the map` : '…'}
+          {pins
+            ? `${counts.total} total · ${counts.makers} maker space${counts.makers === 1 ? '' : 's'}`
+            : '…'}
+        </span>
+      </div>
+
+      {/* Legend */}
+      <div className="flex flex-wrap gap-4 mb-3 text-xs text-gray-700">
+        <span className="inline-flex items-center gap-1.5">
+          <span className="inline-block w-3 h-3 rounded-full" style={{ background: '#dc6b4a' }} />
+          Maker space
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="inline-block w-3 h-3 rounded-full" style={{ background: '#0d9488' }} />
+          School
         </span>
       </div>
 
       {err && (
         <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2 mb-3">
-          Couldn't load maker spaces: {err}
+          Couldn't load the map: {err}
         </div>
       )}
 
@@ -80,20 +115,28 @@ export function MakerSpacesMap() {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
-          {spaces?.map((s) => (
-            <Marker key={s.id} position={[s.latitude, s.longitude]}>
+          {pins?.map((p) => (
+            <Marker
+              key={p.id}
+              position={[p.latitude, p.longitude]}
+              icon={p.is_maker_space ? ICON_MAKER : ICON_SCHOOL}
+            >
               <Popup>
-                <strong>{s.name}</strong>
-                {s.county && <><br /><span className="text-gray-600">{s.county}</span></>}
+                <strong>{p.name}</strong>
+                {p.county && <><br /><span className="text-gray-600">{p.county}</span></>}
+                <br />
+                <span className={p.is_maker_space ? 'text-terracotta-600' : 'text-teal-700'}>
+                  {p.is_maker_space ? 'Maker space' : 'School'}
+                </span>
               </Popup>
             </Marker>
           ))}
         </MapContainer>
       </div>
 
-      {spaces && spaces.length === 0 && !err && (
+      {pins && pins.length === 0 && !err && (
         <p className="mt-3 text-sm text-gray-500 italic">
-          No maker spaces on the map yet — ChipuRobo will add them as schools come online.
+          No schools on the map yet — they'll appear here as soon as one has coordinates set.
         </p>
       )}
     </div>

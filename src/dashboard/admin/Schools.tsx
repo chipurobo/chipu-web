@@ -525,44 +525,40 @@ function CreateSchoolForm({
           </label>
         </div>
 
-        {isMaker && (
-          <>
-            <div>
-              <label className="field-label" htmlFor="lat">Latitude (optional)</label>
-              <input
-                id="lat"
-                type="number"
-                step="any"
-                min={-90}
-                max={90}
-                className="field-input font-mono"
-                placeholder="-1.2921"
-                value={latitude}
-                onChange={(e) => setLatitude(e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="field-label" htmlFor="lng">Longitude (optional)</label>
-              <input
-                id="lng"
-                type="number"
-                step="any"
-                min={-180}
-                max={180}
-                className="field-input font-mono"
-                placeholder="36.8219"
-                value={longitude}
-                onChange={(e) => setLongitude(e.target.value)}
-              />
-              <p className="field-help">
-                Maker spaces with coordinates show up on the public maker-space map. Lookup on{' '}
-                <a href="https://www.google.com/maps" target="_blank" rel="noopener noreferrer"
-                   className="text-teal-700 hover:underline">Google Maps</a>{' '}
-                — right-click the location and copy the lat,lng pair.
-              </p>
-            </div>
-          </>
-        )}
+        <div>
+          <label className="field-label" htmlFor="lat">Latitude (optional)</label>
+          <input
+            id="lat"
+            type="number"
+            step="any"
+            min={-90}
+            max={90}
+            className="field-input font-mono"
+            placeholder="-1.2921"
+            value={latitude}
+            onChange={(e) => setLatitude(e.target.value)}
+          />
+        </div>
+        <div>
+          <label className="field-label" htmlFor="lng">Longitude (optional)</label>
+          <input
+            id="lng"
+            type="number"
+            step="any"
+            min={-180}
+            max={180}
+            className="field-input font-mono"
+            placeholder="36.8219"
+            value={longitude}
+            onChange={(e) => setLongitude(e.target.value)}
+          />
+          <p className="field-help">
+            Any school with coordinates shows up on the public map. Lookup on{' '}
+            <a href="https://www.google.com/maps" target="_blank" rel="noopener noreferrer"
+               className="text-teal-700 hover:underline">Google Maps</a>{' '}
+            — right-click the location and copy the lat,lng pair.
+          </p>
+        </div>
 
         <div className="sm:col-span-2 pt-2 border-t border-warm-200">
           <p className="text-xs uppercase tracking-wider text-gray-500 mb-2">Lead teacher login</p>
@@ -749,29 +745,25 @@ function EditSchoolPanel({
           </label>
         </div>
 
-        {isMaker && (
-          <>
-            <div>
-              <label className="field-label" htmlFor="elat">Latitude</label>
-              <input
-                id="elat" type="number" step="any" min={-90} max={90}
-                className="field-input font-mono" placeholder="-1.2921"
-                value={latitude} onChange={(e) => setLatitude(e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="field-label" htmlFor="elng">Longitude</label>
-              <input
-                id="elng" type="number" step="any" min={-180} max={180}
-                className="field-input font-mono" placeholder="36.8219"
-                value={longitude} onChange={(e) => setLongitude(e.target.value)}
-              />
-              <p className="field-help">
-                Maker spaces with coordinates show up on the public maker-space map.
-              </p>
-            </div>
-          </>
-        )}
+        <div>
+          <label className="field-label" htmlFor="elat">Latitude</label>
+          <input
+            id="elat" type="number" step="any" min={-90} max={90}
+            className="field-input font-mono" placeholder="-1.2921"
+            value={latitude} onChange={(e) => setLatitude(e.target.value)}
+          />
+        </div>
+        <div>
+          <label className="field-label" htmlFor="elng">Longitude</label>
+          <input
+            id="elng" type="number" step="any" min={-180} max={180}
+            className="field-input font-mono" placeholder="36.8219"
+            value={longitude} onChange={(e) => setLongitude(e.target.value)}
+          />
+          <p className="field-help">
+            Any school with coordinates appears on the public map.
+          </p>
+        </div>
 
         <div>
           <label className="field-label" htmlFor="ephone">Contact phone</label>

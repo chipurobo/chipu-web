@@ -9,6 +9,7 @@ const navigationLinks = [
   { to: '/', label: 'Home' },
   { to: '/about', label: 'About' },
   { to: '/programs', label: 'Programs' },
+  { to: '/maker-spaces', label: 'Maker spaces' },
   { to: '/kesho', label: 'Kesho' },
   { to: '/impact', label: 'Impact' },
   { to: '/podcast', label: 'Podcast' },
