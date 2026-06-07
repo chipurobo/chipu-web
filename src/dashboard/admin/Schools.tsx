@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { supabase } from '../../lib/supabase';
 import type { School, SchoolType } from '../../lib/database.types';
 import { KENYA_COUNTIES } from '../../lib/counties';
-import { Wrench, Plus, X, Copy, Check, KeyRound, Upload } from 'lucide-react';
+import { Wrench, Plus, X, Copy, Check, KeyRound, Upload, Pencil } from 'lucide-react';
 import { SchoolBulkImport } from './SchoolBulkImport';
 
 // =============================================================
@@ -68,10 +68,11 @@ export function AdminSchools() {
   const [leads,   setLeads]   = useState<SchoolLead[] | null>(null);
   const [err,     setErr]     = useState<string | null>(null);
 
-  const [creating, setCreating]       = useState(false);
-  const [importing, setImporting]     = useState(false);
-  const [editingLead, setEditingLead] = useState<SchoolLead | null>(null);
-  const [lastCreated, setLastCreated] = useState<NewCreds | null>(null);
+  const [creating, setCreating]         = useState(false);
+  const [importing, setImporting]       = useState(false);
+  const [editingLead, setEditingLead]   = useState<SchoolLead | null>(null);
+  const [editingSchool, setEditingSchool] = useState<School | null>(null);
+  const [lastCreated, setLastCreated]   = useState<NewCreds | null>(null);
 
   const load = async () => {
     const [sRes, lRes] = await Promise.all([
@@ -168,6 +169,14 @@ export function AdminSchools() {
         />
       )}
 
+      {editingSchool && (
+        <EditSchoolPanel
+          school={editingSchool}
+          onClose={() => setEditingSchool(null)}
+          onSaved={() => { setEditingSchool(null); void load(); }}
+        />
+      )}
+
       <span className="text-sm text-gray-500">
         {schools ? `${schools.length} registered` : '…'}
       </span>
@@ -226,16 +235,31 @@ export function AdminSchools() {
                       : <span className="text-xs text-gray-400 italic">no lead</span>}
                   </td>
                   <td className="text-right whitespace-nowrap">
-                    {lead ? (
+                    <button
+                      onClick={() => {
+                        setEditingSchool(s);
+                        setEditingLead(null);
+                        setCreating(false);
+                        setLastCreated(null);
+                      }}
+                      className="text-xs text-teal-700 hover:underline inline-flex items-center"
+                    >
+                      <Pencil className="h-3 w-3 mr-1" />
+                      Edit
+                    </button>
+                    {lead && (
                       <button
-                        onClick={() => { setEditingLead(lead); setCreating(false); setLastCreated(null); }}
-                        className="text-xs text-teal-700 hover:underline inline-flex items-center"
+                        onClick={() => {
+                          setEditingLead(lead);
+                          setEditingSchool(null);
+                          setCreating(false);
+                          setLastCreated(null);
+                        }}
+                        className="text-xs text-teal-700 hover:underline inline-flex items-center ml-3"
                       >
                         <KeyRound className="h-3 w-3 mr-1" />
                         Credentials
                       </button>
-                    ) : (
-                      <span className="text-xs text-gray-400">—</span>
                     )}
                   </td>
                 </tr>
@@ -506,6 +530,165 @@ function CreateSchoolForm({
           <button type="button" onClick={onClose} className="btn-secondary">Cancel</button>
           <button type="submit" className="btn-primary" disabled={submitting}>
             {submitting ? 'Creating…' : 'Create school'}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+function EditSchoolPanel({
+  school, onClose, onSaved,
+}: {
+  school: School;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const [name,         setName]         = useState(school.name);
+  const [type,         setType]         = useState<SchoolType>(school.type);
+  const [county,       setCounty]       = useState<string>(school.county ?? '');
+  const [isMaker,      setIsMaker]      = useState(school.is_maker_space);
+  const [contactPhone, setContactPhone] = useState<string>(school.contact_phone ?? '');
+  const [contactEmail, setContactEmail] = useState<string>(school.contact_email ?? '');
+  const [latitude,     setLatitude]     = useState<string>(school.latitude  != null ? String(school.latitude)  : '');
+  const [longitude,    setLongitude]    = useState<string>(school.longitude != null ? String(school.longitude) : '');
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  const onSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setErr(null);
+
+    const lat = latitude.trim()  === '' ? null : Number(latitude);
+    const lng = longitude.trim() === '' ? null : Number(longitude);
+    if ((lat !== null && (Number.isNaN(lat) || lat < -90  || lat > 90))
+     || (lng !== null && (Number.isNaN(lng) || lng < -180 || lng > 180))) {
+      setSaving(false);
+      setErr('Coordinates must be valid decimal degrees (lat -90..90, lng -180..180).');
+      return;
+    }
+
+    const { error } = await supabase
+      .from('schools')
+      .update({
+        name:           name.trim(),
+        type,
+        county:         county.trim() || null,
+        is_maker_space: isMaker,
+        contact_phone:  contactPhone.trim() || null,
+        contact_email:  contactEmail.trim() || null,
+        latitude:       lat,
+        longitude:      lng,
+      })
+      .eq('id', school.id);
+
+    setSaving(false);
+    if (error) setErr(error.message);
+    else onSaved();
+  };
+
+  return (
+    <div className="card p-5">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="m-0">Edit school — {school.name}</h2>
+        <button onClick={onClose} className="p-1 text-gray-500 hover:text-gray-900">
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+
+      {err && (
+        <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2 mb-3">
+          {err}
+        </div>
+      )}
+
+      <form onSubmit={onSubmit} className="grid sm:grid-cols-2 gap-4">
+        <div className="sm:col-span-2">
+          <label className="field-label" htmlFor="ename">School name</label>
+          <input
+            id="ename" type="text" required className="field-input"
+            value={name} onChange={(e) => setName(e.target.value)}
+          />
+        </div>
+
+        <div>
+          <label className="field-label" htmlFor="ecounty">County</label>
+          <select
+            id="ecounty" className="field-select"
+            value={county} onChange={(e) => setCounty(e.target.value)}
+          >
+            <option value="">— none —</option>
+            {KENYA_COUNTIES.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="field-label" htmlFor="etype">Type</label>
+          <select
+            id="etype" className="field-select"
+            value={type} onChange={(e) => setType(e.target.value as SchoolType)}
+          >
+            {SCHOOL_TYPES.map((t) => (
+              <option key={t.value} value={t.value}>{t.label}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="sm:col-span-2">
+          <label className="flex items-center gap-2 text-sm text-gray-700">
+            <input type="checkbox" checked={isMaker} onChange={(e) => setIsMaker(e.target.checked)} />
+            <Wrench className="h-3.5 w-3.5 text-teal-700" />
+            This school is a maker space
+          </label>
+        </div>
+
+        {isMaker && (
+          <>
+            <div>
+              <label className="field-label" htmlFor="elat">Latitude</label>
+              <input
+                id="elat" type="number" step="any" min={-90} max={90}
+                className="field-input font-mono" placeholder="-1.2921"
+                value={latitude} onChange={(e) => setLatitude(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="field-label" htmlFor="elng">Longitude</label>
+              <input
+                id="elng" type="number" step="any" min={-180} max={180}
+                className="field-input font-mono" placeholder="36.8219"
+                value={longitude} onChange={(e) => setLongitude(e.target.value)}
+              />
+              <p className="field-help">
+                Maker spaces with coordinates show up on the public maker-space map.
+              </p>
+            </div>
+          </>
+        )}
+
+        <div>
+          <label className="field-label" htmlFor="ephone">Contact phone</label>
+          <input
+            id="ephone" type="tel" className="field-input"
+            value={contactPhone} onChange={(e) => setContactPhone(e.target.value)}
+          />
+        </div>
+
+        <div>
+          <label className="field-label" htmlFor="eemail">Contact email</label>
+          <input
+            id="eemail" type="email" className="field-input"
+            value={contactEmail} onChange={(e) => setContactEmail(e.target.value)}
+          />
+        </div>
+
+        <div className="sm:col-span-2 flex justify-end gap-2 pt-2 border-t border-warm-200">
+          <button type="button" onClick={onClose} className="btn-secondary">Cancel</button>
+          <button type="submit" className="btn-primary" disabled={saving || !name.trim()}>
+            {saving ? 'Saving…' : 'Save changes'}
           </button>
         </div>
       </form>
