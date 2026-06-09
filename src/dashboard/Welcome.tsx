@@ -13,8 +13,8 @@ import { ArrowRight, School, Wrench, Bot } from 'lucide-react';
 const STORAGE_KEY = 'chipurobo:onboarding-seen';
 
 interface Slide {
-  title: string;
-  body:  ReactNode;
+  title:  string;
+  body:   ReactNode;
   visual: ReactNode;
 }
 
@@ -29,15 +29,21 @@ const slides: Slide[] = [
     ),
   },
   {
-    title: 'Three roles, one network',
-    body:  'Schools run code clubs. Maker spaces build the kits. ChipuRobo keeps every club stocked.',
+    title: 'For school leaders and ChipuRobo admins',
+    body: (
+      <>
+        Schools run code clubs and place orders. Maker spaces build the kits. ChipuRobo keeps
+        every club stocked. <span className="font-medium text-gray-900">School leaders</span>{' '}
+        and <span className="font-medium text-gray-900">ChipuRobo admins</span> sign in here.
+      </>
+    ),
     visual: (
       <div className="flex items-center gap-4">
-        <RoleIcon Icon={School}  color="#0d9488" />
+        <RoleIcon Icon={School}  color="#0d9488" label="School lead" />
         <Dot />
-        <RoleIcon Icon={Wrench}  color="#dc6b4a" />
+        <RoleIcon Icon={Wrench}  color="#dc6b4a" label="Maker space" />
         <Dot />
-        <RoleIcon Icon={Bot}     color="#0f766e" />
+        <RoleIcon Icon={Bot}     color="#0f766e" label="ChipuRobo" />
       </div>
     ),
   },
@@ -65,9 +71,14 @@ export function Welcome() {
             <source srcSet="/img/logo.webp" type="image/webp" />
             <img src="/img/logo.png" alt="" width={28} height={28} className="h-7 w-7 pixel-crisp" />
           </picture>
-          <span className="ml-2 font-pixel text-[0.65rem] tracking-wider text-gray-900 uppercase">
-            ChipuRobo<span className="text-teal-500">_</span>
-          </span>
+          <div className="ml-2 flex flex-col">
+            <span className="font-pixel text-[0.65rem] tracking-wider text-gray-900 uppercase leading-tight">
+              ChipuRobo<span className="text-teal-500">_</span>
+            </span>
+            <span className="text-[0.6rem] text-gray-500 leading-tight">
+              Dashboard — school leaders &amp; ChipuRobo admins
+            </span>
+          </div>
         </Link>
         <button
           type="button"
@@ -109,13 +120,18 @@ export function Welcome() {
   );
 }
 
-function RoleIcon({ Icon, color }: { Icon: typeof School; color: string }) {
+function RoleIcon({ Icon, color, label }: { Icon: typeof School; color: string; label?: string }) {
   return (
-    <div
-      className="w-12 h-12 rounded-full flex items-center justify-center"
-      style={{ background: `${color}15`, border: `1.5px solid ${color}` }}
-    >
-      <Icon className="h-5 w-5" style={{ color }} strokeWidth={1.6} />
+    <div className="flex flex-col items-center gap-1">
+      <div
+        className="w-12 h-12 rounded-full flex items-center justify-center"
+        style={{ background: `${color}15`, border: `1.5px solid ${color}` }}
+      >
+        <Icon className="h-5 w-5" style={{ color }} strokeWidth={1.6} />
+      </div>
+      {label && (
+        <span className="text-[0.6rem] text-gray-600 uppercase tracking-wider">{label}</span>
+      )}
     </div>
   );
 }
