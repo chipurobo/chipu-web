@@ -799,3 +799,22 @@ h3.heading-display { font-size: clamp(1rem, 2vw, 1.5rem) !important; line-height
  --tw-gradient-to: #052e16;
  }
 }
+
+/* =============================================================
+ * Print rules — used by the Certificate page so the printout
+ * is JUST the certificate artwork, no dashboard chrome.
+ * ============================================================= */
+@media print {
+  /* Hide everything that isn't the cert print area */
+  body * { visibility: hidden; }
+  #cert-print-area, #cert-print-area * { visibility: visible; }
+  #cert-print-area {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    box-shadow: none !important;
+  }
+
+  /* Force A4 landscape, kill any default margins */
+  @page { size: A4 landscape; margin: 0; }
+}

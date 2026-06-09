@@ -31,6 +31,8 @@ import { AdminOrders } from './dashboard/admin/Orders';
 import { AdminDistribute } from './dashboard/admin/Distribute';
 import { AdminEvents } from './dashboard/admin/Events';
 import { AdminCertifications } from './dashboard/admin/Certifications';
+import { SchoolCertificates } from './dashboard/school/Certificates';
+import { Certificate } from './dashboard/Certificate';
 import { SchoolMembers } from './dashboard/school/Members';
 import { SchoolOrders } from './dashboard/school/Orders';
 import { SchoolStock } from './dashboard/school/Stock';
@@ -163,6 +165,8 @@ function App() {
               element={<RequireAuth role="admin"><AdminCertifications /></RequireAuth>}
             />
             <Route path="school/members" element={<SchoolMembers />} />
+            <Route path="school/certificates" element={<SchoolCertificates />} />
+            <Route path="certificate/:issuanceId" element={<Certificate />} />
             <Route path="school/orders" element={<SchoolOrders />} />
             <Route path="school/stock" element={<SchoolStock />} />
             <Route path="school/production" element={<SchoolProduction />} />

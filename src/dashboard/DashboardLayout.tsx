@@ -178,6 +178,9 @@ function DashboardShell() {
               <SidebarLink to="/dashboard/school/stock" icon={Boxes}>
                 Stock & units
               </SidebarLink>
+              <SidebarLink to="/dashboard/school/certificates" icon={Award}>
+                Certificates
+              </SidebarLink>
             </>
           )}
         </nav>
