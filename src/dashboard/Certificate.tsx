@@ -106,18 +106,21 @@ export function Certificate() {
         {' '}as the destination to download an A4 copy. Margins should be <em>"None"</em> for the cleanest layout.
       </p>
 
-      {/* The certificate itself */}
+      {/* The certificate itself.
+          Padding and font sizes scale down on phones via clamp() so the
+          cert remains legible even on a 360px screen, then expands cleanly
+          when printed on A4. */}
       <article
         id="cert-print-area"
         className="mx-auto bg-white shadow-md print:shadow-none relative overflow-hidden"
         style={{
           width:  'min(100%, 1123px)',                // ≈ A4 landscape width @ 96dpi
           aspectRatio: '297 / 210',                    // A4 landscape
-          padding: '3.25rem 4rem',
+          padding: 'clamp(1.25rem, 4vw, 3.25rem) clamp(1.5rem, 5vw, 4rem)',
           // Outer ornamental double-frame
           outline: `1px solid ${hero}`,
-          outlineOffset: '-14px',
-          border: `8px solid ${hero}`,
+          outlineOffset: 'clamp(-14px, -1.2vw, -8px)',
+          border: `clamp(4px, 0.7vw, 8px) solid ${hero}`,
           background: `
             radial-gradient(circle at top right, ${hero}0d, transparent 40%),
             radial-gradient(circle at bottom left, ${hero}0d, transparent 40%),

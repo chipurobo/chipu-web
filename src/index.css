@@ -194,9 +194,12 @@
   text-transform: none;
   font-weight: 600;
 }
-.admin-zone h1 { font-size: 1.5rem !important; line-height: 1.3 !important; }
-.admin-zone h2 { font-size: 1.125rem !important; line-height: 1.3 !important; }
-.admin-zone h3 { font-size: 1rem !important; line-height: 1.4 !important; }
+.admin-zone h1 { font-size: clamp(1.25rem, 4vw, 1.625rem) !important; line-height: 1.25 !important; }
+.admin-zone h2 { font-size: clamp(1rem, 3vw, 1.25rem) !important; line-height: 1.3 !important; }
+.admin-zone h3 { font-size: clamp(0.95rem, 2.5vw, 1.125rem) !important; line-height: 1.4 !important; }
+
+/* Stat-strip number sizing scales — 2xl is too aggressive on a 360px phone */
+.admin-zone .stat-num { font-size: clamp(1.25rem, 5vw, 1.5rem); line-height: 1; font-weight: 600; }
 
 /* Compact form controls — Inter ~14px, generous focus rings */
 .admin-zone .field-label {
@@ -818,3 +821,44 @@ h3.heading-display { font-size: clamp(1rem, 2vw, 1.5rem) !important; line-height
   /* Force A4 landscape, kill any default margins */
   @page { size: A4 landscape; margin: 0; }
 }
+
+/* =============================================================
+ * Mobile responsiveness overrides — appended at the bottom so
+ * they reliably win the cascade against Tailwind @apply rules.
+ * ============================================================= */
+@media (max-width: 639px) {
+  /* Tables: cap cell padding so wide tables don't blow up the layout */
+  .admin-zone .data-table thead th,
+  .admin-zone .data-table tbody td {
+    padding: 0.5rem 0.625rem !important;
+    font-size: 0.8125rem !important;
+  }
+
+  /* Buttons: slightly smaller padding, no font shrink */
+  .admin-zone .btn-primary,
+  .admin-zone .btn-secondary,
+  .admin-zone .btn-danger {
+    padding: 0.5rem 0.75rem !important;
+  }
+
+  /* Cards inside dashboard pages have a bit less padding by default */
+  .admin-zone .card {
+    border-radius: 0.625rem;
+  }
+
+  /* Form fields */
+  .admin-zone .field-input,
+  .admin-zone .field-select {
+    font-size: 0.95rem !important;  /* avoids iOS zoom-on-focus when ≥16px */
+  }
+
+  /* Prose / descriptive paragraphs under page headers */
+  .admin-zone main p {
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+  }
+}
+
+/* Universal table overflow safety — any table inside a `.card.overflow-x-auto`
+   container should never grow taller than the viewport */
+.admin-zone .card.overflow-x-auto { max-width: 100%; }
