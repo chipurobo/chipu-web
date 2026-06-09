@@ -25,6 +25,7 @@ import { Login as DashLogin } from './dashboard/Login';
 import { Welcome as DashWelcome } from './dashboard/Welcome';
 // Self-signup removed — schools are created by ChipuRobo admin.
 import { AdminSchools } from './dashboard/admin/Schools';
+import { AdminSchoolDetails } from './dashboard/admin/SchoolDetails';
 import { AdminProducts } from './dashboard/admin/Products';
 import { AdminOrders } from './dashboard/admin/Orders';
 import { AdminDistribute } from './dashboard/admin/Distribute';
@@ -135,6 +136,10 @@ function App() {
             <Route
               path="admin/schools"
               element={<RequireAuth role="admin"><AdminSchools /></RequireAuth>}
+            />
+            <Route
+              path="admin/schools/:schoolId"
+              element={<RequireAuth role="admin"><AdminSchoolDetails /></RequireAuth>}
             />
             <Route
               path="admin/products"

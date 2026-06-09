@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import type { School, SchoolType } from '../../lib/database.types';
 import { KENYA_COUNTIES } from '../../lib/counties';
@@ -302,7 +303,12 @@ export function AdminSchools() {
                     />
                   </td>
                   <td>
-                    <div className="font-medium text-gray-900">{s.name}</div>
+                    <Link
+                      to={`/dashboard/admin/schools/${s.id}`}
+                      className="font-medium text-gray-900 hover:text-teal-700 hover:underline"
+                    >
+                      {s.name}
+                    </Link>
                   </td>
                   <td>
                     <span className={
