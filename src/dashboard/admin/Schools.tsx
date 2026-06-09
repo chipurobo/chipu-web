@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import type { School, SchoolType } from '../../lib/database.types';
 import { KENYA_COUNTIES } from '../../lib/counties';
-import { Wrench, Plus, X, Copy, Check, KeyRound, Upload, Pencil, Trash2 } from 'lucide-react';
+import { Wrench, Plus, X, Copy, Check, KeyRound, Upload, Pencil, Trash2, Send } from 'lucide-react';
 import { SchoolBulkImport } from './SchoolBulkImport';
+import { sendEmail } from '../../lib/sendEmail';
 
 // =============================================================
 // Email derivation
@@ -51,9 +52,10 @@ interface SchoolLead {
 }
 
 interface NewCreds {
-  school:   string;
-  username: string;
-  password: string;
+  school:        string;
+  username:      string;
+  password:      string;
+  contactEmail?: string | null;   // teacher's real address — enables the Send button
 }
 
 /**
@@ -183,10 +185,11 @@ export function AdminSchools() {
       {lastCreated && (
         <CredentialsCard
           title={`${lastCreated.school} created`}
-          subtitle="This is the only time the password will be visible. Copy it and share with the teacher."
+          subtitle="This is the only time the password will be visible. Copy or send it to the teacher now."
           school={lastCreated.school}
           username={lastCreated.username}
           password={lastCreated.password}
+          contactEmail={lastCreated.contactEmail ?? null}
           onDismiss={() => setLastCreated(null)}
         />
       )}
@@ -212,6 +215,9 @@ export function AdminSchools() {
       {editingLead && (
         <EditCredentialsPanel
           lead={editingLead}
+          contactEmail={
+            schools?.find((s) => s.id === editingLead.school_id)?.contact_email ?? null
+          }
           onClose={() => setEditingLead(null)}
           onSaved={(c) => {
             setEditingLead(null);
@@ -470,9 +476,10 @@ function CreateSchoolForm({
 
     setSubmitting(false);
     onCreated({
-      school: schoolName.trim(),
+      school:       schoolName.trim(),
       username,
       password,
+      contactEmail: contactEmail.trim() || null,
     });
   };
 
@@ -799,9 +806,10 @@ function EditSchoolPanel({
 }
 
 function EditCredentialsPanel({
-  lead, onClose, onSaved,
+  lead, contactEmail, onClose, onSaved,
 }: {
   lead: SchoolLead;
+  contactEmail: string | null;
   onClose: () => void;
   onSaved: (creds: NewCreds | null) => void;
 }) {
@@ -826,9 +834,10 @@ function EditCredentialsPanel({
       setErr(error.message);
     } else {
       onSaved({
-        school:   lead.school_name ?? '—',
-        username: lead.username,
+        school:       lead.school_name ?? '—',
+        username:     lead.username,
         password,
+        contactEmail,
       });
       setPassword('');
     }
@@ -894,27 +903,67 @@ function EditCredentialsPanel({
 }
 
 function CredentialsCard({
-  title, subtitle, school, username, password, onDismiss,
+  title, subtitle, school, username, password, contactEmail, onDismiss,
 }: {
   title: string; subtitle: string;
   school: string; username: string; password: string;
+  contactEmail?: string | null;
   onDismiss: () => void;
 }) {
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied]     = useState(false);
+  const [sending, setSending]   = useState(false);
+  const [sent, setSent]         = useState(false);
+  const [sendErr, setSendErr]   = useState<string | null>(null);
+
   const loginEmail = usernameToLoginEmail(username);
+  const loginUrl   = `${window.location.origin}/dashboard/login`;
   const blob =
 `Hi,
 
 Your ChipuRobo code-club dashboard is ready.
 
   School:   ${school}
-  Login:    ${window.location.origin}/dashboard/login
+  Login:    ${loginUrl}
   Email:    ${loginEmail}
   Password: ${password}
 
 Please sign in and let us know if anything looks off.
 
 — ChipuRobo`;
+
+  const html = `
+    <div style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;color:#1f2937;max-width:560px;">
+      <h2 style="margin:0 0 8px;">Welcome to ChipuRobo</h2>
+      <p>Your code-club dashboard for <strong>${escapeHtml(school)}</strong> is ready.</p>
+      <table style="border-collapse:collapse;margin:16px 0;">
+        <tr><td style="padding:4px 12px 4px 0;color:#6b7280;">Login</td>
+            <td style="padding:4px 0;"><a href="${escapeHtml(loginUrl)}">${escapeHtml(loginUrl)}</a></td></tr>
+        <tr><td style="padding:4px 12px 4px 0;color:#6b7280;">Email</td>
+            <td style="padding:4px 0;font-family:monospace;">${escapeHtml(loginEmail)}</td></tr>
+        <tr><td style="padding:4px 12px 4px 0;color:#6b7280;">Password</td>
+            <td style="padding:4px 0;font-family:monospace;">${escapeHtml(password)}</td></tr>
+      </table>
+      <p style="color:#6b7280;font-size:13px;">Please sign in and let us know if anything looks off.</p>
+      <p style="color:#6b7280;font-size:13px;">— ChipuRobo</p>
+    </div>`;
+
+  const doSend = async () => {
+    if (!contactEmail) return;
+    setSending(true); setSendErr(null);
+    const { ok, error } = await sendEmail({
+      to:      contactEmail,
+      subject: `Your ChipuRobo dashboard — ${school}`,
+      html,
+      text:    blob,
+    });
+    setSending(false);
+    if (ok) {
+      setSent(true);
+      setTimeout(() => setSent(false), 3000);
+    } else {
+      setSendErr(error ?? 'send failed');
+    }
+  };
 
   return (
     <div className="card p-5 border-2 border-teal-500 bg-teal-50/40">
@@ -932,7 +981,13 @@ Please sign in and let us know if anything looks off.
         {blob}
       </pre>
 
-      <div className="flex justify-end mt-3">
+      {sendErr && (
+        <div className="mt-3 text-xs text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+          {sendErr}
+        </div>
+      )}
+
+      <div className="flex justify-end mt-3 gap-2 flex-wrap">
         <button
           type="button"
           onClick={async () => {
@@ -940,15 +995,37 @@ Please sign in and let us know if anything looks off.
             setCopied(true);
             setTimeout(() => setCopied(false), 1500);
           }}
-          className="btn-primary"
+          className="btn-secondary"
         >
           {copied
             ? <><Check className="h-4 w-4 mr-1.5" />Copied</>
-            : <><Copy className="h-4 w-4 mr-1.5"  />Copy email</>}
+            : <><Copy  className="h-4 w-4 mr-1.5" />Copy</>}
+        </button>
+        <button
+          type="button"
+          onClick={doSend}
+          disabled={!contactEmail || sending || sent}
+          title={contactEmail ? `Send to ${contactEmail}` : 'No teacher email on record'}
+          className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {sending
+            ? 'Sending…'
+            : sent
+              ? <><Check className="h-4 w-4 mr-1.5" />Sent</>
+              : <><Send className="h-4 w-4 mr-1.5" />{contactEmail ? `Send to ${contactEmail}` : 'No email on file'}</>}
         </button>
       </div>
     </div>
   );
+}
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 function generatePassword(): string {

@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../lib/auth';
 import type { Order, OrderStatus, Product, ProductUnit } from '../../lib/database.types';
 import { Wrench, Inbox, PlayCircle, Truck, Plus, AlertCircle, PackageCheck } from 'lucide-react';
+import { notifyOrderEvent } from '../../lib/orderEmails';
 
 // =============================================================
 // /dashboard/school/production
@@ -22,7 +23,7 @@ import { Wrench, Inbox, PlayCircle, Truck, Plus, AlertCircle, PackageCheck } fro
 
 interface ProdOrder extends Order {
   products: Pick<Product, 'id' | 'name' | 'sku' | 'is_durable'> | null;
-  placer:   { id: string; name: string } | null;
+  placer:   { id: string; name: string; contact_email: string | null } | null;
   units:    Pick<ProductUnit, 'id' | 'serial_number' | 'status'>[];
 }
 
@@ -38,7 +39,7 @@ export function SchoolProduction() {
       .select(`
         *,
         products  ( id, name, sku, is_durable ),
-        placer:placed_by_school_id ( id, name ),
+        placer:placed_by_school_id ( id, name, contact_email ),
         units:product_units!product_units_order_id_fkey ( id, serial_number, status )
       `)
       .eq('fulfilled_by_school_id', school.id)
@@ -73,21 +74,45 @@ export function SchoolProduction() {
   const inProduction = orders?.filter((o) => o.status === 'in_production')  ?? null;
   const shipped      = orders?.filter((o) => o.status === 'shipped')        ?? null;
 
+  // Build the email payload from a ProdOrder. The placer's email and the
+  // fulfilling school (us) are both needed; we fire fire-and-forget so the
+  // UI doesn't block on SendKit.
+  const fireEmail = (status: OrderStatus, order: ProdOrder | undefined) => {
+    if (!order || !order.products || !order.placer) return;
+    void notifyOrderEvent(status, {
+      productName:    order.products.name,
+      productSku:     order.products.sku ?? null,
+      quantity:       order.quantity,
+      placerName:     order.placer.name,
+      placerEmail:    order.placer.contact_email,
+      fulfillerName:  school?.name ?? null,
+      fulfillerEmail: school?.contact_email ?? null,
+    });
+  };
+
   // Mutations
   const setStatus = async (id: string, status: OrderStatus, stamp?: 'accepted_at') => {
     setErr(null);
     const patch: Record<string, unknown> = { status };
     if (stamp) patch[stamp] = new Date().toISOString();
     const { error } = await supabase.from('orders').update(patch).eq('id', id);
-    if (error) setErr(error.message);
-    else void load();
+    if (error) {
+      setErr(error.message);
+      return;
+    }
+    fireEmail(status, orders?.find((o) => o.id === id));
+    void load();
   };
 
   const ship = async (id: string) => {
     setErr(null);
     const { error } = await supabase.rpc('ship_order', { p_order_id: id });
-    if (error) setErr(error.message);
-    else void load();
+    if (error) {
+      setErr(error.message);
+      return;
+    }
+    fireEmail('shipped', orders?.find((o) => o.id === id));
+    void load();
   };
 
   const cancel = async (id: string) => {

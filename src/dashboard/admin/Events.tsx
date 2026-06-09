@@ -226,50 +226,53 @@ function EventCard({
   };
 
   return (
-    <article className="card overflow-hidden">
+    <article className="card overflow-hidden relative">
       <div className={`h-1 ${accent}`} />
-      <div className="p-4 sm:p-5">
+
+      {/* Delete pinned to the top-right — same spot on every card, never wraps */}
+      <button
+        type="button"
+        onClick={onDelete}
+        title="Delete activity"
+        aria-label="Delete activity"
+        className="absolute top-3 right-3 z-10 p-1.5 rounded-md text-gray-400 hover:text-red-700 hover:bg-red-50 transition-colors"
+      >
+        <Trash2 className="h-4 w-4" />
+      </button>
+
+      <div className="p-4 sm:p-5 pr-12">
         {/* Header */}
-        <div className="flex items-start justify-between gap-3 flex-wrap mb-3">
-          <div className="min-w-0 flex items-start gap-3">
-            <div className="mt-0.5 p-2 rounded-md bg-warm-100 flex-shrink-0">
-              <Icon className="h-5 w-5 text-gray-700" />
-            </div>
-            <div className="min-w-0">
-              <h2 className="m-0 text-base">{event.title}</h2>
-              <div className="text-xs text-gray-500 mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1">
-                <span>{TYPE_LABEL[event.event_type]}</span>
+        <div className="mb-3 flex items-start gap-3 min-w-0">
+          <div className="mt-0.5 p-2 rounded-md bg-warm-100 flex-shrink-0">
+            <Icon className="h-5 w-5 text-gray-700" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h2 className="m-0 text-base">{event.title}</h2>
+            <div className="text-xs text-gray-500 mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1">
+              <span>{TYPE_LABEL[event.event_type]}</span>
+              <span className="inline-flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                {formatDate(event.start_at)}
+                {event.end_at && ` → ${formatDate(event.end_at)}`}
+              </span>
+              {event.location && (
                 <span className="inline-flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  {formatDate(event.start_at)}
-                  {event.end_at && ` → ${formatDate(event.end_at)}`}
+                  <MapPin className="h-3 w-3" />
+                  {event.location}
                 </span>
-                {event.location && (
-                  <span className="inline-flex items-center gap-1">
-                    <MapPin className="h-3 w-3" />
-                    {event.location}
-                  </span>
-                )}
-                {event.url && (
-                  <a href={event.url} target="_blank" rel="noopener noreferrer"
-                     className="inline-flex items-center gap-1 text-teal-700 hover:underline">
-                    <LinkIcon className="h-3 w-3" />
-                    Link
-                  </a>
-                )}
-              </div>
-              {event.description && (
-                <p className="text-sm text-gray-700 mt-2">{event.description}</p>
+              )}
+              {event.url && (
+                <a href={event.url} target="_blank" rel="noopener noreferrer"
+                   className="inline-flex items-center gap-1 text-teal-700 hover:underline">
+                  <LinkIcon className="h-3 w-3" />
+                  Link
+                </a>
               )}
             </div>
+            {event.description && (
+              <p className="text-sm text-gray-700 mt-2">{event.description}</p>
+            )}
           </div>
-          <button
-            type="button"
-            onClick={onDelete}
-            className="text-xs text-red-700 hover:underline inline-flex items-center flex-shrink-0"
-          >
-            <Trash2 className="h-3 w-3 mr-1" /> Delete
-          </button>
         </div>
 
         {/* Attendance summary */}

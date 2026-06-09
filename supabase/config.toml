@@ -48,3 +48,10 @@ enable_signup = true
 double_confirm_changes = false
 enable_confirmations = false
 secure_password_change = false
+
+# Edge functions
+# verify_jwt = false lets the OPTIONS preflight reach our handler so we can
+# return CORS headers. The function still does its own auth check by
+# requiring the Authorization header on POST requests.
+[functions.send-email]
+verify_jwt = false

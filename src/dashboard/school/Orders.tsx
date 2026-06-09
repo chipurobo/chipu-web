@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../lib/auth';
 import type { Order, OrderStatus, Product, School } from '../../lib/database.types';
 import { Plus, X, Wrench, PackageCheck } from 'lucide-react';
+import { notifyOrderEvent } from '../../lib/orderEmails';
 
 // Order rows joined with product info (small subset).
 interface OrderRow extends Order {
@@ -130,6 +131,8 @@ export function SchoolOrders() {
           products={products}
           makerSpaces={makerSpaces}
           schoolId={school.id}
+          placerName={school.name}
+          placerEmail={school.contact_email}
           onCreated={() => { setShowNew(false); void load(); }}
           onClose={() => setShowNew(false)}
         />
@@ -248,12 +251,16 @@ function NewOrderForm({
   products,
   makerSpaces,
   schoolId,
+  placerName,
+  placerEmail,
   onCreated,
   onClose,
 }: {
   products: Product[];
   makerSpaces: School[];
   schoolId: string;
+  placerName: string;
+  placerEmail: string | null;
   onCreated: () => void;
   onClose: () => void;
 }) {
@@ -281,9 +288,25 @@ function NewOrderForm({
     setSubmitting(false);
     if (error) {
       setErr(error.message);
-    } else {
-      onCreated();
+      return;
     }
+
+    // Fire-and-forget email to both parties.
+    const product   = products.find((p)    => p.id === productId);
+    const fulfiller = makerSpaces.find((s) => s.id === fulfillerId);
+    if (product && fulfiller) {
+      void notifyOrderEvent('placed', {
+        productName:    product.name,
+        productSku:     product.sku,
+        quantity,
+        placerName:     placerName,
+        fulfillerName:  fulfiller.name,
+        placerEmail:    placerEmail,
+        fulfillerEmail: fulfiller.contact_email,
+      });
+    }
+
+    onCreated();
   };
 
   if (makerSpaces.length === 0) {
