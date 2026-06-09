@@ -30,6 +30,7 @@ import { AdminProducts } from './dashboard/admin/Products';
 import { AdminOrders } from './dashboard/admin/Orders';
 import { AdminDistribute } from './dashboard/admin/Distribute';
 import { AdminEvents } from './dashboard/admin/Events';
+import { AdminCertifications } from './dashboard/admin/Certifications';
 import { SchoolMembers } from './dashboard/school/Members';
 import { SchoolOrders } from './dashboard/school/Orders';
 import { SchoolStock } from './dashboard/school/Stock';
@@ -156,6 +157,10 @@ function App() {
             <Route
               path="admin/events"
               element={<RequireAuth role="admin"><AdminEvents /></RequireAuth>}
+            />
+            <Route
+              path="admin/certifications"
+              element={<RequireAuth role="admin"><AdminCertifications /></RequireAuth>}
             />
             <Route path="school/members" element={<SchoolMembers />} />
             <Route path="school/orders" element={<SchoolOrders />} />

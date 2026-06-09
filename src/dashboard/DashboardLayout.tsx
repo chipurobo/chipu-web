@@ -3,7 +3,7 @@ import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-do
 import { useAuth } from '../lib/auth';
 import { NotificationsProvider, NotificationToaster } from '../lib/notifications';
 import { useOrderRealtime, type OrderCounts } from '../lib/useOrderRealtime';
-import { LogOut, Home, School, Package, ClipboardList, Users, Boxes, Wrench, Send, Menu, X, CalendarDays } from 'lucide-react';
+import { LogOut, Home, School, Package, ClipboardList, Users, Boxes, Wrench, Send, Menu, X, CalendarDays, Award } from 'lucide-react';
 
 // =============================================================
 // Admin/school dashboard shell.
@@ -157,6 +157,9 @@ function DashboardShell() {
               </SidebarLink>
               <SidebarLink to="/dashboard/admin/events" icon={CalendarDays}>
                 Activities
+              </SidebarLink>
+              <SidebarLink to="/dashboard/admin/certifications" icon={Award}>
+                Certifications
               </SidebarLink>
             </>
           ) : (

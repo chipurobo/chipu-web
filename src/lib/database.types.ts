@@ -22,6 +22,32 @@ export type UnitStatus =
   | 'retired';
 
 export type EventType = 'outreach' | 'bootcamp_physical' | 'bootcamp_webinar';
+export type CertAudience = 'student' | 'teacher';
+
+export interface CertificateTemplate {
+  id: string;
+  title: string;
+  description: string | null;
+  programme: string | null;
+  audience: CertAudience;
+  duration_text: string | null;
+  criteria_text: string | null;
+  hero_color: string | null;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface CertificateIssuance {
+  id: string;
+  template_id: string;
+  student_id: string | null;
+  teacher_id: string | null;
+  school_id: string;
+  notes: string | null;
+  issued_at: string;
+  issued_by: string | null;
+  revoked_at: string | null;
+}
 
 export interface ChipuEvent {
   id: string;
