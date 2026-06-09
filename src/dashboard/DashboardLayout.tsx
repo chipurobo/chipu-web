@@ -152,7 +152,7 @@ function DashboardShell() {
                 Distribute
               </SidebarLink>
               <SidebarLink to="/dashboard/admin/events" icon={CalendarDays}>
-                Events
+                Activities
               </SidebarLink>
             </>
           ) : (

@@ -176,7 +176,7 @@ export function AdminSchoolDetails() {
         <StatCard label="Students"  value={stats.students}  color="bg-teal-500" />
         <StatCard label="In club"   value={stats.inClub}    color="bg-indigo-500" />
         <StatCard label="Disability flagged" value={stats.disabilities} color="bg-terracotta-500" />
-        <StatCard label="Events attended" value={`${stats.attended} / ${stats.invited}`} color="bg-amber-500" />
+        <StatCard label="Activities attended" value={`${stats.attended} / ${stats.invited}`} color="bg-amber-500" />
       </div>
 
       {/* Overview */}
@@ -204,18 +204,18 @@ export function AdminSchoolDetails() {
         </div>
       </section>
 
-      {/* Events */}
+      {/* Activities */}
       <section>
         <div className="flex items-center gap-2 mb-3">
           <CalendarDays className="h-4 w-4 text-teal-700" />
-          <h2 className="m-0">Events</h2>
+          <h2 className="m-0">Activities</h2>
           <span className="text-xs text-gray-500">{events?.length ?? 0}</span>
         </div>
         {!events && <p className="text-sm text-gray-500">Loading…</p>}
         {events && events.length === 0 && (
           <div className="card p-8 text-center">
             <CalendarDays className="h-7 w-7 text-gray-300 mx-auto mb-2" />
-            <p className="text-sm text-gray-500">No events attached yet.</p>
+            <p className="text-sm text-gray-500">No activities attached yet.</p>
           </div>
         )}
         {events && events.length > 0 && (

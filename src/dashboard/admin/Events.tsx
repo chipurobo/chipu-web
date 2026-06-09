@@ -89,7 +89,7 @@ export function AdminEvents() {
   useEffect(() => { void load(); }, []);
 
   const onDelete = async (id: string) => {
-    if (!window.confirm('Delete this event? Attached schools and attendance records will be wiped.')) return;
+    if (!window.confirm('Delete this activity? Attached schools and attendance records will be wiped.')) return;
     setErr(null);
     const { error } = await supabase.from('events').delete().eq('id', id);
     if (error) setErr(error.message);
@@ -101,9 +101,9 @@ export function AdminEvents() {
       <div className="flex items-end justify-between gap-4 flex-wrap">
         <div>
           <p className="text-xs uppercase tracking-wider text-gray-500 mb-1">Admin</p>
-          <h1>Events</h1>
+          <h1>Activities</h1>
           <p className="text-sm text-gray-600 mt-1 max-w-2xl">
-            Outreach trips and bootcamps. Attach the schools that are coming, then mark them
+            Outreach trips and bootcamps. Attach the schools that are taking part, then mark them
             attended once they show up — every active student at the school is auto-credited.
           </p>
         </div>
@@ -112,7 +112,7 @@ export function AdminEvents() {
           className="btn-primary w-full sm:w-auto justify-center"
         >
           <Plus className="h-4 w-4 mr-1.5" />
-          {creating ? 'Cancel' : 'New event'}
+          {creating ? 'Cancel' : 'New activity'}
         </button>
       </div>
 
@@ -130,13 +130,13 @@ export function AdminEvents() {
         />
       )}
 
-      {/* Event list */}
+      {/* Activity list */}
       <section className="space-y-4">
         {!events && <p className="text-sm text-gray-500">Loading…</p>}
         {events && events.length === 0 && (
           <div className="card p-10 text-center">
             <CalendarDays className="h-8 w-8 text-gray-300 mx-auto mb-3" />
-            <p className="text-sm text-gray-600">No events yet.</p>
+            <p className="text-sm text-gray-600">No activities yet.</p>
             <p className="text-xs text-gray-500 mt-1">Create your first one with the button above.</p>
           </div>
         )}
@@ -214,7 +214,7 @@ function EventCard({
   };
 
   const removeSchool = async (schoolId: string) => {
-    if (!window.confirm('Remove this school from the event? Any student attendances will be deleted.')) return;
+    if (!window.confirm('Remove this school from the activity? Any student attendances will be deleted.')) return;
     setLocalErr(null);
     const { error } = await supabase
       .from('event_schools')
@@ -275,7 +275,7 @@ function EventCard({
         {/* Attendance summary */}
         <div className="flex flex-wrap gap-2 mb-3 text-xs">
           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-warm-100 text-gray-700">
-            <Users className="h-3 w-3" /> {invitedCount} school{invitedCount === 1 ? '' : 's'} attached
+            <Users className="h-3 w-3" /> {invitedCount} school{invitedCount === 1 ? '' : 's'} taking part
           </span>
           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800">
             <CheckCircle2 className="h-3 w-3" /> {attendedCount} attended
@@ -451,7 +451,7 @@ function NewEventForm({
 
     if (error || !created) {
       setSaving(false);
-      setErr(error?.message ?? 'Failed to create event.');
+      setErr(error?.message ?? 'Failed to create activity.');
       return;
     }
 
@@ -464,7 +464,7 @@ function NewEventForm({
       const { error: aErr } = await supabase.from('event_schools').insert(rows);
       if (aErr) {
         setSaving(false);
-        setErr(`Event created but attaching schools failed: ${aErr.message}`);
+        setErr(`Activity created but attaching schools failed: ${aErr.message}`);
         return;
       }
     }
@@ -476,7 +476,7 @@ function NewEventForm({
   return (
     <div className="card p-5">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="m-0">New event</h2>
+        <h2 className="m-0">New activity</h2>
         <button onClick={onClose} className="p-1 text-gray-500 hover:text-gray-900">
           <X className="h-4 w-4" />
         </button>
@@ -622,8 +622,8 @@ function NewEventForm({
             {saving
               ? 'Saving…'
               : selectedSchools.size > 0
-                ? `Create event & attach ${selectedSchools.size} school${selectedSchools.size === 1 ? '' : 's'}`
-                : 'Create event'}
+                ? `Create activity & attach ${selectedSchools.size} school${selectedSchools.size === 1 ? '' : 's'}`
+                : 'Create activity'}
           </button>
         </div>
       </form>
