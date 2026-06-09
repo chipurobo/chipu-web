@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import type { School, SchoolType } from '../../lib/database.types';
 import { KENYA_COUNTIES } from '../../lib/counties';
-import { Wrench, Plus, X, Copy, Check, KeyRound, Upload, Pencil, Trash2, Send } from 'lucide-react';
+import { Wrench, Plus, X, Check, KeyRound, Upload, Pencil, Trash2, Send, AlertCircle } from 'lucide-react';
 import { SchoolBulkImport } from './SchoolBulkImport';
 import { sendEmail } from '../../lib/sendEmail';
+import { getDashboardPath } from '../../lib/dashboardUrl';
+import { useNotifications } from '../../lib/notifications';
 
 // =============================================================
 // Email derivation
@@ -185,7 +187,6 @@ export function AdminSchools() {
       {lastCreated && (
         <CredentialsCard
           title={`${lastCreated.school} created`}
-          subtitle="This is the only time the password will be visible. Copy or send it to the teacher now."
           school={lastCreated.school}
           username={lastCreated.username}
           password={lastCreated.password}
@@ -903,21 +904,25 @@ function EditCredentialsPanel({
 }
 
 function CredentialsCard({
-  title, subtitle, school, username, password, contactEmail, onDismiss,
+  title, school, username, password, contactEmail, onDismiss,
 }: {
-  title: string; subtitle: string;
+  title: string;
   school: string; username: string; password: string;
   contactEmail?: string | null;
   onDismiss: () => void;
 }) {
-  const [copied, setCopied]     = useState(false);
-  const [sending, setSending]   = useState(false);
-  const [sent, setSent]         = useState(false);
-  const [sendErr, setSendErr]   = useState<string | null>(null);
+  const { notify } = useNotifications();
+  const [sending, setSending] = useState(false);
+  const [result, setResult]   = useState<
+    | { state: 'idle' }
+    | { state: 'sent';  to: string }
+    | { state: 'error'; message: string }
+  >({ state: 'idle' });
 
   const loginEmail = usernameToLoginEmail(username);
-  const loginUrl   = `${window.location.origin}/dashboard/login`;
-  const blob =
+  const loginUrl   = getDashboardPath('/dashboard/login');
+
+  const text =
 `Hi,
 
 Your ChipuRobo code-club dashboard is ready.
@@ -949,19 +954,22 @@ Please sign in and let us know if anything looks off.
 
   const doSend = async () => {
     if (!contactEmail) return;
-    setSending(true); setSendErr(null);
+    setSending(true);
+    setResult({ state: 'idle' });
     const { ok, error } = await sendEmail({
       to:      contactEmail,
       subject: `Your ChipuRobo dashboard — ${school}`,
       html,
-      text:    blob,
+      text,
     });
     setSending(false);
     if (ok) {
-      setSent(true);
-      setTimeout(() => setSent(false), 3000);
+      setResult({ state: 'sent', to: contactEmail });
+      notify('success', 'Credentials emailed', `Sent to ${contactEmail}.`);
     } else {
-      setSendErr(error ?? 'send failed');
+      const message = error ?? 'send failed';
+      setResult({ state: 'error', message });
+      notify('warning', 'Email failed to send', message);
     }
   };
 
@@ -970,48 +978,49 @@ Please sign in and let us know if anything looks off.
       <div className="flex items-start justify-between gap-4 mb-3">
         <div>
           <h2 className="m-0">{title}</h2>
-          <p className="text-sm text-gray-600 mt-0.5">{subtitle}</p>
+          <p className="text-sm text-gray-600 mt-0.5">
+            {contactEmail
+              ? <>Send the credentials to <span className="font-mono">{contactEmail}</span> now — the password is only visible here.</>
+              : 'No teacher email is on record. Add one to the school before you can send credentials.'}
+          </p>
         </div>
-        <button onClick={onDismiss} className="p-1 text-gray-500 hover:text-gray-900">
+        <button onClick={onDismiss} className="p-1 text-gray-500 hover:text-gray-900" aria-label="Dismiss">
           <X className="h-4 w-4" />
         </button>
       </div>
 
       <pre className="text-xs font-mono whitespace-pre-wrap bg-white border border-warm-200 rounded-md p-3 overflow-x-auto">
-        {blob}
+        {text}
       </pre>
 
-      {sendErr && (
-        <div className="mt-3 text-xs text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
-          {sendErr}
+      {result.state === 'sent' && (
+        <div className="mt-3 text-sm text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-md px-3 py-2 flex items-center gap-2">
+          <Check className="h-4 w-4 flex-shrink-0" />
+          <span>Sent to <strong>{result.to}</strong>.</span>
+        </div>
+      )}
+      {result.state === 'error' && (
+        <div className="mt-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2 flex items-start gap-2">
+          <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+          <div>
+            <div className="font-medium">Couldn't send the email.</div>
+            <div className="text-xs text-red-700/80 mt-0.5">{result.message}</div>
+          </div>
         </div>
       )}
 
-      <div className="flex justify-end mt-3 gap-2 flex-wrap">
-        <button
-          type="button"
-          onClick={async () => {
-            await navigator.clipboard.writeText(blob);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 1500);
-          }}
-          className="btn-secondary"
-        >
-          {copied
-            ? <><Check className="h-4 w-4 mr-1.5" />Copied</>
-            : <><Copy  className="h-4 w-4 mr-1.5" />Copy</>}
-        </button>
+      <div className="flex justify-end mt-3">
         <button
           type="button"
           onClick={doSend}
-          disabled={!contactEmail || sending || sent}
+          disabled={!contactEmail || sending}
           title={contactEmail ? `Send to ${contactEmail}` : 'No teacher email on record'}
           className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {sending
             ? 'Sending…'
-            : sent
-              ? <><Check className="h-4 w-4 mr-1.5" />Sent</>
+            : result.state === 'sent'
+              ? <><Check className="h-4 w-4 mr-1.5" />Resend</>
               : <><Send className="h-4 w-4 mr-1.5" />{contactEmail ? `Send to ${contactEmail}` : 'No email on file'}</>}
         </button>
       </div>

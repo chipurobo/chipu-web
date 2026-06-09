@@ -1,4 +1,5 @@
 import { sendEmail } from './sendEmail';
+import { getDashboardUrl } from './dashboardUrl';
 import type { OrderStatus } from './database.types';
 
 // =============================================================
@@ -68,7 +69,7 @@ function lineItem(c: OrderEmailContext): string {
 }
 
 function dashboardUrl(c: OrderEmailContext, path: string): string {
-  const base = c.dashboardUrl ?? (typeof window !== 'undefined' ? window.location.origin : '');
+  const base = c.dashboardUrl ?? getDashboardUrl();
   return `${base}${path}`;
 }
 
@@ -149,4 +150,49 @@ function eventTitleForFulfiller(event: OrderStatus, c: OrderEmailContext): strin
     case 'delivered':     return `Order delivered to ${c.placerName}`;
     case 'cancelled':     return `Order cancelled`;
   }
+}
+
+// -------------------------------------------------------------
+// Consumable assignment — admin commissioned, ChipuRobo HQ to school.
+// Different copy from a maker-space order: the school didn't ask for it,
+// ChipuRobo is sending it.
+// -------------------------------------------------------------
+export interface ConsumableAssignmentContext {
+  productName:   string;
+  productSku?:   string | null;
+  quantity:      number;
+  schoolName:    string;
+  schoolEmail?:  string | null;
+  notes?:        string | null;
+  dashboardUrl?: string;
+}
+
+export async function notifyConsumableAssignment(
+  ctx: ConsumableAssignmentContext,
+): Promise<void> {
+  if (!ctx.schoolEmail) return;
+
+  const base    = ctx.dashboardUrl ?? getDashboardUrl();
+  const cta     = `${base}/dashboard/school/orders`;
+  const skuTag  = ctx.productSku ? ` <span style="color:#6b7280;">(${escape(ctx.productSku)})</span>` : '';
+  const notes   = ctx.notes
+    ? `<p style="margin-top:12px;color:#6b7280;font-style:italic;">"${escape(ctx.notes)}"</p>`
+    : '';
+
+  const html = wrap(
+    `ChipuRobo is sending you a consumable`,
+    `<p>Heads up, <strong>${escape(ctx.schoolName)}</strong> — ChipuRobo has commissioned a
+      consumable shipment for your school.</p>
+     <p><strong>${escape(ctx.productName)}</strong>${skuTag} &times; ${ctx.quantity}</p>
+     <p>You'll see it in your <strong>Orders</strong> view, fulfilled by ChipuRobo. It'll be
+      marked delivered once it reaches you and will land in your Stock automatically.</p>
+     ${notes}`,
+    cta,
+  );
+
+  await sendEmail({
+    to:      ctx.schoolEmail,
+    subject: `ChipuRobo sent you ${ctx.productName} — ${ctx.quantity} unit${ctx.quantity === 1 ? '' : 's'}`,
+    html,
+  }).catch((e) => console.error('[orderEmails] consumable send failed', e));
 }

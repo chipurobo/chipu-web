@@ -36,9 +36,13 @@ function DashboardShell() {
   const counts: OrderCounts = useOrderRealtime();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Human-readable role label used as the badge in the brand area
-  // (sidebar + mobile top bar). Distinguishes ChipuRobo admin from
-  // school-side users so it's always obvious whose view you're looking at.
+  // Two labels for the role:
+  //   • shortLabel — pixel chip in the brand corner; must fit a 60px column
+  //   • roleLabel  — full description in the sidebar footer pill
+  const shortLabel: string =
+    isAdmin       ? 'ADMIN'  :
+    isMakerSpace  ? 'MAKER'  :
+                    'SCHOOL';
   const roleLabel: string =
     isAdmin       ? 'CHIPUROBO ADMIN' :
     isMakerSpace  ? 'MAKER SPACE'    :
@@ -86,7 +90,7 @@ function DashboardShell() {
           </span>
         </Link>
         <span className={`ml-auto text-[0.55rem] font-pixel tracking-widest uppercase ${roleColor}`}>
-          {roleLabel}
+          {shortLabel}
         </span>
       </div>
 
@@ -120,7 +124,7 @@ function DashboardShell() {
             </span>
           </Link>
           <span className={`ml-auto text-[0.55rem] font-pixel tracking-widest uppercase hidden md:inline ${roleColor}`}>
-            {roleLabel}
+            {shortLabel}
           </span>
           <button
             type="button"

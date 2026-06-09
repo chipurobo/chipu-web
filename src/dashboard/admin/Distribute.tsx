@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { supabase } from '../../lib/supabase';
 import type { Order, Product, School } from '../../lib/database.types';
 import { Send, PlayCircle, Wrench, Truck, Plus, ChevronDown, Inbox, PackageCheck, CheckCircle2 } from 'lucide-react';
+import { notifyConsumableAssignment } from '../../lib/orderEmails';
 
 interface AssignmentRow extends Order {
   products: Pick<Product, 'id' | 'name' | 'sku' | 'is_durable'> | null;
@@ -92,15 +93,31 @@ export function AdminDistribute() {
     setSubmitting(false);
     if (error) {
       setErr(error.message);
-    } else {
-      const schoolName  = schools?.find((s) => s.id === schoolId)?.name ?? 'school';
-      const productName = products?.find((p) => p.id === productId)?.name ?? 'product';
-      setSuccess(`Queued ${quantity} × ${productName} for ${schoolName}. It's in the Accepted lane.`);
-      setQuantity(1);
-      setNotes('');
-      setFormOpen(false);
-      void loadOrders();
+      return;
     }
+
+    const recipient = schools?.find((s) => s.id === schoolId);
+    const product   = products?.find((p) => p.id === productId);
+    const schoolName  = recipient?.name ?? 'school';
+    const productName = product?.name ?? 'product';
+    setSuccess(`Queued ${quantity} × ${productName} for ${schoolName}. It's in the Accepted lane.`);
+
+    // Notify the recipient school. Fire-and-forget — the UI doesn't wait.
+    if (recipient && product) {
+      void notifyConsumableAssignment({
+        productName: product.name,
+        productSku:  product.sku ?? null,
+        quantity,
+        schoolName:  recipient.name,
+        schoolEmail: recipient.contact_email,
+        notes:       notes.trim() || null,
+      });
+    }
+
+    setQuantity(1);
+    setNotes('');
+    setFormOpen(false);
+    void loadOrders();
   };
 
   // Pipeline mutations
