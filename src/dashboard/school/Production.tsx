@@ -90,6 +90,14 @@ export function SchoolProduction() {
     else void load();
   };
 
+  const cancel = async (id: string) => {
+    if (!window.confirm('Cancel this order? The placer will see it as cancelled. Any units you fabricated for it stay on record but the order disappears from your pipeline.')) return;
+    setErr(null);
+    const { error } = await supabase.from('orders').update({ status: 'cancelled' }).eq('id', id);
+    if (error) setErr(error.message);
+    else void load();
+  };
+
   const stats = [
     { key: 'inbox',         label: 'Inbox',         count: inbox?.length        ?? 0, accent: 'bg-amber-500'   },
     { key: 'accepted',      label: 'Accepted',      count: toStart?.length      ?? 0, accent: 'bg-teal-500'    },
@@ -146,6 +154,7 @@ export function SchoolProduction() {
               actionIcon={PlayCircle}
               actionStyle="primary"
               onAction={() => setStatus(o.id, 'accepted', 'accepted_at')}
+              onCancel={() => cancel(o.id)}
             />
           )}
         </Column>
@@ -167,6 +176,7 @@ export function SchoolProduction() {
               actionIcon={Wrench}
               actionStyle="primary"
               onAction={() => setStatus(o.id, 'in_production')}
+              onCancel={() => cancel(o.id)}
             />
           )}
         </Column>
@@ -209,7 +219,13 @@ export function SchoolProduction() {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {inProduction.map((o) => (
-              <InProductionCard key={o.id} order={o} onShip={() => ship(o.id)} onChanged={load} />
+              <InProductionCard
+                key={o.id}
+                order={o}
+                onShip={() => ship(o.id)}
+                onCancel={() => cancel(o.id)}
+                onChanged={load}
+              />
             ))}
           </div>
         )}
@@ -277,7 +293,7 @@ function Column({
 // -----------------------------------------------------------------
 
 function SimpleTile({
-  order, tint, actionLabel, actionIcon: ActionIcon, actionStyle, onAction,
+  order, tint, actionLabel, actionIcon: ActionIcon, actionStyle, onAction, onCancel,
 }: {
   order: ProdOrder;
   tint: string;
@@ -285,6 +301,7 @@ function SimpleTile({
   actionIcon: typeof Inbox;
   actionStyle: 'primary' | 'secondary';
   onAction: () => void;
+  onCancel?: () => void;
 }) {
   return (
     <div className={`rounded-md border border-warm-200 ${tint} p-3`}>
@@ -315,6 +332,17 @@ function SimpleTile({
         <ActionIcon className="h-3.5 w-3.5 mr-1.5" />
         {actionLabel}
       </button>
+      {onCancel && (
+        <div className="mt-2 text-center">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="text-[0.7rem] text-gray-500 hover:text-red-700 hover:underline"
+          >
+            Cancel order
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -350,9 +378,9 @@ function NoteCallout({ children }: { children: React.ReactNode }) {
 // -----------------------------------------------------------------
 
 function InProductionCard({
-  order, onShip, onChanged,
+  order, onShip, onCancel, onChanged,
 }: {
-  order: ProdOrder; onShip: () => void; onChanged: () => void;
+  order: ProdOrder; onShip: () => void; onCancel: () => void; onChanged: () => void;
 }) {
   const isDurable = !!order.products?.is_durable;
   const fabricated = order.units.length;
@@ -467,6 +495,16 @@ function InProductionCard({
         )}
 
         {order.notes && <NoteCallout>{order.notes}</NoteCallout>}
+
+        <div className="mt-3 text-right">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="text-xs text-gray-500 hover:text-red-700 hover:underline"
+          >
+            Cancel order
+          </button>
+        </div>
       </div>
     </div>
   );
