@@ -12,6 +12,24 @@ dist
 dist-ssr
 *.local
 
+# Vite drops these next to vite.config.ts whenever it loads the TS config —
+# transient build artefacts, never commit them.
+vite.config.ts.timestamp-*
+vite.config.js.timestamp-*
+
+# Tooling / vendor folders that don't belong in the repo
+.bolt/
+.husky/
+.vercel/
+
+# Supabase backend — kept local, managed via the Supabase CLI on your
+# machine. Migrations, edge functions, config and seed data all stay
+# out of the public repo.
+supabase/
+
+# Env example template — keep local-only too
+.env.example
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
