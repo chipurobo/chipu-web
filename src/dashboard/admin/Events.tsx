@@ -124,6 +124,7 @@ export function AdminEvents() {
 
       {creating && schools && (
         <NewEventForm
+          allSchools={schools}
           onClose={() => setCreating(false)}
           onCreated={() => { setCreating(false); void load(); }}
         />
@@ -398,8 +399,9 @@ const TYPE_OPTIONS: { value: EventType; label: string }[] = [
 ];
 
 function NewEventForm({
-  onClose, onCreated,
+  allSchools, onClose, onCreated,
 }: {
+  allSchools: School[];
   onClose: () => void;
   onCreated: () => void;
 }) {
@@ -410,29 +412,65 @@ function NewEventForm({
   const [endAt,       setEndAt]       = useState('');
   const [location,    setLocation]    = useState('');
   const [url,         setUrl]         = useState('');
+  const [selectedSchools, setSelectedSchools] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
   const needsLocation = type === 'outreach' || type === 'bootcamp_physical';
   const needsUrl      = type === 'bootcamp_webinar';
 
+  const toggleSchool = (id: string) => {
+    setSelectedSchools((cur) => {
+      const next = new Set(cur);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !startAt) return;
     setSaving(true);
     setErr(null);
-    const { error } = await supabase.from('events').insert({
-      title:       title.trim(),
-      description: description.trim() || null,
-      event_type:  type,
-      start_at:    new Date(startAt).toISOString(),
-      end_at:      endAt ? new Date(endAt).toISOString() : null,
-      location:    needsLocation ? (location.trim() || null) : null,
-      url:         needsUrl      ? (url.trim()      || null) : null,
-    });
+
+    // 1. Insert the event and grab its id.
+    const { data: created, error } = await supabase
+      .from('events')
+      .insert({
+        title:       title.trim(),
+        description: description.trim() || null,
+        event_type:  type,
+        start_at:    new Date(startAt).toISOString(),
+        end_at:      endAt ? new Date(endAt).toISOString() : null,
+        location:    needsLocation ? (location.trim() || null) : null,
+        url:         needsUrl      ? (url.trim()      || null) : null,
+      })
+      .select('id')
+      .single();
+
+    if (error || !created) {
+      setSaving(false);
+      setErr(error?.message ?? 'Failed to create event.');
+      return;
+    }
+
+    // 2. Attach the selected schools in one bulk insert.
+    if (selectedSchools.size > 0) {
+      const rows = Array.from(selectedSchools).map((school_id) => ({
+        event_id:  created.id,
+        school_id,
+      }));
+      const { error: aErr } = await supabase.from('event_schools').insert(rows);
+      if (aErr) {
+        setSaving(false);
+        setErr(`Event created but attaching schools failed: ${aErr.message}`);
+        return;
+      }
+    }
+
     setSaving(false);
-    if (error) setErr(error.message);
-    else onCreated();
+    onCreated();
   };
 
   return (
@@ -513,6 +551,65 @@ function NewEventForm({
           />
         </div>
 
+        {/* Attach schools right here — no two-step dance */}
+        <div className="sm:col-span-2 pt-2 border-t border-warm-200">
+          <div className="flex items-center justify-between gap-3 flex-wrap mb-2">
+            <div>
+              <label className="field-label !mb-0">Attach schools</label>
+              <p className="text-xs text-gray-500">
+                Pick everyone coming. You can mark them attended after the event happens.
+              </p>
+            </div>
+            {allSchools.length > 0 && (
+              <div className="flex items-center gap-2 text-xs">
+                <span className="text-gray-500">{selectedSchools.size} selected</span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedSchools(new Set(allSchools.map((s) => s.id)))}
+                  className="text-teal-700 hover:underline"
+                >
+                  Select all
+                </button>
+                <span className="text-gray-300">·</span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedSchools(new Set())}
+                  className="text-gray-500 hover:text-gray-900"
+                >
+                  Clear
+                </button>
+              </div>
+            )}
+          </div>
+          {allSchools.length === 0 ? (
+            <p className="text-sm text-gray-500 italic">No schools registered yet.</p>
+          ) : (
+            <div className="border border-warm-200 rounded-md max-h-48 overflow-y-auto bg-warm-50/50">
+              {allSchools.map((s) => {
+                const checked = selectedSchools.has(s.id);
+                return (
+                  <label
+                    key={s.id}
+                    className={`flex items-center gap-2 px-3 py-2 text-sm cursor-pointer border-b border-warm-200 last:border-b-0 ${
+                      checked ? 'bg-teal-50/60' : 'hover:bg-warm-100/60'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => toggleSchool(s.id)}
+                    />
+                    <span className="flex-1 truncate">
+                      <span className="font-medium text-gray-900">{s.name}</span>
+                      {s.county && <span className="text-xs text-gray-500"> · {s.county}</span>}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
         {err && (
           <div className="sm:col-span-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
             {err}
@@ -522,7 +619,11 @@ function NewEventForm({
         <div className="sm:col-span-2 flex justify-end gap-2 pt-2 border-t border-warm-200">
           <button type="button" onClick={onClose} className="btn-secondary">Cancel</button>
           <button type="submit" className="btn-primary" disabled={saving || !title.trim() || !startAt}>
-            {saving ? 'Saving…' : 'Create event'}
+            {saving
+              ? 'Saving…'
+              : selectedSchools.size > 0
+                ? `Create event & attach ${selectedSchools.size} school${selectedSchools.size === 1 ? '' : 's'}`
+                : 'Create event'}
           </button>
         </div>
       </form>
