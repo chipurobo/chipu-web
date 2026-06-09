@@ -109,87 +109,190 @@ export function Certificate() {
       {/* The certificate itself */}
       <article
         id="cert-print-area"
-        className="mx-auto bg-white shadow-md print:shadow-none relative"
+        className="mx-auto bg-white shadow-md print:shadow-none relative overflow-hidden"
         style={{
-          width:  'min(100%, 794px)',     // ≈ A4 width @ 96dpi
-          aspectRatio: '297 / 210',        // A4 landscape
-          padding: '4rem 4.5rem',
-          border: `2px solid ${hero}`,
+          width:  'min(100%, 1123px)',                // ≈ A4 landscape width @ 96dpi
+          aspectRatio: '297 / 210',                    // A4 landscape
+          padding: '3.25rem 4rem',
+          // Outer ornamental double-frame
+          outline: `1px solid ${hero}`,
+          outlineOffset: '-14px',
+          border: `8px solid ${hero}`,
+          background: `
+            radial-gradient(circle at top right, ${hero}0d, transparent 40%),
+            radial-gradient(circle at bottom left, ${hero}0d, transparent 40%),
+            #fffdf8
+          `,
         }}
       >
-        {/* Decorative top ribbon */}
-        <div
-          aria-hidden
-          className="absolute top-0 left-0 h-2 w-full"
-          style={{ background: hero }}
-        />
-        {/* Corner accents */}
-        <div aria-hidden className="absolute top-6 right-6 opacity-70">
-          <Award className="h-10 w-10" style={{ color: hero }} strokeWidth={1.2} />
-        </div>
+        {/* Corner ornaments — small SVG flourishes in each corner */}
+        <CornerOrnament position="tl" color={hero} />
+        <CornerOrnament position="tr" color={hero} />
+        <CornerOrnament position="bl" color={hero} />
+        <CornerOrnament position="br" color={hero} />
 
-        <header className="text-center mb-8">
-          <p className="font-pixel text-[0.6rem] tracking-widest uppercase" style={{ color: hero }}>
+        {/* Top medallion */}
+        <div className="text-center relative" style={{ marginBottom: '1.5rem' }}>
+          <div
+            className="inline-flex items-center justify-center rounded-full shadow-sm mb-4"
+            style={{
+              width: 64, height: 64,
+              background: `linear-gradient(135deg, ${hero} 0%, ${hero}cc 100%)`,
+              border: `3px solid #fff`,
+              boxShadow: `0 0 0 2px ${hero}`,
+            }}
+          >
+            <Award className="h-8 w-8 text-white" strokeWidth={1.6} />
+          </div>
+          <p
+            className="font-pixel text-[0.7rem] tracking-[0.4em] uppercase"
+            style={{ color: hero }}
+          >
             ChipuRobo
           </p>
-          <p className="text-xs uppercase tracking-widest text-gray-500 mt-2">
+          <p
+            className="font-serif text-xl mt-2"
+            style={{ color: '#1f2937', letterSpacing: '0.08em' }}
+          >
             Certificate of {iss.templates.audience === 'teacher' ? 'Recognition' : 'Achievement'}
           </p>
-        </header>
+          <div
+            className="mx-auto mt-3"
+            style={{
+              width: 80, height: 2,
+              background: `linear-gradient(90deg, transparent, ${hero}, transparent)`,
+            }}
+          />
+        </div>
 
-        <section className="text-center">
-          <p className="text-sm text-gray-600 mb-4">This is to certify that</p>
+        <section className="text-center" style={{ paddingTop: '0.5rem' }}>
+          <p className="text-sm text-gray-500 italic mb-3">This is to certify that</p>
 
           <h1
-            className="font-serif text-3xl sm:text-4xl text-gray-900 mb-4"
-            style={{ borderBottom: `1px dashed ${hero}66`, paddingBottom: '0.5rem', display: 'inline-block' }}
+            className="font-serif text-gray-900"
+            style={{
+              fontSize: '3.5rem',
+              lineHeight: 1.1,
+              letterSpacing: '0.01em',
+              marginBottom: '0.75rem',
+            }}
           >
             {recipientName}
           </h1>
 
-          {iss.student?.grade && (
-            <p className="text-sm text-gray-600 mb-4">{iss.student.grade}</p>
-          )}
-          {iss.schools?.name && (
-            <p className="text-sm text-gray-600 mb-6">
-              {iss.schools.name}
-              {iss.schools.county && <> · {iss.schools.county}</>}
+          <div
+            className="mx-auto"
+            style={{
+              width: 240, height: 1,
+              background: `linear-gradient(90deg, transparent, ${hero}88, transparent)`,
+              marginBottom: '1.25rem',
+            }}
+          />
+
+          {(iss.student?.grade || iss.schools?.name) && (
+            <p className="text-sm text-gray-600 mb-5">
+              {iss.student?.grade && <span>{iss.student.grade}</span>}
+              {iss.student?.grade && iss.schools?.name && <span> · </span>}
+              {iss.schools?.name}
+              {iss.schools?.county && <span> · {iss.schools.county}</span>}
             </p>
           )}
 
           <p className="text-sm text-gray-700 mb-2">has successfully completed</p>
 
-          <h2 className="text-xl sm:text-2xl text-gray-900 my-2">{iss.templates.title}</h2>
+          <h2
+            className="font-serif text-gray-900"
+            style={{
+              fontSize: '1.75rem',
+              fontWeight: 600,
+              margin: '0.5rem 0',
+            }}
+          >
+            {iss.templates.title}
+          </h2>
 
           {iss.templates.programme && (
-            <p className="text-xs uppercase tracking-widest text-gray-500 mb-2">
+            <p
+              className="text-[0.7rem] uppercase tracking-[0.3em] mb-3"
+              style={{ color: hero }}
+            >
               {iss.templates.programme}
             </p>
           )}
-          {iss.templates.duration_text && (
-            <p className="text-sm text-gray-600 mb-2">{iss.templates.duration_text}</p>
-          )}
-          {iss.templates.criteria_text && (
-            <p className="text-sm text-gray-600 max-w-xl mx-auto italic">{iss.templates.criteria_text}</p>
+
+          {(iss.templates.duration_text || iss.templates.criteria_text) && (
+            <div className="max-w-xl mx-auto">
+              {iss.templates.duration_text && (
+                <p className="text-sm text-gray-600 mb-2">{iss.templates.duration_text}</p>
+              )}
+              {iss.templates.criteria_text && (
+                <p className="text-xs text-gray-500 italic leading-relaxed">
+                  {iss.templates.criteria_text}
+                </p>
+              )}
+            </div>
           )}
         </section>
 
-        {/* Footer — date + signature line */}
-        <footer className="absolute left-12 right-12 bottom-8 flex items-end justify-between gap-6">
+        {/* Footer — date + signature line + decorative seal */}
+        <footer
+          className="absolute left-16 right-16 flex items-end justify-between gap-6"
+          style={{ bottom: '3.25rem' }}
+        >
           <div>
-            <div className="text-xs uppercase tracking-widest text-gray-500">Issued on</div>
-            <div className="text-sm font-medium text-gray-900 mt-1">
+            <div
+              className="text-[0.65rem] uppercase tracking-[0.25em]"
+              style={{ color: hero }}
+            >
+              Issued on
+            </div>
+            <div className="text-sm font-medium text-gray-900 mt-1 font-serif">
               {new Date(iss.issued_at).toLocaleDateString(undefined, {
                 year: 'numeric', month: 'long', day: 'numeric',
               })}
             </div>
           </div>
+
+          {/* Decorative seal */}
+          <div
+            className="flex items-center justify-center rounded-full"
+            style={{
+              width: 72, height: 72,
+              border: `2px dashed ${hero}80`,
+              opacity: 0.85,
+            }}
+          >
+            <div
+              className="flex items-center justify-center rounded-full"
+              style={{
+                width: 56, height: 56,
+                background: `${hero}15`,
+                border: `1px solid ${hero}`,
+              }}
+            >
+              <span
+                className="font-pixel text-[0.55rem] tracking-widest"
+                style={{ color: hero }}
+              >
+                CR
+              </span>
+            </div>
+          </div>
+
           <div className="text-right">
-            <div className="border-t border-gray-400 pt-1 text-xs uppercase tracking-widest text-gray-500"
-                 style={{ minWidth: '180px' }}>
+            <div
+              className="pt-1 text-[0.65rem] uppercase tracking-[0.25em]"
+              style={{
+                minWidth: 220,
+                borderTop: `1px solid ${hero}80`,
+                color: hero,
+              }}
+            >
               ChipuRobo
             </div>
-            <div className="text-[0.7rem] text-gray-400 mt-0.5">Authorised signatory</div>
+            <div className="text-[0.65rem] text-gray-500 mt-0.5 italic">
+              Authorised signatory
+            </div>
           </div>
         </footer>
       </article>
@@ -212,5 +315,54 @@ function BackLink() {
       <ArrowLeft className="h-4 w-4 mr-1.5" />
       Back to dashboard
     </Link>
+  );
+}
+
+// Decorative SVG flourish for each corner of the certificate.
+// Position styling places it in the right corner; the SVG renders
+// the same artwork rotated based on position.
+function CornerOrnament({
+  position, color,
+}: {
+  position: 'tl' | 'tr' | 'bl' | 'br';
+  color: string;
+}) {
+  const pos: React.CSSProperties = {
+    position: 'absolute',
+    width: 70, height: 70,
+    pointerEvents: 'none',
+  };
+  if (position === 'tl') { pos.top = 14;    pos.left = 14;  }
+  if (position === 'tr') { pos.top = 14;    pos.right = 14; pos.transform = 'scaleX(-1)'; }
+  if (position === 'bl') { pos.bottom = 14; pos.left = 14;  pos.transform = 'scaleY(-1)'; }
+  if (position === 'br') { pos.bottom = 14; pos.right = 14; pos.transform = 'scale(-1, -1)'; }
+
+  return (
+    <svg style={pos} viewBox="0 0 64 64" aria-hidden>
+      {/* L-shaped corner frame with arc + dots */}
+      <path
+        d="M4 4 L4 30 M4 4 L30 4"
+        stroke={color}
+        strokeWidth={1.5}
+        fill="none"
+      />
+      <path
+        d="M8 8 L8 22 M8 8 L22 8"
+        stroke={color}
+        strokeWidth={0.8}
+        fill="none"
+        opacity={0.6}
+      />
+      <circle cx={4} cy={4} r={2.5} fill={color} />
+      <circle cx={30} cy={4} r={1.5} fill={color} opacity={0.7} />
+      <circle cx={4} cy={30} r={1.5} fill={color} opacity={0.7} />
+      <path
+        d="M16 4 Q 16 16 4 16"
+        stroke={color}
+        strokeWidth={0.8}
+        fill="none"
+        opacity={0.5}
+      />
+    </svg>
   );
 }
