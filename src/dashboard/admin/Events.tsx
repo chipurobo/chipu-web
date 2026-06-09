@@ -288,9 +288,10 @@ function EventCard({
           </span>
         </div>
 
-        {/* Attached schools list */}
+        {/* Attached schools list — scrolls horizontally on phones so the
+            Actions column is reachable instead of clipped */}
         {event.event_schools.length > 0 && (
-          <div className="border border-warm-200 rounded-md overflow-hidden mb-3">
+          <div className="border border-warm-200 rounded-md overflow-x-auto mb-3">
             <table className="data-table">
               <thead>
                 <tr>
@@ -302,10 +303,10 @@ function EventCard({
               <tbody>
                 {event.event_schools.map((es) => (
                   <tr key={es.school_id}>
-                    <td className="text-sm font-medium text-gray-900">
+                    <td className="text-sm font-medium text-gray-900 whitespace-nowrap">
                       {es.schools?.name ?? '—'}
                     </td>
-                    <td>
+                    <td className="whitespace-nowrap">
                       {es.attended_at ? (
                         <span className="inline-flex items-center gap-1 text-xs text-emerald-700">
                           <CheckCircle2 className="h-3.5 w-3.5" />

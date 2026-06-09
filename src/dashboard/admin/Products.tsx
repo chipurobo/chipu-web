@@ -161,7 +161,7 @@ export function AdminProducts() {
               {filtered?.map((p) => (
                 <tr key={p.id} className={p.is_active ? '' : 'opacity-60'}>
                   <td className="font-mono text-xs">{p.sku ?? '—'}</td>
-                  <td>
+                  <td className="whitespace-normal">
                     <div className="font-medium text-gray-900">{p.name}</div>
                     {p.description && (
                       <div className="text-xs text-gray-500 line-clamp-2 max-w-md">

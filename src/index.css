@@ -834,6 +834,21 @@ h3.heading-display { font-size: clamp(1rem, 2vw, 1.5rem) !important; line-height
     font-size: 0.8125rem !important;
   }
 
+  /* On phones, every data-table cell stays on a single line by default.
+     Tables that live inside an `.overflow-x-auto` wrapper (every one of
+     them does — see Schools, Orders, Stock, Distribute, Events cards,
+     etc.) will now scroll horizontally instead of crushing columns into
+     a clipped mess. Long-form copy (descriptions, inline forms) should
+     opt back into wrapping with `whitespace-normal` on the td.        */
+  .admin-zone .data-table thead th,
+  .admin-zone .data-table tbody td {
+    white-space: nowrap;
+  }
+  .admin-zone .data-table td.whitespace-normal,
+  .admin-zone .data-table th.whitespace-normal {
+    white-space: normal !important;
+  }
+
   /* Buttons: slightly smaller padding, no font shrink */
   .admin-zone .btn-primary,
   .admin-zone .btn-secondary,
@@ -862,3 +877,10 @@ h3.heading-display { font-size: clamp(1rem, 2vw, 1.5rem) !important; line-height
 /* Universal table overflow safety — any table inside a `.card.overflow-x-auto`
    container should never grow taller than the viewport */
 .admin-zone .card.overflow-x-auto { max-width: 100%; }
+
+/* Any descendant element of a card that has been opted into horizontal
+   scrolling (the wrapper carries `.overflow-x-auto`) gets a touch-friendly
+   inertia scroll on iOS. */
+.admin-zone .overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+}

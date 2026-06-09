@@ -198,7 +198,7 @@ function TemplatesPanel({
             )}
             {templates?.map((t) => (
               <tr key={t.id} className={t.is_active ? '' : 'opacity-60'}>
-                <td>
+                <td className="whitespace-normal">
                   <div className="font-medium text-gray-900">{t.title}</div>
                   {t.description && (
                     <div className="text-xs text-gray-500 line-clamp-2 max-w-md">{t.description}</div>
