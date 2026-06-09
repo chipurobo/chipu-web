@@ -36,6 +36,18 @@ function DashboardShell() {
   const counts: OrderCounts = useOrderRealtime();
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  // Human-readable role label used as the badge in the brand area
+  // (sidebar + mobile top bar). Distinguishes ChipuRobo admin from
+  // school-side users so it's always obvious whose view you're looking at.
+  const roleLabel: string =
+    isAdmin       ? 'CHIPUROBO ADMIN' :
+    isMakerSpace  ? 'MAKER SPACE'    :
+                    'SCHOOL LEAD';
+  const roleColor: string =
+    isAdmin       ? 'text-terracotta-600' :
+    isMakerSpace  ? 'text-indigo-600'     :
+                    'text-teal-600';
+
   // Auto-close the drawer on route change.
   useEffect(() => { setMobileOpen(false); }, [location.pathname]);
 
@@ -73,8 +85,8 @@ function DashboardShell() {
             ChipuRobo<span className="text-teal-500">_</span>
           </span>
         </Link>
-        <span className="ml-auto text-[0.55rem] font-pixel tracking-widest text-terracotta-600 uppercase">
-          {isAdmin ? 'ADMIN' : (isMakerSpace ? 'MAKER' : 'SCHOOL')}
+        <span className={`ml-auto text-[0.55rem] font-pixel tracking-widest uppercase ${roleColor}`}>
+          {roleLabel}
         </span>
       </div>
 
@@ -107,8 +119,8 @@ function DashboardShell() {
               ChipuRobo<span className="text-teal-500">_</span>
             </span>
           </Link>
-          <span className="ml-auto text-[0.55rem] font-pixel tracking-widest text-terracotta-600 uppercase hidden md:inline">
-            ADMIN
+          <span className={`ml-auto text-[0.55rem] font-pixel tracking-widest uppercase hidden md:inline ${roleColor}`}>
+            {roleLabel}
           </span>
           <button
             type="button"
@@ -169,6 +181,13 @@ function DashboardShell() {
           <p className="text-xs text-gray-500 truncate">
             {school?.name ?? (isAdmin ? 'ChipuRobo admin' : '—')}
           </p>
+          <span className={`mt-2 inline-block px-2 py-0.5 rounded-full text-[0.65rem] font-medium uppercase tracking-wide ${
+            isAdmin       ? 'bg-terracotta-100 text-terracotta-700' :
+            isMakerSpace  ? 'bg-indigo-100 text-indigo-700' :
+                            'bg-teal-100 text-teal-700'
+          }`}>
+            {roleLabel}
+          </span>
           <button
             onClick={handleSignOut}
             className="mt-3 inline-flex items-center text-xs text-gray-500 hover:text-gray-900 transition-colors"
