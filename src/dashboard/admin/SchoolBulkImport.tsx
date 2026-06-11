@@ -4,6 +4,7 @@ import { KENYA_COUNTIES } from '../../lib/counties';
 import { parseSheet, parseBoolish, downloadCsv, downloadXlsx, csvCell, type SheetRow } from '../../lib/parseSheet';
 import type { SchoolType } from '../../lib/database.types';
 import { Upload, FileSpreadsheet, Download, X, CheckCircle2, AlertCircle } from 'lucide-react';
+import { useDialog } from '../../lib/useDialog';
 
 // =============================================================
 // Bulk school import (admin-only)
@@ -33,6 +34,8 @@ export function SchoolBulkImport({ onClose, onAllDone }: { onClose: () => void; 
   const [err, setErr] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
   const [done, setDone] = useState(false);
+
+  const dialogRef = useDialog<HTMLDivElement>({ open: true, onClose, trapFocus: false });
 
   const onFile = async (e: ChangeEvent<HTMLInputElement>) => {
     setErr(null); setDone(false);
@@ -156,11 +159,11 @@ export function SchoolBulkImport({ onClose, onAllDone }: { onClose: () => void; 
   const errCount = rows?.filter((r) => r.__status === 'error').length ?? 0;
 
   return (
-    <div className="card p-5">
+    <div ref={dialogRef} role="region" aria-labelledby="school-bulk-import-heading" className="card p-5">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="m-0">Bulk import schools</h2>
-        <button onClick={onClose} className="p-1 text-gray-500 hover:text-gray-900">
-          <X className="h-4 w-4" />
+        <h2 className="m-0" id="school-bulk-import-heading">Bulk import schools</h2>
+        <button onClick={onClose} className="p-1 text-gray-500 hover:text-gray-900" aria-label="Close bulk import">
+          <X className="h-4 w-4" aria-hidden="true" />
         </button>
       </div>
 
@@ -177,13 +180,13 @@ export function SchoolBulkImport({ onClose, onAllDone }: { onClose: () => void; 
           generated for you.
         </p>
         <button onClick={downloadTemplate} type="button" className="btn-secondary !text-xs whitespace-nowrap">
-          <Download className="h-3.5 w-3.5 mr-1.5" />
+          <Download className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />
           Template .xlsx
         </button>
       </div>
 
       <label className="flex items-center gap-3 cursor-pointer card p-4 border-dashed border-2 border-warm-200 hover:bg-warm-50 mb-4">
-        <Upload className="h-5 w-5 text-teal-700 flex-shrink-0" />
+        <Upload className="h-5 w-5 text-teal-700 flex-shrink-0" aria-hidden="true" />
         <div className="flex-1">
           <div className="font-medium text-sm">
             {fileName ? fileName : 'Choose a CSV or .xlsx file'}
@@ -200,7 +203,7 @@ export function SchoolBulkImport({ onClose, onAllDone }: { onClose: () => void; 
       </label>
 
       {err && (
-        <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2 mb-3">
+        <div role="alert" className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2 mb-3">
           {err}
         </div>
       )}
@@ -208,14 +211,14 @@ export function SchoolBulkImport({ onClose, onAllDone }: { onClose: () => void; 
       {rows && rows.length > 0 && (
         <>
           <div className="card overflow-x-auto max-h-80 overflow-y-auto mb-3">
-            <table className="data-table">
+            <table className="data-table" aria-label="Bulk import preview">
               <thead className="sticky top-0 bg-white">
                 <tr>
-                  <th>School</th>
-                  <th>Teacher</th>
-                  <th>County</th>
-                  <th>Type</th>
-                  <th>Status</th>
+                  <th scope="col">School</th>
+                  <th scope="col">Teacher</th>
+                  <th scope="col">County</th>
+                  <th scope="col">Type</th>
+                  <th scope="col">Status</th>
                 </tr>
               </thead>
               <tbody>
@@ -228,12 +231,12 @@ export function SchoolBulkImport({ onClose, onAllDone }: { onClose: () => void; 
                     <td>
                       {r.__status === 'ok' && (
                         <span className="inline-flex items-center text-xs text-emerald-700">
-                          <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> created
+                          <CheckCircle2 className="h-3.5 w-3.5 mr-1" aria-hidden="true" /> created
                         </span>
                       )}
                       {r.__status === 'error' && (
                         <span className="inline-flex items-center text-xs text-red-700" title={r.__message}>
-                          <AlertCircle className="h-3.5 w-3.5 mr-1" /> {r.__message?.slice(0, 50)}
+                          <AlertCircle className="h-3.5 w-3.5 mr-1" aria-hidden="true" /> {r.__message?.slice(0, 50)}
                         </span>
                       )}
                       {r.__status === 'pending' && (
@@ -260,7 +263,7 @@ export function SchoolBulkImport({ onClose, onAllDone }: { onClose: () => void; 
             <div className="flex gap-2 flex-wrap">
               {done && okCount > 0 && (
                 <button onClick={downloadResults} className="btn-secondary">
-                  <Download className="h-4 w-4 mr-1.5" />
+                  <Download className="h-4 w-4 mr-1.5" aria-hidden="true" />
                   Download credentials CSV
                 </button>
               )}
@@ -269,7 +272,7 @@ export function SchoolBulkImport({ onClose, onAllDone }: { onClose: () => void; 
                 className="btn-primary"
                 disabled={running || done}
               >
-                <FileSpreadsheet className="h-4 w-4 mr-1.5" />
+                <FileSpreadsheet className="h-4 w-4 mr-1.5" aria-hidden="true" />
                 {running ? 'Importing…' : done ? 'Done' : `Import ${rows.length} school(s)`}
               </button>
             </div>

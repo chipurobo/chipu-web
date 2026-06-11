@@ -1,8 +1,12 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
 import type { Order, Product, School } from '../../lib/database.types';
 import { Send, PlayCircle, Wrench, Truck, Plus, ChevronDown, Inbox, PackageCheck, CheckCircle2 } from 'lucide-react';
 import { notifyConsumableAssignment } from '../../lib/orderEmails';
+import { useDialog } from '../../lib/useDialog';
+import { Pagination, usePaged } from '../components/Pagination';
+import { SkeletonCards } from '../components/Skeletons';
 
 interface AssignmentRow extends Order {
   products: Pick<Product, 'id' | 'name' | 'sku' | 'is_durable'> | null;
@@ -22,10 +26,8 @@ interface AssignmentRow extends Order {
  * an assignment without leaving the page.
  */
 export function AdminDistribute() {
-  const [schools,   setSchools]   = useState<School[] | null>(null);
-  const [products,  setProducts]  = useState<Product[] | null>(null);
-  const [orders,    setOrders]    = useState<AssignmentRow[] | null>(null);
-  const [err,       setErr]       = useState<string | null>(null);
+  const qc = useQueryClient();
+
   const [success,   setSuccess]   = useState<string | null>(null);
   const [formOpen,  setFormOpen]  = useState(false);
 
@@ -33,114 +35,167 @@ export function AdminDistribute() {
   const [productId, setProductId] = useState('');
   const [quantity,  setQuantity]  = useState<number>(1);
   const [notes,     setNotes]     = useState('');
-  const [submitting, setSubmitting] = useState(false);
 
-  const loadReferenceData = async () => {
-    const [sRes, pRes] = await Promise.all([
-      supabase.from('schools').select('*').order('name'),
-      supabase
+  const assignFormRef = useDialog<HTMLFormElement>({
+    open: formOpen,
+    onClose: () => setFormOpen(false),
+    trapFocus: false,
+  });
+
+  const { data: schools, error: schoolsErr } = useQuery({
+    queryKey: ['schools'],
+    queryFn: async (): Promise<School[]> => {
+      const { data, error } = await supabase
+        .from('schools')
+        .select('*')
+        .order('name');
+      if (error) throw new Error(error.message);
+      return data as School[];
+    },
+  });
+
+  const { data: products, error: productsErr } = useQuery({
+    queryKey: ['products'],
+    queryFn: async (): Promise<Product[]> => {
+      const { data, error } = await supabase
         .from('products')
         .select('*')
-        .eq('is_active', true)
-        .eq('is_durable', false)
-        .order('name'),
-    ]);
-    if (sRes.error) setErr(sRes.error.message);
-    else setSchools(sRes.data as School[]);
-    if (pRes.error) setErr(pRes.error.message);
-    else setProducts(pRes.data as Product[]);
-  };
+        .order('created_at', { ascending: false });
+      if (error) throw new Error(error.message);
+      return data as Product[];
+    },
+    // Pick the same key as Products.tsx so the cache is shared. We filter
+    // client-side to active+consumable below.
+  });
 
-  const loadOrders = async () => {
-    // ChipuRobo-fulfilled = NULL fulfiller. Show every stage that's still
-    // moving plus a slim look at recently-delivered ones.
-    const { data, error } = await supabase
-      .from('orders')
-      .select(`
-        *,
-        products ( id, name, sku, is_durable ),
-        placer:placed_by_school_id ( id, name )
-      `)
-      .is('fulfilled_by_school_id', null)
-      .order('placed_at', { ascending: false })
-      .limit(100);
-    if (error) setErr(error.message);
-    else setOrders(data as unknown as AssignmentRow[]);
-  };
+  // ChipuRobo-fulfilled = NULL fulfiller. Show every stage that's still
+  // moving plus a slim look at recently-delivered ones.
+  const { data: orders, error: ordersErr } = useQuery({
+    queryKey: ['orders', 'admin'],
+    queryFn: async (): Promise<AssignmentRow[]> => {
+      const { data, error } = await supabase
+        .from('orders')
+        .select(`
+          *,
+          products ( id, name, sku, is_durable ),
+          placer:placed_by_school_id ( id, name )
+        `)
+        .is('fulfilled_by_school_id', null)
+        .order('placed_at', { ascending: false })
+        .limit(100);
+      if (error) throw new Error(error.message);
+      return data as unknown as AssignmentRow[];
+    },
+  });
 
-  useEffect(() => {
-    void loadReferenceData();
-    void loadOrders();
-  }, []);
+  // The picker only offers active consumables.
+  const consumableProducts = products?.filter((p) => p.is_active && !p.is_durable) ?? null;
 
   useEffect(() => {
     if (!schoolId  && schools  && schools.length  > 0) setSchoolId(schools[0].id);
-    if (!productId && products && products.length > 0) setProductId(products[0].id);
-  }, [schools, products, schoolId, productId]);
+    if (!productId && consumableProducts && consumableProducts.length > 0) setProductId(consumableProducts[0].id);
+  }, [schools, consumableProducts, schoolId, productId]);
 
-  const onSubmit = async (e: FormEvent) => {
+  const createAssignment = useMutation({
+    mutationFn: async (input: { schoolId: string; productId: string; quantity: number; notes: string }) => {
+      const { error } = await supabase.rpc('create_consumable_assignment', {
+        p_school_id:  input.schoolId,
+        p_product_id: input.productId,
+        p_quantity:   input.quantity,
+        p_notes:      input.notes.trim() || null,
+      });
+      if (error) throw new Error(error.message);
+    },
+    onSuccess: (_data, vars) => {
+      const recipient = schools?.find((s) => s.id === vars.schoolId);
+      const product   = products?.find((p) => p.id === vars.productId);
+      const schoolName  = recipient?.name ?? 'school';
+      const productName = product?.name ?? 'product';
+      setSuccess(`Queued ${vars.quantity} × ${productName} for ${schoolName}. It's in the Accepted lane.`);
+
+      // Notify the recipient school. Fire-and-forget — the UI doesn't wait.
+      if (recipient && product) {
+        void notifyConsumableAssignment({
+          productName: product.name,
+          productSku:  product.sku ?? null,
+          quantity:    vars.quantity,
+          schoolName:  recipient.name,
+          schoolEmail: recipient.contact_email,
+          notes:       vars.notes.trim() || null,
+        });
+      }
+
+      setQuantity(1);
+      setNotes('');
+      setFormOpen(false);
+    },
+    onSettled: (_d, _e, vars) => {
+      void qc.invalidateQueries({ queryKey: ['orders', 'admin'] });
+      if (vars?.schoolId) {
+        void qc.invalidateQueries({ queryKey: ['orders', 'school', vars.schoolId] });
+        void qc.invalidateQueries({ queryKey: ['stock', vars.schoolId] });
+      }
+    },
+  });
+
+  const startProductionMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.rpc('advance_consumable_to_production', { p_order_id: id });
+      if (error) throw new Error(error.message);
+    },
+    onSettled: () => {
+      void qc.invalidateQueries({ queryKey: ['orders', 'admin'] });
+    },
+  });
+
+  const shipMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.rpc('ship_order', { p_order_id: id });
+      if (error) throw new Error(error.message);
+    },
+    onSettled: () => {
+      void qc.invalidateQueries({ queryKey: ['orders', 'admin'] });
+    },
+  });
+
+  const markDeliveredMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.rpc('mark_order_delivered', { p_order_id: id });
+      if (error) throw new Error(error.message);
+    },
+    onSettled: (_d, _e, id) => {
+      void qc.invalidateQueries({ queryKey: ['orders', 'admin'] });
+      // Find the placer to invalidate their stock + orders cache.
+      const placerId = orders?.find((o) => o.id === id)?.placer?.id;
+      if (placerId) {
+        void qc.invalidateQueries({ queryKey: ['orders', 'school', placerId] });
+        void qc.invalidateQueries({ queryKey: ['stock', placerId] });
+      }
+    },
+  });
+
+  const err =
+    schoolsErr?.message
+    ?? productsErr?.message
+    ?? ordersErr?.message
+    ?? createAssignment.error?.message
+    ?? startProductionMutation.error?.message
+    ?? shipMutation.error?.message
+    ?? markDeliveredMutation.error?.message
+    ?? null;
+
+  const submitting = createAssignment.isPending;
+
+  const onSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!schoolId || !productId || quantity < 1) return;
-    setSubmitting(true);
-    setErr(null);
     setSuccess(null);
-    const { error } = await supabase.rpc('create_consumable_assignment', {
-      p_school_id:  schoolId,
-      p_product_id: productId,
-      p_quantity:   quantity,
-      p_notes:      notes.trim() || null,
-    });
-    setSubmitting(false);
-    if (error) {
-      setErr(error.message);
-      return;
-    }
-
-    const recipient = schools?.find((s) => s.id === schoolId);
-    const product   = products?.find((p) => p.id === productId);
-    const schoolName  = recipient?.name ?? 'school';
-    const productName = product?.name ?? 'product';
-    setSuccess(`Queued ${quantity} × ${productName} for ${schoolName}. It's in the Accepted lane.`);
-
-    // Notify the recipient school. Fire-and-forget — the UI doesn't wait.
-    if (recipient && product) {
-      void notifyConsumableAssignment({
-        productName: product.name,
-        productSku:  product.sku ?? null,
-        quantity,
-        schoolName:  recipient.name,
-        schoolEmail: recipient.contact_email,
-        notes:       notes.trim() || null,
-      });
-    }
-
-    setQuantity(1);
-    setNotes('');
-    setFormOpen(false);
-    void loadOrders();
+    createAssignment.mutate({ schoolId, productId, quantity, notes });
   };
 
-  // Pipeline mutations
-  const startProduction = async (id: string) => {
-    setErr(null);
-    const { error } = await supabase.rpc('advance_consumable_to_production', { p_order_id: id });
-    if (error) setErr(error.message);
-    else void loadOrders();
-  };
-
-  const ship = async (id: string) => {
-    setErr(null);
-    const { error } = await supabase.rpc('ship_order', { p_order_id: id });
-    if (error) setErr(error.message);
-    else void loadOrders();
-  };
-
-  const markDelivered = async (id: string) => {
-    setErr(null);
-    const { error } = await supabase.rpc('mark_order_delivered', { p_order_id: id });
-    if (error) setErr(error.message);
-    else void loadOrders();
-  };
+  const startProduction = (id: string) => startProductionMutation.mutate(id);
+  const ship            = (id: string) => shipMutation.mutate(id);
+  const markDelivered   = (id: string) => markDeliveredMutation.mutate(id);
 
   // Buckets
   const accepted     = orders?.filter((o) => o.status === 'accepted')      ?? null;
@@ -181,12 +236,12 @@ export function AdminDistribute() {
       </div>
 
       {err && (
-        <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+        <div role="alert" className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
           {err}
         </div>
       )}
       {success && (
-        <div className="text-sm text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-md px-3 py-2">
+        <div role="status" className="text-sm text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-md px-3 py-2">
           {success}
         </div>
       )}
@@ -198,26 +253,33 @@ export function AdminDistribute() {
           onClick={() => setFormOpen((v) => !v)}
           className="btn-primary w-full sm:w-auto justify-center"
         >
-          <Plus className="h-4 w-4 mr-1.5" />
+          <Plus className="h-4 w-4 mr-1.5" aria-hidden="true" />
           {formOpen ? 'Cancel new assignment' : 'New consumable assignment'}
-          <ChevronDown className={`h-4 w-4 ml-1.5 transition-transform ${formOpen ? 'rotate-180' : ''}`} />
+          <ChevronDown className={`h-4 w-4 ml-1.5 transition-transform ${formOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
         </button>
 
         {formOpen && (
           <>
-            {schools && products ? (
+            {schools && consumableProducts ? (
               schools.length === 0 ? (
                 <div className="card p-5 text-sm text-gray-500 mt-3">No schools yet.</div>
-              ) : products.length === 0 ? (
+              ) : consumableProducts.length === 0 ? (
                 <div className="card p-5 text-sm text-gray-500 mt-3">
                   No consumable products in the catalogue yet.
                 </div>
               ) : (
-                <form onSubmit={onSubmit} className="card p-5 grid sm:grid-cols-2 gap-4 mt-3">
+                <form
+                  ref={assignFormRef}
+                  role="region"
+                  aria-labelledby="assign-more-heading"
+                  onSubmit={onSubmit}
+                  className="card p-5 grid sm:grid-cols-2 gap-4 mt-3"
+                >
+                  <h2 id="assign-more-heading" className="sr-only">New consumable assignment</h2>
                   <div>
-                    <label className="field-label" htmlFor="schoolPick">Recipient school</label>
+                    <label className="field-label" htmlFor="assign-school">Recipient school</label>
                     <select
-                      id="schoolPick"
+                      id="assign-school"
                       className="field-select"
                       value={schoolId}
                       onChange={(e) => setSchoolId(e.target.value)}
@@ -231,14 +293,14 @@ export function AdminDistribute() {
                   </div>
 
                   <div>
-                    <label className="field-label" htmlFor="prodPick">Consumable product</label>
+                    <label className="field-label" htmlFor="assign-product">Consumable product</label>
                     <select
-                      id="prodPick"
+                      id="assign-product"
                       className="field-select"
                       value={productId}
                       onChange={(e) => setProductId(e.target.value)}
                     >
-                      {products.map((p) => (
+                      {consumableProducts.map((p) => (
                         <option key={p.id} value={p.id}>
                           {p.name}{p.sku ? ` · ${p.sku}` : ''}
                         </option>
@@ -247,12 +309,13 @@ export function AdminDistribute() {
                   </div>
 
                   <div>
-                    <label className="field-label" htmlFor="qty">Quantity</label>
+                    <label className="field-label" htmlFor="assign-qty">Quantity<span aria-hidden="true" className="text-red-600 ml-0.5">*</span></label>
                     <input
-                      id="qty"
+                      id="assign-qty"
                       type="number"
                       min={1}
                       required
+                      aria-required="true"
                       className="field-input max-w-[160px]"
                       value={quantity || ''}
                       onChange={(e) => setQuantity(parseInt(e.target.value || '0', 10))}
@@ -260,9 +323,9 @@ export function AdminDistribute() {
                   </div>
 
                   <div>
-                    <label className="field-label" htmlFor="notes">Notes (optional)</label>
+                    <label className="field-label" htmlFor="assign-notes">Notes (optional)</label>
                     <input
-                      id="notes"
+                      id="assign-notes"
                       type="text"
                       className="field-input"
                       placeholder="e.g. Q2 termly assignment"
@@ -279,7 +342,7 @@ export function AdminDistribute() {
                 </form>
               )
             ) : (
-              <div className="card p-5 text-sm text-gray-500 mt-3">Loading…</div>
+              <div role="status" className="card p-5 text-sm text-gray-500 mt-3">Loading…</div>
             )}
           </>
         )}
@@ -331,14 +394,14 @@ export function AdminDistribute() {
       {/* Recently delivered — slim card list, not a Kanban column */}
       <section>
         <div className="flex items-center gap-2 mb-3">
-          <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+          <CheckCircle2 className="h-4 w-4 text-emerald-600" aria-hidden="true" />
           <h2 className="m-0">Recently delivered</h2>
           <span className="text-xs text-gray-500">{delivered?.length ?? 0}</span>
         </div>
 
         {!delivered || delivered.length === 0 ? (
           <div className="card p-6 text-center">
-            <Send className="h-6 w-6 text-gray-400 mx-auto mb-2" />
+            <Send className="h-6 w-6 text-gray-400 mx-auto mb-2" aria-hidden="true" />
             <p className="text-sm text-gray-500">No deliveries yet.</p>
           </div>
         ) : (
@@ -356,7 +419,7 @@ export function AdminDistribute() {
                   </div>
                 </div>
                 <span className="text-xs text-emerald-700 inline-flex items-center gap-1 flex-shrink-0">
-                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
                   {o.delivered_at ? new Date(o.delivered_at).toLocaleDateString() : 'delivered'}
                 </span>
               </div>
@@ -398,11 +461,12 @@ function Column({
   actionStyle: 'primary' | 'secondary';
 }) {
   const a = ACCENTS[accent];
+  const { paged, page, setPage, totalPages } = usePaged(rows, 10);
   return (
     <section className="card overflow-hidden flex flex-col">
       <div className={`h-1 ${a.bar}`} />
       <header className="px-4 py-3 border-b border-warm-200 flex items-center gap-2">
-        <Icon className="h-4 w-4 text-gray-700" />
+        <Icon className="h-4 w-4 text-gray-700" aria-hidden="true" />
         <div className="flex-1 min-w-0">
           <h2 className="m-0 text-sm font-semibold leading-tight">{title}</h2>
           <p className="text-[0.7rem] text-gray-500 leading-tight">{subtitle}</p>
@@ -414,15 +478,15 @@ function Column({
 
       <div className="flex-1 p-3 space-y-2 min-h-[160px]">
         {!rows && (
-          <p className="text-xs text-gray-400 italic px-2 py-3">Loading…</p>
+          <SkeletonCards count={3} label={`Loading ${title.toLowerCase()}`} />
         )}
         {rows && rows.length === 0 && (
           <div className="text-center py-8 px-3">
-            <EmptyIcon className="h-7 w-7 text-gray-300 mx-auto mb-2" />
+            <EmptyIcon className="h-7 w-7 text-gray-300 mx-auto mb-2" aria-hidden="true" />
             <p className="text-xs text-gray-500">{emptyText}</p>
           </div>
         )}
-        {rows?.map((o) => (
+        {paged?.map((o) => (
           <AssignmentTile
             key={o.id}
             o={o}
@@ -433,6 +497,7 @@ function Column({
             actionStyle={actionStyle}
           />
         ))}
+        <Pagination page={page} totalPages={totalPages} onChange={setPage} label={`${title} pagination`} />
       </div>
     </section>
   );
@@ -473,7 +538,7 @@ function AssignmentTile({
             : 'bg-white border border-warm-200 text-gray-700 hover:bg-warm-50'
         }`}
       >
-        <ActionIcon className="h-3.5 w-3.5 mr-1.5" />
+        <ActionIcon className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />
         {actionLabel}
       </button>
     </div>

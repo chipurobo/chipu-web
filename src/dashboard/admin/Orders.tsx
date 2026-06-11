@@ -1,7 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
 import type { Order, OrderStatus, Product, School } from '../../lib/database.types';
 import { ClipboardList } from 'lucide-react';
+import { Pagination, usePaged } from '../components/Pagination';
+import { SkeletonRows } from '../components/Skeletons';
 
 interface OrderRow extends Order {
   products: Pick<Product, 'id' | 'name' | 'sku' | 'is_durable'> | null;
@@ -37,13 +40,11 @@ const STATUS_FILTERS: Array<{ key: 'all' | OrderStatus; label: string }> = [
  * pipeline in one place: who's ordering, who's fulfilling, what's stuck.
  */
 export function AdminOrders() {
-  const [orders, setOrders] = useState<OrderRow[] | null>(null);
-  const [err,    setErr]    = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | OrderStatus>('all');
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
+  const { data: orders, error: queryErr } = useQuery({
+    queryKey: ['orders', 'admin'],
+    queryFn: async (): Promise<OrderRow[]> => {
       const { data, error } = await supabase
         .from('orders')
         .select(`
@@ -54,12 +55,12 @@ export function AdminOrders() {
         `)
         .order('placed_at', { ascending: false })
         .limit(200);
-      if (cancelled) return;
-      if (error) setErr(error.message);
-      else setOrders(data as unknown as OrderRow[]);
-    })();
-    return () => { cancelled = true; };
-  }, []);
+      if (error) throw new Error(error.message);
+      return data as unknown as OrderRow[];
+    },
+  });
+
+  const err = queryErr?.message ?? null;
 
   const filtered = useMemo(() => {
     if (!orders) return null;
@@ -73,6 +74,8 @@ export function AdminOrders() {
     return m;
   }, [orders]);
 
+  const { paged: pagedOrders, page, setPage, totalPages } = usePaged(filtered, 25);
+
   return (
     <div className="px-4 sm:px-6 lg:px-10 py-8 space-y-6">
       <div>
@@ -85,7 +88,7 @@ export function AdminOrders() {
       </div>
 
       {err && (
-        <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+        <div role="alert" className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
           {err}
         </div>
       )}
@@ -118,26 +121,26 @@ export function AdminOrders() {
 
       <section>
         <div className="flex items-center gap-2 mb-3">
-          <ClipboardList className="h-4 w-4 text-teal-700" />
+          <ClipboardList className="h-4 w-4 text-teal-700" aria-hidden="true" />
           <h2 className="m-0">Orders</h2>
           <span className="text-xs text-gray-500">{filtered?.length ?? 0}</span>
         </div>
 
         <div className="card overflow-x-auto">
-          <table className="data-table">
+          <table className="data-table" aria-label="All orders">
             <thead>
               <tr>
-                <th>Placed</th>
-                <th>Product</th>
-                <th className="text-right">Qty</th>
-                <th>Placer (school)</th>
-                <th>Fulfiller (maker space)</th>
-                <th>Status</th>
+                <th scope="col">Placed</th>
+                <th scope="col">Product</th>
+                <th scope="col" className="text-right">Qty</th>
+                <th scope="col">Placer (school)</th>
+                <th scope="col">Fulfiller (maker space)</th>
+                <th scope="col">Status</th>
               </tr>
             </thead>
             <tbody>
               {!filtered && (
-                <tr><td colSpan={6} className="text-center text-gray-500 py-8">Loading…</td></tr>
+                <SkeletonRows rows={5} cols={6} label="Loading orders" />
               )}
               {filtered && filtered.length === 0 && (
                 <tr>
@@ -146,7 +149,7 @@ export function AdminOrders() {
                   </td>
                 </tr>
               )}
-              {filtered?.map((o) => (
+              {pagedOrders?.map((o) => (
                 <tr key={o.id}>
                   <td className="text-xs text-gray-500 whitespace-nowrap">
                     {new Date(o.placed_at).toLocaleDateString()}
@@ -178,6 +181,7 @@ export function AdminOrders() {
               ))}
             </tbody>
           </table>
+          <Pagination page={page} totalPages={totalPages} onChange={setPage} />
         </div>
       </section>
     </div>

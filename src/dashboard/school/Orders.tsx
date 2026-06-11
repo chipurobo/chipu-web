@@ -1,9 +1,13 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../lib/auth';
 import type { Order, OrderStatus, Product, School } from '../../lib/database.types';
 import { Plus, X, Wrench, PackageCheck } from 'lucide-react';
 import { notifyOrderEvent } from '../../lib/orderEmails';
+import { useDialog } from '../../lib/useDialog';
+import { Pagination, usePaged } from '../components/Pagination';
+import { SkeletonRows } from '../components/Skeletons';
 
 // Order rows joined with product info (small subset).
 interface OrderRow extends Order {
@@ -34,72 +38,81 @@ const STATUS_STYLES: Record<OrderStatus, string> = {
  */
 export function SchoolOrders() {
   const { school } = useAuth();
-  const [orders, setOrders] = useState<OrderRow[] | null>(null);
-  const [products, setProducts] = useState<Product[] | null>(null);
-  const [makerSpaces, setMakerSpaces] = useState<School[] | null>(null);
-  const [err, setErr] = useState<string | null>(null);
+  const qc = useQueryClient();
+  const schoolId = school?.id ?? null;
   const [showNew, setShowNew] = useState(false);
 
-  const load = async () => {
-    if (!school) return;
-    const { data, error } = await supabase
-      .from('orders')
-      .select(`
-        *,
-        products ( id, name, sku, is_durable ),
-        placer:placed_by_school_id ( id, name ),
-        fulfiller:fulfilled_by_school_id ( id, name )
-      `)
-      .order('placed_at', { ascending: false });
-    if (error) setErr(error.message);
-    else setOrders(data as unknown as OrderRow[]);
-  };
+  const { data: orders, error: ordersErr } = useQuery({
+    queryKey: ['orders', 'school', schoolId],
+    queryFn: async (): Promise<OrderRow[]> => {
+      const { data, error } = await supabase
+        .from('orders')
+        .select(`
+          *,
+          products ( id, name, sku, is_durable ),
+          placer:placed_by_school_id ( id, name ),
+          fulfiller:fulfilled_by_school_id ( id, name )
+        `)
+        .order('placed_at', { ascending: false });
+      if (error) throw new Error(error.message);
+      return data as unknown as OrderRow[];
+    },
+    enabled: !!schoolId,
+  });
 
-  const loadProducts = async () => {
-    // Schools can only order DURABLES from maker spaces. Consumables only
-    // ever flow from maker space → ChipuRobo central → school (via the
-    // admin distribution flow), never directly from a maker space to a
-    // school. So the order picker excludes consumables entirely.
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .eq('is_active', true)
-      .eq('is_durable', true)
-      .order('name');
-    if (error) setErr(error.message);
-    else setProducts(data as Product[]);
-  };
+  // Shared product cache key — Distribute/Products/etc all key on ['products'].
+  // We filter to active durables client-side so the order picker shows only
+  // what schools can route to a maker space.
+  const { data: products, error: productsErr } = useQuery({
+    queryKey: ['products'],
+    queryFn: async (): Promise<Product[]> => {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw new Error(error.message);
+      return data as Product[];
+    },
+  });
+  const orderableProducts = products?.filter((p) => p.is_active && p.is_durable) ?? null;
 
   // Maker-space directory: schools the placer can route their order to.
-  // RLS allows authenticated users to read schools where the row is theirs
-  // OR they're admin; for non-admin school leads we additionally allow
-  // SELECT on any school where is_maker_space = true (handled by a
-  // dedicated policy below if it didn't exist already).
-  const loadMakerSpaces = async () => {
-    const { data, error } = await supabase
-      .from('schools')
-      .select('*')
-      .eq('is_maker_space', true)
-      .order('name');
-    if (error) setErr(error.message);
-    else setMakerSpaces(data as School[]);
-  };
+  const { data: makerSpaces, error: makerSpacesErr } = useQuery({
+    queryKey: ['schools'],
+    queryFn: async (): Promise<School[]> => {
+      const { data, error } = await supabase
+        .from('schools')
+        .select('*')
+        .order('name');
+      if (error) throw new Error(error.message);
+      return data as School[];
+    },
+  });
+  const makerSpaceOptions = makerSpaces?.filter((s) => s.is_maker_space) ?? null;
 
-  useEffect(() => {
-    void load();
-    void loadProducts();
-    void loadMakerSpaces();
-  }, [school?.id]);
+  const placedByMe   = orders?.filter((o) => o.placed_by_school_id === schoolId) ?? null;
+  const toFulfil     = orders?.filter((o) => o.fulfilled_by_school_id === schoolId) ?? null;
 
-  const placedByMe   = orders?.filter((o) => o.placed_by_school_id === school?.id) ?? null;
-  const toFulfil     = orders?.filter((o) => o.fulfilled_by_school_id === school?.id) ?? null;
+  const markDeliveredMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.rpc('mark_order_delivered', { p_order_id: id });
+      if (error) throw new Error(error.message);
+    },
+    onSettled: () => {
+      void qc.invalidateQueries({ queryKey: ['orders', 'school', schoolId] });
+      void qc.invalidateQueries({ queryKey: ['orders', 'admin'] });
+      void qc.invalidateQueries({ queryKey: ['stock', schoolId] });
+    },
+  });
 
-  const markDelivered = async (id: string) => {
-    setErr(null);
-    const { error } = await supabase.rpc('mark_order_delivered', { p_order_id: id });
-    if (error) setErr(error.message);
-    else void load();
-  };
+  const err =
+    ordersErr?.message
+    ?? productsErr?.message
+    ?? makerSpacesErr?.message
+    ?? markDeliveredMutation.error?.message
+    ?? null;
+
+  const markDelivered = (id: string) => markDeliveredMutation.mutate(id);
 
   return (
     <div className="px-4 sm:px-6 lg:px-10 py-8 space-y-10">
@@ -115,25 +128,30 @@ export function SchoolOrders() {
           onClick={() => setShowNew((s) => !s)}
           className="btn-primary w-full sm:w-auto justify-center"
         >
-          <Plus className="h-4 w-4 mr-1.5" />
+          <Plus className="h-4 w-4 mr-1.5" aria-hidden="true" />
           Place new order
         </button>
       </div>
 
       {err && (
-        <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+        <div role="alert" className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
           {err}
         </div>
       )}
 
-      {showNew && products && makerSpaces && school && (
+      {showNew && orderableProducts && makerSpaceOptions && school && (
         <NewOrderForm
-          products={products}
-          makerSpaces={makerSpaces}
+          products={orderableProducts}
+          makerSpaces={makerSpaceOptions}
           schoolId={school.id}
           placerName={school.name}
           placerEmail={school.contact_email}
-          onCreated={() => { setShowNew(false); void load(); }}
+          onCreated={(fulfillerId) => {
+            setShowNew(false);
+            void qc.invalidateQueries({ queryKey: ['orders', 'school', schoolId] });
+            void qc.invalidateQueries({ queryKey: ['orders', 'admin'] });
+            void qc.invalidateQueries({ queryKey: ['orders', 'maker', fulfillerId] });
+          }}
           onClose={() => setShowNew(false)}
         />
       )}
@@ -178,26 +196,28 @@ function OrdersTable({
   onMarkDelivered?: (orderId: string) => void;
 }) {
   const showActions = !!onMarkDelivered;
+  const { paged, page, setPage, totalPages } = usePaged(rows, 25);
+  const colSpan = showActions ? 7 : 6;
   return (
     <div className="card overflow-x-auto">
-      <table className="data-table">
+      <table className="data-table" aria-label={side === 'placer' ? "Orders I've placed" : 'Orders to fulfil'}>
         <thead>
           <tr>
-            <th>Product</th>
-            <th>Qty</th>
-            <th>{side === 'placer' ? 'Fulfiller' : 'Placed by'}</th>
-            <th>Status</th>
-            <th>Placed</th>
-            <th>Expected</th>
-            {showActions && <th className="text-right">Action</th>}
+            <th scope="col">Product</th>
+            <th scope="col">Qty</th>
+            <th scope="col">{side === 'placer' ? 'Fulfiller' : 'Placed by'}</th>
+            <th scope="col">Status</th>
+            <th scope="col">Placed</th>
+            <th scope="col">Expected</th>
+            {showActions && <th scope="col" className="text-right">Action</th>}
           </tr>
         </thead>
         <tbody>
-          {!rows && <tr><td colSpan={showActions ? 7 : 6} className="text-center text-gray-500 py-8">Loading…</td></tr>}
+          {!rows && <SkeletonRows rows={5} cols={colSpan} label="Loading orders" />}
           {rows && rows.length === 0 && (
-            <tr><td colSpan={showActions ? 7 : 6} className="text-center text-gray-500 py-8">Nothing here yet.</td></tr>
+            <tr><td colSpan={colSpan} className="text-center text-gray-500 py-8">Nothing here yet.</td></tr>
           )}
-          {rows?.map((o) => (
+          {paged?.map((o) => (
             <tr key={o.id}>
               <td>
                 <div className="font-medium text-gray-900">{o.products?.name ?? '—'}</div>
@@ -231,7 +251,7 @@ function OrdersTable({
                       onClick={() => onMarkDelivered!(o.id)}
                       className="btn-primary !py-1 !px-3 !text-xs"
                     >
-                      <PackageCheck className="h-3.5 w-3.5 mr-1" />
+                      <PackageCheck className="h-3.5 w-3.5 mr-1" aria-hidden="true" />
                       Mark delivered
                     </button>
                   ) : (
@@ -243,6 +263,7 @@ function OrdersTable({
           ))}
         </tbody>
       </table>
+      <Pagination page={page} totalPages={totalPages} onChange={setPage} label={side === 'placer' ? "Orders I've placed pagination" : 'Orders to fulfil pagination'} />
     </div>
   );
 }
@@ -261,7 +282,7 @@ function NewOrderForm({
   schoolId: string;
   placerName: string;
   placerEmail: string | null;
-  onCreated: () => void;
+  onCreated: (fulfillerId: string) => void;
   onClose: () => void;
 }) {
   const [productId, setProductId] = useState(products[0]?.id ?? '');
@@ -269,53 +290,56 @@ function NewOrderForm({
   const [quantity, setQuantity] = useState<number>(1);
   const [expected, setExpected] = useState('');
   const [notes, setNotes] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
 
-  const onSubmit = async (e: FormEvent) => {
+  const dialogRef = useDialog<HTMLDivElement>({ open: true, onClose, trapFocus: false });
+
+  const createOrder = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from('orders').insert({
+        placed_by_school_id:    schoolId,
+        fulfilled_by_school_id: fulfillerId,
+        product_id:             productId,
+        quantity,
+        expected_delivery:      expected || null,
+        notes:                  notes.trim() || null,
+      });
+      if (error) throw new Error(error.message);
+    },
+    onSuccess: () => {
+      // Fire-and-forget email to both parties.
+      const product   = products.find((p)    => p.id === productId);
+      const fulfiller = makerSpaces.find((s) => s.id === fulfillerId);
+      if (product && fulfiller) {
+        void notifyOrderEvent('placed', {
+          productName:    product.name,
+          productSku:     product.sku,
+          quantity,
+          placerName:     placerName,
+          fulfillerName:  fulfiller.name,
+          placerEmail:    placerEmail,
+          fulfillerEmail: fulfiller.contact_email,
+        });
+      }
+      onCreated(fulfillerId);
+    },
+  });
+
+  const submitting = createOrder.isPending;
+  const err = createOrder.error?.message ?? null;
+
+  const onSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!productId || !fulfillerId || quantity < 1) return;
-    setSubmitting(true);
-    setErr(null);
-    const { error } = await supabase.from('orders').insert({
-      placed_by_school_id:    schoolId,
-      fulfilled_by_school_id: fulfillerId, // ← school lead picks directly, no admin step
-      product_id:             productId,
-      quantity,
-      expected_delivery:      expected || null,
-      notes:                  notes.trim() || null,
-    });
-    setSubmitting(false);
-    if (error) {
-      setErr(error.message);
-      return;
-    }
-
-    // Fire-and-forget email to both parties.
-    const product   = products.find((p)    => p.id === productId);
-    const fulfiller = makerSpaces.find((s) => s.id === fulfillerId);
-    if (product && fulfiller) {
-      void notifyOrderEvent('placed', {
-        productName:    product.name,
-        productSku:     product.sku,
-        quantity,
-        placerName:     placerName,
-        fulfillerName:  fulfiller.name,
-        placerEmail:    placerEmail,
-        fulfillerEmail: fulfiller.contact_email,
-      });
-    }
-
-    onCreated();
+    createOrder.mutate();
   };
 
   if (makerSpaces.length === 0) {
     return (
-      <div className="card p-5">
+      <div ref={dialogRef} role="region" aria-labelledby="new-order-heading" className="card p-5">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="m-0">New order</h2>
-          <button onClick={onClose} className="p-1 text-gray-500 hover:text-gray-900">
-            <X className="h-4 w-4" />
+          <h2 className="m-0" id="new-order-heading">New order</h2>
+          <button onClick={onClose} className="p-1 text-gray-500 hover:text-gray-900" aria-label="Close new order form">
+            <X className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>
         <p className="text-sm text-gray-600">
@@ -327,19 +351,19 @@ function NewOrderForm({
   }
 
   return (
-    <div className="card p-5">
+    <div ref={dialogRef} role="region" aria-labelledby="new-order-heading" className="card p-5">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="m-0">New order</h2>
-        <button onClick={onClose} className="p-1 text-gray-500 hover:text-gray-900">
-          <X className="h-4 w-4" />
+        <h2 className="m-0" id="new-order-heading">New order</h2>
+        <button onClick={onClose} className="p-1 text-gray-500 hover:text-gray-900" aria-label="Close new order form">
+          <X className="h-4 w-4" aria-hidden="true" />
         </button>
       </div>
 
-      <form onSubmit={onSubmit} className="grid sm:grid-cols-2 gap-4">
+      <form onSubmit={onSubmit} aria-labelledby="new-order-heading" className="grid sm:grid-cols-2 gap-4">
         <div className="sm:col-span-2">
-          <label className="field-label" htmlFor="prod">Product</label>
+          <label className="field-label" htmlFor="new-order-product">Product</label>
           <select
-            id="prod"
+            id="new-order-product"
             className="field-select"
             value={productId}
             onChange={(e) => setProductId(e.target.value)}
@@ -357,16 +381,17 @@ function NewOrderForm({
         </div>
 
         <div className="sm:col-span-2">
-          <label className="field-label" htmlFor="fulfiller">
-            <Wrench className="h-3.5 w-3.5 inline -mt-0.5 mr-1 text-teal-700" />
-            Maker space (fulfiller)
+          <label className="field-label" htmlFor="new-order-fulfiller">
+            <Wrench className="h-3.5 w-3.5 inline -mt-0.5 mr-1 text-teal-700" aria-hidden="true" />
+            Maker space (fulfiller)<span aria-hidden="true" className="text-red-600 ml-0.5">*</span>
           </label>
           <select
-            id="fulfiller"
+            id="new-order-fulfiller"
             className="field-select"
             value={fulfillerId}
             onChange={(e) => setFulfillerId(e.target.value)}
             required
+            aria-required="true"
           >
             {makerSpaces.map((s) => (
               <option key={s.id} value={s.id}>
@@ -382,12 +407,13 @@ function NewOrderForm({
         </div>
 
         <div>
-          <label className="field-label" htmlFor="qty">Quantity</label>
+          <label className="field-label" htmlFor="new-order-qty">Quantity<span aria-hidden="true" className="text-red-600 ml-0.5">*</span></label>
           <input
-            id="qty"
+            id="new-order-qty"
             type="number"
             min={1}
             required
+            aria-required="true"
             className="field-input"
             value={quantity || ''}
             onChange={(e) => setQuantity(parseInt(e.target.value || '0', 10))}
@@ -395,9 +421,9 @@ function NewOrderForm({
         </div>
 
         <div>
-          <label className="field-label" htmlFor="exp">Expected delivery (optional)</label>
+          <label className="field-label" htmlFor="new-order-exp">Expected delivery (optional)</label>
           <input
-            id="exp"
+            id="new-order-exp"
             type="date"
             className="field-input"
             value={expected}
@@ -406,9 +432,9 @@ function NewOrderForm({
         </div>
 
         <div className="sm:col-span-2">
-          <label className="field-label" htmlFor="notes">Notes (optional)</label>
+          <label className="field-label" htmlFor="new-order-notes">Notes (optional)</label>
           <textarea
-            id="notes"
+            id="new-order-notes"
             rows={2}
             className="field-input"
             placeholder="Anything the maker space should know — specs, delivery instructions, etc."
@@ -418,7 +444,7 @@ function NewOrderForm({
         </div>
 
         {err && (
-          <div className="sm:col-span-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+          <div role="alert" className="sm:col-span-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
             {err}
           </div>
         )}

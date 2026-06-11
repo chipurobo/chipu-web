@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../lib/auth';
 import type { Order, OrderStatus, Product, ProductUnit } from '../../lib/database.types';
@@ -29,44 +29,38 @@ interface ProdOrder extends Order {
 
 export function SchoolProduction() {
   const { school } = useAuth();
-  const [orders, setOrders] = useState<ProdOrder[] | null>(null);
-  const [err, setErr] = useState<string | null>(null);
+  const qc = useQueryClient();
+  const schoolId = school?.id ?? null;
 
-  const load = async () => {
-    if (!school) return;
-    const { data, error } = await supabase
-      .from('orders')
-      .select(`
-        *,
-        products  ( id, name, sku, is_durable ),
-        placer:placed_by_school_id ( id, name, contact_email ),
-        units:product_units!product_units_order_id_fkey ( id, serial_number, status )
-      `)
-      .eq('fulfilled_by_school_id', school.id)
-      .in('status', ['placed', 'accepted', 'in_production', 'shipped'])
-      .order('placed_at', { ascending: true });
-    if (error) setErr(error.message);
-    else setOrders(data as unknown as ProdOrder[]);
+  const ordersQuery = useQuery({
+    queryKey: ['orders', 'maker', schoolId],
+    queryFn: async (): Promise<ProdOrder[]> => {
+      const { data, error } = await supabase
+        .from('orders')
+        .select(`
+          *,
+          products  ( id, name, sku, is_durable ),
+          placer:placed_by_school_id ( id, name, contact_email ),
+          units:product_units!product_units_order_id_fkey ( id, serial_number, status )
+        `)
+        .eq('fulfilled_by_school_id', schoolId!)
+        .in('status', ['placed', 'accepted', 'in_production', 'shipped'])
+        .order('placed_at', { ascending: true });
+      if (error) throw new Error(error.message);
+      return data as unknown as ProdOrder[];
+    },
+    enabled: !!schoolId && !!school?.is_maker_space,
+  });
+  const orders = ordersQuery.data ?? null;
+
+  const invalidateOrderQueries = (placerId?: string | null) => {
+    void qc.invalidateQueries({ queryKey: ['orders', 'maker', schoolId] });
+    void qc.invalidateQueries({ queryKey: ['orders', 'admin'] });
+    if (placerId) {
+      void qc.invalidateQueries({ queryKey: ['orders', 'school', placerId] });
+      void qc.invalidateQueries({ queryKey: ['units', placerId] });
+    }
   };
-
-  useEffect(() => { void load(); }, [school?.id]);
-
-  if (!school?.is_maker_space) {
-    return (
-      <div className="px-4 sm:px-6 lg:px-10 py-12 max-w-2xl">
-        <div className="card p-8 text-center">
-          <AlertCircle className="h-8 w-8 text-gray-400 mx-auto mb-3" />
-          <h1 className="mb-2">Production is for maker spaces</h1>
-          <p className="text-sm text-gray-600">
-            This view is only available to schools flagged as maker spaces. If your school has been
-            approved as one, ask ChipuRobo to toggle <code className="bg-warm-100 px-1.5 py-0.5 rounded text-xs">
-              is_maker_space
-            </code> on your school record.
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   // Group by status
   const inbox        = orders?.filter((o) => o.status === 'placed')         ?? null;
@@ -91,37 +85,78 @@ export function SchoolProduction() {
   };
 
   // Mutations
-  const setStatus = async (id: string, status: OrderStatus, stamp?: 'accepted_at') => {
-    setErr(null);
-    const patch: Record<string, unknown> = { status };
-    if (stamp) patch[stamp] = new Date().toISOString();
-    const { error } = await supabase.from('orders').update(patch).eq('id', id);
-    if (error) {
-      setErr(error.message);
-      return;
-    }
-    fireEmail(status, orders?.find((o) => o.id === id));
-    void load();
-  };
+  const setStatusMutation = useMutation({
+    mutationFn: async (input: { id: string; status: OrderStatus; stamp?: 'accepted_at' }) => {
+      const patch: Record<string, unknown> = { status: input.status };
+      if (input.stamp) patch[input.stamp] = new Date().toISOString();
+      const { error } = await supabase.from('orders').update(patch).eq('id', input.id);
+      if (error) throw new Error(error.message);
+    },
+    onSuccess: (_d, vars) => {
+      fireEmail(vars.status, orders?.find((o) => o.id === vars.id));
+    },
+    onSettled: (_d, _e, vars) => {
+      const placerId = orders?.find((o) => o.id === vars.id)?.placer?.id ?? null;
+      invalidateOrderQueries(placerId);
+    },
+  });
 
-  const ship = async (id: string) => {
-    setErr(null);
-    const { error } = await supabase.rpc('ship_order', { p_order_id: id });
-    if (error) {
-      setErr(error.message);
-      return;
-    }
-    fireEmail('shipped', orders?.find((o) => o.id === id));
-    void load();
-  };
+  const shipMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.rpc('ship_order', { p_order_id: id });
+      if (error) throw new Error(error.message);
+    },
+    onSuccess: (_d, id) => {
+      fireEmail('shipped', orders?.find((o) => o.id === id));
+    },
+    onSettled: (_d, _e, id) => {
+      const placerId = orders?.find((o) => o.id === id)?.placer?.id ?? null;
+      invalidateOrderQueries(placerId);
+    },
+  });
 
-  const cancel = async (id: string) => {
+  const cancelMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('orders').update({ status: 'cancelled' }).eq('id', id);
+      if (error) throw new Error(error.message);
+    },
+    onSettled: (_d, _e, id) => {
+      const placerId = orders?.find((o) => o.id === id)?.placer?.id ?? null;
+      invalidateOrderQueries(placerId);
+    },
+  });
+
+  const err =
+    ordersQuery.error?.message
+    ?? setStatusMutation.error?.message
+    ?? shipMutation.error?.message
+    ?? cancelMutation.error?.message
+    ?? null;
+
+  const setStatus = (id: string, status: OrderStatus, stamp?: 'accepted_at') =>
+    setStatusMutation.mutate({ id, status, stamp });
+  const ship = (id: string) => shipMutation.mutate(id);
+  const cancel = (id: string) => {
     if (!window.confirm('Cancel this order? The placer will see it as cancelled. Any units you fabricated for it stay on record but the order disappears from your pipeline.')) return;
-    setErr(null);
-    const { error } = await supabase.from('orders').update({ status: 'cancelled' }).eq('id', id);
-    if (error) setErr(error.message);
-    else void load();
+    cancelMutation.mutate(id);
   };
+
+  if (!school?.is_maker_space) {
+    return (
+      <div className="px-4 sm:px-6 lg:px-10 py-12 max-w-2xl">
+        <div className="card p-8 text-center">
+          <AlertCircle className="h-8 w-8 text-gray-400 mx-auto mb-3" aria-hidden="true" />
+          <h1 className="mb-2">Production is for maker spaces</h1>
+          <p className="text-sm text-gray-600">
+            This view is only available to schools flagged as maker spaces. If your school has been
+            approved as one, ask ChipuRobo to toggle <code className="bg-warm-100 px-1.5 py-0.5 rounded text-xs">
+              is_maker_space
+            </code> on your school record.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const stats = [
     { key: 'inbox',         label: 'Inbox',         count: inbox?.length        ?? 0, accent: 'bg-amber-500'   },
@@ -155,7 +190,7 @@ export function SchoolProduction() {
       </div>
 
       {err && (
-        <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+        <div role="alert" className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
           {err}
         </div>
       )}
@@ -226,7 +261,7 @@ export function SchoolProduction() {
           tiles above. */}
       <section>
         <div className="flex items-center gap-2 mb-3">
-          <Wrench className="h-4 w-4 text-indigo-600" />
+          <Wrench className="h-4 w-4 text-indigo-600" aria-hidden="true" />
           <h2 className="m-0">On the bench</h2>
           <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800">
             {inProduction?.length ?? 0}
@@ -235,7 +270,7 @@ export function SchoolProduction() {
 
         {!inProduction || inProduction.length === 0 ? (
           <div className="card p-8 text-center">
-            <Wrench className="h-7 w-7 text-gray-300 mx-auto mb-2" />
+            <Wrench className="h-7 w-7 text-gray-300 mx-auto mb-2" aria-hidden="true" />
             <p className="text-sm text-gray-500">Nothing on the bench.</p>
             <p className="text-xs text-gray-400 mt-1">
               Accepted orders move here once you click "Start production".
@@ -249,7 +284,7 @@ export function SchoolProduction() {
                 order={o}
                 onShip={() => ship(o.id)}
                 onCancel={() => cancel(o.id)}
-                onChanged={load}
+                onChanged={() => invalidateOrderQueries(o.placer?.id ?? null)}
               />
             ))}
           </div>
@@ -289,7 +324,7 @@ function Column({
     <section className="card overflow-hidden flex flex-col">
       <div className={`h-1 ${a.bar}`} />
       <header className="px-4 py-3 border-b border-warm-200 flex items-center gap-2">
-        <Icon className="h-4 w-4 text-gray-700" />
+        <Icon className="h-4 w-4 text-gray-700" aria-hidden="true" />
         <div className="flex-1 min-w-0">
           <h2 className="m-0 text-sm font-semibold leading-tight">{title}</h2>
           <p className="text-[0.7rem] text-gray-500 leading-tight">{subtitle}</p>
@@ -300,10 +335,10 @@ function Column({
       </header>
 
       <div className="flex-1 p-3 space-y-2 min-h-[160px]">
-        {!rows && <p className="text-xs text-gray-400 italic px-2 py-3">Loading…</p>}
+        {!rows && <p role="status" className="text-xs text-gray-400 italic px-2 py-3">Loading…</p>}
         {rows && rows.length === 0 && (
           <div className="text-center py-8 px-3">
-            <EmptyIcon className="h-7 w-7 text-gray-300 mx-auto mb-2" />
+            <EmptyIcon className="h-7 w-7 text-gray-300 mx-auto mb-2" aria-hidden="true" />
             <p className="text-xs text-gray-500">{emptyText}</p>
           </div>
         )}
@@ -354,7 +389,7 @@ function SimpleTile({
             : 'bg-white border border-warm-200 text-gray-700 hover:bg-warm-50'
         }`}
       >
-        <ActionIcon className="h-3.5 w-3.5 mr-1.5" />
+        <ActionIcon className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />
         {actionLabel}
       </button>
       {onCancel && (
@@ -383,7 +418,7 @@ function ShippedTile({ order, tint }: { order: ProdOrder; tint: string }) {
         Shipped to <span className="text-gray-700">{order.placer?.name ?? '—'}</span>
       </div>
       <div className="mt-2 text-[0.7rem] text-emerald-700 inline-flex items-center gap-1">
-        <PackageCheck className="h-3.5 w-3.5" />
+        <PackageCheck className="h-3.5 w-3.5" aria-hidden="true" />
         Awaiting their delivery confirmation
       </div>
     </div>
@@ -412,23 +447,23 @@ function InProductionCard({
   const required = order.quantity;
   const ready = fabricated >= required;
 
-  const [adding, setAdding] = useState(false);
-  const [localErr, setLocalErr] = useState<string | null>(null);
+  const addUnitMutation = useMutation({
+    mutationFn: async () => {
+      if (!order.products) return;
+      const { error } = await supabase.from('product_units').insert({
+        product_id:              order.products.id,
+        order_id:                order.id,
+        fabricated_by_school_id: order.fulfilled_by_school_id!,
+        status:                  'with_maker',
+      });
+      if (error) throw new Error(error.message);
+    },
+    onSuccess: () => { onChanged(); },
+  });
+  const adding = addUnitMutation.isPending;
+  const localErr = addUnitMutation.error?.message ?? null;
 
-  const addUnit = async () => {
-    if (!order.products) return;
-    setAdding(true);
-    setLocalErr(null);
-    const { error } = await supabase.from('product_units').insert({
-      product_id:              order.products.id,
-      order_id:                order.id,
-      fabricated_by_school_id: order.fulfilled_by_school_id!,
-      status:                  'with_maker',
-    });
-    setAdding(false);
-    if (error) setLocalErr(error.message);
-    else onChanged();
-  };
+  const addUnit = () => addUnitMutation.mutate();
 
   return (
     <div className="card overflow-hidden">
@@ -453,7 +488,7 @@ function InProductionCard({
             className="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-medium bg-gray-900 text-white hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={isDurable && !ready}
           >
-            <Truck className="h-3.5 w-3.5 mr-1.5" />
+            <Truck className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />
             Ship
           </button>
         </div>
@@ -482,7 +517,7 @@ function InProductionCard({
                 disabled={adding || ready}
                 className="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-medium bg-white border border-warm-200 text-gray-700 hover:bg-warm-50 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
               >
-                <Plus className="h-3.5 w-3.5 mr-1" />
+                <Plus className="h-3.5 w-3.5 mr-1" aria-hidden="true" />
                 {adding ? 'Adding…' : 'Add unit'}
               </button>
             </div>
@@ -507,7 +542,7 @@ function InProductionCard({
             )}
 
             {localErr && (
-              <div className="text-xs text-red-700 bg-red-50 border border-red-200 rounded px-2 py-1 mt-2">
+              <div role="alert" className="text-xs text-red-700 bg-red-50 border border-red-200 rounded px-2 py-1 mt-2">
                 {localErr}
               </div>
             )}

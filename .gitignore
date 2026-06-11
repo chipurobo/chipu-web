@@ -10,6 +10,8 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+# Local build-verification scratch dirs (dist-check, dist-final, dist-verify, …)
+dist-*/
 *.local
 
 # Vite drops these next to vite.config.ts whenever it loads the TS config —

@@ -1,10 +1,13 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
 import type { ChipuEvent, EventType, School } from '../../lib/database.types';
 import {
   CalendarDays, Plus, X, Trash2, MapPin, Link as LinkIcon,
   Megaphone, Laptop, MonitorPlay, Users, CheckCircle2, Clock,
 } from 'lucide-react';
+import { useDialog } from '../../lib/useDialog';
+import { SkeletonCards } from '../components/Skeletons';
 
 // =============================================================
 // /dashboard/admin/events
@@ -43,15 +46,14 @@ const TYPE_ACCENT: Record<EventType, string> = {
 };
 
 export function AdminEvents() {
-  const [events,  setEvents]  = useState<EventRow[] | null>(null);
-  const [schools, setSchools] = useState<School[] | null>(null);
-  const [err,     setErr]     = useState<string | null>(null);
+  const qc = useQueryClient();
   const [creating, setCreating] = useState(false);
 
-  const load = async () => {
-    setErr(null);
-    const [eRes, sRes, aRes] = await Promise.all([
-      supabase
+  // Events + their attached schools, joined.
+  const eventsQuery = useQuery({
+    queryKey: ['events'],
+    queryFn: async () => {
+      const { data, error } = await supabase
         .from('events')
         .select(`
           *,
@@ -61,39 +63,67 @@ export function AdminEvents() {
             schools ( id, name )
           )
         `)
-        .order('start_at', { ascending: false }),
-      supabase.from('schools').select('id, name, county').order('name'),
-      supabase
-        .from('event_attendances')
-        .select('event_id'),
-    ]);
+        .order('start_at', { ascending: false });
+      if (error) throw new Error(error.message);
+      return data as unknown as Omit<EventRow, 'attendance_count'>[];
+    },
+  });
 
-    if (eRes.error)  { setErr(eRes.error.message);  return; }
-    if (sRes.error)  { setErr(sRes.error.message);  return; }
-    if (aRes.error)  { setErr(aRes.error.message);  return; }
+  // Attendance counts per event — small feed, counted in JS.
+  const attendancesQuery = useQuery({
+    queryKey: ['event-attendances'],
+    queryFn: async (): Promise<{ event_id: string }[]> => {
+      const { data, error } = await supabase.from('event_attendances').select('event_id');
+      if (error) throw new Error(error.message);
+      return data as { event_id: string }[];
+    },
+  });
 
-    // Count attendances per event in JS — small dataset, no need for a view.
+  const { data: schools, error: schoolsErr } = useQuery({
+    queryKey: ['schools'],
+    queryFn: async (): Promise<School[]> => {
+      const { data, error } = await supabase
+        .from('schools')
+        .select('*')
+        .order('name');
+      if (error) throw new Error(error.message);
+      return data as School[];
+    },
+  });
+
+  const events: EventRow[] | null = (() => {
+    if (!eventsQuery.data) return null;
     const counts = new Map<string, number>();
-    (aRes.data as { event_id: string }[]).forEach((r) =>
+    (attendancesQuery.data ?? []).forEach((r) =>
       counts.set(r.event_id, (counts.get(r.event_id) ?? 0) + 1),
     );
-
-    const rows = (eRes.data as unknown as EventRow[]).map((e) => ({
+    return eventsQuery.data.map((e) => ({
       ...e,
       attendance_count: counts.get(e.id) ?? 0,
-    }));
-    setEvents(rows);
-    setSchools(sRes.data as School[]);
-  };
+    })) as EventRow[];
+  })();
 
-  useEffect(() => { void load(); }, []);
+  const deleteEventMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('events').delete().eq('id', id);
+      if (error) throw new Error(error.message);
+    },
+    onSettled: () => {
+      void qc.invalidateQueries({ queryKey: ['events'] });
+      void qc.invalidateQueries({ queryKey: ['event-attendances'] });
+    },
+  });
 
-  const onDelete = async (id: string) => {
+  const err =
+    eventsQuery.error?.message
+    ?? attendancesQuery.error?.message
+    ?? schoolsErr?.message
+    ?? deleteEventMutation.error?.message
+    ?? null;
+
+  const onDelete = (id: string) => {
     if (!window.confirm('Delete this activity? Attached schools and attendance records will be wiped.')) return;
-    setErr(null);
-    const { error } = await supabase.from('events').delete().eq('id', id);
-    if (error) setErr(error.message);
-    else void load();
+    deleteEventMutation.mutate(id);
   };
 
   return (
@@ -111,13 +141,13 @@ export function AdminEvents() {
           onClick={() => setCreating((v) => !v)}
           className="btn-primary w-full sm:w-auto justify-center"
         >
-          <Plus className="h-4 w-4 mr-1.5" />
+          <Plus className="h-4 w-4 mr-1.5" aria-hidden="true" />
           {creating ? 'Cancel' : 'New activity'}
         </button>
       </div>
 
       {err && (
-        <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+        <div role="alert" className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
           {err}
         </div>
       )}
@@ -126,16 +156,20 @@ export function AdminEvents() {
         <NewEventForm
           allSchools={schools}
           onClose={() => setCreating(false)}
-          onCreated={() => { setCreating(false); void load(); }}
+          onCreated={() => {
+            setCreating(false);
+            void qc.invalidateQueries({ queryKey: ['events'] });
+            void qc.invalidateQueries({ queryKey: ['event-attendances'] });
+          }}
         />
       )}
 
       {/* Activity list */}
       <section className="space-y-4">
-        {!events && <p className="text-sm text-gray-500">Loading…</p>}
+        {!events && <SkeletonCards count={3} label="Loading activities" />}
         {events && events.length === 0 && (
           <div className="card p-10 text-center">
-            <CalendarDays className="h-8 w-8 text-gray-300 mx-auto mb-3" />
+            <CalendarDays className="h-8 w-8 text-gray-300 mx-auto mb-3" aria-hidden="true" />
             <p className="text-sm text-gray-600">No activities yet.</p>
             <p className="text-xs text-gray-500 mt-1">Create your first one with the button above.</p>
           </div>
@@ -145,7 +179,10 @@ export function AdminEvents() {
             key={e.id}
             event={e}
             allSchools={schools ?? []}
-            onChanged={load}
+            onChanged={() => {
+              void qc.invalidateQueries({ queryKey: ['events'] });
+              void qc.invalidateQueries({ queryKey: ['event-attendances'] });
+            }}
             onDelete={() => onDelete(e.id)}
           />
         ))}
@@ -169,9 +206,7 @@ function EventCard({
   const Icon = TYPE_ICON[event.event_type];
   const accent = TYPE_ACCENT[event.event_type];
 
-  const [adding, setAdding] = useState(false);
   const [picker, setPicker] = useState('');
-  const [localErr, setLocalErr] = useState<string | null>(null);
 
   const attendedCount = event.event_schools.filter((s) => s.attended_at).length;
   const invitedCount  = event.event_schools.length;
@@ -179,50 +214,71 @@ function EventCard({
   const attachedIds = new Set(event.event_schools.map((s) => s.school_id));
   const availableSchools = allSchools.filter((s) => !attachedIds.has(s.id));
 
-  const attach = async (e: FormEvent) => {
+  const attachMutation = useMutation({
+    mutationFn: async (schoolId: string) => {
+      const { error } = await supabase.rpc('attach_school_to_event', {
+        p_event_id:  event.id,
+        p_school_id: schoolId,
+      });
+      if (error) throw new Error(error.message);
+    },
+    onSuccess: () => { setPicker(''); },
+    onSettled: () => { onChanged(); },
+  });
+
+  const markAttendedMutation = useMutation({
+    mutationFn: async (schoolId: string) => {
+      const { error } = await supabase.rpc('mark_school_attended', {
+        p_event_id:  event.id,
+        p_school_id: schoolId,
+      });
+      if (error) throw new Error(error.message);
+    },
+    onSettled: () => { onChanged(); },
+  });
+
+  const unmarkAttendedMutation = useMutation({
+    mutationFn: async (schoolId: string) => {
+      const { error } = await supabase.rpc('unmark_school_attended', {
+        p_event_id:  event.id,
+        p_school_id: schoolId,
+      });
+      if (error) throw new Error(error.message);
+    },
+    onSettled: () => { onChanged(); },
+  });
+
+  const removeSchoolMutation = useMutation({
+    mutationFn: async (schoolId: string) => {
+      const { error } = await supabase
+        .from('event_schools')
+        .delete()
+        .eq('event_id', event.id)
+        .eq('school_id', schoolId);
+      if (error) throw new Error(error.message);
+    },
+    onSettled: () => { onChanged(); },
+  });
+
+  const adding = attachMutation.isPending;
+  const localErr =
+    attachMutation.error?.message
+    ?? markAttendedMutation.error?.message
+    ?? unmarkAttendedMutation.error?.message
+    ?? removeSchoolMutation.error?.message
+    ?? null;
+
+  const attach = (e: FormEvent) => {
     e.preventDefault();
     if (!picker) return;
-    setAdding(true);
-    setLocalErr(null);
-    const { error } = await supabase.rpc('attach_school_to_event', {
-      p_event_id:  event.id,
-      p_school_id: picker,
-    });
-    setAdding(false);
-    if (error) setLocalErr(error.message);
-    else { setPicker(''); onChanged(); }
+    attachMutation.mutate(picker);
   };
 
-  const markAttended = async (schoolId: string) => {
-    setLocalErr(null);
-    const { error } = await supabase.rpc('mark_school_attended', {
-      p_event_id:  event.id,
-      p_school_id: schoolId,
-    });
-    if (error) setLocalErr(error.message);
-    else onChanged();
-  };
-
-  const unmarkAttended = async (schoolId: string) => {
-    setLocalErr(null);
-    const { error } = await supabase.rpc('unmark_school_attended', {
-      p_event_id:  event.id,
-      p_school_id: schoolId,
-    });
-    if (error) setLocalErr(error.message);
-    else onChanged();
-  };
-
-  const removeSchool = async (schoolId: string) => {
+  const markAttended   = (schoolId: string) => markAttendedMutation.mutate(schoolId);
+  const unmarkAttended = (schoolId: string) => unmarkAttendedMutation.mutate(schoolId);
+  const removeSchool   = (schoolId: string) => {
     if (!window.confirm('Remove this school from the activity? Any student attendances will be deleted.')) return;
-    setLocalErr(null);
-    const { error } = await supabase
-      .from('event_schools')
-      .delete()
-      .eq('event_id', event.id)
-      .eq('school_id', schoolId);
-    if (error) setLocalErr(error.message);
-    else onChanged();
+    removeSchoolMutation.mutate(schoolId);
   };
 
   return (
@@ -237,34 +293,34 @@ function EventCard({
         aria-label="Delete activity"
         className="absolute top-3 right-3 z-10 p-1.5 rounded-md text-gray-400 hover:text-red-700 hover:bg-red-50 transition-colors"
       >
-        <Trash2 className="h-4 w-4" />
+        <Trash2 className="h-4 w-4" aria-hidden="true" />
       </button>
 
       <div className="p-4 sm:p-5 pr-12">
         {/* Header */}
         <div className="mb-3 flex items-start gap-3 min-w-0">
           <div className="mt-0.5 p-2 rounded-md bg-warm-100 flex-shrink-0">
-            <Icon className="h-5 w-5 text-gray-700" />
+            <Icon className="h-5 w-5 text-gray-700" aria-hidden="true" />
           </div>
           <div className="min-w-0 flex-1">
             <h2 className="m-0 text-base">{event.title}</h2>
             <div className="text-xs text-gray-500 mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1">
               <span>{TYPE_LABEL[event.event_type]}</span>
               <span className="inline-flex items-center gap-1">
-                <Clock className="h-3 w-3" />
+                <Clock className="h-3 w-3" aria-hidden="true" />
                 {formatDate(event.start_at)}
                 {event.end_at && ` → ${formatDate(event.end_at)}`}
               </span>
               {event.location && (
                 <span className="inline-flex items-center gap-1">
-                  <MapPin className="h-3 w-3" />
+                  <MapPin className="h-3 w-3" aria-hidden="true" />
                   {event.location}
                 </span>
               )}
               {event.url && (
                 <a href={event.url} target="_blank" rel="noopener noreferrer"
                    className="inline-flex items-center gap-1 text-teal-700 hover:underline">
-                  <LinkIcon className="h-3 w-3" />
+                  <LinkIcon className="h-3 w-3" aria-hidden="true" />
                   Link
                 </a>
               )}
@@ -278,10 +334,10 @@ function EventCard({
         {/* Attendance summary */}
         <div className="flex flex-wrap gap-2 mb-3 text-xs">
           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-warm-100 text-gray-700">
-            <Users className="h-3 w-3" /> {invitedCount} school{invitedCount === 1 ? '' : 's'} taking part
+            <Users className="h-3 w-3" aria-hidden="true" /> {invitedCount} school{invitedCount === 1 ? '' : 's'} taking part
           </span>
           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800">
-            <CheckCircle2 className="h-3 w-3" /> {attendedCount} attended
+            <CheckCircle2 className="h-3 w-3" aria-hidden="true" /> {attendedCount} attended
           </span>
           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-teal-50 text-teal-800">
             {event.attendance_count} student attendance{event.attendance_count === 1 ? '' : 's'}
@@ -292,12 +348,12 @@ function EventCard({
             Actions column is reachable instead of clipped */}
         {event.event_schools.length > 0 && (
           <div className="border border-warm-200 rounded-md overflow-x-auto mb-3">
-            <table className="data-table">
+            <table className="data-table" aria-label="Attached schools">
               <thead>
                 <tr>
-                  <th>School</th>
-                  <th>Status</th>
-                  <th className="text-right">Actions</th>
+                  <th scope="col">School</th>
+                  <th scope="col">Status</th>
+                  <th scope="col" className="text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -309,7 +365,7 @@ function EventCard({
                     <td className="whitespace-nowrap">
                       {es.attended_at ? (
                         <span className="inline-flex items-center gap-1 text-xs text-emerald-700">
-                          <CheckCircle2 className="h-3.5 w-3.5" />
+                          <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
                           attended {new Date(es.attended_at).toLocaleDateString()}
                         </span>
                       ) : (
@@ -348,7 +404,7 @@ function EventCard({
 
         {/* Attach-school picker */}
         {availableSchools.length > 0 ? (
-          <form onSubmit={attach} className="flex gap-2 items-end flex-wrap">
+          <form onSubmit={attach} aria-label={`Attach a school to ${event.title}`} className="flex gap-2 items-end flex-wrap">
             <div className="flex-1 min-w-[200px]">
               <label className="field-label" htmlFor={`attach-${event.id}`}>Attach a school</label>
               <select
@@ -366,7 +422,7 @@ function EventCard({
               </select>
             </div>
             <button type="submit" className="btn-secondary" disabled={adding || !picker}>
-              <Plus className="h-4 w-4 mr-1.5" />
+              <Plus className="h-4 w-4 mr-1.5" aria-hidden="true" />
               Attach
             </button>
           </form>
@@ -375,7 +431,7 @@ function EventCard({
         )}
 
         {localErr && (
-          <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2 mt-2">
+          <div role="alert" className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2 mt-2">
             {localErr}
           </div>
         )}
@@ -419,6 +475,8 @@ function NewEventForm({
   const [selectedSchools, setSelectedSchools] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+
+  const dialogRef = useDialog<HTMLDivElement>({ open: true, onClose, trapFocus: false });
 
   const needsLocation = type === 'outreach' || type === 'bootcamp_physical';
   const needsUrl      = type === 'bootcamp_webinar';
@@ -478,28 +536,28 @@ function NewEventForm({
   };
 
   return (
-    <div className="card p-5">
+    <div ref={dialogRef} role="region" aria-labelledby="new-event-heading" className="card p-5">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="m-0">New activity</h2>
-        <button onClick={onClose} className="p-1 text-gray-500 hover:text-gray-900">
-          <X className="h-4 w-4" />
+        <h2 className="m-0" id="new-event-heading">New activity</h2>
+        <button onClick={onClose} className="p-1 text-gray-500 hover:text-gray-900" aria-label="Close new activity form">
+          <X className="h-4 w-4" aria-hidden="true" />
         </button>
       </div>
 
-      <form onSubmit={onSubmit} className="grid sm:grid-cols-2 gap-4">
+      <form onSubmit={onSubmit} aria-labelledby="new-event-heading" className="grid sm:grid-cols-2 gap-4">
         <div className="sm:col-span-2">
-          <label className="field-label" htmlFor="ev-title">Title</label>
+          <label className="field-label" htmlFor="new-event-title">Title<span aria-hidden="true" className="text-red-600 ml-0.5">*</span></label>
           <input
-            id="ev-title" type="text" required className="field-input"
+            id="new-event-title" type="text" required aria-required="true" className="field-input"
             placeholder="e.g. Strathmore outreach — March 2026"
             value={title} onChange={(e) => setTitle(e.target.value)}
           />
         </div>
 
         <div>
-          <label className="field-label" htmlFor="ev-type">Type</label>
+          <label className="field-label" htmlFor="new-event-type">Type</label>
           <select
-            id="ev-type" className="field-select"
+            id="new-event-type" className="field-select"
             value={type} onChange={(e) => setType(e.target.value as EventType)}
           >
             {TYPE_OPTIONS.map((o) => (
@@ -509,26 +567,26 @@ function NewEventForm({
         </div>
 
         <div>
-          <label className="field-label" htmlFor="ev-start">Start</label>
+          <label className="field-label" htmlFor="new-event-start">Start<span aria-hidden="true" className="text-red-600 ml-0.5">*</span></label>
           <input
-            id="ev-start" type="datetime-local" required className="field-input"
+            id="new-event-start" type="datetime-local" required aria-required="true" className="field-input"
             value={startAt} onChange={(e) => setStartAt(e.target.value)}
           />
         </div>
 
         <div>
-          <label className="field-label" htmlFor="ev-end">End (optional)</label>
+          <label className="field-label" htmlFor="new-event-end">End (optional)</label>
           <input
-            id="ev-end" type="datetime-local" className="field-input"
+            id="new-event-end" type="datetime-local" className="field-input"
             value={endAt} onChange={(e) => setEndAt(e.target.value)}
           />
         </div>
 
         {needsLocation && (
           <div>
-            <label className="field-label" htmlFor="ev-loc">Venue (optional)</label>
+            <label className="field-label" htmlFor="new-event-loc">Venue (optional)</label>
             <input
-              id="ev-loc" type="text" className="field-input"
+              id="new-event-loc" type="text" className="field-input"
               placeholder="e.g. Kibera Primary, Hall A"
               value={location} onChange={(e) => setLocation(e.target.value)}
             />
@@ -537,9 +595,9 @@ function NewEventForm({
 
         {needsUrl && (
           <div className="sm:col-span-2">
-            <label className="field-label" htmlFor="ev-url">Webinar link (optional)</label>
+            <label className="field-label" htmlFor="new-event-url">Webinar link (optional)</label>
             <input
-              id="ev-url" type="url" className="field-input"
+              id="new-event-url" type="url" className="field-input"
               placeholder="https://…"
               value={url} onChange={(e) => setUrl(e.target.value)}
             />
@@ -547,9 +605,9 @@ function NewEventForm({
         )}
 
         <div className="sm:col-span-2">
-          <label className="field-label" htmlFor="ev-desc">Description (optional)</label>
+          <label className="field-label" htmlFor="new-event-desc">Description (optional)</label>
           <textarea
-            id="ev-desc" rows={3} className="field-input"
+            id="new-event-desc" rows={3} className="field-input"
             placeholder="What is it, who's leading it…"
             value={description} onChange={(e) => setDescription(e.target.value)}
           />
@@ -615,7 +673,7 @@ function NewEventForm({
         </div>
 
         {err && (
-          <div className="sm:col-span-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+          <div role="alert" className="sm:col-span-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
             {err}
           </div>
         )}

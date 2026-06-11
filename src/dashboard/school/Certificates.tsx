@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../lib/auth';
@@ -6,6 +6,7 @@ import type {
   CertificateIssuance, CertificateTemplate, ClubMember,
 } from '../../lib/database.types';
 import { Award, GraduationCap, UserCog, Printer } from 'lucide-react';
+import { SkeletonRows } from '../components/Skeletons';
 
 // =============================================================
 // /dashboard/school/certificates
@@ -22,13 +23,11 @@ interface CertRow extends CertificateIssuance {
 
 export function SchoolCertificates() {
   const { school } = useAuth();
-  const [rows, setRows] = useState<CertRow[] | null>(null);
-  const [err, setErr]   = useState<string | null>(null);
+  const schoolId = school?.id ?? null;
 
-  useEffect(() => {
-    if (!school) return;
-    let cancelled = false;
-    (async () => {
+  const { data: rows, error: queryErr } = useQuery({
+    queryKey: ['issuances', { scope: 'school', schoolId }],
+    queryFn: async (): Promise<CertRow[]> => {
       const { data, error } = await supabase
         .from('certificate_issuances')
         .select(`
@@ -36,15 +35,15 @@ export function SchoolCertificates() {
           templates:template_id ( id, title, audience, programme, hero_color ),
           student:student_id ( id, full_name )
         `)
-        .eq('school_id', school.id)
+        .eq('school_id', schoolId!)
         .is('revoked_at', null)
         .order('issued_at', { ascending: false });
-      if (cancelled) return;
-      if (error) setErr(error.message);
-      else setRows(data as unknown as CertRow[]);
-    })();
-    return () => { cancelled = true; };
-  }, [school?.id]);
+      if (error) throw new Error(error.message);
+      return data as unknown as CertRow[];
+    },
+    enabled: !!schoolId,
+  });
+  const err = queryErr?.message ?? null;
 
   return (
     <div className="px-4 sm:px-6 lg:px-10 py-8 space-y-6">
@@ -61,29 +60,29 @@ export function SchoolCertificates() {
       </div>
 
       {err && (
-        <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+        <div role="alert" className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
           {err}
         </div>
       )}
 
       <div className="card overflow-x-auto">
-        <table className="data-table">
+        <table className="data-table" aria-label="Certificates issued at this school">
           <thead>
             <tr>
-              <th>Certificate</th>
-              <th>Recipient</th>
-              <th>Issued</th>
-              <th className="text-right">Action</th>
+              <th scope="col">Certificate</th>
+              <th scope="col">Recipient</th>
+              <th scope="col">Issued</th>
+              <th scope="col" className="text-right">Action</th>
             </tr>
           </thead>
           <tbody>
             {!rows && (
-              <tr><td colSpan={4} className="text-center text-gray-500 py-8">Loading…</td></tr>
+              <SkeletonRows rows={5} cols={4} label="Loading certificates" />
             )}
             {rows && rows.length === 0 && (
               <tr>
                 <td colSpan={4} className="text-center text-gray-500 py-12">
-                  <Award className="h-7 w-7 text-gray-300 mx-auto mb-2" />
+                  <Award className="h-7 w-7 text-gray-300 mx-auto mb-2" aria-hidden="true" />
                   No certificates issued yet.
                 </td>
               </tr>
@@ -109,8 +108,8 @@ export function SchoolCertificates() {
                   <td>
                     <div className="inline-flex items-center gap-1.5">
                       {isStudent
-                        ? <GraduationCap className="h-3.5 w-3.5 text-teal-700" />
-                        : <UserCog className="h-3.5 w-3.5 text-amber-700" />}
+                        ? <GraduationCap className="h-3.5 w-3.5 text-teal-700" aria-hidden="true" />
+                        : <UserCog className="h-3.5 w-3.5 text-amber-700" aria-hidden="true" />}
                       <span className="text-sm text-gray-900">
                         {r.student?.full_name ?? 'Teacher'}
                       </span>
@@ -124,7 +123,7 @@ export function SchoolCertificates() {
                       to={`/dashboard/certificate/${r.id}`}
                       className="inline-flex items-center text-xs text-teal-700 hover:underline"
                     >
-                      <Printer className="h-3.5 w-3.5 mr-1" />
+                      <Printer className="h-3.5 w-3.5 mr-1" aria-hidden="true" />
                       Open & print
                     </Link>
                   </td>

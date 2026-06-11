@@ -120,7 +120,7 @@ Best regards,
  {programOptions.map((program) => (
  <div key={program.id} className="bg-white rounded-xl shadow-soft-md p-6 border border-gray-100 transition-all duration-300 hover:shadow-soft-lg hover:-translate-y-1.5">
  <div className="flex items-center mb-4">
- <CheckSquare className="h-8 w-8 text-primary-600 mr-3" />
+ <CheckSquare className="h-8 w-8 text-primary-600 mr-3" aria-hidden="true" />
  <h3 className="text-xl font-semibold text-gray-900 ">
  {program.label}
  </h3>

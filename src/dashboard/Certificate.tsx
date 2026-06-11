@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import type { CertificateIssuance, CertificateTemplate, School, ClubMember } from '../lib/database.types';
 import { ArrowLeft, Printer, Award } from 'lucide-react';
+import { SkeletonBlock } from './components/Skeletons';
 
 // =============================================================
 // /dashboard/certificate/:issuanceId
@@ -25,14 +26,10 @@ interface FullIssuance extends CertificateIssuance {
 
 export function Certificate() {
   const { issuanceId } = useParams<{ issuanceId: string }>();
-  const [iss, setIss] = useState<FullIssuance | null>(null);
-  const [teacherName, setTeacherName] = useState<string | null>(null);
-  const [err, setErr] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!issuanceId) return;
-    let cancelled = false;
-    (async () => {
+  const issuanceQuery = useQuery({
+    queryKey: ['issuance', issuanceId],
+    queryFn: async (): Promise<FullIssuance> => {
       const { data, error } = await supabase
         .from('certificate_issuances')
         .select(`
@@ -41,35 +38,38 @@ export function Certificate() {
           schools:school_id ( id, name, county ),
           student:student_id ( id, full_name, grade )
         `)
-        .eq('id', issuanceId)
+        .eq('id', issuanceId!)
         .maybeSingle();
-      if (cancelled) return;
-      if (error) { setErr(error.message); return; }
-      if (!data) { setErr('Certificate not found.'); return; }
-      const row = data as unknown as FullIssuance;
-      setIss(row);
+      if (error) throw new Error(error.message);
+      if (!data) throw new Error('Certificate not found.');
+      return data as unknown as FullIssuance;
+    },
+    enabled: !!issuanceId,
+  });
+  const iss = issuanceQuery.data ?? null;
 
-      // Pull teacher name separately if the recipient is a teacher
-      // (we can't readily join profiles → auth, so we use the admin
-      // leads RPC which is admin-only — fall back to '—' otherwise).
-      if (row.teacher_id) {
-        const { data: leads } = await supabase.rpc('admin_list_school_leads');
-        if (cancelled) return;
-        if (leads) {
-          const t = (leads as Array<{ user_id: string; full_name: string | null }>)
-            .find((l) => l.user_id === row.teacher_id);
-          setTeacherName(t?.full_name ?? null);
-        }
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [issuanceId]);
+  // Pull teacher name separately if the recipient is a teacher (admin-only RPC;
+  // school leads see null and the cert falls back to '—' / 'Teacher').
+  const teacherQuery = useQuery({
+    queryKey: ['school-leads'],
+    queryFn: async (): Promise<Array<{ user_id: string; full_name: string | null }>> => {
+      const { data, error } = await supabase.rpc('admin_list_school_leads');
+      if (error) throw new Error(error.message);
+      return data as Array<{ user_id: string; full_name: string | null }>;
+    },
+    enabled: !!iss?.teacher_id,
+  });
+  const teacherName = (iss?.teacher_id && teacherQuery.data)
+    ? (teacherQuery.data.find((l) => l.user_id === iss.teacher_id)?.full_name ?? null)
+    : null;
+
+  const err = issuanceQuery.error?.message ?? null;
 
   if (err) {
     return (
       <div className="px-4 sm:px-6 lg:px-10 py-8 max-w-2xl">
         <BackLink />
-        <div className="card p-6 mt-4 text-sm text-red-700 bg-red-50 border-red-200">{err}</div>
+        <div role="alert" className="card p-6 mt-4 text-sm text-red-700 bg-red-50 border-red-200">{err}</div>
       </div>
     );
   }
@@ -78,7 +78,9 @@ export function Certificate() {
     return (
       <div className="px-4 sm:px-6 lg:px-10 py-8">
         <BackLink />
-        <p className="text-sm text-gray-500 mt-4">Loading…</p>
+        <div className="flex items-center justify-center mt-6">
+          <SkeletonBlock label="Loading certificate" width="100%" height="60vh" />
+        </div>
       </div>
     );
   }
@@ -96,7 +98,7 @@ export function Certificate() {
           onClick={() => window.print()}
           className="btn-primary"
         >
-          <Printer className="h-4 w-4 mr-1.5" />
+          <Printer className="h-4 w-4 mr-1.5" aria-hidden="true" />
           Print / Save as PDF
         </button>
       </div>
@@ -145,7 +147,7 @@ export function Certificate() {
               boxShadow: `0 0 0 2px ${hero}`,
             }}
           >
-            <Award className="h-8 w-8 text-white" strokeWidth={1.6} />
+            <Award className="h-8 w-8 text-white" strokeWidth={1.6} aria-hidden="true" />
           </div>
           <p
             className="font-pixel text-[0.7rem] tracking-[0.4em] uppercase"
@@ -315,7 +317,7 @@ function BackLink() {
       to="/dashboard"
       className="inline-flex items-center text-sm text-teal-700 hover:underline"
     >
-      <ArrowLeft className="h-4 w-4 mr-1.5" />
+      <ArrowLeft className="h-4 w-4 mr-1.5" aria-hidden="true" />
       Back to dashboard
     </Link>
   );
@@ -341,7 +343,7 @@ function CornerOrnament({
   if (position === 'br') { pos.bottom = 14; pos.right = 14; pos.transform = 'scale(-1, -1)'; }
 
   return (
-    <svg style={pos} viewBox="0 0 64 64" aria-hidden>
+    <svg style={pos} viewBox="0 0 64 64" aria-hidden="true">
       {/* L-shaped corner frame with arc + dots */}
       <path
         d="M4 4 L4 30 M4 4 L30 4"

@@ -15,7 +15,7 @@ const BlogPost = () => {
  to="/blog"
  className="inline-flex items-center text-terracotta-600 hover:text-terracotta-700 font-medium transition-colors"
  >
- <ArrowLeft className="mr-2 h-4 w-4" />
+ <ArrowLeft className="mr-2 h-4 w-4" aria-hidden="true" />
  Back to Blog
  </Link>
  </div>
@@ -29,7 +29,7 @@ const BlogPost = () => {
  to="/blog"
  className="inline-flex items-center text-terracotta-600 hover:text-terracotta-700 mb-8 font-medium text-sm transition-colors"
  >
- <ArrowLeft className="mr-2 h-4 w-4" />
+ <ArrowLeft className="mr-2 h-4 w-4" aria-hidden="true" />
  Back to Blog
  </Link>
 
@@ -61,15 +61,15 @@ const BlogPost = () => {
 
  <div className="flex items-center flex-wrap gap-x-4 gap-y-2 text-sm text-gray-500 mb-8 pb-8 border-b border-gray-100 ">
  <span className="flex items-center">
- <User className="h-4 w-4 mr-1.5" />
+ <User className="h-4 w-4 mr-1.5" aria-hidden="true" />
  {post.author}
  </span>
  <span className="flex items-center">
- <Calendar className="h-4 w-4 mr-1.5" />
+ <Calendar className="h-4 w-4 mr-1.5" aria-hidden="true" />
  {post.date}
  </span>
  <span className="flex items-center">
- <Clock className="h-4 w-4 mr-1.5" />
+ <Clock className="h-4 w-4 mr-1.5" aria-hidden="true" />
  {post.readTime}
  </span>
  </div>

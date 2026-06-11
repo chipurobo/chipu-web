@@ -81,32 +81,58 @@ const ICON_COLORS: Record<ToastType, string> = {
 
 export function NotificationToaster() {
   const { toasts, dismiss } = useNotifications();
-  if (toasts.length === 0) return null;
   return (
-    <div className="fixed top-4 right-4 z-50 w-80 max-w-[calc(100vw-2rem)] space-y-2 pointer-events-none">
-      {toasts.map((t) => {
-        const Icon = ICONS[t.type];
-        return (
-          <div
-            key={t.id}
-            className={`pointer-events-auto rounded-md border-l-4 border-warm-200 shadow-md p-3 flex gap-2 ${STYLES[t.type]}`}
-            role="status"
-          >
-            <Icon className={`h-4 w-4 mt-0.5 flex-shrink-0 ${ICON_COLORS[t.type]}`} />
-            <div className="flex-1 min-w-0">
-              <div className="font-medium text-sm leading-snug">{t.title}</div>
-              {t.body && <div className="text-xs text-gray-600 mt-0.5 leading-snug">{t.body}</div>}
-            </div>
-            <button
-              onClick={() => dismiss(t.id)}
-              className="text-gray-400 hover:text-gray-700 flex-shrink-0"
-              aria-label="Dismiss"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
-          </div>
-        );
-      })}
+    // Container is always rendered (even when empty) so screen readers
+    // pick up the aria-live region immediately rather than mounting it
+    // mid-announcement. The two live regions are separate so warnings
+    // interrupt politely-queued info/success toasts.
+    <>
+      <div
+        aria-live="polite"
+        aria-atomic="false"
+        aria-label="Notifications"
+        className="fixed top-4 right-4 z-50 w-80 max-w-[calc(100vw-2rem)] space-y-2 pointer-events-none"
+      >
+        {toasts.filter((t) => t.type !== 'warning').map((t) => renderToast(t, dismiss))}
+      </div>
+      <div
+        aria-live="assertive"
+        aria-atomic="false"
+        aria-label="Alerts"
+        role="region"
+        className="fixed top-4 right-4 z-50 w-80 max-w-[calc(100vw-2rem)] space-y-2 pointer-events-none"
+      >
+        {toasts.filter((t) => t.type === 'warning').map((t) => renderToast(t, dismiss))}
+      </div>
+    </>
+  );
+}
+
+function renderToast(t: Toast, dismiss: (id: string) => void) {
+  const Icon = ICONS[t.type];
+  return (
+    <div
+      key={t.id}
+      className={`pointer-events-auto rounded-md border-l-4 border-warm-200 shadow-md p-3 flex gap-2 ${STYLES[t.type]}`}
+      // role on each toast so each is announced individually
+      role={t.type === 'warning' ? 'alert' : 'status'}
+    >
+      <Icon
+        aria-hidden="true"
+        className={`h-4 w-4 mt-0.5 flex-shrink-0 ${ICON_COLORS[t.type]}`}
+      />
+      <div className="flex-1 min-w-0">
+        <div className="font-medium text-sm leading-snug">{t.title}</div>
+        {t.body && <div className="text-xs text-gray-600 mt-0.5 leading-snug">{t.body}</div>}
+      </div>
+      <button
+        type="button"
+        onClick={() => dismiss(t.id)}
+        className="text-gray-400 hover:text-gray-700 flex-shrink-0"
+        aria-label={`Dismiss notification: ${t.title}`}
+      >
+        <X className="h-3.5 w-3.5" aria-hidden="true" />
+      </button>
     </div>
   );
 }

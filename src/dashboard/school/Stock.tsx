@@ -1,8 +1,11 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../lib/auth';
 import type { Product, ProductUnit, ClubMember, UnitStatus } from '../../lib/database.types';
 import { Package, Wrench, UserPlus, X } from 'lucide-react';
+import { Pagination, usePaged } from '../components/Pagination';
+import { SkeletonRows } from '../components/Skeletons';
 
 // product_units joined with product + assigned member
 interface UnitRow extends ProductUnit {
@@ -36,75 +39,79 @@ const UNIT_STATUS_STYLES: Record<UnitStatus, string> = {
  */
 export function SchoolStock() {
   const { school } = useAuth();
-  const [units, setUnits] = useState<UnitRow[] | null>(null);
-  const [stock, setStock] = useState<StockRow[] | null>(null);
-  const [students, setStudents] = useState<ClubMember[] | null>(null);
-  const [err, setErr] = useState<string | null>(null);
+  const schoolId = school?.id ?? null;
 
-  const loadStudents = async () => {
-    if (!school) return;
-    const { data, error } = await supabase
-      .from('club_members')
-      .select('*')
-      .eq('school_id', school.id)
-      .eq('is_active', true)
-      .order('full_name');
-    if (error) setErr(error.message);
-    else setStudents(data as ClubMember[]);
-  };
+  // Active students for the assignment picker — keyed for cross-page reuse.
+  const studentsQuery = useQuery({
+    queryKey: ['members', schoolId],
+    queryFn: async (): Promise<ClubMember[]> => {
+      const { data, error } = await supabase
+        .from('club_members')
+        .select('*')
+        .eq('school_id', schoolId!)
+        .order('full_name');
+      if (error) throw new Error(error.message);
+      return data as ClubMember[];
+    },
+    enabled: !!schoolId,
+  });
+  const students = studentsQuery.data?.filter((s) => s.is_active) ?? null;
 
-  const loadUnits = async () => {
-    if (!school) return;
-    const { data, error } = await supabase
-      .from('product_units')
-      .select(`
-        *,
-        products ( id, name, sku ),
-        member:current_member_id ( id, full_name, in_club )
-      `)
-      .eq('current_school_id', school.id)
-      .order('fabricated_at', { ascending: false });
-    if (error) setErr(error.message);
-    else setUnits(data as unknown as UnitRow[]);
-  };
+  const unitsQuery = useQuery({
+    queryKey: ['units', schoolId],
+    queryFn: async (): Promise<UnitRow[]> => {
+      const { data, error } = await supabase
+        .from('product_units')
+        .select(`
+          *,
+          products ( id, name, sku ),
+          member:current_member_id ( id, full_name, in_club )
+        `)
+        .eq('current_school_id', schoolId!)
+        .order('fabricated_at', { ascending: false });
+      if (error) throw new Error(error.message);
+      return data as unknown as UnitRow[];
+    },
+    enabled: !!schoolId,
+  });
+  const units = unitsQuery.data ?? null;
 
-  const loadStock = async () => {
-    if (!school) return;
-    const { data: sData, error: sErr } = await supabase
-      .from('stock_on_hand')
-      .select('school_id, product_id, on_hand')
-      .eq('school_id', school.id);
-    if (sErr) {
-      setErr(sErr.message);
-      return;
-    }
-    if (sData && sData.length > 0) {
-      const ids = sData.map((r: { product_id: string }) => r.product_id);
-      const { data: pData } = await supabase
+  const stockQuery = useQuery({
+    queryKey: ['stock', schoolId],
+    queryFn: async (): Promise<StockRow[]> => {
+      const { data: sData, error: sErr } = await supabase
+        .from('stock_on_hand')
+        .select('school_id, product_id, on_hand')
+        .eq('school_id', schoolId!);
+      if (sErr) throw new Error(sErr.message);
+      if (!sData || sData.length === 0) return [];
+      const ids = sData.map((r) => r.product_id);
+      const { data: pData, error: pErr } = await supabase
         .from('products')
         .select('*')
         .in('id', ids);
+      if (pErr) throw new Error(pErr.message);
       const productById = new Map<string, Product>(
         (pData as Product[] | null ?? []).map((p) => [p.id, p]),
       );
-      setStock(
-        sData
-          .map((row: { product_id: string; on_hand: number }) => ({
-            product: productById.get(row.product_id),
-            on_hand: row.on_hand,
-          }))
-          .filter((r: { product: Product | undefined }): r is StockRow => !!r.product),
-      );
-    } else {
-      setStock([]);
-    }
-  };
+      return sData
+        .map((row) => ({
+          product: productById.get(row.product_id),
+          on_hand: row.on_hand,
+        }))
+        .filter((r): r is StockRow => !!r.product);
+    },
+    enabled: !!schoolId,
+  });
+  const stock = stockQuery.data ?? null;
 
-  useEffect(() => {
-    void loadUnits();
-    void loadStock();
-    void loadStudents();
-  }, [school?.id]);
+  const { paged: pagedUnits, page: unitsPage, setPage: setUnitsPage, totalPages: unitsTotalPages } = usePaged(units, 25);
+
+  const err =
+    studentsQuery.error?.message
+    ?? unitsQuery.error?.message
+    ?? stockQuery.error?.message
+    ?? null;
 
   return (
     <div className="px-4 sm:px-6 lg:px-10 py-8 space-y-10">
@@ -121,7 +128,7 @@ export function SchoolStock() {
       </div>
 
       {err && (
-        <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+        <div role="alert" className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
           {err}
         </div>
       )}
@@ -129,24 +136,24 @@ export function SchoolStock() {
       {/* Durable units */}
       <section>
         <div className="flex items-center gap-2 mb-3">
-          <Wrench className="h-4 w-4 text-teal-700" />
+          <Wrench className="h-4 w-4 text-teal-700" aria-hidden="true" />
           <h2 className="m-0">Durable units</h2>
           <span className="text-xs text-gray-500">{units?.length ?? 0}</span>
         </div>
         <div className="card overflow-x-auto">
-          <table className="data-table">
+          <table className="data-table" aria-label="Durable units">
             <thead>
               <tr>
-                <th>Serial</th>
-                <th>Product</th>
-                <th>Status</th>
-                <th>Held by</th>
-                <th>Received</th>
+                <th scope="col">Serial</th>
+                <th scope="col">Product</th>
+                <th scope="col">Status</th>
+                <th scope="col">Held by</th>
+                <th scope="col">Received</th>
               </tr>
             </thead>
             <tbody>
               {!units && (
-                <tr><td colSpan={5} className="text-center text-gray-500 py-8">Loading…</td></tr>
+                <SkeletonRows rows={5} cols={5} label="Loading durable units" />
               )}
               {units && units.length === 0 && (
                 <tr>
@@ -156,7 +163,7 @@ export function SchoolStock() {
                   </td>
                 </tr>
               )}
-              {units?.map((u) => (
+              {pagedUnits?.map((u) => (
                 <tr key={u.id}>
                   <td className="font-mono text-xs">{u.serial_number}</td>
                   <td>
@@ -176,7 +183,6 @@ export function SchoolStock() {
                         unit={u}
                         students={students}
                         schoolId={school.id}
-                        onChanged={() => { void loadUnits(); void loadStudents(); }}
                       />
                     )}
                   </td>
@@ -189,31 +195,32 @@ export function SchoolStock() {
               ))}
             </tbody>
           </table>
+          <Pagination page={unitsPage} totalPages={unitsTotalPages} onChange={setUnitsPage} label="Durable units pagination" />
         </div>
       </section>
 
       {/* Consumable stock */}
       <section>
         <div className="flex items-center gap-2 mb-3">
-          <Package className="h-4 w-4 text-teal-700" />
+          <Package className="h-4 w-4 text-teal-700" aria-hidden="true" />
           <h2 className="m-0">Consumable stock</h2>
           <span className="text-xs text-gray-500">
             {stock?.filter((s) => s.on_hand > 0).length ?? 0} products on hand
           </span>
         </div>
         <div className="card overflow-x-auto">
-          <table className="data-table">
+          <table className="data-table" aria-label="Consumable stock">
             <thead>
               <tr>
-                <th>Product</th>
-                <th>SKU</th>
-                <th>Category</th>
-                <th className="text-right">On hand</th>
+                <th scope="col">Product</th>
+                <th scope="col">SKU</th>
+                <th scope="col">Category</th>
+                <th scope="col" className="text-right">On hand</th>
               </tr>
             </thead>
             <tbody>
               {!stock && (
-                <tr><td colSpan={4} className="text-center text-gray-500 py-8">Loading…</td></tr>
+                <tr><td role="status" colSpan={4} className="text-center text-gray-500 py-8">Loading…</td></tr>
               )}
               {stock && stock.length === 0 && (
                 <tr>
@@ -244,72 +251,81 @@ export function SchoolStock() {
  * student isn't there yet, the cell lets you add them on the spot.
  */
 function HeldByCell({
-  unit, students, schoolId, onChanged,
+  unit, students, schoolId,
 }: {
   unit: UnitRow;
   students: ClubMember[] | null;
   schoolId: string;
-  onChanged: () => void;
 }) {
+  const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState(unit.current_member_id ?? '');
-  const [saving, setSaving] = useState(false);
-  const [localErr, setLocalErr] = useState<string | null>(null);
 
   // Add-new-student form (collapsed by default)
   const [addOpen, setAddOpen] = useState(false);
   const [newName, setNewName] = useState('');
   const [newGrade, setNewGrade] = useState('');
   const [newInClub, setNewInClub] = useState(false);
-  const [adding, setAdding] = useState(false);
 
-  const assign = async (memberId: string | null) => {
-    setSaving(true);
-    setLocalErr(null);
-    const patch: Record<string, unknown> = {
-      current_member_id: memberId,
-      status: memberId ? 'with_user' : 'with_school',
-      assigned_at: memberId ? new Date().toISOString() : null,
-    };
-    const { error } = await supabase
-      .from('product_units')
-      .update(patch)
-      .eq('id', unit.id);
-    setSaving(false);
-    if (error) {
-      setLocalErr(error.message);
-    } else {
-      setOpen(false);
-      onChanged();
-    }
-  };
+  const assignMutation = useMutation({
+    mutationFn: async (memberId: string | null) => {
+      const patch: Record<string, unknown> = {
+        current_member_id: memberId,
+        status: memberId ? 'with_user' : 'with_school',
+        assigned_at: memberId ? new Date().toISOString() : null,
+      };
+      const { error } = await supabase
+        .from('product_units')
+        .update(patch)
+        .eq('id', unit.id);
+      if (error) throw new Error(error.message);
+    },
+    onSuccess: () => { setOpen(false); },
+    onSettled: () => {
+      void qc.invalidateQueries({ queryKey: ['units', schoolId] });
+      void qc.invalidateQueries({ queryKey: ['members', schoolId] });
+    },
+  });
 
-  const addStudent = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!newName.trim()) return;
-    setAdding(true);
-    setLocalErr(null);
-    const { data, error } = await supabase
-      .from('club_members')
-      .insert({
-        school_id: schoolId,
-        full_name: newName.trim(),
-        grade: newGrade.trim() || null,
-        in_club: newInClub,
-      })
-      .select('id')
-      .single();
-    setAdding(false);
-    if (error) {
-      setLocalErr(error.message);
-    } else if (data) {
-      // Auto-select the newly-added student and assign in one go.
-      setSelected(data.id);
+  const addStudentMutation = useMutation({
+    mutationFn: async (input: { name: string; grade: string; inClub: boolean }): Promise<string> => {
+      const { data, error } = await supabase
+        .from('club_members')
+        .insert({
+          school_id: schoolId,
+          full_name: input.name.trim(),
+          grade: input.grade.trim() || null,
+          in_club: input.inClub,
+        })
+        .select('id')
+        .single();
+      if (error) throw new Error(error.message);
+      return data!.id as string;
+    },
+    onSuccess: (newId) => {
+      setSelected(newId);
       setNewName('');
       setNewGrade('');
       setAddOpen(false);
-      void assign(data.id);
-    }
+      void qc.invalidateQueries({ queryKey: ['members', schoolId] });
+      // Auto-assign the new student.
+      assignMutation.mutate(newId);
+    },
+  });
+
+  const saving = assignMutation.isPending;
+  const adding = addStudentMutation.isPending;
+  const localErr =
+    assignMutation.error?.message
+    ?? addStudentMutation.error?.message
+    ?? null;
+
+  const assign = (memberId: string | null) => assignMutation.mutate(memberId);
+
+  const addStudent = (e: FormEvent) => {
+    e.preventDefault();
+    if (!newName.trim()) return;
+    addStudentMutation.mutate({ name: newName, grade: newGrade, inClub: newInClub });
   };
 
   // Read-only view
@@ -342,6 +358,7 @@ function HeldByCell({
     <div className="space-y-2">
       <div className="flex gap-2 items-stretch">
         <select
+          aria-label={`Assign ${unit.products?.name ?? 'unit'} ${unit.serial_number} to a student`}
           className="field-select flex-1"
           value={selected}
           onChange={(e) => setSelected(e.target.value)}
@@ -363,11 +380,12 @@ function HeldByCell({
         </button>
         <button
           type="button"
-          onClick={() => { setOpen(false); setLocalErr(null); }}
+          onClick={() => { setOpen(false); assignMutation.reset(); }}
           className="p-1 text-gray-500 hover:text-gray-900"
           title="Cancel"
+          aria-label="Cancel assignment"
         >
-          <X className="h-4 w-4" />
+          <X className="h-4 w-4" aria-hidden="true" />
         </button>
       </div>
 
@@ -377,15 +395,17 @@ function HeldByCell({
           onClick={() => setAddOpen(true)}
           className="text-xs text-teal-700 hover:underline inline-flex items-center"
         >
-          <UserPlus className="h-3.5 w-3.5 mr-1" />
+          <UserPlus className="h-3.5 w-3.5 mr-1" aria-hidden="true" />
           Add a new student
         </button>
       ) : (
-        <form onSubmit={addStudent} className="border border-warm-200 rounded-md p-2 space-y-2 bg-warm-50">
+        <form onSubmit={addStudent} aria-label="Add a new student" className="border border-warm-200 rounded-md p-2 space-y-2 bg-warm-50">
           <div className="flex gap-2">
             <input
               type="text"
               required
+              aria-required="true"
+              aria-label="Full name"
               placeholder="Full name"
               className="field-input flex-1 !py-1 !text-xs"
               value={newName}
@@ -393,6 +413,7 @@ function HeldByCell({
             />
             <input
               type="text"
+              aria-label="Grade"
               placeholder="Grade"
               className="field-input w-20 !py-1 !text-xs"
               value={newGrade}
@@ -427,7 +448,7 @@ function HeldByCell({
       )}
 
       {localErr && (
-        <div className="text-[0.7rem] text-red-700 bg-red-50 border border-red-200 rounded px-2 py-1">
+        <div role="alert" className="text-[0.7rem] text-red-700 bg-red-50 border border-red-200 rounded px-2 py-1">
           {localErr}
         </div>
       )}

@@ -68,7 +68,7 @@ function Tile({ to, icon: Icon, title, body }: {
   return (
     <Link to={to} className="card p-5 hover:shadow-md hover:-translate-y-0.5 transition-all group block">
       <div className="bg-teal-50 inline-flex p-2 rounded-md mb-3">
-        <Icon className="h-4 w-4 text-teal-700" />
+        <Icon className="h-4 w-4 text-teal-700" aria-hidden="true" />
       </div>
       <h3 className="mb-1 group-hover:text-teal-700 transition-colors">{title}</h3>
       <p className="text-sm text-gray-600">{body}</p>

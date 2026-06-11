@@ -24,7 +24,7 @@ const slides: Slide[] = [
     body:  'A Kenyan platform that wires classrooms together with inclusive robotics.',
     visual: (
       <div className="w-24 h-24 rounded-2xl bg-teal-100 flex items-center justify-center">
-        <Bot className="h-12 w-12 text-teal-700" strokeWidth={1.4} />
+        <Bot className="h-12 w-12 text-teal-700" strokeWidth={1.4} aria-hidden="true" />
       </div>
     ),
   },
@@ -112,7 +112,7 @@ export function Welcome() {
 
           <button type="button" onClick={next} className="btn-primary w-full justify-center">
             {step === last ? 'Sign in' : 'Next'}
-            <ArrowRight className="h-4 w-4 ml-1.5" />
+            <ArrowRight className="h-4 w-4 ml-1.5" aria-hidden="true" />
           </button>
         </div>
       </main>
@@ -127,7 +127,7 @@ function RoleIcon({ Icon, color, label }: { Icon: typeof School; color: string; 
         className="w-12 h-12 rounded-full flex items-center justify-center"
         style={{ background: `${color}15`, border: `1.5px solid ${color}` }}
       >
-        <Icon className="h-5 w-5" style={{ color }} strokeWidth={1.6} />
+        <Icon className="h-5 w-5" style={{ color }} strokeWidth={1.6} aria-hidden="true" />
       </div>
       {label && (
         <span className="text-[0.6rem] text-gray-600 uppercase tracking-wider">{label}</span>

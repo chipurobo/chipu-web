@@ -115,21 +115,21 @@ const Hackathons = () => {
 
             <div className="flex flex-wrap gap-3 mb-10">
               <span className="inline-flex items-center bg-white border border-warm-200 px-4 py-2 rounded-lg text-sm text-gray-800">
-                <Calendar className="h-4 w-4 mr-2 text-teal-600" /> July 11–12, 2026
+                <Calendar className="h-4 w-4 mr-2 text-teal-600" aria-hidden="true" /> July 11–12, 2026
               </span>
               <span className="inline-flex items-center bg-white border border-warm-200 px-4 py-2 rounded-lg text-sm text-gray-800">
-                <Clock className="h-4 w-4 mr-2 text-teal-600" /> 8:00 AM – 4:00 PM daily
+                <Clock className="h-4 w-4 mr-2 text-teal-600" aria-hidden="true" /> 8:00 AM – 4:00 PM daily
               </span>
               <span className="inline-flex items-center bg-white border border-warm-200 px-4 py-2 rounded-lg text-sm text-gray-800">
-                <MapPin className="h-4 w-4 mr-2 text-terracotta-600" /> Host school + neighbouring schools
+                <MapPin className="h-4 w-4 mr-2 text-terracotta-600" aria-hidden="true" /> Host school + neighbouring schools
               </span>
               <span className="inline-flex items-center bg-white border border-warm-200 px-4 py-2 rounded-lg text-sm text-gray-800">
-                <Users className="h-4 w-4 mr-2 text-teal-600" /> Teams of 3–5
+                <Users className="h-4 w-4 mr-2 text-teal-600" aria-hidden="true" /> Teams of 3–5
               </span>
             </div>
 
             <div className="inline-flex items-center bg-terracotta-50 border border-terracotta-200 px-5 py-3 rounded-lg">
-              <AlertTriangle className="h-4 w-4 text-terracotta-600 mr-2 flex-shrink-0" />
+              <AlertTriangle className="h-4 w-4 text-terracotta-600 mr-2 flex-shrink-0" aria-hidden="true" />
               <span className="text-sm text-terracotta-700 font-medium">Schools: host applications open</span>
             </div>
           </div>
@@ -164,7 +164,7 @@ const Hackathons = () => {
                 className="bg-white rounded-xl p-8 border border-gray-100 shadow-soft-md hover:shadow-soft-lg hover:-translate-y-1 transition-all duration-300"
               >
                 <div className={`${t.bg} inline-flex p-3 rounded-xl mb-4`}>
-                  <t.icon className={`h-6 w-6 ${t.color}`} />
+                  <t.icon className={`h-6 w-6 ${t.color}`} aria-hidden="true" />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">{t.title}</h3>
                 <p className="text-sm text-gray-600 leading-relaxed">{t.description}</p>
@@ -190,7 +190,7 @@ const Hackathons = () => {
                 className="bg-white rounded-xl p-6 border border-gray-100 shadow-soft-sm hover:shadow-soft-md transition-all duration-300"
               >
                 <div className="bg-teal-50 inline-flex p-3 rounded-xl mb-4">
-                  <a.icon className="h-5 w-5 text-teal-600" />
+                  <a.icon className="h-5 w-5 text-teal-600" aria-hidden="true" />
                 </div>
                 <h3 className="text-base font-semibold text-gray-900 mb-2">{a.title}</h3>
                 <p className="text-sm text-gray-600 leading-relaxed">{a.body}</p>
@@ -214,7 +214,7 @@ const Hackathons = () => {
                 <ul className="space-y-3">
                   {day.items.map((item) => (
                     <li key={item} className="flex items-start text-sm text-gray-600">
-                      <CheckCircle className="h-4 w-4 text-teal-500 mt-0.5 mr-2 flex-shrink-0" />
+                      <CheckCircle className="h-4 w-4 text-teal-500 mt-0.5 mr-2 flex-shrink-0" aria-hidden="true" />
                       {item}
                     </li>
                   ))}

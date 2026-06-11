@@ -142,14 +142,14 @@ const Impact = () => {
  onClick={downloadImpactData}
  className="bg-terracotta-500 hover:bg-terracotta-600 text-white px-8 py-4 rounded-xl transition-all duration-200 text-lg font-semibold flex items-center justify-center hover:shadow-soft-xl"
  >
- <Download className="mr-2 h-5 w-5" />
+ <Download className="mr-2 h-5 w-5" aria-hidden="true" />
  Download Impact Data (CSV)
  </button>
  <Link
  to="/microsoft"
  className="bg-white border border-gray-300 text-gray-800 px-8 py-4 rounded-xl hover:bg-warm-100 transition-all duration-200 text-lg font-semibold flex items-center justify-center"
  >
- <ExternalLink className="mr-2 h-5 w-5" />
+ <ExternalLink className="mr-2 h-5 w-5" aria-hidden="true" />
  View Full Report
  </Link>
  </div>
@@ -168,7 +168,7 @@ const Impact = () => {
  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
  {achievements.map((achievement, index) => (
  <div key={index} className="bg-white p-8 rounded-xl shadow-soft-md border border-gray-100 text-center transition-all duration-300 hover:shadow-soft-lg hover:-translate-y-1.5">
- <achievement.icon className="h-12 w-12 text-teal-600 mx-auto mb-4" />
+ <achievement.icon className="h-12 w-12 text-teal-600 mx-auto mb-4" aria-hidden="true" />
  <h3 className="text-xl font-semibold text-gray-900 mb-2">{achievement.title}</h3>
  <p className="text-gray-600 mb-3">{achievement.description}</p>
  <p className="text-teal-600 font-semibold">{achievement.stats}</p>
@@ -192,16 +192,16 @@ const Impact = () => {
  <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
  <div className="flex-1">
  <div className="flex items-center mb-4">
- <Calendar className="h-6 w-6 text-teal-600 mr-3" />
+ <Calendar className="h-6 w-6 text-teal-600 mr-3" aria-hidden="true" />
  <span className="text-teal-600 font-semibold">{bootcamp.month}</span>
  </div>
  <h3 className="text-2xl font-bold tracking-tight text-gray-900 mb-2">{bootcamp.title}</h3>
  <div className="flex items-center text-gray-600 mb-2">
- <MapPin className="h-4 w-4 mr-2" />
+ <MapPin className="h-4 w-4 mr-2" aria-hidden="true" />
  {bootcamp.location}
  </div>
  <div className="flex items-center text-gray-600 mb-3">
- <Users className="h-4 w-4 mr-2" />
+ <Users className="h-4 w-4 mr-2" aria-hidden="true" />
  {bootcamp.participants}
  </div>
  <p className="text-gray-600 ">{bootcamp.focus}</p>
@@ -228,7 +228,7 @@ const Impact = () => {
 
  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
  <div className="bg-teal-50 p-8 rounded-xl border border-gray-100 ">
- <Eye className="h-12 w-12 text-teal-600 mb-4" />
+ <Eye className="h-12 w-12 text-teal-600 mb-4" aria-hidden="true" />
  <h3 className="text-xl font-semibold text-gray-900 mb-3">Braille Robotics</h3>
  <p className="text-gray-600 ">
  Developed tactile robotics challenges and Braille programming interfaces,
@@ -237,7 +237,7 @@ const Impact = () => {
  </div>
 
  <div className="bg-teal-50 p-8 rounded-xl border border-gray-100 ">
- <Users className="h-12 w-12 text-teal-600 mb-4" />
+ <Users className="h-12 w-12 text-teal-600 mb-4" aria-hidden="true" />
  <h3 className="text-xl font-semibold text-gray-900 mb-3">KSL Integration</h3>
  <p className="text-gray-600 ">
  Integrated Kenyan Sign Language (KSL) into our curriculum materials and training,
@@ -246,7 +246,7 @@ const Impact = () => {
  </div>
 
  <div className="bg-teal-50 p-8 rounded-xl border border-gray-100 ">
- <Brain className="h-12 w-12 text-teal-600 mb-4" />
+ <Brain className="h-12 w-12 text-teal-600 mb-4" aria-hidden="true" />
  <h3 className="text-xl font-semibold text-gray-900 mb-3">Low-Vision LMS</h3>
  <p className="text-gray-600 ">
  Developed specialized Learning Management System features with high contrast,
@@ -296,14 +296,14 @@ const Impact = () => {
  rel="noopener noreferrer"
  className="bg-terracotta-500 hover:bg-terracotta-600 text-white px-8 py-3 rounded-xl transition-all duration-200 font-semibold flex items-center justify-center hover:shadow-soft-xl"
  >
- <ExternalLink className="mr-2 h-5 w-5" />
+ <ExternalLink className="mr-2 h-5 w-5" aria-hidden="true" />
  Learn About Microsoft ADC
  </a>
  <Link
  to="/microsoft"
  className="bg-white/5 border border-white/10 backdrop-blur-lg text-white px-8 py-3 rounded-xl hover:bg-white/10 transition-all duration-200 font-semibold flex items-center justify-center"
  >
- <Download className="mr-2 h-5 w-5" />
+ <Download className="mr-2 h-5 w-5" aria-hidden="true" />
  Partnership Impact Report
  </Link>
  </div>

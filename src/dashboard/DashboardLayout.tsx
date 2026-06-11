@@ -1,9 +1,35 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
 import { NotificationsProvider, NotificationToaster } from '../lib/notifications';
 import { useOrderRealtime, type OrderCounts } from '../lib/useOrderRealtime';
 import { LogOut, Home, School, Package, ClipboardList, Users, Boxes, Wrench, Send, Menu, X, CalendarDays, Award } from 'lucide-react';
+
+// ----- Page titles for the SPA route announcer -----
+// Screen readers don't pick up React Router navigations as page changes,
+// so we maintain a small map of paths → titles and write that into an
+// aria-live region whenever the route changes. JAWS/NVDA users hear
+// "Navigated to <page name>" the same way they would on a full page load.
+const DASHBOARD_PAGE_TITLES: Record<string, string> = {
+  '/dashboard':                     'Overview',
+  '/dashboard/admin/schools':       'Schools',
+  '/dashboard/admin/products':      'Products',
+  '/dashboard/admin/orders':        'All orders',
+  '/dashboard/admin/distribute':    'Distribute',
+  '/dashboard/admin/events':        'Activities',
+  '/dashboard/admin/certifications':'Certifications',
+  '/dashboard/school/members':      'Students',
+  '/dashboard/school/orders':       'Orders',
+  '/dashboard/school/production':   'Production',
+  '/dashboard/school/stock':        'Stock and units',
+  '/dashboard/school/certificates': 'Certificates',
+};
+function getDashboardPageTitle(path: string): string {
+  if (DASHBOARD_PAGE_TITLES[path]) return DASHBOARD_PAGE_TITLES[path];
+  if (path.startsWith('/dashboard/admin/schools/')) return 'School details';
+  if (path.startsWith('/dashboard/certificate/'))   return 'Certificate';
+  return 'Dashboard';
+}
 
 // =============================================================
 // Admin/school dashboard shell.
@@ -35,6 +61,9 @@ function DashboardShell() {
   const isMakerSpace = !!school?.is_maker_space;
   const counts: OrderCounts = useOrderRealtime();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [routeMessage, setRouteMessage] = useState('');
+  const drawerRef = useRef<HTMLElement | null>(null);
+  const hamburgerRef = useRef<HTMLButtonElement | null>(null);
 
   // Two labels for the role:
   //   • shortLabel — pixel chip in the brand corner; must fit a 60px column
@@ -55,12 +84,68 @@ function DashboardShell() {
   // Auto-close the drawer on route change.
   useEffect(() => { setMobileOpen(false); }, [location.pathname]);
 
+  // Announce SPA route changes to screen readers + update document title.
+  // The aria-live region downstream picks up the change after a tick so
+  // assistive tech reliably hears the new title even on fast nav.
+  useEffect(() => {
+    const title = getDashboardPageTitle(location.pathname);
+    document.title = `${title} · ChipuRobo`;
+    const t = setTimeout(() => setRouteMessage(`Navigated to ${title}`), 100);
+    return () => clearTimeout(t);
+  }, [location.pathname]);
+
   // Lock body scroll while drawer is open on mobile.
   useEffect(() => {
     if (!mobileOpen) return;
     const original = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = original; };
+  }, [mobileOpen]);
+
+  // === Mobile drawer dialog behaviour ===
+  // • Move focus into the drawer when it opens
+  // • Trap focus inside while open (Tab cycles, Shift+Tab cycles back)
+  // • Escape closes the drawer and returns focus to the hamburger
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const drawer = drawerRef.current;
+    if (!drawer) return;
+
+    const focusables = () =>
+      Array.from(
+        drawer.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter((el) => !el.hasAttribute('inert') && el.offsetParent !== null);
+
+    // Initial focus → first focusable (the close button)
+    const list = focusables();
+    list[0]?.focus();
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setMobileOpen(false);
+        hamburgerRef.current?.focus();
+        return;
+      }
+      if (e.key === 'Tab') {
+        const items = focusables();
+        if (items.length === 0) return;
+        const first = items[0];
+        const last  = items[items.length - 1];
+        const active = document.activeElement as HTMLElement | null;
+        if (e.shiftKey && active === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && active === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
   }, [mobileOpen]);
 
   const handleSignOut = async () => {
@@ -70,15 +155,39 @@ function DashboardShell() {
 
   return (
     <div className="admin-zone min-h-screen bg-warm-50 md:flex">
+      {/* Skip link — keyboard/screen-reader users tab here first and
+          jump straight past the sidebar nav to the page content */}
+      <a
+        href="#dashboard-main"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[60] bg-teal-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+      >
+        Skip to main content
+      </a>
+
+      {/* Live region for SPA route announcements. Hidden visually,
+          read by NVDA/JAWS/VoiceOver on every navigation. */}
+      <div
+        id="dashboard-route-announcer"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+      >
+        {routeMessage}
+      </div>
+
       {/* ───── Mobile top bar (md:hidden) ───── */}
       <div className="md:hidden sticky top-0 z-30 flex items-center gap-3 border-b border-warm-200 bg-white px-3 py-2">
         <button
+          ref={hamburgerRef}
           type="button"
           onClick={() => setMobileOpen(true)}
           className="p-2 -ml-1 text-gray-700 hover:bg-warm-100 rounded-md"
-          aria-label="Open menu"
+          aria-label="Open navigation menu"
+          aria-expanded={mobileOpen}
+          aria-controls="dashboard-sidebar"
         >
-          <Menu className="h-5 w-5" />
+          <Menu className="h-5 w-5" aria-hidden="true" />
         </button>
         <Link to="/dashboard" className="flex items-center gap-2">
           <picture>
@@ -86,7 +195,7 @@ function DashboardShell() {
             <img src="/img/logo.png" alt="" width={24} height={24} className="h-6 w-6 pixel-crisp" />
           </picture>
           <span className="font-pixel text-[0.6rem] tracking-wider text-gray-900 uppercase">
-            ChipuRobo<span className="text-teal-500">_</span>
+            ChipuRobo<span className="text-teal-500" aria-hidden="true">_</span>
           </span>
         </Link>
         <span className={`ml-auto text-[0.55rem] font-pixel tracking-widest uppercase ${roleColor}`}>
@@ -100,12 +209,21 @@ function DashboardShell() {
           type="button"
           onClick={() => setMobileOpen(false)}
           className="md:hidden fixed inset-0 z-40 bg-black/30"
-          aria-label="Close menu"
+          aria-label="Close navigation menu"
+          tabIndex={-1}
         />
       )}
 
-      {/* ───── Sidebar (drawer on mobile, static on md+) ───── */}
+      {/* ───── Sidebar (drawer on mobile, static on md+) ─────
+          On mobile the drawer is a modal dialog: role="dialog",
+          aria-modal, focus trapped inside, Escape closes it. On
+          md+ it's just a permanent nav, no dialog semantics. */}
       <aside
+        ref={drawerRef}
+        id="dashboard-sidebar"
+        role={mobileOpen ? 'dialog' : undefined}
+        aria-modal={mobileOpen ? 'true' : undefined}
+        aria-label={mobileOpen ? 'Navigation menu' : undefined}
         className={`
           fixed md:sticky top-0 left-0 z-50 md:z-10 h-screen md:h-screen
           w-64 md:w-60 shrink-0 border-r border-warm-200 bg-white
@@ -120,7 +238,7 @@ function DashboardShell() {
               <img src="/img/logo.png" alt="" width={28} height={28} className="h-7 w-7 pixel-crisp" />
             </picture>
             <span className="ml-2 font-pixel text-[0.65rem] tracking-wider text-gray-900 uppercase">
-              ChipuRobo<span className="text-teal-500">_</span>
+              ChipuRobo<span className="text-teal-500" aria-hidden="true">_</span>
             </span>
           </Link>
           <span className={`ml-auto text-[0.55rem] font-pixel tracking-widest uppercase hidden md:inline ${roleColor}`}>
@@ -128,15 +246,15 @@ function DashboardShell() {
           </span>
           <button
             type="button"
-            onClick={() => setMobileOpen(false)}
+            onClick={() => { setMobileOpen(false); hamburgerRef.current?.focus(); }}
             className="md:hidden ml-auto p-1 -mr-1 text-gray-500 hover:text-gray-900"
-            aria-label="Close menu"
+            aria-label="Close navigation menu"
           >
-            <X className="h-5 w-5" />
+            <X className="h-5 w-5" aria-hidden="true" />
           </button>
         </div>
 
-        <nav className="flex-1 py-4 px-3 space-y-0.5 text-sm overflow-y-auto">
+        <nav aria-label="Primary" className="flex-1 py-4 px-3 space-y-0.5 text-sm overflow-y-auto">
           <SidebarLink to="/dashboard" end icon={Home}>
             Overview
           </SidebarLink>
@@ -199,17 +317,22 @@ function DashboardShell() {
             {roleLabel}
           </span>
           <button
+            type="button"
             onClick={handleSignOut}
             className="mt-3 inline-flex items-center text-xs text-gray-500 hover:text-gray-900 transition-colors"
           >
-            <LogOut className="h-3.5 w-3.5 mr-1.5" />
+            <LogOut className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />
             Sign out
           </button>
         </div>
       </aside>
 
       {/* ───── Main ───── */}
-      <main className="flex-1 min-w-0 overflow-x-hidden">
+      <main
+        id="dashboard-main"
+        tabIndex={-1}
+        className="flex-1 min-w-0 overflow-x-hidden focus:outline-none"
+      >
         <Outlet />
       </main>
     </div>
@@ -241,14 +364,15 @@ function SidebarLink({
         }`
       }
     >
-      <Icon className="h-4 w-4 mr-2.5 flex-shrink-0" />
+      <Icon className="h-4 w-4 mr-2.5 flex-shrink-0" aria-hidden="true" />
       <span className="flex-1">{children}</span>
       {badge !== undefined && badge > 0 && (
         <span
           className="ml-2 inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full text-[0.65rem] font-semibold bg-terracotta-500 text-white"
           aria-label={`${badge} pending`}
+          role="status"
         >
-          {badge > 99 ? '99+' : badge}
+          <span aria-hidden="true">{badge > 99 ? '99+' : badge}</span>
         </span>
       )}
     </NavLink>

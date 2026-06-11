@@ -1,9 +1,12 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../lib/auth';
 import type { ClubMember } from '../../lib/database.types';
 import { UserPlus, Check, X, Upload, Accessibility } from 'lucide-react';
 import { StudentBulkImport } from './StudentBulkImport';
+import { Pagination, usePaged } from '../components/Pagination';
+import { SkeletonRows } from '../components/Skeletons';
 
 /**
  * /dashboard/school/members
@@ -15,8 +18,9 @@ import { StudentBulkImport } from './StudentBulkImport';
  */
 export function SchoolMembers() {
   const { school } = useAuth();
-  const [members, setMembers] = useState<ClubMember[] | null>(null);
-  const [err, setErr] = useState<string | null>(null);
+  const qc = useQueryClient();
+  const schoolId = school?.id ?? null;
+
   const [showInactive, setShowInactive] = useState(false);
   const [importing, setImporting] = useState(false);
 
@@ -26,50 +30,126 @@ export function SchoolMembers() {
   const [addInClub, setAddInClub] = useState(true);
   const [addHasDisability, setAddHasDisability] = useState(false);
   const [addDisabilityNotes, setAddDisabilityNotes] = useState('');
-  const [adding, setAdding] = useState(false);
 
   // Inline edit
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
   const [editGrade, setEditGrade] = useState('');
 
-  const load = async () => {
-    if (!school) return;
-    const { data, error } = await supabase
-      .from('club_members')
-      .select('*')
-      .eq('school_id', school.id)
-      .order('joined_at', { ascending: false });
-    if (error) setErr(error.message);
-    else setMembers(data as ClubMember[]);
-  };
+  const { data: members, error: queryErr } = useQuery({
+    queryKey: ['members', schoolId],
+    queryFn: async (): Promise<ClubMember[]> => {
+      const { data, error } = await supabase
+        .from('club_members')
+        .select('*')
+        .eq('school_id', schoolId!)
+        .order('joined_at', { ascending: false });
+      if (error) throw new Error(error.message);
+      return data as ClubMember[];
+    },
+    enabled: !!schoolId,
+  });
 
-  useEffect(() => { void load(); }, [school?.id]);
-
-  const onAdd = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!school || !addName.trim()) return;
-    setAdding(true);
-    setErr(null);
-    const { error } = await supabase.from('club_members').insert({
-      school_id: school.id,
-      full_name: addName.trim(),
-      grade: addGrade.trim() || null,
-      in_club: addInClub,
-      has_disability: addHasDisability,
-      disability_notes: addHasDisability ? (addDisabilityNotes.trim() || null) : null,
-    });
-    setAdding(false);
-    if (error) {
-      setErr(error.message);
-    } else {
+  const addMutation = useMutation({
+    mutationFn: async (input: {
+      name: string; grade: string; inClub: boolean;
+      hasDisability: boolean; disabilityNotes: string;
+    }) => {
+      const { error } = await supabase.from('club_members').insert({
+        school_id: schoolId!,
+        full_name: input.name.trim(),
+        grade: input.grade.trim() || null,
+        in_club: input.inClub,
+        has_disability: input.hasDisability,
+        disability_notes: input.hasDisability ? (input.disabilityNotes.trim() || null) : null,
+      });
+      if (error) throw new Error(error.message);
+    },
+    onSuccess: () => {
       setAddName('');
       setAddGrade('');
       setAddInClub(true);
       setAddHasDisability(false);
       setAddDisabilityNotes('');
-      void load();
-    }
+    },
+    onSettled: () => { void qc.invalidateQueries({ queryKey: ['members', schoolId] }); },
+  });
+
+  const editMutation = useMutation({
+    mutationFn: async (input: { id: string; name: string; grade: string }) => {
+      const { error } = await supabase
+        .from('club_members')
+        .update({ full_name: input.name.trim(), grade: input.grade.trim() || null })
+        .eq('id', input.id);
+      if (error) throw new Error(error.message);
+    },
+    onSettled: () => { void qc.invalidateQueries({ queryKey: ['members', schoolId] }); },
+  });
+
+  // Single-field flip → optimistic.
+  const toggleActiveMutation = useMutation({
+    mutationFn: async (m: ClubMember) => {
+      const { error } = await supabase
+        .from('club_members')
+        .update({ is_active: !m.is_active })
+        .eq('id', m.id);
+      if (error) throw new Error(error.message);
+    },
+    onMutate: async (m) => {
+      await qc.cancelQueries({ queryKey: ['members', schoolId] });
+      const previous = qc.getQueryData<ClubMember[]>(['members', schoolId]);
+      qc.setQueryData<ClubMember[]>(['members', schoolId], (rows) =>
+        rows?.map((r) => (r.id === m.id ? { ...r, is_active: !m.is_active } : r)),
+      );
+      return { previous };
+    },
+    onError: (_e, _v, ctx) => {
+      if (ctx?.previous) qc.setQueryData(['members', schoolId], ctx.previous);
+    },
+    onSettled: () => { void qc.invalidateQueries({ queryKey: ['members', schoolId] }); },
+  });
+
+  const toggleInClubMutation = useMutation({
+    mutationFn: async (m: ClubMember) => {
+      const { error } = await supabase
+        .from('club_members')
+        .update({ in_club: !m.in_club })
+        .eq('id', m.id);
+      if (error) throw new Error(error.message);
+    },
+    onMutate: async (m) => {
+      await qc.cancelQueries({ queryKey: ['members', schoolId] });
+      const previous = qc.getQueryData<ClubMember[]>(['members', schoolId]);
+      qc.setQueryData<ClubMember[]>(['members', schoolId], (rows) =>
+        rows?.map((r) => (r.id === m.id ? { ...r, in_club: !m.in_club } : r)),
+      );
+      return { previous };
+    },
+    onError: (_e, _v, ctx) => {
+      if (ctx?.previous) qc.setQueryData(['members', schoolId], ctx.previous);
+    },
+    onSettled: () => { void qc.invalidateQueries({ queryKey: ['members', schoolId] }); },
+  });
+
+  const err =
+    queryErr?.message
+    ?? addMutation.error?.message
+    ?? editMutation.error?.message
+    ?? toggleActiveMutation.error?.message
+    ?? toggleInClubMutation.error?.message
+    ?? null;
+  const adding = addMutation.isPending;
+
+  const onAdd = (e: FormEvent) => {
+    e.preventDefault();
+    if (!schoolId || !addName.trim()) return;
+    addMutation.mutate({
+      name: addName,
+      grade: addGrade,
+      inClub: addInClub,
+      hasDisability: addHasDisability,
+      disabilityNotes: addDisabilityNotes,
+    });
   };
 
   const startEdit = (m: ClubMember) => {
@@ -78,41 +158,20 @@ export function SchoolMembers() {
     setEditGrade(m.grade ?? '');
   };
 
-  const saveEdit = async () => {
+  const saveEdit = () => {
     if (!editingId) return;
-    setErr(null);
-    const { error } = await supabase
-      .from('club_members')
-      .update({ full_name: editName.trim(), grade: editGrade.trim() || null })
-      .eq('id', editingId);
-    if (error) setErr(error.message);
+    editMutation.mutate({ id: editingId, name: editName, grade: editGrade });
     setEditingId(null);
-    void load();
   };
 
-  const toggleActive = async (m: ClubMember) => {
-    setErr(null);
-    const { error } = await supabase
-      .from('club_members')
-      .update({ is_active: !m.is_active })
-      .eq('id', m.id);
-    if (error) setErr(error.message);
-    void load();
-  };
-
-  const toggleInClub = async (m: ClubMember) => {
-    setErr(null);
-    const { error } = await supabase
-      .from('club_members')
-      .update({ in_club: !m.in_club })
-      .eq('id', m.id);
-    if (error) setErr(error.message);
-    void load();
-  };
+  const toggleActive = (m: ClubMember) => toggleActiveMutation.mutate(m);
+  const toggleInClub = (m: ClubMember) => toggleInClubMutation.mutate(m);
 
   const visible = members?.filter((m) => showInactive || m.is_active) ?? null;
   const activeCount = members?.filter((m) => m.is_active).length ?? 0;
   const inactiveCount = (members?.length ?? 0) - activeCount;
+
+  const { paged: pagedVisible, page, setPage, totalPages } = usePaged(visible, 25);
 
   return (
     <div className="px-4 sm:px-6 lg:px-10 py-8">
@@ -141,14 +200,14 @@ export function SchoolMembers() {
             )}
           </div>
           <button onClick={() => setImporting((v) => !v)} className="btn-secondary">
-            <Upload className="h-4 w-4 mr-1.5" />
+            <Upload className="h-4 w-4 mr-1.5" aria-hidden="true" />
             Bulk import
           </button>
         </div>
       </div>
 
       {err && (
-        <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2 mb-4">
+        <div role="alert" className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2 mb-4">
           {err}
         </div>
       )}
@@ -158,21 +217,22 @@ export function SchoolMembers() {
           <StudentBulkImport
             schoolId={school.id}
             onClose={() => setImporting(false)}
-            onAllDone={() => { void load(); }}
+            onAllDone={() => { void qc.invalidateQueries({ queryKey: ['members', schoolId] }); }}
           />
         </div>
       )}
 
       {/* Add */}
-      <div className="card p-4 mb-6">
-        <form onSubmit={onAdd} className="space-y-3">
+      <div role="region" aria-label="Add student" className="card p-4 mb-6">
+        <form onSubmit={onAdd} aria-label="Add student" className="space-y-3">
           <div className="flex gap-3 items-end flex-wrap">
             <div className="flex-1 min-w-[200px]">
-              <label className="field-label" htmlFor="addName">Full name</label>
+              <label className="field-label" htmlFor="add-student-name">Full name<span aria-hidden="true" className="text-red-600 ml-0.5">*</span></label>
               <input
-                id="addName"
+                id="add-student-name"
                 type="text"
                 required
+                aria-required="true"
                 className="field-input"
                 placeholder="e.g. Mary Wanjiku"
                 value={addName}
@@ -180,9 +240,9 @@ export function SchoolMembers() {
               />
             </div>
             <div className="w-32">
-              <label className="field-label" htmlFor="addGrade">Grade</label>
+              <label className="field-label" htmlFor="add-student-grade">Grade</label>
               <input
-                id="addGrade"
+                id="add-student-grade"
                 type="text"
                 className="field-input"
                 placeholder="Grade 7"
@@ -191,7 +251,7 @@ export function SchoolMembers() {
               />
             </div>
             <button type="submit" className="btn-primary" disabled={adding || !addName.trim()}>
-              <UserPlus className="h-4 w-4 mr-1.5" />
+              <UserPlus className="h-4 w-4 mr-1.5" aria-hidden="true" />
               Add student
             </button>
           </div>
@@ -211,12 +271,13 @@ export function SchoolMembers() {
                 checked={addHasDisability}
                 onChange={(e) => setAddHasDisability(e.target.checked)}
               />
-              <Accessibility className="h-3.5 w-3.5 text-teal-700" />
+              <Accessibility className="h-3.5 w-3.5 text-teal-700" aria-hidden="true" />
               Has a disability
             </label>
             {addHasDisability && (
               <input
                 type="text"
+                aria-label="Disability notes"
                 className="field-input flex-1 min-w-[200px] !py-1 !text-xs"
                 placeholder="Notes (e.g. Visual impairment, Hearing impairment, Wheelchair)"
                 value={addDisabilityNotes}
@@ -229,21 +290,21 @@ export function SchoolMembers() {
 
       {/* Table */}
       <div className="card overflow-x-auto">
-        <table className="data-table">
+        <table className="data-table" aria-label="Students and club members">
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Grade</th>
-              <th>Role</th>
-              <th>Needs</th>
-              <th>Joined</th>
-              <th>Status</th>
-              <th className="text-right">Actions</th>
+              <th scope="col">Name</th>
+              <th scope="col">Grade</th>
+              <th scope="col">Role</th>
+              <th scope="col">Needs</th>
+              <th scope="col">Joined</th>
+              <th scope="col">Status</th>
+              <th scope="col" className="text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
             {!visible && (
-              <tr><td colSpan={7} className="text-center text-gray-500 py-8">Loading…</td></tr>
+              <SkeletonRows rows={5} cols={7} label="Loading students" />
             )}
             {visible && visible.length === 0 && (
               <tr>
@@ -252,13 +313,14 @@ export function SchoolMembers() {
                 </td>
               </tr>
             )}
-            {visible?.map((m) => (
+            {pagedVisible?.map((m) => (
               <tr key={m.id} className={m.is_active ? '' : 'opacity-60'}>
                 {editingId === m.id ? (
                   <>
                     <td>
                       <input
                         type="text"
+                        aria-label="Full name"
                         className="field-input"
                         value={editName}
                         onChange={(e) => setEditName(e.target.value)}
@@ -267,6 +329,7 @@ export function SchoolMembers() {
                     <td>
                       <input
                         type="text"
+                        aria-label="Grade"
                         className="field-input"
                         value={editGrade}
                         onChange={(e) => setEditGrade(e.target.value)}
@@ -283,7 +346,7 @@ export function SchoolMembers() {
                           className="badge-terra inline-flex items-center"
                           title={m.disability_notes ?? ''}
                         >
-                          <Accessibility className="h-3 w-3 mr-1" />
+                          <Accessibility className="h-3 w-3 mr-1" aria-hidden="true" />
                           disability
                         </span>
                       ) : (
@@ -299,15 +362,17 @@ export function SchoolMembers() {
                         onClick={saveEdit}
                         className="p-1.5 text-teal-700 hover:bg-teal-50 rounded-md"
                         title="Save"
+                        aria-label="Save"
                       >
-                        <Check className="h-4 w-4" />
+                        <Check className="h-4 w-4" aria-hidden="true" />
                       </button>
                       <button
                         onClick={() => setEditingId(null)}
                         className="p-1.5 text-gray-500 hover:bg-gray-100 rounded-md ml-1"
                         title="Cancel"
+                        aria-label="Cancel edit"
                       >
-                        <X className="h-4 w-4" />
+                        <X className="h-4 w-4" aria-hidden="true" />
                       </button>
                     </td>
                   </>
@@ -326,7 +391,7 @@ export function SchoolMembers() {
                           className="badge-terra inline-flex items-center"
                           title={m.disability_notes ?? ''}
                         >
-                          <Accessibility className="h-3 w-3 mr-1" />
+                          <Accessibility className="h-3 w-3 mr-1" aria-hidden="true" />
                           {m.disability_notes
                             ? m.disability_notes.slice(0, 24)
                             : 'disability'}
@@ -371,6 +436,7 @@ export function SchoolMembers() {
             ))}
           </tbody>
         </table>
+        <Pagination page={page} totalPages={totalPages} onChange={setPage} />
       </div>
     </div>
   );

@@ -20,7 +20,7 @@ export function RequireAuth({ children, role }: Props) {
 
   if (loading) {
     return (
-      <div className="admin-zone min-h-screen flex items-center justify-center text-gray-500 text-sm">
+      <div role="status" className="admin-zone min-h-screen flex items-center justify-center text-gray-500 text-sm">
         Loading…
       </div>
     );

@@ -324,7 +324,7 @@ const InclusiveRobotics = () => {
           <div className="text-center">
             <Link to="/microsoft-bootcamps" className="group inline-flex items-center text-terracotta-600 hover:text-terracotta-700 font-medium text-sm transition-colors">
               Full Microsoft Bootcamps detail
-              <ArrowRight className="ml-2 h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="ml-2 h-4 w-4 transform group-hover:translate-x-1 transition-transform" aria-hidden="true" />
             </Link>
           </div>
         </div>
@@ -351,7 +351,7 @@ const InclusiveRobotics = () => {
               Secondary cohorts.
             </p>
             <div className="inline-flex items-center bg-white border border-warm-200 px-4 py-1.5 rounded-full text-sm text-gray-700 mt-2">
-              <Calendar className="h-4 w-4 mr-2 text-teal-600" />
+              <Calendar className="h-4 w-4 mr-2 text-teal-600" aria-hidden="true" />
               KSEF Nationals: March 29 – April 5, 2026
             </div>
           </div>
@@ -400,7 +400,7 @@ const InclusiveRobotics = () => {
           {/* Year timeline */}
           <div className="bg-gradient-to-br from-warm-100 to-warm-50 rounded-xl p-6 sm:p-8 border border-gray-200 mb-10">
             <h3 className="text-lg font-semibold tracking-tight text-gray-900 mb-6 flex items-center">
-              <Beaker className="h-5 w-5 text-teal-600 mr-2" />
+              <Beaker className="h-5 w-5 text-teal-600 mr-2" aria-hidden="true" />
               Year Timeline
             </h3>
             <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-6">
@@ -417,24 +417,24 @@ const InclusiveRobotics = () => {
           <div className="grid gap-6 md:grid-cols-2">
             <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-soft-md">
               <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
-                <Target className="h-5 w-5 text-teal-600 mr-2" />
+                <Target className="h-5 w-5 text-teal-600 mr-2" aria-hidden="true" />
                 What Learners Gain
               </h3>
               <ul className="space-y-3 text-sm text-gray-600">
-                <li className="flex items-start"><CheckCircle className="h-4 w-4 text-teal-500 mt-0.5 mr-2 flex-shrink-0" /> Continuous mentoring from cohort kickoff through nationals.</li>
-                <li className="flex items-start"><CheckCircle className="h-4 w-4 text-teal-500 mt-0.5 mr-2 flex-shrink-0" /> Hands-on time with sensors, PET recycling labs, AI kits.</li>
-                <li className="flex items-start"><CheckCircle className="h-4 w-4 text-teal-500 mt-0.5 mr-2 flex-shrink-0" /> Pitch coaching for school heats, regional juries, and nationals.</li>
+                <li className="flex items-start"><CheckCircle className="h-4 w-4 text-teal-500 mt-0.5 mr-2 flex-shrink-0" aria-hidden="true" /> Continuous mentoring from cohort kickoff through nationals.</li>
+                <li className="flex items-start"><CheckCircle className="h-4 w-4 text-teal-500 mt-0.5 mr-2 flex-shrink-0" aria-hidden="true" /> Hands-on time with sensors, PET recycling labs, AI kits.</li>
+                <li className="flex items-start"><CheckCircle className="h-4 w-4 text-teal-500 mt-0.5 mr-2 flex-shrink-0" aria-hidden="true" /> Pitch coaching for school heats, regional juries, and nationals.</li>
               </ul>
             </div>
             <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-soft-md">
               <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
-                <Award className="h-5 w-5 text-teal-600 mr-2" />
+                <Award className="h-5 w-5 text-teal-600 mr-2" aria-hidden="true" />
                 Included Extras
               </h3>
               <ul className="space-y-3 text-sm text-gray-600">
-                <li className="flex items-start"><CheckCircle className="h-4 w-4 text-teal-500 mt-0.5 mr-2 flex-shrink-0" /> Digital research planner templates.</li>
-                <li className="flex items-start"><CheckCircle className="h-4 w-4 text-teal-500 mt-0.5 mr-2 flex-shrink-0" /> Loaner sensors, Raspberry Pi kits, and fabrication support.</li>
-                <li className="flex items-start"><CheckCircle className="h-4 w-4 text-teal-500 mt-0.5 mr-2 flex-shrink-0" /> Termly teacher refreshers and classroom resources.</li>
+                <li className="flex items-start"><CheckCircle className="h-4 w-4 text-teal-500 mt-0.5 mr-2 flex-shrink-0" aria-hidden="true" /> Digital research planner templates.</li>
+                <li className="flex items-start"><CheckCircle className="h-4 w-4 text-teal-500 mt-0.5 mr-2 flex-shrink-0" aria-hidden="true" /> Loaner sensors, Raspberry Pi kits, and fabrication support.</li>
+                <li className="flex items-start"><CheckCircle className="h-4 w-4 text-teal-500 mt-0.5 mr-2 flex-shrink-0" aria-hidden="true" /> Termly teacher refreshers and classroom resources.</li>
               </ul>
             </div>
           </div>
@@ -447,7 +447,7 @@ const InclusiveRobotics = () => {
       <section className="relative overflow-hidden bg-gray-900 py-20 sm:py-24 scanlines">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(20,184,166,0.12),transparent_70%)]" />
         <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
-          <MapPin className="h-10 w-10 text-teal-400 mx-auto mb-4" />
+          <MapPin className="h-10 w-10 text-teal-400 mx-auto mb-4" aria-hidden="true" />
           <h2 className="heading-display text-2xl sm:text-3xl mb-4">Run This Program At Your School</h2>
           <p className="text-lg text-gray-300 mb-10 max-w-2xl mx-auto">
             We bring the YSK outreach, the Microsoft bootcamp partnership, and the year-round training. You bring the learners.

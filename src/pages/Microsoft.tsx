@@ -120,7 +120,7 @@ const Microsoft = () => {
  <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-28 lg:py-32">
  <div className="text-center">
  <div className="inline-flex items-center bg-white border border-warm-200 px-4 py-2 rounded-full text-gray-800 mb-6">
- <CheckCircle className="h-5 w-5 mr-2 text-teal-600" />
+ <CheckCircle className="h-5 w-5 mr-2 text-teal-600" aria-hidden="true" />
  <span className="font-semibold">2025 Programme Completed Successfully</span>
  </div>
  <h1 className="heading-display text-4xl md:text-6xl font-bold tracking-tight text-gray-900 mb-6">
@@ -164,7 +164,7 @@ const Microsoft = () => {
  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
  {programImpact.map((item, index) => (
  <div key={index} className="bg-white p-8 rounded-xl shadow-soft-md border border-gray-100 transition-all duration-300 hover:shadow-soft-lg hover:-translate-y-1.5">
- <item.icon className="h-12 w-12 text-teal-600 mb-4" />
+ <item.icon className="h-12 w-12 text-teal-600 mb-4" aria-hidden="true" />
  <p className="text-5xl font-bold text-gray-900 mb-2">{item.metric}</p>
  <p className="text-lg font-semibold text-gray-700 mb-1">{item.label}</p>
  <p className="text-sm text-gray-600 ">{item.detail}</p>
@@ -180,7 +180,7 @@ const Microsoft = () => {
  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
  {outcomes.map((outcome, index) => (
  <div key={index} className="text-center">
- <outcome.icon className="h-10 w-10 text-teal-600 mx-auto mb-3" />
+ <outcome.icon className="h-10 w-10 text-teal-600 mx-auto mb-3" aria-hidden="true" />
  <p className="text-3xl font-bold text-gray-900 mb-1">{outcome.metric}</p>
  <p className="text-sm text-gray-600 ">{outcome.label}</p>
  </div>
@@ -354,19 +354,19 @@ const Microsoft = () => {
  </h2>
  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
  <div className="bg-white p-8 rounded-xl shadow-soft-md border border-gray-100 transition-all duration-300 hover:shadow-soft-lg hover:-translate-y-1.5">
- <Calendar className="h-10 w-10 text-teal-600 mb-4" />
+ <Calendar className="h-10 w-10 text-teal-600 mb-4" aria-hidden="true" />
  <h3 className="text-xl font-bold text-gray-900 mb-2">Duration</h3>
  <p className="text-gray-600 ">3-day intensive bootcamp</p>
  <p className="text-sm text-gray-500 mt-2">10:00 AM - 3:30 PM daily</p>
  </div>
  <div className="bg-white p-8 rounded-xl shadow-soft-md border border-gray-100 transition-all duration-300 hover:shadow-soft-lg hover:-translate-y-1.5">
- <School className="h-10 w-10 text-teal-600 mb-4" />
+ <School className="h-10 w-10 text-teal-600 mb-4" aria-hidden="true" />
  <h3 className="text-xl font-bold text-gray-900 mb-2">Venue</h3>
  <p className="text-gray-600 ">Microsoft ADC Garage</p>
  <p className="text-sm text-gray-500 mt-2">Westlands, Nairobi</p>
  </div>
  <div className="bg-white p-8 rounded-xl shadow-soft-md border border-gray-100 transition-all duration-300 hover:shadow-soft-lg hover:-translate-y-1.5">
- <Award className="h-10 w-10 text-teal-600 mb-4" />
+ <Award className="h-10 w-10 text-teal-600 mb-4" aria-hidden="true" />
  <h3 className="text-xl font-bold text-gray-900 mb-2">Certification</h3>
  <p className="text-gray-600 ">CEMASTEA validated</p>
  <p className="text-sm text-gray-500 mt-2">100% completion rate</p>
@@ -394,7 +394,7 @@ const Microsoft = () => {
  onClick={() => navigate('/register-2026')}
  className="bg-terracotta-500 hover:bg-terracotta-600 text-white px-8 py-4 rounded-xl transition-all duration-200 text-lg font-semibold inline-flex items-center hover:shadow-soft-xl"
  >
- <Rocket className="mr-2 h-5 w-5" />
+ <Rocket className="mr-2 h-5 w-5" aria-hidden="true" />
  Register for 2026 Programme
  </button>
  </div>

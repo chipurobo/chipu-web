@@ -44,7 +44,7 @@ const Team = () => {
  </picture>
  ) : (
  <div className="w-28 h-28 rounded-full bg-gray-100 mx-auto flex items-center justify-center">
- <Users className="h-10 w-10 text-gray-400" />
+ <Users className="h-10 w-10 text-gray-400" aria-hidden="true" />
  </div>
  )}
  </div>
@@ -71,7 +71,7 @@ const Team = () => {
  className="p-2.5 rounded-full bg-gray-100 text-gray-500 hover:bg-teal-50 hover:text-teal-600 transition-all duration-200"
  aria-label={`${member.name} on LinkedIn`}
  >
- <Linkedin className="h-4 w-4" />
+ <Linkedin className="h-4 w-4" aria-hidden="true" />
  </a>
  </div>
  </div>

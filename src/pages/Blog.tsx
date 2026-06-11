@@ -49,22 +49,22 @@ const Blog = () => {
  </span>
  </div>
  <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm p-2 rounded-lg">
- <post.icon className="h-5 w-5 text-white" />
+ <post.icon className="h-5 w-5 text-white" aria-hidden="true" />
  </div>
  </div>
 
  <div className="p-6">
  <div className="flex items-center flex-wrap gap-x-3 gap-y-1 text-xs text-gray-500 mb-3">
  <span className="flex items-center">
- <User className="h-3.5 w-3.5 mr-1" />
+ <User className="h-3.5 w-3.5 mr-1" aria-hidden="true" />
  {post.author}
  </span>
  <span className="flex items-center">
- <Calendar className="h-3.5 w-3.5 mr-1" />
+ <Calendar className="h-3.5 w-3.5 mr-1" aria-hidden="true" />
  {post.date}
  </span>
  <span className="flex items-center">
- <Clock className="h-3.5 w-3.5 mr-1" />
+ <Clock className="h-3.5 w-3.5 mr-1" aria-hidden="true" />
  {post.readTime}
  </span>
  </div>
@@ -80,9 +80,10 @@ const Blog = () => {
  <Link
  to={`/blog/${post.id}`}
  className="inline-flex items-center text-terracotta-600 hover:text-terracotta-700 font-medium text-sm transition-colors"
+ aria-label={`Read more: ${post.title}`}
  >
  Read More
- <ArrowRight className="ml-2 h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
+ <ArrowRight className="ml-2 h-4 w-4 transform group-hover:translate-x-1 transition-transform" aria-hidden="true" />
  </Link>
  </div>
  </article>

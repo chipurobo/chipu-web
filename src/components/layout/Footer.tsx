@@ -16,7 +16,7 @@ const Footer = () => {
  <source srcSet="/img/logo.webp" type="image/webp" />
  <img
  src="/img/logo.png"
- alt="ChipuRobo Logo"
+ alt=""
  width={40}
  height={40}
  loading="lazy"
@@ -33,20 +33,20 @@ const Footer = () => {
  </p>
  <div className="flex space-x-4 mt-6">
  <a href="#" className="p-2.5 rounded-full bg-gray-800 text-gray-400 hover:bg-teal-500/10 hover:text-teal-400 transition-all duration-200" aria-label="Facebook">
- <Facebook className="h-5 w-5" />
+ <Facebook className="h-5 w-5" aria-hidden="true" />
  </a>
  <a href="#" className="p-2.5 rounded-full bg-gray-800 text-gray-400 hover:bg-teal-500/10 hover:text-teal-400 transition-all duration-200" aria-label="Twitter">
- <Twitter className="h-5 w-5" />
+ <Twitter className="h-5 w-5" aria-hidden="true" />
  </a>
  <a href="#" className="p-2.5 rounded-full bg-gray-800 text-gray-400 hover:bg-teal-500/10 hover:text-teal-400 transition-all duration-200" aria-label="LinkedIn">
- <Linkedin className="h-5 w-5" />
+ <Linkedin className="h-5 w-5" aria-hidden="true" />
  </a>
  </div>
  </div>
 
  {/* Quick Links */}
- <div>
- <h3 className="font-pixel text-[0.65rem] tracking-widest text-teal-400 mb-6 uppercase">// Quick Links</h3>
+ <nav aria-labelledby="footer-quicklinks-heading">
+ <h3 id="footer-quicklinks-heading" className="font-pixel text-[0.65rem] tracking-widest text-teal-400 mb-6 uppercase">// Quick Links</h3>
  <ul className="space-y-2">
  {[
  { to: '/', label: 'Home' },
@@ -65,7 +65,7 @@ const Footer = () => {
  </li>
  ))}
  </ul>
- </div>
+ </nav>
 
  {/* Partners */}
  <div>

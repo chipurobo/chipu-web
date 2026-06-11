@@ -73,7 +73,7 @@ const Sustainability = () => {
  <div className="code-bg absolute inset-0 opacity-30 " aria-hidden="true" />
  <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-28 lg:py-32">
  <div className="text-center">
- <Recycle className="h-12 w-12 text-terracotta-600 mx-auto mb-6 animate-spin-slow" />
+ <Recycle className="h-12 w-12 text-terracotta-600 mx-auto mb-6 animate-spin-slow" aria-hidden="true" />
  <h1 className="heading-display text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
  From Waste to Innovation
  </h1>
@@ -112,14 +112,14 @@ const Sustainability = () => {
  <span className="text-4xl font-bold text-green-200 ">
  0{index + 1}
  </span>
- <step.icon className="h-10 w-10 text-teal-600 " />
+ <step.icon className="h-10 w-10 text-teal-600 " aria-hidden="true" />
  </div>
  <h3 className="text-xl font-bold text-gray-900 mb-3">{step.title}</h3>
  <p className="text-gray-600 ">{step.description}</p>
  </div>
  {index < processSteps.length - 1 && (
  <div className="hidden lg:block absolute top-1/2 -right-4 transform -translate-y-1/2">
- <ArrowRight className="h-8 w-8 text-green-400" />
+ <ArrowRight className="h-8 w-8 text-green-400" aria-hidden="true" />
  </div>
  )}
  </div>
@@ -135,7 +135,7 @@ const Sustainability = () => {
  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
  {impact.map((item, index) => (
  <div key={index} className="text-center">
- <item.icon className="h-12 w-12 text-teal-600 mx-auto mb-4" />
+ <item.icon className="h-12 w-12 text-teal-600 mx-auto mb-4" aria-hidden="true" />
  <p className="text-4xl font-bold text-gray-900 mb-2">{item.metric}</p>
  <p className="text-gray-600 ">{item.label}</p>
  </div>
@@ -156,7 +156,7 @@ const Sustainability = () => {
  <div key={index} className="flex items-start bg-white p-8 rounded-xl shadow-soft-md border border-gray-100 transition-all duration-300 hover:shadow-soft-lg hover:-translate-y-1.5">
  <div className="flex-shrink-0">
  <div className="w-14 h-14 rounded-xl bg-teal-50 flex items-center justify-center">
- <benefit.icon className="h-7 w-7 text-teal-600 " />
+ <benefit.icon className="h-7 w-7 text-teal-600 " aria-hidden="true" />
  </div>
  </div>
  <div className="ml-6">
@@ -173,7 +173,7 @@ const Sustainability = () => {
  <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(20,184,166,0.12),transparent_70%)]" />
  <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-12 p-12">
  <div>
- <Factory className="h-12 w-12 text-green-400 mb-6" />
+ <Factory className="h-12 w-12 text-green-400 mb-6" aria-hidden="true" />
  <h2 className="heading-display text-3xl font-bold tracking-tight text-white mb-6">
  Nairobi Railway Museum Fabrication Lab
  </h2>
@@ -182,19 +182,19 @@ const Sustainability = () => {
  </p>
  <ul className="space-y-4 text-gray-300">
  <li className="flex items-start">
- <Recycle className="h-6 w-6 text-teal-400 mr-3 flex-shrink-0 mt-0.5" />
+ <Recycle className="h-6 w-6 text-teal-400 mr-3 flex-shrink-0 mt-0.5" aria-hidden="true" />
  <span>Process recycled PET plastic into high-quality filament</span>
  </li>
  <li className="flex items-start">
- <Sparkles className="h-6 w-6 text-teal-400 mr-3 flex-shrink-0 mt-0.5" />
+ <Sparkles className="h-6 w-6 text-teal-400 mr-3 flex-shrink-0 mt-0.5" aria-hidden="true" />
  <span>3D print custom robot parts and educational tools</span>
  </li>
  <li className="flex items-start">
- <Users className="h-6 w-6 text-teal-400 mr-3 flex-shrink-0 mt-0.5" />
+ <Users className="h-6 w-6 text-teal-400 mr-3 flex-shrink-0 mt-0.5" aria-hidden="true" />
  <span>Train youth and women in sustainable manufacturing</span>
  </li>
  <li className="flex items-start">
- <Globe className="h-6 w-6 text-teal-400 mr-3 flex-shrink-0 mt-0.5" />
+ <Globe className="h-6 w-6 text-teal-400 mr-3 flex-shrink-0 mt-0.5" aria-hidden="true" />
  <span>Support schools and communities with locally-made kits</span>
  </li>
  </ul>
@@ -202,7 +202,7 @@ const Sustainability = () => {
  <div className="flex items-center justify-center">
  <div className="relative">
  <div className="w-64 h-64 bg-green-500/20 rounded-full animate-pulse"></div>
- <Factory className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 h-32 w-32 text-green-400" />
+ <Factory className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 h-32 w-32 text-green-400" aria-hidden="true" />
  </div>
  </div>
  </div>
@@ -214,7 +214,7 @@ const Sustainability = () => {
  <section className="section-alt">
  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
  <div className="text-center mb-16">
- <Globe className="h-16 w-16 text-green-600 mx-auto mb-6" />
+ <Globe className="h-16 w-16 text-green-600 mx-auto mb-6" aria-hidden="true" />
  <h2 className="heading-display text-3xl font-bold tracking-tight text-gray-900 mb-4">
  Expanding Across Africa
  </h2>
@@ -257,14 +257,15 @@ const Sustainability = () => {
  to="/contact"
  className="bg-terracotta-500 hover:bg-terracotta-600 text-white px-8 py-4 rounded-xl transition-all duration-200 text-lg font-semibold inline-flex items-center justify-center hover:shadow-soft-xl"
  >
- <Heart className="mr-2 h-5 w-5" />
+ <Heart className="mr-2 h-5 w-5" aria-hidden="true" />
  Partner With Us
  </Link>
  <Link
  to="/register-2026"
  className="bg-white/5 border border-white/10 backdrop-blur-lg text-white px-8 py-4 rounded-xl hover:bg-white/10 transition-all duration-200 text-lg font-semibold inline-flex items-center justify-center"
+ aria-label="Learn more about ChipuRobo's 2026 sustainability programs"
  >
- <Leaf className="mr-2 h-5 w-5" />
+ <Leaf className="mr-2 h-5 w-5" aria-hidden="true" />
  Learn More
  </Link>
  </div>

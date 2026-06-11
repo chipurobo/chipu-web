@@ -33,7 +33,7 @@ const Navbar = () => {
       className={`sticky top-0 z-50 transition-all duration-300 ${
         isScrolled ? 'bg-warm-50/90 backdrop-blur-xl shadow-soft-sm' : 'bg-warm-50'
       }`}
-      aria-label="Main navigation"
+      aria-label="Main"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
@@ -42,7 +42,7 @@ const Navbar = () => {
               <source srcSet="/img/logo.webp" type="image/webp" />
               <img
                 src="/img/logo.png"
-                alt="ChipuRobo Logo"
+                alt=""
                 width={32}
                 height={32}
                 className="h-8 w-8 pixel-crisp"

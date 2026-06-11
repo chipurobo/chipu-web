@@ -15,14 +15,15 @@ const NotFound = () => {
  to="/"
  className="inline-flex items-center bg-terracotta-500 text-white px-6 py-3 rounded-xl hover:bg-terracotta-600 transition-all duration-200 font-semibold hover:shadow-soft-md"
  >
- <Home className="mr-2 h-5 w-5" />
+ <Home className="mr-2 h-5 w-5" aria-hidden="true" />
  Go Home
  </Link>
  <button
+ type="button"
  onClick={() => window.history.back()}
  className="inline-flex items-center bg-gray-200 text-gray-900 px-6 py-3 rounded-xl hover:bg-gray-300 transition-all duration-200 font-semibold hover:shadow-soft-md"
  >
- <ArrowLeft className="mr-2 h-5 w-5" />
+ <ArrowLeft className="mr-2 h-5 w-5" aria-hidden="true" />
  Go Back
  </button>
  </div>

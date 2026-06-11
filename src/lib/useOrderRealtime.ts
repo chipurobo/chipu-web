@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from './supabase';
 import { useAuth } from './auth';
 import { useNotifications } from './notifications';
@@ -45,6 +46,7 @@ interface OrderRow {
 export function useOrderRealtime(): OrderCounts {
   const { profile, school } = useAuth();
   const { notify } = useNotifications();
+  const qc = useQueryClient();
   const [counts, setCounts] = useState<OrderCounts>({
     inbox: 0, awaitingDelivery: 0, adminBacklog: 0,
   });
@@ -136,6 +138,12 @@ export function useOrderRealtime(): OrderCounts {
 
           // Re-pull counts after every event we care about
           void refresh();
+          // Nudge any open order list to refetch. Broad invalidation is fine
+          // here — TanStack will only refetch the queries that are actually
+          // mounted. (TODO: useOrderRealtime itself still does its own count
+          // queries via refresh(); consider routing those through TanStack
+          // with an ['order-counts', { userId, role }] cache later.)
+          void qc.invalidateQueries({ queryKey: ['orders'] });
         },
       )
       .subscribe();
@@ -143,7 +151,7 @@ export function useOrderRealtime(): OrderCounts {
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, [profile?.id, school?.id, notify]);
+  }, [profile?.id, school?.id, notify, qc]);
 
   return counts;
 }

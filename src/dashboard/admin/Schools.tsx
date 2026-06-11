@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useMemo, useState, type FormEvent } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import type { School, SchoolType } from '../../lib/database.types';
@@ -8,6 +9,9 @@ import { SchoolBulkImport } from './SchoolBulkImport';
 import { sendEmail } from '../../lib/sendEmail';
 import { getDashboardPath } from '../../lib/dashboardUrl';
 import { useNotifications } from '../../lib/notifications';
+import { useDialog } from '../../lib/useDialog';
+import { Pagination, usePaged } from '../components/Pagination';
+import { SkeletonRows } from '../components/Skeletons';
 
 // =============================================================
 // Email derivation
@@ -69,9 +73,7 @@ interface NewCreds {
  * SECURITY DEFINER RPCs in 20260601000010_admin_manages_credentials.sql.
  */
 export function AdminSchools() {
-  const [schools, setSchools] = useState<School[] | null>(null);
-  const [leads,   setLeads]   = useState<SchoolLead[] | null>(null);
-  const [err,     setErr]     = useState<string | null>(null);
+  const qc = useQueryClient();
 
   const [creating, setCreating]         = useState(false);
   const [importing, setImporting]       = useState(false);
@@ -79,26 +81,66 @@ export function AdminSchools() {
   const [editingSchool, setEditingSchool] = useState<School | null>(null);
   const [lastCreated, setLastCreated]   = useState<NewCreds | null>(null);
   const [selected, setSelected]         = useState<Set<string>>(new Set());
-  const [deleting, setDeleting]         = useState(false);
 
-  const load = async () => {
-    const [sRes, lRes] = await Promise.all([
-      supabase.from('schools').select('*').order('created_at', { ascending: false }),
-      supabase.rpc('admin_list_school_leads'),
-    ]);
-    if (sRes.error) setErr(sRes.error.message);
-    else setSchools(sRes.data as School[]);
-    if (lRes.error) setErr(lRes.error.message);
-    else setLeads(lRes.data as SchoolLead[]);
-  };
+  const { data: schools, error: schoolsErr } = useQuery({
+    queryKey: ['schools'],
+    queryFn: async (): Promise<School[]> => {
+      const { data, error } = await supabase
+        .from('schools')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw new Error(error.message);
+      return data as School[];
+    },
+  });
 
-  useEffect(() => { void load(); }, []);
+  const { data: leads, error: leadsErr } = useQuery({
+    queryKey: ['school-leads'],
+    queryFn: async (): Promise<SchoolLead[]> => {
+      const { data, error } = await supabase.rpc('admin_list_school_leads');
+      if (error) throw new Error(error.message);
+      return data as SchoolLead[];
+    },
+  });
+
+  // Bulk-delete: hit admin_delete_school once per id. Each call is its own
+  // transaction so a failure on one school doesn't roll back the others.
+  const deleteSchoolsMutation = useMutation({
+    mutationFn: async (ids: string[]): Promise<{ failures: { id: string; message: string }[] }> => {
+      const failures: { id: string; message: string }[] = [];
+      for (const id of ids) {
+        const { error } = await supabase.rpc('admin_delete_school', { p_school_id: id });
+        if (error) failures.push({ id, message: error.message });
+      }
+      if (failures.length > 0) {
+        const sampleNames = failures
+          .map((f) => schools?.find((s) => s.id === f.id)?.name ?? f.id)
+          .slice(0, 3)
+          .join(', ');
+        throw new Error(
+          `${failures.length} of ${ids.length} schools couldn't be deleted (e.g. ${sampleNames}). ` +
+          `First error: ${failures[0].message}`,
+        );
+      }
+      return { failures };
+    },
+    onSettled: () => {
+      setSelected(new Set());
+      void qc.invalidateQueries({ queryKey: ['schools'] });
+      void qc.invalidateQueries({ queryKey: ['school-leads'] });
+    },
+  });
+
+  const err = schoolsErr?.message ?? leadsErr?.message ?? deleteSchoolsMutation.error?.message ?? null;
+  const deleting = deleteSchoolsMutation.isPending;
 
   const leadBySchool = useMemo(() => {
     const m = new Map<string, SchoolLead>();
     leads?.forEach((l) => { if (l.school_id) m.set(l.school_id, l); });
     return m;
   }, [leads]);
+
+  const { paged: pagedSchools, page, setPage, totalPages } = usePaged(schools, 25);
 
   const toggleSelected = (id: string) => {
     setSelected((cur) => {
@@ -117,36 +159,13 @@ export function AdminSchools() {
     });
   };
 
-  // Bulk-delete: hit admin_delete_school once per id. Each call is its own
-  // transaction so a failure on one school doesn't roll back the others.
-  const deleteSchools = async (ids: string[]) => {
+  const deleteSchools = (ids: string[]) => {
     if (ids.length === 0) return;
     const summary = ids.length === 1
       ? `Delete this school?\n\nThis wipes its students, orders, units, stock, and the lead-teacher login. This cannot be undone.`
       : `Delete ${ids.length} schools?\n\nThis wipes their students, orders, units, stock, and lead-teacher logins. This cannot be undone.`;
     if (!window.confirm(summary)) return;
-
-    setDeleting(true);
-    setErr(null);
-    const failures: { id: string; message: string }[] = [];
-    for (const id of ids) {
-      const { error } = await supabase.rpc('admin_delete_school', { p_school_id: id });
-      if (error) failures.push({ id, message: error.message });
-    }
-    setDeleting(false);
-
-    if (failures.length > 0) {
-      const sampleNames = failures
-        .map((f) => schools?.find((s) => s.id === f.id)?.name ?? f.id)
-        .slice(0, 3)
-        .join(', ');
-      setErr(
-        `${failures.length} of ${ids.length} schools couldn't be deleted (e.g. ${sampleNames}). ` +
-        `First error: ${failures[0].message}`,
-      );
-    }
-    setSelected(new Set());
-    void load();
+    deleteSchoolsMutation.mutate(ids);
   };
 
   return (
@@ -165,21 +184,21 @@ export function AdminSchools() {
             onClick={() => { setImporting(true); setCreating(false); setEditingLead(null); setLastCreated(null); }}
             className="btn-secondary flex-1 sm:flex-none justify-center"
           >
-            <Upload className="h-4 w-4 mr-1.5" />
+            <Upload className="h-4 w-4 mr-1.5" aria-hidden="true" />
             Bulk import
           </button>
           <button
             onClick={() => { setCreating(true); setImporting(false); setEditingLead(null); setLastCreated(null); }}
             className="btn-primary flex-1 sm:flex-none justify-center"
           >
-            <Plus className="h-4 w-4 mr-1.5" />
+            <Plus className="h-4 w-4 mr-1.5" aria-hidden="true" />
             Create school
           </button>
         </div>
       </div>
 
       {err && (
-        <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+        <div role="alert" className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
           {err}
         </div>
       )}
@@ -201,7 +220,8 @@ export function AdminSchools() {
           onCreated={(c) => {
             setCreating(false);
             setLastCreated(c);
-            void load();
+            void qc.invalidateQueries({ queryKey: ['schools'] });
+            void qc.invalidateQueries({ queryKey: ['school-leads'] });
           }}
         />
       )}
@@ -209,7 +229,10 @@ export function AdminSchools() {
       {importing && (
         <SchoolBulkImport
           onClose={() => setImporting(false)}
-          onAllDone={() => { void load(); }}
+          onAllDone={() => {
+            void qc.invalidateQueries({ queryKey: ['schools'] });
+            void qc.invalidateQueries({ queryKey: ['school-leads'] });
+          }}
         />
       )}
 
@@ -223,7 +246,8 @@ export function AdminSchools() {
           onSaved={(c) => {
             setEditingLead(null);
             if (c) setLastCreated(c);
-            void load();
+            void qc.invalidateQueries({ queryKey: ['schools'] });
+            void qc.invalidateQueries({ queryKey: ['school-leads'] });
           }}
         />
       )}
@@ -232,7 +256,11 @@ export function AdminSchools() {
         <EditSchoolPanel
           school={editingSchool}
           onClose={() => setEditingSchool(null)}
-          onSaved={() => { setEditingSchool(null); void load(); }}
+          onSaved={() => {
+            setEditingSchool(null);
+            void qc.invalidateQueries({ queryKey: ['schools'] });
+            void qc.invalidateQueries({ queryKey: ['school-leads'] });
+          }}
         />
       )}
 
@@ -258,7 +286,7 @@ export function AdminSchools() {
               disabled={deleting}
               className="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-medium bg-red-600 text-white hover:bg-red-700 disabled:opacity-60"
             >
-              <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+              <Trash2 className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />
               {deleting ? 'Deleting…' : `Delete ${selected.size}`}
             </button>
           </div>
@@ -266,10 +294,10 @@ export function AdminSchools() {
       </div>
 
       <div className="card overflow-x-auto">
-        <table className="data-table">
+        <table className="data-table" aria-label="Schools">
           <thead>
             <tr>
-              <th className="w-8">
+              <th scope="col" className="w-8">
                 <input
                   type="checkbox"
                   aria-label="Select all schools"
@@ -280,23 +308,23 @@ export function AdminSchools() {
                   onChange={toggleAll}
                 />
               </th>
-              <th>Name</th>
-              <th>Type</th>
-              <th>Maker</th>
-              <th>County</th>
-              <th>Lead teacher</th>
-              <th>Email (login)</th>
-              <th className="text-right">Actions</th>
+              <th scope="col">Name</th>
+              <th scope="col">Type</th>
+              <th scope="col">Maker</th>
+              <th scope="col">County</th>
+              <th scope="col">Lead teacher</th>
+              <th scope="col">Email (login)</th>
+              <th scope="col" className="text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
             {!schools && (
-              <tr><td colSpan={8} className="text-center text-gray-500 py-8">Loading…</td></tr>
+              <SkeletonRows rows={5} cols={8} label="Loading schools" />
             )}
             {schools && schools.length === 0 && (
               <tr><td colSpan={8} className="text-center text-gray-500 py-8">No schools yet.</td></tr>
             )}
-            {schools?.map((s) => {
+            {pagedSchools?.map((s) => {
               const lead = leadBySchool.get(s.id);
               const isSelected = selected.has(s.id);
               return (
@@ -327,7 +355,7 @@ export function AdminSchools() {
                   <td>
                     {s.is_maker_space ? (
                       <span className="badge-green inline-flex items-center">
-                        <Wrench className="h-3 w-3 mr-1" />maker
+                        <Wrench className="h-3 w-3 mr-1" aria-hidden="true" />maker
                       </span>
                     ) : <span className="text-xs text-gray-400">—</span>}
                   </td>
@@ -353,7 +381,7 @@ export function AdminSchools() {
                       }}
                       className="text-xs text-teal-700 hover:underline inline-flex items-center"
                     >
-                      <Pencil className="h-3 w-3 mr-1" />
+                      <Pencil className="h-3 w-3 mr-1" aria-hidden="true" />
                       Edit
                     </button>
                     {lead && (
@@ -366,7 +394,7 @@ export function AdminSchools() {
                         }}
                         className="text-xs text-teal-700 hover:underline inline-flex items-center ml-3"
                       >
-                        <KeyRound className="h-3 w-3 mr-1" />
+                        <KeyRound className="h-3 w-3 mr-1" aria-hidden="true" />
                         Credentials
                       </button>
                     )}
@@ -375,7 +403,7 @@ export function AdminSchools() {
                       disabled={deleting}
                       className="text-xs text-red-700 hover:underline inline-flex items-center ml-3 disabled:opacity-60"
                     >
-                      <Trash2 className="h-3 w-3 mr-1" />
+                      <Trash2 className="h-3 w-3 mr-1" aria-hidden="true" />
                       Delete
                     </button>
                   </td>
@@ -384,6 +412,7 @@ export function AdminSchools() {
             })}
           </tbody>
         </table>
+        <Pagination page={page} totalPages={totalPages} onChange={setPage} />
       </div>
     </div>
   );
@@ -415,6 +444,8 @@ function CreateSchoolForm({
 
   const [submitting, setSubmitting] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+
+  const dialogRef = useDialog<HTMLDivElement>({ open: true, onClose, trapFocus: false });
 
   // Username is ALWAYS slug(full_name). No separate field, no override.
   const username = useMemo(() => deriveUsername(fullName), [fullName]);
@@ -485,31 +516,31 @@ function CreateSchoolForm({
   };
 
   return (
-    <div className="card p-5">
+    <div ref={dialogRef} role="region" aria-labelledby="create-school-heading" className="card p-5">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="m-0">Create school</h2>
-        <button onClick={onClose} className="p-1 text-gray-500 hover:text-gray-900">
-          <X className="h-4 w-4" />
+        <h2 className="m-0" id="create-school-heading">Create school</h2>
+        <button onClick={onClose} className="p-1 text-gray-500 hover:text-gray-900" aria-label="Close create school form">
+          <X className="h-4 w-4" aria-hidden="true" />
         </button>
       </div>
 
-      <form onSubmit={onSubmit} className="grid sm:grid-cols-2 gap-4">
+      <form onSubmit={onSubmit} aria-labelledby="create-school-heading" className="grid sm:grid-cols-2 gap-4">
         <div className="sm:col-span-2">
           <p className="text-xs uppercase tracking-wider text-gray-500 mb-2">School</p>
         </div>
 
         <div>
-          <label className="field-label" htmlFor="sname">School name</label>
+          <label className="field-label" htmlFor="create-school-name">School name<span aria-hidden="true" className="text-red-600 ml-0.5">*</span></label>
           <input
-            id="sname" type="text" required className="field-input"
+            id="create-school-name" type="text" required aria-required="true" className="field-input"
             value={schoolName} onChange={(e) => setSchoolName(e.target.value)}
           />
         </div>
 
         <div>
-          <label className="field-label" htmlFor="county">County</label>
+          <label className="field-label" htmlFor="create-school-county">County<span aria-hidden="true" className="text-red-600 ml-0.5">*</span></label>
           <select
-            id="county" required className="field-select"
+            id="create-school-county" required aria-required="true" className="field-select"
             value={county} onChange={(e) => setCounty(e.target.value)}
           >
             <option value="" disabled>— select a county —</option>
@@ -520,9 +551,9 @@ function CreateSchoolForm({
         </div>
 
         <div>
-          <label className="field-label" htmlFor="type">Type</label>
+          <label className="field-label" htmlFor="create-school-type">Type</label>
           <select
-            id="type" className="field-select" value={type}
+            id="create-school-type" className="field-select" value={type}
             onChange={(e) => setType(e.target.value as SchoolType)}
           >
             {SCHOOL_TYPES.map((t) => (
@@ -534,15 +565,15 @@ function CreateSchoolForm({
         <div className="sm:col-span-2">
           <label className="flex items-center gap-2 text-sm text-gray-700">
             <input type="checkbox" checked={isMaker} onChange={(e) => setIsMaker(e.target.checked)} />
-            <Wrench className="h-3.5 w-3.5 text-teal-700" />
+            <Wrench className="h-3.5 w-3.5 text-teal-700" aria-hidden="true" />
             This school is a maker space (fulfils orders from other schools)
           </label>
         </div>
 
         <div>
-          <label className="field-label" htmlFor="lat">Latitude (optional)</label>
+          <label className="field-label" htmlFor="create-school-lat">Latitude (optional)</label>
           <input
-            id="lat"
+            id="create-school-lat"
             type="number"
             step="any"
             min={-90}
@@ -554,9 +585,9 @@ function CreateSchoolForm({
           />
         </div>
         <div>
-          <label className="field-label" htmlFor="lng">Longitude (optional)</label>
+          <label className="field-label" htmlFor="create-school-lng">Longitude (optional)</label>
           <input
-            id="lng"
+            id="create-school-lng"
             type="number"
             step="any"
             min={-180}
@@ -579,33 +610,34 @@ function CreateSchoolForm({
         </div>
 
         <div>
-          <label className="field-label" htmlFor="fname">Full name</label>
+          <label className="field-label" htmlFor="create-school-fname">Full name<span aria-hidden="true" className="text-red-600 ml-0.5">*</span></label>
           <input
-            id="fname" type="text" required className="field-input"
+            id="create-school-fname" type="text" required aria-required="true" className="field-input"
             value={fullName} onChange={(e) => setFullName(e.target.value)}
           />
         </div>
 
         <div>
-          <label className="field-label" htmlFor="phone">Phone</label>
+          <label className="field-label" htmlFor="create-school-phone">Phone</label>
           <input
-            id="phone" type="tel" className="field-input" placeholder="+254 …"
+            id="create-school-phone" type="tel" className="field-input" placeholder="+254 …"
             value={phone} onChange={(e) => setPhone(e.target.value)}
           />
         </div>
 
         <div>
-          <label className="field-label" htmlFor="email">Teacher's email (for your records)</label>
+          <label className="field-label" htmlFor="create-school-email">Teacher's email (for your records)</label>
           <input
-            id="email" type="email" className="field-input"
+            id="create-school-email" type="email" className="field-input"
             value={contactEmail} onChange={(e) => setContactEmail(e.target.value)}
           />
           <p className="field-help">Optional — kept on the school record so you know how to reach them.</p>
         </div>
 
         <div>
-          <label className="field-label">Email (auto)</label>
+          <label className="field-label" htmlFor="create-school-auto-email">Email (auto)</label>
           <input
+            id="create-school-auto-email"
             type="text" readOnly
             className="field-input font-mono bg-warm-100 text-gray-700"
             value={username ? deriveLoginEmail(fullName) : '— enter a full name above —'}
@@ -617,16 +649,17 @@ function CreateSchoolForm({
         </div>
 
         <div className="sm:col-span-2">
-          <label className="field-label" htmlFor="pw">Temporary password</label>
+          <label className="field-label" htmlFor="create-school-pw">Temporary password<span aria-hidden="true" className="text-red-600 ml-0.5">*</span></label>
           <div className="flex gap-2">
             <input
-              id="pw" type="text" required minLength={8}
+              id="create-school-pw" type="text" required aria-required="true" minLength={8}
               className="field-input font-mono"
               value={password} onChange={(e) => setPassword(e.target.value)}
             />
             <button
               type="button" onClick={() => setPassword(generatePassword())}
               className="btn-secondary !px-3" title="Regenerate"
+              aria-label="Regenerate password"
             >↻</button>
           </div>
           <p className="field-help">
@@ -635,7 +668,7 @@ function CreateSchoolForm({
         </div>
 
         {err && (
-          <div className="sm:col-span-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+          <div role="alert" className="sm:col-span-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
             {err}
           </div>
         )}
@@ -668,6 +701,8 @@ function EditSchoolPanel({
   const [longitude,    setLongitude]    = useState<string>(school.longitude != null ? String(school.longitude) : '');
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+
+  const dialogRef = useDialog<HTMLDivElement>({ open: true, onClose, trapFocus: false });
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -703,33 +738,33 @@ function EditSchoolPanel({
   };
 
   return (
-    <div className="card p-5">
+    <div ref={dialogRef} role="region" aria-labelledby="edit-school-heading" className="card p-5">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="m-0">Edit school — {school.name}</h2>
-        <button onClick={onClose} className="p-1 text-gray-500 hover:text-gray-900">
-          <X className="h-4 w-4" />
+        <h2 className="m-0" id="edit-school-heading">Edit school — {school.name}</h2>
+        <button onClick={onClose} className="p-1 text-gray-500 hover:text-gray-900" aria-label="Close edit school form">
+          <X className="h-4 w-4" aria-hidden="true" />
         </button>
       </div>
 
       {err && (
-        <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2 mb-3">
+        <div role="alert" className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2 mb-3">
           {err}
         </div>
       )}
 
-      <form onSubmit={onSubmit} className="grid sm:grid-cols-2 gap-4">
+      <form onSubmit={onSubmit} aria-labelledby="edit-school-heading" className="grid sm:grid-cols-2 gap-4">
         <div className="sm:col-span-2">
-          <label className="field-label" htmlFor="ename">School name</label>
+          <label className="field-label" htmlFor="edit-school-name">School name<span aria-hidden="true" className="text-red-600 ml-0.5">*</span></label>
           <input
-            id="ename" type="text" required className="field-input"
+            id="edit-school-name" type="text" required aria-required="true" className="field-input"
             value={name} onChange={(e) => setName(e.target.value)}
           />
         </div>
 
         <div>
-          <label className="field-label" htmlFor="ecounty">County</label>
+          <label className="field-label" htmlFor="edit-school-county">County</label>
           <select
-            id="ecounty" className="field-select"
+            id="edit-school-county" className="field-select"
             value={county} onChange={(e) => setCounty(e.target.value)}
           >
             <option value="">— none —</option>
@@ -740,9 +775,9 @@ function EditSchoolPanel({
         </div>
 
         <div>
-          <label className="field-label" htmlFor="etype">Type</label>
+          <label className="field-label" htmlFor="edit-school-type">Type</label>
           <select
-            id="etype" className="field-select"
+            id="edit-school-type" className="field-select"
             value={type} onChange={(e) => setType(e.target.value as SchoolType)}
           >
             {SCHOOL_TYPES.map((t) => (
@@ -754,23 +789,23 @@ function EditSchoolPanel({
         <div className="sm:col-span-2">
           <label className="flex items-center gap-2 text-sm text-gray-700">
             <input type="checkbox" checked={isMaker} onChange={(e) => setIsMaker(e.target.checked)} />
-            <Wrench className="h-3.5 w-3.5 text-teal-700" />
+            <Wrench className="h-3.5 w-3.5 text-teal-700" aria-hidden="true" />
             This school is a maker space
           </label>
         </div>
 
         <div>
-          <label className="field-label" htmlFor="elat">Latitude</label>
+          <label className="field-label" htmlFor="edit-school-lat">Latitude</label>
           <input
-            id="elat" type="number" step="any" min={-90} max={90}
+            id="edit-school-lat" type="number" step="any" min={-90} max={90}
             className="field-input font-mono" placeholder="-1.2921"
             value={latitude} onChange={(e) => setLatitude(e.target.value)}
           />
         </div>
         <div>
-          <label className="field-label" htmlFor="elng">Longitude</label>
+          <label className="field-label" htmlFor="edit-school-lng">Longitude</label>
           <input
-            id="elng" type="number" step="any" min={-180} max={180}
+            id="edit-school-lng" type="number" step="any" min={-180} max={180}
             className="field-input font-mono" placeholder="36.8219"
             value={longitude} onChange={(e) => setLongitude(e.target.value)}
           />
@@ -780,17 +815,17 @@ function EditSchoolPanel({
         </div>
 
         <div>
-          <label className="field-label" htmlFor="ephone">Contact phone</label>
+          <label className="field-label" htmlFor="edit-school-phone">Contact phone</label>
           <input
-            id="ephone" type="tel" className="field-input"
+            id="edit-school-phone" type="tel" className="field-input"
             value={contactPhone} onChange={(e) => setContactPhone(e.target.value)}
           />
         </div>
 
         <div>
-          <label className="field-label" htmlFor="eemail">Contact email</label>
+          <label className="field-label" htmlFor="edit-school-email">Contact email</label>
           <input
-            id="eemail" type="email" className="field-input"
+            id="edit-school-email" type="email" className="field-input"
             value={contactEmail} onChange={(e) => setContactEmail(e.target.value)}
           />
         </div>
@@ -817,6 +852,8 @@ function EditCredentialsPanel({
   const [password, setPassword] = useState('');
   const [err, setErr] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  const dialogRef = useDialog<HTMLDivElement>({ open: true, onClose, trapFocus: false });
 
   // Username is locked — it's always derived from the lead's full name when
   // the school was created. Editing it would break the "one consistent
@@ -845,33 +882,35 @@ function EditCredentialsPanel({
   };
 
   return (
-    <div className="card p-5">
+    <div ref={dialogRef} role="region" aria-labelledby="edit-credentials-heading" className="card p-5">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="m-0">Credentials — {lead.school_name ?? '—'}</h2>
+          <h2 className="m-0" id="edit-credentials-heading">Credentials — {lead.school_name ?? '—'}</h2>
           <p className="text-sm text-gray-500 mt-0.5">
             Teacher: {lead.full_name ?? '—'} · Email:{' '}
             <span className="font-mono">{usernameToLoginEmail(lead.username)}</span>
           </p>
         </div>
-        <button onClick={onClose} className="p-1 text-gray-500 hover:text-gray-900">
-          <X className="h-4 w-4" />
+        <button onClick={onClose} className="p-1 text-gray-500 hover:text-gray-900" aria-label="Close credentials panel">
+          <X className="h-4 w-4" aria-hidden="true" />
         </button>
       </div>
 
       {err && (
-        <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2 mb-3">
+        <div role="alert" className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2 mb-3">
           {err}
         </div>
       )}
 
-      <form onSubmit={savePassword} className="border border-warm-200 rounded-md p-3 bg-warm-50">
-        <h3 className="m-0 mb-2 flex items-center text-sm">
-          <KeyRound className="h-3.5 w-3.5 mr-1 text-teal-700" />
+      <form onSubmit={savePassword} aria-labelledby="reset-password-heading" className="border border-warm-200 rounded-md p-3 bg-warm-50">
+        <h3 id="reset-password-heading" className="m-0 mb-2 flex items-center text-sm">
+          <KeyRound className="h-3.5 w-3.5 mr-1 text-teal-700" aria-hidden="true" />
           Reset password
         </h3>
         <div className="flex gap-2">
+          <label htmlFor="reset-password-input" className="sr-only">New password</label>
           <input
+            id="reset-password-input"
             type="text"
             minLength={8}
             className="field-input font-mono"
@@ -884,6 +923,7 @@ function EditCredentialsPanel({
             onClick={() => setPassword(generatePassword())}
             className="btn-secondary !px-2"
             title="Generate"
+            aria-label="Generate password"
           >↻</button>
         </div>
         <p className="field-help">
@@ -918,6 +958,8 @@ function CredentialsCard({
     | { state: 'sent';  to: string }
     | { state: 'error'; message: string }
   >({ state: 'idle' });
+
+  const dialogRef = useDialog<HTMLDivElement>({ open: true, onClose: onDismiss, trapFocus: false });
 
   const loginEmail = usernameToLoginEmail(username);
   const loginUrl   = getDashboardPath('/dashboard/login');
@@ -974,10 +1016,10 @@ Please sign in and let us know if anything looks off.
   };
 
   return (
-    <div className="card p-5 border-2 border-teal-500 bg-teal-50/40">
+    <div ref={dialogRef} role="region" aria-labelledby="credentials-card-heading" className="card p-5 border-2 border-teal-500 bg-teal-50/40">
       <div className="flex items-start justify-between gap-4 mb-3">
         <div>
-          <h2 className="m-0">{title}</h2>
+          <h2 className="m-0" id="credentials-card-heading">{title}</h2>
           <p className="text-sm text-gray-600 mt-0.5">
             {contactEmail
               ? <>Send the credentials to <span className="font-mono">{contactEmail}</span> now — the password is only visible here.</>
@@ -985,7 +1027,7 @@ Please sign in and let us know if anything looks off.
           </p>
         </div>
         <button onClick={onDismiss} className="p-1 text-gray-500 hover:text-gray-900" aria-label="Dismiss">
-          <X className="h-4 w-4" />
+          <X className="h-4 w-4" aria-hidden="true" />
         </button>
       </div>
 
@@ -994,14 +1036,14 @@ Please sign in and let us know if anything looks off.
       </pre>
 
       {result.state === 'sent' && (
-        <div className="mt-3 text-sm text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-md px-3 py-2 flex items-center gap-2">
-          <Check className="h-4 w-4 flex-shrink-0" />
+        <div role="status" className="mt-3 text-sm text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-md px-3 py-2 flex items-center gap-2">
+          <Check className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
           <span>Sent to <strong>{result.to}</strong>.</span>
         </div>
       )}
       {result.state === 'error' && (
-        <div className="mt-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2 flex items-start gap-2">
-          <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+        <div role="alert" className="mt-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2 flex items-start gap-2">
+          <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" aria-hidden="true" />
           <div>
             <div className="font-medium">Couldn't send the email.</div>
             <div className="text-xs text-red-700/80 mt-0.5">{result.message}</div>
@@ -1020,8 +1062,8 @@ Please sign in and let us know if anything looks off.
           {sending
             ? 'Sending…'
             : result.state === 'sent'
-              ? <><Check className="h-4 w-4 mr-1.5" />Resend</>
-              : <><Send className="h-4 w-4 mr-1.5" />{contactEmail ? `Send to ${contactEmail}` : 'No email on file'}</>}
+              ? <><Check className="h-4 w-4 mr-1.5" aria-hidden="true" />Resend</>
+              : <><Send className="h-4 w-4 mr-1.5" aria-hidden="true" />{contactEmail ? `Send to ${contactEmail}` : 'No email on file'}</>}
         </button>
       </div>
     </div>

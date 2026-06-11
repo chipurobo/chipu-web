@@ -76,7 +76,7 @@ const Home = () => {
  <span className="font-pixel text-[0.55rem] tracking-widest text-teal-400">KESHO</span>
  <span className="hidden sm:inline">Hackathon · 11–12 July 2026 · register interest</span>
  <span className="sm:hidden">11–12 Jul · register</span>
- <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+ <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
  </Link>
  </div>
 
@@ -282,9 +282,9 @@ const Home = () => {
  <p className="text-gray-600 mb-4 text-sm line-clamp-2">
  {post.excerpt}
  </p>
- <span className="inline-flex items-center text-terracotta-600 font-medium text-sm">
+ <span className="inline-flex items-center text-terracotta-600 font-medium text-sm" aria-hidden="true">
  Read More
- <ArrowRight className="ml-2 h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
+ <ArrowRight className="ml-2 h-4 w-4 transform group-hover:translate-x-1 transition-transform" aria-hidden="true" />
  </span>
  </div>
  </article>
@@ -298,7 +298,7 @@ const Home = () => {
  className="inline-flex items-center text-gray-900 hover:text-terracotta-600 text-lg font-semibold transition-colors"
  >
  View All Articles
- <ArrowRight className="ml-2 h-5 w-5" />
+ <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
  </Link>
  </div>
  </div>
@@ -340,7 +340,7 @@ const Home = () => {
  to="/impact"
  className="bg-terracotta-500 hover:bg-terracotta-600 text-white px-6 py-3 rounded-lg font-semibold inline-flex items-center transition-all duration-200"
  >
- <Award className="mr-2 h-5 w-5" />
+ <Award className="mr-2 h-5 w-5" aria-hidden="true" />
  View Full Impact Report
  </Link>
  </div>
@@ -383,7 +383,7 @@ const Home = () => {
  <div className="bg-white p-10 sm:p-14 rounded-2xl shadow-soft-md border border-gray-100 ">
  <div className="flex items-start gap-5 mb-8">
  <div className="bg-teal-50 p-3 rounded-xl flex-shrink-0">
- <Target className="h-10 w-10 text-teal-600 " />
+ <Target className="h-10 w-10 text-teal-600 " aria-hidden="true" />
  </div>
  <div>
  <h2 id="mission-title" className="heading-display text-2xl text-gray-900 mb-4">Our Mission</h2>
@@ -422,7 +422,7 @@ const Home = () => {
  </p>
  <div className="flex flex-wrap gap-5 justify-center">
  <Link to="/programs" className="btn-cta">
- <Calendar className="mr-2 h-4 w-4" />
+ <Calendar className="mr-2 h-4 w-4" aria-hidden="true" />
  KSEF 2026
  </Link>
  <Link
@@ -430,7 +430,7 @@ const Home = () => {
  aria-label="Learn more about ChipuRobo's mission and programs"
  className="btn-outline"
  >
- <Heart className="mr-2 h-4 w-4" />
+ <Heart className="mr-2 h-4 w-4" aria-hidden="true" />
  About ChipuRobo
  </Link>
  </div>

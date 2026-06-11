@@ -196,7 +196,7 @@ const About = () => {
  />
  </picture>
  ) : (
- <Users className="h-8 w-8 text-gray-400" />
+ <Users className="h-8 w-8 text-gray-400" aria-hidden="true" />
  )}
  </div>
  <h3 className="text-base font-semibold text-gray-900 mb-1">{member.name}</h3>
@@ -210,7 +210,7 @@ const About = () => {
  className="p-1.5 rounded-full bg-gray-100 text-gray-500 hover:bg-teal-50 hover:text-teal-600 transition-colors"
  aria-label={`${member.name} on LinkedIn`}
  >
- <Linkedin className="h-3.5 w-3.5" />
+ <Linkedin className="h-3.5 w-3.5" aria-hidden="true" />
  </a>
  </div>
  </div>
@@ -223,7 +223,7 @@ const About = () => {
  className="inline-flex items-center text-terracotta-600 hover:text-terracotta-700 font-medium text-sm transition-colors"
  >
  See full team page
- <ArrowRight className="ml-2 h-4 w-4" />
+ <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
  </Link>
  </div>
  </div>

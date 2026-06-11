@@ -242,7 +242,7 @@ const Services = () => {
  className="group bg-white p-6 rounded-xl shadow-soft-md border border-gray-100 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-soft-lg"
  >
  <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${workshop.color} flex items-center justify-center mb-5`}>
- <workshop.icon className="h-5 w-5 text-white" />
+ <workshop.icon className="h-5 w-5 text-white" aria-hidden="true" />
  </div>
  <h3 className="text-lg font-semibold text-gray-900 mb-2">{workshop.title}</h3>
  <p className="text-gray-600 mb-4 text-sm">{workshop.description}</p>
@@ -270,7 +270,7 @@ const Services = () => {
  className="flex items-start p-6 bg-white rounded-xl shadow-soft-sm border border-gray-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-soft-md"
  >
  <div className="flex-shrink-0 bg-teal-50 p-2.5 rounded-xl">
- <benefit.icon className="h-6 w-6 text-teal-600 " />
+ <benefit.icon className="h-6 w-6 text-teal-600 " aria-hidden="true" />
  </div>
  <div className="ml-4">
  <h3 className="text-base font-semibold text-gray-900 mb-1">{benefit.title}</h3>
@@ -295,7 +295,7 @@ const Services = () => {
  className="bg-terracotta-500 hover:bg-terracotta-600 text-white px-8 py-4 rounded-xl transition-all duration-200 text-lg font-semibold inline-flex items-center group hover:shadow-soft-xl"
  >
  <span>Enroll Now</span>
- <ArrowRight className="ml-2 h-5 w-5 transform group-hover:translate-x-1 transition-transform" />
+ <ArrowRight className="ml-2 h-5 w-5 transform group-hover:translate-x-1 transition-transform" aria-hidden="true" />
  </button>
  </div>
  </div>

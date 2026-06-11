@@ -2,6 +2,7 @@ import { useState, type ChangeEvent } from 'react';
 import { supabase } from '../../lib/supabase';
 import { parseSheet, parseBoolish, downloadXlsx, type SheetRow } from '../../lib/parseSheet';
 import { Upload, FileSpreadsheet, Download, X, CheckCircle2, AlertCircle } from 'lucide-react';
+import { useDialog } from '../../lib/useDialog';
 
 interface ParsedRow extends SheetRow {
   __status?: 'pending' | 'ok' | 'error';
@@ -26,6 +27,8 @@ export function StudentBulkImport({
   const [err,     setErr]     = useState<string | null>(null);
   const [running, setRunning] = useState(false);
   const [done,    setDone]    = useState(false);
+
+  const dialogRef = useDialog<HTMLDivElement>({ open: true, onClose, trapFocus: false });
 
   const onFile = async (e: ChangeEvent<HTMLInputElement>) => {
     setErr(null); setDone(false);
@@ -101,11 +104,11 @@ export function StudentBulkImport({
   const errCount = rows?.filter((r) => r.__status === 'error').length ?? 0;
 
   return (
-    <div className="card p-5">
+    <div ref={dialogRef} role="region" aria-labelledby="student-bulk-import-heading" className="card p-5">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="m-0">Bulk import students</h2>
-        <button onClick={onClose} className="p-1 text-gray-500 hover:text-gray-900">
-          <X className="h-4 w-4" />
+        <h2 className="m-0" id="student-bulk-import-heading">Bulk import students</h2>
+        <button onClick={onClose} className="p-1 text-gray-500 hover:text-gray-900" aria-label="Close bulk import">
+          <X className="h-4 w-4" aria-hidden="true" />
         </button>
       </div>
 
@@ -119,13 +122,13 @@ export function StudentBulkImport({
           <code className="text-xs bg-warm-100 px-1 rounded">disability_notes</code> (free text).
         </p>
         <button onClick={downloadTemplate} type="button" className="btn-secondary !text-xs whitespace-nowrap">
-          <Download className="h-3.5 w-3.5 mr-1.5" />
+          <Download className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />
           Template .xlsx
         </button>
       </div>
 
       <label className="flex items-center gap-3 cursor-pointer card p-4 border-dashed border-2 border-warm-200 hover:bg-warm-50 mb-4">
-        <Upload className="h-5 w-5 text-teal-700 flex-shrink-0" />
+        <Upload className="h-5 w-5 text-teal-700 flex-shrink-0" aria-hidden="true" />
         <div className="flex-1">
           <div className="font-medium text-sm">
             {fileName ? fileName : 'Choose a CSV or .xlsx file'}
@@ -142,7 +145,7 @@ export function StudentBulkImport({
       </label>
 
       {err && (
-        <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2 mb-3">
+        <div role="alert" className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2 mb-3">
           {err}
         </div>
       )}
@@ -150,13 +153,13 @@ export function StudentBulkImport({
       {rows && rows.length > 0 && (
         <>
           <div className="card overflow-x-auto max-h-80 overflow-y-auto mb-3">
-            <table className="data-table">
+            <table className="data-table" aria-label="Bulk import preview">
               <thead className="sticky top-0 bg-white">
                 <tr>
-                  <th>Name</th>
-                  <th>Grade</th>
-                  <th>In club</th>
-                  <th>Status</th>
+                  <th scope="col">Name</th>
+                  <th scope="col">Grade</th>
+                  <th scope="col">In club</th>
+                  <th scope="col">Status</th>
                 </tr>
               </thead>
               <tbody>
@@ -170,12 +173,12 @@ export function StudentBulkImport({
                     <td>
                       {r.__status === 'ok' && (
                         <span className="inline-flex items-center text-xs text-emerald-700">
-                          <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> added
+                          <CheckCircle2 className="h-3.5 w-3.5 mr-1" aria-hidden="true" /> added
                         </span>
                       )}
                       {r.__status === 'error' && (
                         <span className="inline-flex items-center text-xs text-red-700" title={r.__message}>
-                          <AlertCircle className="h-3.5 w-3.5 mr-1" /> {r.__message?.slice(0, 50)}
+                          <AlertCircle className="h-3.5 w-3.5 mr-1" aria-hidden="true" /> {r.__message?.slice(0, 50)}
                         </span>
                       )}
                       {r.__status === 'pending' && (
@@ -204,7 +207,7 @@ export function StudentBulkImport({
               className="btn-primary"
               disabled={running || done}
             >
-              <FileSpreadsheet className="h-4 w-4 mr-1.5" />
+              <FileSpreadsheet className="h-4 w-4 mr-1.5" aria-hidden="true" />
               {running ? 'Importing…' : done ? 'Done' : `Import ${rows.length} student(s)`}
             </button>
           </div>
