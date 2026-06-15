@@ -111,14 +111,39 @@ export function useOrderRealtime(): OrderCounts {
           const newRow = (payload.new ?? null) as OrderRow | null;
           const oldRow = (payload.old ?? null) as OrderRow | null;
 
-          // New incoming order at my maker space
-          if (event === 'INSERT' && newRow && school?.id
-              && newRow.fulfilled_by_school_id === school.id) {
-            notify(
-              'info',
-              'New order received',
-              `${newRow.quantity} unit(s) waiting in your Production inbox.`,
-            );
+          if (event === 'INSERT' && newRow) {
+            // (a) New incoming order at my maker space
+            if (school?.id && newRow.fulfilled_by_school_id === school.id) {
+              notify(
+                'info',
+                'New order received',
+                `${newRow.quantity} unit(s) waiting in your Production inbox.`,
+              );
+            }
+            // (b) NEW: Admin assigned a consumable to my school
+            //     ChipuRobo fulfils consumables itself so the row carries
+            //     placed_by_school_id = me + fulfilled_by_school_id = NULL.
+            //     Without this branch the school received an email but no
+            //     in-app toast — the original bug.
+            else if (school?.id
+                     && newRow.placed_by_school_id === school.id
+                     && newRow.fulfilled_by_school_id === null) {
+              notify(
+                'info',
+                'New consumable assignment',
+                `${newRow.quantity} unit(s) from ChipuRobo — check your Orders page.`,
+              );
+            }
+            // (c) Admin: heads-up that a new ChipuRobo-fulfilled assignment
+            //     just landed in the backlog (covers admins on other tabs).
+            else if (profile.role === 'admin'
+                     && newRow.fulfilled_by_school_id === null) {
+              notify(
+                'info',
+                'New consumable assignment',
+                `${newRow.quantity} unit(s) added to the Distribute backlog.`,
+              );
+            }
           }
 
           // Status change on an order involving me
@@ -138,12 +163,14 @@ export function useOrderRealtime(): OrderCounts {
 
           // Re-pull counts after every event we care about
           void refresh();
-          // Nudge any open order list to refetch. Broad invalidation is fine
-          // here — TanStack will only refetch the queries that are actually
-          // mounted. (TODO: useOrderRealtime itself still does its own count
-          // queries via refresh(); consider routing those through TanStack
-          // with an ['order-counts', { userId, role }] cache later.)
+          // Nudge any open list to refetch. Broad invalidation is fine —
+          // TanStack will only refetch queries that are currently mounted.
+          // We invalidate ['orders'] for order lists, ['stock'] so the
+          // school's stock page reflects delivered consumables, and
+          // ['units'] for durables moving through fabrication.
           void qc.invalidateQueries({ queryKey: ['orders'] });
+          void qc.invalidateQueries({ queryKey: ['stock'] });
+          void qc.invalidateQueries({ queryKey: ['units'] });
         },
       )
       .subscribe();
