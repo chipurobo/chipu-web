@@ -5,47 +5,24 @@ import {
   School,
   ArrowRight,
   Cpu,
-  Zap,
-  Trophy,
   Brain,
   Code,
   Cog,
   Eye,
   Target,
   Handshake,
+  Megaphone,
+  MapPin,
 } from 'lucide-react';
 
-// === Microsoft ADC Bootcamp data ===
-
-const adcSessions = [
-  {
-    label: 'April Sprint',
-    date: 'April 2025',
-    participants: '210',
-    blurb: 'Post-KSEF build week focused on advanced robotics and computer vision.',
-    schools: 6,
-  },
-  {
-    label: 'August Intensive',
-    date: 'August 2025',
-    participants: '142',
-    blurb: 'Mid-year deep dive into AI cameras, Python control, and teamwork challenges.',
-    schools: 6,
-  },
-  {
-    label: 'December Finale',
-    date: 'December 2025',
-    participants: '158',
-    blurb: 'Wrap projects, demo prototypes, and celebrate year-end milestones.',
-    schools: 7,
-  },
-];
+// === Microsoft ADC Bootcamp totals ===
+// Source: ChipuRobo baseline data sheet. Aggregated across all cohorts.
 
 const adcStats = [
-  { icon: Users, value: '800+', label: 'Learners & Teachers Trained' },
-  { icon: School, value: '80', label: 'Schools Engaged' },
-  { icon: Trophy, value: '500+', label: 'Certificates Awarded' },
-  { icon: Zap, value: '30+', label: 'AI-Powered Robots Built' },
+  { icon: Users,     value: '948',  label: 'Students reached' },
+  { icon: Megaphone, value: '127',  label: 'Teachers trained' },
+  { icon: School,    value: '150',  label: 'School engagements' },
+  { icon: MapPin,    value: '4',    label: 'Counties' },
 ];
 
 const curriculum = [
@@ -79,7 +56,7 @@ const MicrosoftBootcamps = () => {
             ADC engineers.
           </p>
           <p className="text-sm text-gray-500 max-w-2xl mx-auto">
-            Three cohorts completed in 2025 · nationwide expansion planned for 2026.
+            Running since 2025 · expanding nationwide in 2026.
           </p>
         </div>
       </section>
@@ -92,10 +69,10 @@ const MicrosoftBootcamps = () => {
               <Cpu className="h-4 w-4 mr-2" aria-hidden="true" />
               Active Program
             </div>
-            <h2 className="heading-display text-2xl md:text-3xl text-gray-900 mb-3">2025 Impact</h2>
+            <h2 className="heading-display text-2xl md:text-3xl text-gray-900 mb-3">Impact</h2>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
             {adcStats.map((stat) => (
               <div
                 key={stat.label}
@@ -105,37 +82,6 @@ const MicrosoftBootcamps = () => {
                 <p className="font-pixel text-2xl sm:text-3xl text-gray-900 mb-2">{stat.value}</p>
                 <p className="text-sm text-gray-600">{stat.label}</p>
               </div>
-            ))}
-          </div>
-
-          {/* Sessions */}
-          <h3 className="heading-display text-xl md:text-2xl text-gray-900 mb-8 text-center">
-            2025 Sessions
-          </h3>
-          <div className="grid gap-6 md:grid-cols-3 mb-10">
-            {adcSessions.map((session) => (
-              <article
-                key={session.label}
-                className="bg-white rounded-xl p-6 shadow-soft-md border border-gray-100 hover:shadow-soft-lg hover:-translate-y-1.5 transition-all duration-300"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <h4 className="text-lg font-semibold text-gray-900">{session.label}</h4>
-                  <span className="text-xs font-medium bg-teal-50 text-teal-700 px-3 py-1 rounded-full">
-                    {session.date}
-                  </span>
-                </div>
-                <p className="text-gray-600 text-sm mb-4">{session.blurb}</p>
-                <div className="flex items-center gap-4 text-sm text-gray-500">
-                  <span className="flex items-center">
-                    <Users className="h-3.5 w-3.5 mr-1" aria-hidden="true" />
-                    {session.participants} participants
-                  </span>
-                  <span className="flex items-center">
-                    <School className="h-3.5 w-3.5 mr-1" aria-hidden="true" />
-                    {session.schools} schools
-                  </span>
-                </div>
-              </article>
             ))}
           </div>
 

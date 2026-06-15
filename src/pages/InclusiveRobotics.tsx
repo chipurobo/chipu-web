@@ -393,7 +393,7 @@ const InclusiveRobotics = () => {
           )}
           {status === 'ended' && (
             <p className="text-center text-base text-teal-600 font-medium mb-12">
-              The 2026 KSEF exhibition has concluded. Next cohort prep kicks off in September.
+              The 2026 KSEF exhibition has concluded. Next cohort prep kicks off in June/July.
             </p>
           )}
 
@@ -448,7 +448,7 @@ const InclusiveRobotics = () => {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(20,184,166,0.12),transparent_70%)]" />
         <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
           <MapPin className="h-10 w-10 text-teal-400 mx-auto mb-4" aria-hidden="true" />
-          <h2 className="heading-display text-2xl sm:text-3xl mb-4">Run This Program At Your School</h2>
+          <h2 className="heading-display text-2xl sm:text-3xl text-white mb-4">Run This Program At Your School</h2>
           <p className="text-lg text-gray-300 mb-10 max-w-2xl mx-auto">
             We bring the YSK outreach, the Microsoft bootcamp partnership, and the year-round training. You bring the learners.
           </p>

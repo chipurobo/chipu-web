@@ -352,7 +352,7 @@ const Home = () => {
  <div className="container">
  <div className="text-center mb-16">
  <Globe className="h-12 w-12 text-emerald-400 mx-auto mb-6" aria-hidden="true" />
- <h2 className="heading-display text-3xl sm:text-4xl md:text-5xl mb-4">
+ <h2 className="heading-display text-3xl sm:text-4xl md:text-5xl text-white mb-4">
  A Pan-African <span className="text-gray-500">Innovation</span> Ecosystem
  </h2>
  <p className="text-lg text-gray-400 max-w-3xl mx-auto">
@@ -410,7 +410,7 @@ const Home = () => {
  <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(20,184,166,0.12),transparent_70%)]" />
  <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
  <p className="font-pixel text-teal-400 text-[0.6rem] sm:text-xs mb-4 tracking-widest">// 2026</p>
- <h2 className="heading-display text-2xl sm:text-3xl md:text-4xl mb-6">
+ <h2 className="heading-display text-2xl sm:text-3xl md:text-4xl text-white mb-6">
  2026 Programmes <br className="sm:hidden" />
  <span className="text-teal-400">Are Loading</span>
  </h2>
@@ -428,7 +428,7 @@ const Home = () => {
  <Link
  to="/about"
  aria-label="Learn more about ChipuRobo's mission and programs"
- className="btn-outline"
+ className="btn-outline btn-outline-on-dark"
  >
  <Heart className="mr-2 h-4 w-4" aria-hidden="true" />
  About ChipuRobo

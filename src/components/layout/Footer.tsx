@@ -115,10 +115,6 @@ const Footer = () => {
  Email:{' '}
  <a href="mailto:chipurobo@gmail.com" className="hover:text-teal-300 underline decoration-dotted underline-offset-4 transition-colors">chipurobo@gmail.com</a>
  </p>
- <p className="text-gray-400">
- Phone:{' '}
- <a href="tel:+254700000000" className="hover:text-teal-300 underline decoration-dotted underline-offset-4 transition-colors">+254 700 000 000</a>
- </p>
  </div>
  </div>
  </div>
