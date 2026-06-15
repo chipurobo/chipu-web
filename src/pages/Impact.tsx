@@ -48,8 +48,8 @@ const ACTIVITIES = [
   },
   {
     icon: Trophy,
-    title: 'Nationals (KSEF)',
-    tagline: 'County → Regional → National science fair project presentations.',
+    title: 'National Showcase',
+    tagline: 'ChipuRobo-led showcase and competition at CEMASTEA. School heats, virtual regional judging, in-person finale. KSEF Track 14 submission is optional.',
     schools: 36,
     students: 180,
     teachers: 54,

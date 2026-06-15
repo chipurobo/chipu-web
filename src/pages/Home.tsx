@@ -86,12 +86,12 @@ const Home = () => {
  <div className="code-bg absolute inset-0 opacity-40 " aria-hidden="true" />
 
  <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-8 text-center">
- <h1 className="heading-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-gray-900 mb-8 leading-[1.15]">
- <span className="block">Where Africa</span>
+ <h1 className="heading-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-gray-900 mb-8 leading-[1.2]">
+ <span className="block">The operating system</span>
  <span className="block">
- Builds{' '}
- <span className="text-gray-400 ">the Future</span>
+ for <span className="text-gray-400">practical engineering</span>
  </span>
+ <span className="block">education in Africa.</span>
  </h1>
 
  <p className="text-base sm:text-lg text-gray-700 max-w-3xl mx-auto mb-10 leading-relaxed">
@@ -415,7 +415,7 @@ const Home = () => {
  <span className="text-teal-400">Are Loading</span>
  </h2>
  <p className="text-lg sm:text-xl text-gray-300 mb-3 max-w-3xl mx-auto">
- KSEF, bootcamps, hackathons, and Code Clubs — all expanding.
+ Outreach, Microsoft bootcamps, and the National Showcase — all expanding.
  </p>
  <p className="text-base text-gray-400 mb-10 max-w-2xl mx-auto">
  Join the mission to empower 4 million youth across Africa by 2030.
@@ -423,7 +423,7 @@ const Home = () => {
  <div className="flex flex-wrap gap-5 justify-center">
  <Link to="/programs" className="btn-cta">
  <Calendar className="mr-2 h-4 w-4" aria-hidden="true" />
- KSEF 2026
+ Programs 2026
  </Link>
  <Link
  to="/about"

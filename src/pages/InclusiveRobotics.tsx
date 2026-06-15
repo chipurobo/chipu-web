@@ -80,8 +80,9 @@ const curriculum = [
 ];
 
 // === Stage 3: Training Across the Year ===
-// KSEF nationals event clock — used to anchor the year for both Senior
-// and Junior research tracks.
+// National Showcase & Competition — ChipuRobo-led, held at CEMASTEA grounds.
+// Regionals are judged virtually; the showcase is the in-person finale.
+// Schools that want to ALSO submit to KSEF do so via Track 14 (optional).
 const EVENT_START = new Date('2026-03-29T08:00:00+03:00');
 const EVENT_END = new Date('2026-04-05T18:00:00+03:00');
 
@@ -120,19 +121,19 @@ function getCountdown(): { timeLeft: TimeLeft; status: 'upcoming' | 'live' | 'en
 }
 
 const yearTimeline = [
-  { month: 'Jan', note: 'Term-1 kickoff. KSEF research plans, JSS Cyberbrick league setup.' },
-  { month: 'Feb', note: 'Experiments, data collection, weekly mentor reviews.' },
-  { month: 'Mar', note: 'Prototype polish, exhibit rehearsal, KSEF heats.' },
-  { month: 'Apr', note: 'KSEF nationals window · school showcases.' },
-  { month: 'May–Aug', note: 'Term-2 league play, Code Club projects, teacher refresher.' },
+  { month: 'Jan',     note: 'Term-1 kickoff. Research planning and project pitches.' },
+  { month: 'Feb',     note: 'Experiments, data collection, weekly mentor reviews.' },
+  { month: 'Mar',     note: 'Prototype polish, school heats, virtual regional judging.' },
+  { month: 'Apr',     note: 'National Showcase & Competition at CEMASTEA.' },
+  { month: 'May–Aug', note: 'Term-2 club work, Code Club projects, teacher refresher.' },
   { month: 'Sep–Dec', note: 'Term-3 research extension, end-of-year demo day, next-cohort prep.' },
 ];
 
 const yearActivities = [
   {
     icon: BookOpen,
-    title: 'KSEF Research Support',
-    body: 'Year-round mentoring for both Senior Secondary and Junior Secondary teams running KSEF-aligned research projects.',
+    title: 'Research Project Mentoring',
+    body: 'Year-round mentoring for Senior and Junior Secondary teams. Projects can be submitted to the ChipuRobo National Showcase, KSEF Track 14, or both.',
   },
   {
     icon: Repeat,
@@ -170,8 +171,8 @@ const InclusiveRobotics = () => {
           </h1>
           <p className="text-base sm:text-lg text-gray-700 max-w-3xl mx-auto leading-relaxed mb-10">
             A learner meets us during outreach from the Young Scientists Kenya (YSK) network, comes up through
-            an intensive Microsoft ADC bootcamp, and then trains across the year — KSEF research, Code Clubs,
-            and ongoing mentoring. One program, three stages, CBC aligned.
+            an intensive Microsoft ADC bootcamp, and then trains across the year — research projects, Code Clubs,
+            and a national showcase at CEMASTEA. One program, three stages, CBC aligned.
           </p>
 
           {/* Stage navigator */}
@@ -346,14 +347,18 @@ const InclusiveRobotics = () => {
             </div>
             <h2 className="heading-display text-2xl md:text-3xl text-gray-900 mb-3">Training Across the Year</h2>
             <p className="text-base sm:text-lg text-gray-700 max-w-2xl mb-2">
-              Bootcamps end, but the work doesn't. KSEF research support, weekly Code Clubs, and termly teacher
-              refreshers keep students iterating from January through December — for both Senior and Junior
-              Secondary cohorts.
+              Bootcamps end, but the work doesn't. Research mentoring, weekly Code Clubs, and termly teacher
+              refreshers keep students iterating from January through December — culminating in our
+              ChipuRobo-led National Showcase &amp; Competition at CEMASTEA.
             </p>
-            <div className="inline-flex items-center bg-white border border-warm-200 px-4 py-1.5 rounded-full text-sm text-gray-700 mt-2">
-              <Calendar className="h-4 w-4 mr-2 text-teal-600" aria-hidden="true" />
-              KSEF Nationals: March 29 – April 5, 2026
+            <div className="inline-flex flex-wrap items-center gap-x-2 gap-y-1 bg-white border border-warm-200 px-4 py-1.5 rounded-full text-sm text-gray-700 mt-2">
+              <Calendar className="h-4 w-4 text-teal-600" aria-hidden="true" />
+              National Showcase · CEMASTEA · March 29 – April 5, 2026
             </div>
+            <p className="text-xs text-gray-500 mt-3 max-w-xl">
+              Regional judging is held virtually. KSEF submission is optional via Track 14 for schools that
+              want to also enter.
+            </p>
           </div>
 
           {/* Activities */}
@@ -369,12 +374,12 @@ const InclusiveRobotics = () => {
             ))}
           </div>
 
-          {/* KSEF Countdown */}
+          {/* National Showcase countdown */}
           {status !== 'ended' && (
             <div className="max-w-lg mx-auto mb-12">
               <p className="text-sm font-medium text-teal-600 mb-4 flex items-center justify-center">
                 <Clock className="h-4 w-4 mr-1.5" aria-hidden="true" />
-                {status === 'live' ? 'KSEF is live — ends in' : 'KSEF nationals start in'}
+                {status === 'live' ? 'National Showcase is live — ends in' : 'National Showcase starts in'}
               </p>
               <div className="grid grid-cols-4 gap-3 sm:gap-4">
                 {[
@@ -393,7 +398,7 @@ const InclusiveRobotics = () => {
           )}
           {status === 'ended' && (
             <p className="text-center text-base text-teal-600 font-medium mb-12">
-              The 2026 KSEF exhibition has concluded. Next cohort prep kicks off in June/July.
+              The 2026 National Showcase has concluded. Next cohort prep kicks off in June/July.
             </p>
           )}
 
