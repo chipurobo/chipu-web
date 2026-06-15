@@ -87,25 +87,42 @@ const Contact = () => {
  <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center dyslexic-text">Connect With Us</h3>
  <div className="flex justify-center space-x-4">
  <a
- href="#"
+ href="https://www.linkedin.com/company/chipurobo-center/"
+ target="_blank"
+ rel="noopener noreferrer"
  className="p-3 rounded-full bg-gray-100 text-gray-500 hover:bg-blue-50 hover:text-blue-600 transition-all duration-200"
- aria-label="Follow us on LinkedIn"
+ aria-label="ChipuRobo on LinkedIn (opens in new tab)"
  >
  <Linkedin className="h-5 w-5" aria-hidden="true" />
  </a>
  <a
- href="#"
+ href="https://www.facebook.com/profile.php?id=61559555720840"
+ target="_blank"
+ rel="noopener noreferrer"
+ className="p-3 rounded-full bg-gray-100 text-gray-500 hover:bg-blue-50 hover:text-blue-600 transition-all duration-200"
+ aria-label="ChipuRobo on Facebook (opens in new tab)"
+ >
+ <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+ <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+ </svg>
+ </a>
+ <a
+ href="https://www.instagram.com/chipurobo/"
+ target="_blank"
+ rel="noopener noreferrer"
  className="p-3 rounded-full bg-gray-100 text-gray-500 hover:bg-purple-50 hover:text-purple-600 transition-all duration-200"
- aria-label="Follow us on Instagram"
+ aria-label="ChipuRobo on Instagram (opens in new tab)"
  >
  <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
  <path fillRule="evenodd" d="M12.017 0C8.396 0 8.002.01 6.78.048 2.979.146.146 2.979.048 6.78.01 8.002 0 8.396 0 12.017s.01 4.015.048 5.237c.098 3.801 2.931 6.634 6.732 6.732 1.222.038 1.616.048 5.237.048s4.015-.01 5.237-.048c3.801-.098 6.634-2.931 6.732-6.732.038-1.222.048-1.616.048-5.237s-.01-4.015-.048-5.237C23.884 2.979 21.051.146 17.25.048 16.028.01 15.634 0 12.017 0zm0 5.838a6.179 6.179 0 100 12.358 6.179 6.179 0 000-12.358zM12.017 16a3.823 3.823 0 110-7.646 3.823 3.823 0 010 7.646zm6.716-10.845a1.441 1.441 0 11-2.883 0 1.441 1.441 0 012.883 0z" clipRule="evenodd" />
  </svg>
  </a>
  <a
- href="#"
+ href="https://www.tiktok.com/@chipurobo"
+ target="_blank"
+ rel="noopener noreferrer"
  className="p-3 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-900 transition-all duration-200"
- aria-label="Follow us on TikTok"
+ aria-label="ChipuRobo on TikTok (opens in new tab)"
  >
  <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
  <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-.88-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z" />
