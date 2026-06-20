@@ -3,7 +3,10 @@ import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-do
 import { useAuth } from '../lib/auth';
 import { NotificationsProvider, NotificationToaster } from '../lib/notifications';
 import { useOrderRealtime, type OrderCounts } from '../lib/useOrderRealtime';
-import { LogOut, Home, School, Package, ClipboardList, Users, Boxes, Wrench, Send, Menu, X, CalendarDays, Award } from 'lucide-react';
+import {
+  LogOut, Home, School, Package, ClipboardList, Users, Boxes, Wrench, Send, Menu, X,
+  Award, Layers, FolderKanban, Trophy, BookOpen,
+} from 'lucide-react';
 
 // ----- Page titles for the SPA route announcer -----
 // Screen readers don't pick up React Router navigations as page changes,
@@ -16,18 +19,23 @@ const DASHBOARD_PAGE_TITLES: Record<string, string> = {
   '/dashboard/admin/products':      'Products',
   '/dashboard/admin/orders':        'All orders',
   '/dashboard/admin/distribute':    'Distribute',
-  '/dashboard/admin/events':        'Activities',
   '/dashboard/admin/certifications':'Certifications',
+  '/dashboard/admin/programmes':    'Programmes',
+  '/dashboard/admin/projects':      'Projects',
   '/dashboard/school/members':      'Students',
   '/dashboard/school/orders':       'Orders',
   '/dashboard/school/production':   'Production',
   '/dashboard/school/stock':        'Stock and units',
   '/dashboard/school/certificates': 'Certificates',
+  '/dashboard/school/lessons':      'Lessons',
+  '/dashboard/school/project':      'Project',
+  '/dashboard/leaderboard':         'Leaderboard',
 };
 function getDashboardPageTitle(path: string): string {
   if (DASHBOARD_PAGE_TITLES[path]) return DASHBOARD_PAGE_TITLES[path];
   if (path.startsWith('/dashboard/admin/schools/')) return 'School details';
   if (path.startsWith('/dashboard/certificate/'))   return 'Certificate';
+  if (path.startsWith('/dashboard/school/lessons/')) return 'Lesson roster';
   return 'Dashboard';
 }
 
@@ -261,9 +269,29 @@ function DashboardShell() {
 
           {isAdmin ? (
             <>
+              {/* ─── Programmes group ───
+                  The learning pipeline: programmes, the schools enrolled
+                  in them, projects, certifications, leaderboard. */}
+              <SidebarGroupLabel>Programmes</SidebarGroupLabel>
+              <SidebarLink to="/dashboard/admin/programmes" icon={Layers}>
+                Programmes
+              </SidebarLink>
               <SidebarLink to="/dashboard/admin/schools" icon={School}>
                 Schools
               </SidebarLink>
+              <SidebarLink to="/dashboard/admin/projects" icon={FolderKanban}>
+                Projects
+              </SidebarLink>
+              <SidebarLink to="/dashboard/admin/certifications" icon={Award}>
+                Certifications
+              </SidebarLink>
+              <SidebarLink to="/dashboard/leaderboard" icon={Trophy}>
+                Leaderboard
+              </SidebarLink>
+
+              {/* ─── Manufacturing group ───
+                  Product fabrication + distribution pipeline. */}
+              <SidebarGroupLabel>Manufacturing</SidebarGroupLabel>
               <SidebarLink to="/dashboard/admin/products" icon={Package}>
                 Products
               </SidebarLink>
@@ -273,18 +301,31 @@ function DashboardShell() {
               <SidebarLink to="/dashboard/admin/distribute" icon={Send} badge={counts.adminBacklog}>
                 Distribute
               </SidebarLink>
-              <SidebarLink to="/dashboard/admin/events" icon={CalendarDays}>
-                Activities
-              </SidebarLink>
-              <SidebarLink to="/dashboard/admin/certifications" icon={Award}>
-                Certifications
-              </SidebarLink>
             </>
           ) : (
             <>
+              {/* ─── Programme group ───
+                  Day-to-day learning work with the school's students. */}
+              <SidebarGroupLabel>Programme</SidebarGroupLabel>
               <SidebarLink to="/dashboard/school/members" icon={Users}>
                 Students
               </SidebarLink>
+              <SidebarLink to="/dashboard/school/lessons" icon={BookOpen}>
+                Lessons
+              </SidebarLink>
+              <SidebarLink to="/dashboard/school/project" icon={FolderKanban}>
+                Project
+              </SidebarLink>
+              <SidebarLink to="/dashboard/school/certificates" icon={Award}>
+                Certificates
+              </SidebarLink>
+              <SidebarLink to="/dashboard/leaderboard" icon={Trophy}>
+                Leaderboard
+              </SidebarLink>
+
+              {/* ─── Manufacturing group ───
+                  Ordering and stock. Production only for maker spaces. */}
+              <SidebarGroupLabel>Manufacturing</SidebarGroupLabel>
               <SidebarLink to="/dashboard/school/orders" icon={ClipboardList} badge={counts.awaitingDelivery}>
                 Orders
               </SidebarLink>
@@ -295,9 +336,6 @@ function DashboardShell() {
               )}
               <SidebarLink to="/dashboard/school/stock" icon={Boxes}>
                 Stock & units
-              </SidebarLink>
-              <SidebarLink to="/dashboard/school/certificates" icon={Award}>
-                Certificates
               </SidebarLink>
             </>
           )}
@@ -335,6 +373,22 @@ function DashboardShell() {
       >
         <Outlet />
       </main>
+    </div>
+  );
+}
+
+// Sidebar section header. Sits above a group of <SidebarLink>s so the
+// admin can tell at a glance which links belong to the Programmes pipeline
+// vs the Manufacturing pipeline. Renders as a small uppercase label with
+// a hairline separator above (except for the first group, where the rule
+// would crowd the Overview link).
+function SidebarGroupLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      role="presentation"
+      className="mt-4 mb-1 pt-3 px-3 text-[0.6rem] font-pixel uppercase tracking-[0.18em] text-gray-500 border-t border-warm-200/70 first:mt-2 first:pt-0 first:border-t-0"
+    >
+      {children}
     </div>
   );
 }

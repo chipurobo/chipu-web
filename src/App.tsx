@@ -42,14 +42,19 @@ const AdminSchoolDetails    = lazy(() => import('./dashboard/admin/SchoolDetails
 const AdminProducts         = lazy(() => import('./dashboard/admin/Products').then((m) => ({ default: m.AdminProducts })));
 const AdminOrders           = lazy(() => import('./dashboard/admin/Orders').then((m) => ({ default: m.AdminOrders })));
 const AdminDistribute       = lazy(() => import('./dashboard/admin/Distribute').then((m) => ({ default: m.AdminDistribute })));
-const AdminEvents           = lazy(() => import('./dashboard/admin/Events').then((m) => ({ default: m.AdminEvents })));
 const AdminCertifications   = lazy(() => import('./dashboard/admin/Certifications').then((m) => ({ default: m.AdminCertifications })));
+const AdminProgrammes       = lazy(() => import('./dashboard/admin/Programmes').then((m) => ({ default: m.AdminProgrammes })));
+const AdminProjects         = lazy(() => import('./dashboard/admin/Projects').then((m) => ({ default: m.AdminProjects })));
 const SchoolCertificates    = lazy(() => import('./dashboard/school/Certificates').then((m) => ({ default: m.SchoolCertificates })));
 const Certificate           = lazy(() => import('./dashboard/Certificate').then((m) => ({ default: m.Certificate })));
 const SchoolMembers         = lazy(() => import('./dashboard/school/Members').then((m) => ({ default: m.SchoolMembers })));
 const SchoolOrders          = lazy(() => import('./dashboard/school/Orders').then((m) => ({ default: m.SchoolOrders })));
 const SchoolStock           = lazy(() => import('./dashboard/school/Stock').then((m) => ({ default: m.SchoolStock })));
 const SchoolProduction      = lazy(() => import('./dashboard/school/Production').then((m) => ({ default: m.SchoolProduction })));
+const SchoolLessons         = lazy(() => import('./dashboard/school/Lessons').then((m) => ({ default: m.SchoolLessons })));
+const SchoolLessonStage     = lazy(() => import('./dashboard/school/LessonStage').then((m) => ({ default: m.SchoolLessonStage })));
+const SchoolProject         = lazy(() => import('./dashboard/school/Project').then((m) => ({ default: m.SchoolProject })));
+const Leaderboard           = lazy(() => import('./dashboard/Leaderboard').then((m) => ({ default: m.Leaderboard })));
 
 // === Accessible Suspense fallback ===
 // Renders an aria-live "Loading" message so screen-reader users hear
@@ -122,12 +127,16 @@ function App() {
                 element={<RequireAuth role="admin"><AdminDistribute /></RequireAuth>}
               />
               <Route
-                path="admin/events"
-                element={<RequireAuth role="admin"><AdminEvents /></RequireAuth>}
-              />
-              <Route
                 path="admin/certifications"
                 element={<RequireAuth role="admin"><AdminCertifications /></RequireAuth>}
+              />
+              <Route
+                path="admin/programmes"
+                element={<RequireAuth role="admin"><AdminProgrammes /></RequireAuth>}
+              />
+              <Route
+                path="admin/projects"
+                element={<RequireAuth role="admin"><AdminProjects /></RequireAuth>}
               />
               <Route path="school/members" element={<SchoolMembers />} />
               <Route path="school/certificates" element={<SchoolCertificates />} />
@@ -135,6 +144,10 @@ function App() {
               <Route path="school/orders" element={<SchoolOrders />} />
               <Route path="school/stock" element={<SchoolStock />} />
               <Route path="school/production" element={<SchoolProduction />} />
+              <Route path="school/lessons" element={<SchoolLessons />} />
+              <Route path="school/lessons/:stageId" element={<SchoolLessonStage />} />
+              <Route path="school/project" element={<SchoolProject />} />
+              <Route path="leaderboard" element={<Leaderboard />} />
             </Route>
 
             {/* === Public marketing site ===

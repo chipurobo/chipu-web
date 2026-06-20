@@ -88,8 +88,95 @@ export interface School {
   contact_email: string | null;
   latitude: number | null;
   longitude: number | null;
+  programme_id: string | null;
   created_at: string;
   updated_at: string;
+}
+
+// === Programme pipeline ===
+
+export type StageKind =
+  | 'outreach'
+  | 'bootcamp_physical'
+  | 'bootcamp_virtual'
+  | 'lesson'
+  | 'project';
+
+export type ProjectStatus = 'draft' | 'submitted' | 'judged';
+
+export interface Programme {
+  id: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface ProgrammeStage {
+  id: string;
+  programme_id: string;
+  position: number;
+  title: string;
+  description: string | null;
+  kind: StageKind;
+  /** Points awarded per student per completion. Project stages typically
+   *  carry 0 — the project's 0–100 judgment score is added separately. */
+  points: number;
+  required_for_certificate: boolean;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface LessonCompletion {
+  id: string;
+  stage_id: string;
+  student_id: string;
+  confidence: number | null;   // 1–5
+  passed: boolean;
+  recorded_by: string | null;
+  recorded_at: string;
+}
+
+export interface Project {
+  id: string;
+  school_id: string;
+  programme_id: string;
+  title: string;
+  description: string | null;
+  repo_url: string | null;
+  video_url: string | null;
+  image_url: string | null;
+  status: ProjectStatus;
+  submitted_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProjectTeamMember {
+  project_id: string;
+  student_id: string;
+  role: string | null;
+}
+
+export interface ProjectJudgment {
+  project_id: string;
+  score: number;               // 0–100
+  comment: string | null;
+  judged_by: string;
+  judged_at: string;
+}
+
+/** Row shape from public.school_leaderboard view. Order: total_pts desc. */
+export interface LeaderboardRow {
+  school_id: string;
+  school_name: string;
+  county: string | null;
+  programme_id: string | null;
+  programme_name: string | null;
+  lesson_pts: number;
+  project_pts: number;
+  total_pts: number;
 }
 
 // Row shape returned by the public.public_schools_map view — visible to
