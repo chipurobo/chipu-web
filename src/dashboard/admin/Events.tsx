@@ -1,7 +1,13 @@
 import { useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
-import type { ChipuEvent, EventType, School } from '../../lib/database.types';
+import {
+  fetchEventsWithSchools,
+  fetchEventAttendancesEventId,
+  fetchSchools,
+  type EventWithSchools,
+} from '../../lib/gql/queries';
+import type { EventType, School } from '../../lib/database.types';
 import {
   CalendarDays, Plus, X, Trash2, MapPin, Link as LinkIcon,
   Megaphone, Laptop, MonitorPlay, Users, CheckCircle2, Clock,
@@ -18,12 +24,7 @@ import { SkeletonCards } from '../components/Skeletons';
 // student at that school.
 // =============================================================
 
-interface EventRow extends ChipuEvent {
-  event_schools: {
-    school_id:   string;
-    attended_at: string | null;
-    schools:     Pick<School, 'id' | 'name'> | null;
-  }[];
+interface EventRow extends EventWithSchools {
   attendance_count: number;          // computed client-side from a separate fetch
 }
 
@@ -52,43 +53,18 @@ export function AdminEvents() {
   // Events + their attached schools, joined.
   const eventsQuery = useQuery({
     queryKey: ['events'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('events')
-        .select(`
-          *,
-          event_schools (
-            school_id,
-            attended_at,
-            schools ( id, name )
-          )
-        `)
-        .order('start_at', { ascending: false });
-      if (error) throw new Error(error.message);
-      return data as unknown as Omit<EventRow, 'attendance_count'>[];
-    },
+    queryFn: fetchEventsWithSchools,
   });
 
   // Attendance counts per event — small feed, counted in JS.
   const attendancesQuery = useQuery({
     queryKey: ['event-attendances'],
-    queryFn: async (): Promise<{ event_id: string }[]> => {
-      const { data, error } = await supabase.from('event_attendances').select('event_id');
-      if (error) throw new Error(error.message);
-      return data as { event_id: string }[];
-    },
+    queryFn: fetchEventAttendancesEventId,
   });
 
   const { data: schools, error: schoolsErr } = useQuery({
     queryKey: ['schools'],
-    queryFn: async (): Promise<School[]> => {
-      const { data, error } = await supabase
-        .from('schools')
-        .select('*')
-        .order('name');
-      if (error) throw new Error(error.message);
-      return data as School[];
-    },
+    queryFn: fetchSchools,
   });
 
   const events: EventRow[] | null = (() => {
@@ -360,7 +336,7 @@ function EventCard({
                 {event.event_schools.map((es) => (
                   <tr key={es.school_id}>
                     <td className="text-sm font-medium text-gray-900 whitespace-nowrap">
-                      {es.schools?.name ?? '—'}
+                      {es.school?.name ?? '—'}
                     </td>
                     <td className="whitespace-nowrap">
                       {es.attended_at ? (

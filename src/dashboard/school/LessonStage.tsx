@@ -2,9 +2,14 @@ import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import {
+  fetchProgrammeStageById,
+  fetchMembersBySchool,
+  fetchCompletionsForStage,
+} from '../../lib/gql/queries';
 import { useAuth } from '../../lib/auth';
 import { useNotifications } from '../../lib/notifications';
-import type { ProgrammeStage, LessonCompletion, ClubMember, StageKind } from '../../lib/database.types';
+import type { LessonCompletion, StageKind } from '../../lib/database.types';
 import {
   ArrowLeft, Save, Star, BookOpen, Laptop, MonitorPlay, FolderKanban, GraduationCap, Megaphone,
 } from 'lucide-react';
@@ -54,17 +59,15 @@ export function SchoolLessonStage() {
   const { notify } = useNotifications();
   const schoolId = school?.id ?? null;
 
-  // Stage metadata.
+  // Stage metadata. fetchProgrammeStageById returns T | null; the .single()
+  // behaviour of the old code threw on missing rows, so we surface the same
+  // contract by throwing here.
   const stageQuery = useQuery({
     queryKey: ['programme-stage', stageId],
-    queryFn: async (): Promise<ProgrammeStage> => {
-      const { data, error } = await supabase
-        .from('programme_stages')
-        .select('*')
-        .eq('id', stageId!)
-        .single();
-      if (error) throw new Error(error.message);
-      return data as ProgrammeStage;
+    queryFn: async () => {
+      const row = await fetchProgrammeStageById(stageId!);
+      if (!row) throw new Error('Activity not found.');
+      return row;
     },
     enabled: !!stageId,
   });
@@ -73,29 +76,14 @@ export function SchoolLessonStage() {
   // a teacher can tick anyone on the roster.
   const membersQuery = useQuery({
     queryKey: ['members', schoolId],
-    queryFn: async (): Promise<ClubMember[]> => {
-      const { data, error } = await supabase
-        .from('club_members')
-        .select('*')
-        .eq('school_id', schoolId!)
-        .order('full_name');
-      if (error) throw new Error(error.message);
-      return data as ClubMember[];
-    },
+    queryFn: () => fetchMembersBySchool(schoolId!),
     enabled: !!schoolId,
   });
 
   // Existing completions for this stage. RLS already scopes to our students.
   const completionsQuery = useQuery({
     queryKey: ['lesson-completions', stageId],
-    queryFn: async (): Promise<LessonCompletion[]> => {
-      const { data, error } = await supabase
-        .from('lesson_completions')
-        .select('*')
-        .eq('stage_id', stageId!);
-      if (error) throw new Error(error.message);
-      return data as LessonCompletion[];
-    },
+    queryFn: () => fetchCompletionsForStage(stageId!),
     enabled: !!stageId,
   });
 

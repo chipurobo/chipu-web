@@ -1,6 +1,7 @@
 import { useMemo, useState, type FormEvent } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
+import { fetchProducts } from '../../lib/gql/queries';
 import type { Product } from '../../lib/database.types';
 import { Package, Plus, X, Pencil } from 'lucide-react';
 import { useDialog } from '../../lib/useDialog';
@@ -41,14 +42,7 @@ export function AdminProducts() {
     error:   queryErr,
   } = useQuery({
     queryKey: ['products'],
-    queryFn: async (): Promise<ProductRow[]> => {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .order('created_at', { ascending: false });
-      if (error) throw new Error(error.message);
-      return data as ProductRow[];
-    },
+    queryFn: fetchProducts,
   });
 
   // === Toggle active mutation ===

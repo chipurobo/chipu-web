@@ -2,8 +2,14 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import {
+  fetchSchoolById,
+  fetchEventSchoolsWithEvent,
+  fetchEventAttendances,
+  fetchMembersBySchool,
+} from '../../lib/gql/queries';
 import type {
-  ChipuEvent, ClubMember, EventType, School,
+  ChipuEvent, EventType,
 } from '../../lib/database.types';
 import {
   ArrowLeft, Wrench, MapPin, Phone, Mail, User, Users, CalendarDays,
@@ -49,15 +55,7 @@ export function AdminSchoolDetails() {
 
   const schoolQuery = useQuery({
     queryKey: ['schools', schoolId],
-    queryFn: async (): Promise<School | null> => {
-      const { data, error } = await supabase
-        .from('schools')
-        .select('*')
-        .eq('id', schoolId!)
-        .maybeSingle();
-      if (error) throw new Error(error.message);
-      return data as School | null;
-    },
+    queryFn: () => fetchSchoolById(schoolId!),
     enabled: !!schoolId,
   });
 
@@ -73,40 +71,17 @@ export function AdminSchoolDetails() {
   // Events attached to this school + per-school attendance counts in one query.
   const eventsQuery = useQuery({
     queryKey: ['events'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('event_schools')
-        .select(`
-          attended_at,
-          event_id,
-          school_id,
-          events ( * )
-        `);
-      if (error) throw new Error(error.message);
-      return data as unknown as Array<{ attended_at: string | null; event_id: string; school_id: string; events: ChipuEvent | null }>;
-    },
+    queryFn: fetchEventSchoolsWithEvent,
   });
 
   const attendancesQuery = useQuery({
     queryKey: ['event-attendances'],
-    queryFn: async (): Promise<{ event_id: string; school_id: string }[]> => {
-      const { data, error } = await supabase.from('event_attendances').select('event_id, school_id');
-      if (error) throw new Error(error.message);
-      return data as { event_id: string; school_id: string }[];
-    },
+    queryFn: fetchEventAttendances,
   });
 
   const studentsQuery = useQuery({
     queryKey: ['members', schoolId],
-    queryFn: async (): Promise<ClubMember[]> => {
-      const { data, error } = await supabase
-        .from('club_members')
-        .select('*')
-        .eq('school_id', schoolId!)
-        .order('full_name');
-      if (error) throw new Error(error.message);
-      return data as ClubMember[];
-    },
+    queryFn: () => fetchMembersBySchool(schoolId!),
     enabled: !!schoolId,
   });
 
@@ -118,7 +93,7 @@ export function AdminSchoolDetails() {
 
   const events: AttendedEvent[] | null = useMemo(() => {
     if (!eventsQuery.data || !schoolId) return null;
-    const rowsForSchool = eventsQuery.data.filter((r) => r.school_id === schoolId && r.events);
+    const rowsForSchool = eventsQuery.data.filter((r) => r.school_id === schoolId && r.event);
     const countsByEvent = new Map<string, number>();
     (attendancesQuery.data ?? []).forEach((r) => {
       if (r.school_id !== schoolId) return;
@@ -126,7 +101,7 @@ export function AdminSchoolDetails() {
     });
     return rowsForSchool
       .map((r) => ({
-        ...(r.events as ChipuEvent),
+        ...(r.event as ChipuEvent),
         attended_at: r.attended_at,
         students_marked: countsByEvent.get(r.event_id) ?? 0,
       }))

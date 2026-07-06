@@ -1,10 +1,16 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
+import {
+  fetchProjectsWithJoins,
+  fetchAllProjectJudgments,
+  fetchProjectTeamWithStudent,
+  type ProjectWithJoins,
+} from '../../lib/gql/queries';
 import { useAuth } from '../../lib/auth';
 import { useNotifications } from '../../lib/notifications';
 import type {
-  Project, ProjectJudgment, ProjectTeamMember, School, Programme, ClubMember, ProjectStatus,
+  ProjectJudgment, ProjectStatus,
 } from '../../lib/database.types';
 import {
   FolderKanban, X, Link as LinkIcon, Trophy, GraduationCap, Save, ChevronRight, AlertCircle,
@@ -22,14 +28,9 @@ import { SkeletonRows } from '../components/Skeletons';
 // Re-judging is allowed: the form pre-fills with the existing score.
 // =============================================================
 
-interface ProjectRow extends Project {
-  schools:    Pick<School, 'id' | 'name' | 'county'> | null;
-  programmes: Pick<Programme, 'id' | 'name'> | null;
-  judgment:   ProjectJudgment | null;
-}
-
-interface TeamMemberRow extends ProjectTeamMember {
-  student: Pick<ClubMember, 'id' | 'full_name' | 'grade'> | null;
+// Use the helper-shaped row, augmented with the stitched judgment.
+interface ProjectRow extends ProjectWithJoins {
+  judgment: ProjectJudgment | null;
 }
 
 const STATUS_BADGE: Record<ProjectStatus, string> = {
@@ -45,33 +46,15 @@ export function AdminProjects() {
   const projectsQuery = useQuery({
     queryKey: ['projects'],
     queryFn: async (): Promise<ProjectRow[]> => {
-      const { data, error } = await supabase
-        .from('projects')
-        .select(`
-          *,
-          schools:school_id ( id, name, county ),
-          programmes:programme_id ( id, name )
-        `)
-        .order('submitted_at', { ascending: false, nullsFirst: false })
-        .order('created_at',  { ascending: false });
-      if (error) throw new Error(error.message);
-      return (data as unknown as Omit<ProjectRow, 'judgment'>[]).map((p) => ({
-        ...p,
-        judgment: null,
-      }));
+      const rows = await fetchProjectsWithJoins();
+      return rows.map((p) => ({ ...p, judgment: null }));
     },
   });
 
   // Fetch all judgments in one go and stitch by project_id.
   const judgmentsQuery = useQuery({
     queryKey: ['project-judgments'],
-    queryFn: async (): Promise<ProjectJudgment[]> => {
-      const { data, error } = await supabase
-        .from('project_judgments')
-        .select('*');
-      if (error) throw new Error(error.message);
-      return data as ProjectJudgment[];
-    },
+    queryFn: fetchAllProjectJudgments,
   });
 
   const projects: ProjectRow[] | null = useMemo(() => {
@@ -147,8 +130,8 @@ export function AdminProjects() {
               const isOpen = selected?.id === p.id;
               return (
                 <tr key={p.id} className={isOpen ? 'bg-warm-100/60' : ''}>
-                  <td className="font-medium text-gray-900">{p.schools?.name ?? '—'}</td>
-                  <td className="text-sm text-gray-700">{p.programmes?.name ?? '—'}</td>
+                  <td className="font-medium text-gray-900">{p.school?.name ?? '—'}</td>
+                  <td className="text-sm text-gray-700">{p.programme?.name ?? '—'}</td>
                   <td className="text-sm">{p.title}</td>
                   <td><span className={STATUS_BADGE[p.status]}>{p.status}</span></td>
                   <td className="text-sm">
@@ -197,14 +180,7 @@ function ProjectPanel({
 
   const teamQuery = useQuery({
     queryKey: ['project-team', project.id],
-    queryFn: async (): Promise<TeamMemberRow[]> => {
-      const { data, error } = await supabase
-        .from('project_team_members')
-        .select('project_id, student_id, role, student:student_id ( id, full_name, grade )')
-        .eq('project_id', project.id);
-      if (error) throw new Error(error.message);
-      return data as unknown as TeamMemberRow[];
-    },
+    queryFn: () => fetchProjectTeamWithStudent(project.id),
   });
 
   const team = teamQuery.data ?? null;
@@ -234,7 +210,7 @@ function ProjectPanel({
       if (error) throw new Error(error.message);
     },
     onSuccess: () => {
-      notify('success', 'Judgment saved', `${project.schools?.name ?? 'School'} · ${score} / 100`);
+      notify('success', 'Judgment saved', `${project.school?.name ?? 'School'} · ${score} / 100`);
       onJudged();
     },
     onError: (e) => { notify('warning', 'Judgment failed', e.message); },
@@ -255,13 +231,13 @@ function ProjectPanel({
       <div className="flex items-start justify-between gap-3 mb-4 flex-wrap">
         <div className="min-w-0">
           <p className="text-xs uppercase tracking-wider text-gray-500 mb-1">
-            {project.schools?.name ?? '—'}{project.schools?.county ? ` · ${project.schools.county}` : ''}
+            {project.school?.name ?? '—'}{project.school?.county ? ` · ${project.school.county}` : ''}
           </p>
           <h2 className="m-0" id="project-panel-heading">{project.title}</h2>
           <div className="flex items-center gap-2 flex-wrap mt-2">
             <span className={STATUS_BADGE[project.status]}>{project.status}</span>
-            {project.programmes?.name && (
-              <span className="text-xs text-gray-500">{project.programmes.name}</span>
+            {project.programme?.name && (
+              <span className="text-xs text-gray-500">{project.programme.name}</span>
             )}
             {project.submitted_at && (
               <span className="text-xs text-gray-500">

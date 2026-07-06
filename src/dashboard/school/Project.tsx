@@ -1,14 +1,21 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
+import {
+  fetchProjectForSchool,
+  fetchProjectTeamWithStudent,
+  fetchProjectJudgment,
+  fetchMembersBySchool,
+  type ProjectTeamMemberWithStudent,
+} from '../../lib/gql/queries';
 import { useAuth } from '../../lib/auth';
 import { useNotifications } from '../../lib/notifications';
 import type {
-  Project, ProjectTeamMember, ProjectJudgment, ClubMember,
+  Project, ProjectJudgment, ClubMember,
 } from '../../lib/database.types';
 import {
-  FolderKanban, Save, Send, Link as LinkIcon, Image as ImageIcon, Video, GitBranch,
-  Trophy, CheckCircle2, AlertCircle,
+  FolderKanban, Save, Send, ExternalLink, Image as ImageIcon, Video, GitBranch,
+  Trophy, CheckCircle2, AlertCircle, Users, Calendar, Lock,
 } from 'lucide-react';
 import { SkeletonCards } from '../components/Skeletons';
 
@@ -23,9 +30,7 @@ import { SkeletonCards } from '../components/Skeletons';
 //   • judged    → fields read-only, score + comment panel shown.
 // =============================================================
 
-interface TeamMemberRow extends ProjectTeamMember {
-  student?: Pick<ClubMember, 'id' | 'full_name' | 'grade'> | null;
-}
+type TeamMemberRow = ProjectTeamMemberWithStudent;
 
 export function SchoolProject() {
   const { school } = useAuth();
@@ -36,16 +41,7 @@ export function SchoolProject() {
 
   const projectQuery = useQuery({
     queryKey: ['projects', schoolId],
-    queryFn: async (): Promise<Project | null> => {
-      const { data, error } = await supabase
-        .from('projects')
-        .select('*')
-        .eq('school_id', schoolId!)
-        .eq('programme_id', programmeId!)
-        .maybeSingle();
-      if (error) throw new Error(error.message);
-      return (data as Project | null);
-    },
+    queryFn: () => fetchProjectForSchool(schoolId!, programmeId!),
     enabled: !!schoolId && !!programmeId,
   });
 
@@ -53,42 +49,19 @@ export function SchoolProject() {
 
   const teamQuery = useQuery({
     queryKey: ['project-team', project?.id],
-    queryFn: async (): Promise<TeamMemberRow[]> => {
-      const { data, error } = await supabase
-        .from('project_team_members')
-        .select('project_id, student_id, role, student:student_id ( id, full_name, grade )')
-        .eq('project_id', project!.id);
-      if (error) throw new Error(error.message);
-      return data as unknown as TeamMemberRow[];
-    },
+    queryFn: () => fetchProjectTeamWithStudent(project!.id),
     enabled: !!project?.id,
   });
 
   const judgmentQuery = useQuery({
     queryKey: ['project-judgments', project?.id],
-    queryFn: async (): Promise<ProjectJudgment | null> => {
-      const { data, error } = await supabase
-        .from('project_judgments')
-        .select('*')
-        .eq('project_id', project!.id)
-        .maybeSingle();
-      if (error) throw new Error(error.message);
-      return (data as ProjectJudgment | null);
-    },
+    queryFn: () => fetchProjectJudgment(project!.id),
     enabled: !!project?.id && project?.status === 'judged',
   });
 
   const studentsQuery = useQuery({
     queryKey: ['members', schoolId],
-    queryFn: async (): Promise<ClubMember[]> => {
-      const { data, error } = await supabase
-        .from('club_members')
-        .select('*')
-        .eq('school_id', schoolId!)
-        .order('full_name');
-      if (error) throw new Error(error.message);
-      return data as ClubMember[];
-    },
+    queryFn: () => fetchMembersBySchool(schoolId!),
     enabled: !!schoolId,
   });
 
@@ -342,36 +315,20 @@ function ProjectEditor({
     saveBaseMutation.mutate({ submit: true });
   };
 
+  // Once a project is submitted (or judged) the form goes away and we show
+  // a polished summary instead. Keeps the editing state for drafts only.
+  if (readOnly) {
+    return (
+      <ProjectSummary
+        project={project}
+        team={team}
+        judgment={judgment}
+      />
+    );
+  }
+
   return (
     <div className="space-y-6">
-      {project.status === 'judged' && judgment && (
-        <div role="region" aria-labelledby="judgment-heading" className="card p-5 border-2 border-emerald-500 bg-emerald-50/40">
-          <h2 id="judgment-heading" className="m-0 flex items-center gap-2">
-            <Trophy className="h-5 w-5 text-emerald-700" aria-hidden="true" />
-            Score: {judgment.score} / 100
-          </h2>
-          {judgment.comment && (
-            <p className="text-sm text-gray-800 mt-2 whitespace-pre-wrap">
-              <span className="block text-xs uppercase tracking-wider text-emerald-700 mb-1">Judge's comment</span>
-              {judgment.comment}
-            </p>
-          )}
-          <p className="text-xs text-emerald-700 mt-3 inline-flex items-center gap-1">
-            <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
-            Judged on {new Date(judgment.judged_at).toLocaleDateString()}
-          </p>
-        </div>
-      )}
-
-      {readOnly && (
-        <div role="status" className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-md px-3 py-2 inline-flex items-start gap-2">
-          <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" aria-hidden="true" />
-          <span>
-            Submitted projects can no longer be edited. Contact ChipuRobo if you need changes.
-          </span>
-        </div>
-      )}
-
       <form onSubmit={onSubmit} aria-label="Edit project" className="card p-5 grid sm:grid-cols-2 gap-4">
         <div className="sm:col-span-2">
           <label className="field-label" htmlFor="proj-title">
@@ -380,7 +337,6 @@ function ProjectEditor({
           <input
             id="proj-title" type="text" required aria-required="true" className="field-input"
             value={title} onChange={(e) => setTitle(e.target.value)}
-            readOnly={readOnly}
           />
         </div>
 
@@ -389,7 +345,6 @@ function ProjectEditor({
           <textarea
             id="proj-desc" rows={4} className="field-input"
             value={description} onChange={(e) => setDescription(e.target.value)}
-            readOnly={readOnly}
             placeholder="What did your team build? What problem does it solve?"
           />
         </div>
@@ -403,7 +358,6 @@ function ProjectEditor({
             id="proj-repo" type="url" className="field-input"
             placeholder="https://github.com/..."
             value={repoUrl} onChange={(e) => setRepoUrl(e.target.value)}
-            readOnly={readOnly}
           />
         </div>
 
@@ -416,7 +370,6 @@ function ProjectEditor({
             id="proj-video" type="url" className="field-input"
             placeholder="https://..."
             value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)}
-            readOnly={readOnly}
           />
         </div>
 
@@ -429,7 +382,6 @@ function ProjectEditor({
             id="proj-image" type="url" className="field-input"
             placeholder="https://..."
             value={imageUrl} onChange={(e) => setImageUrl(e.target.value)}
-            readOnly={readOnly}
           />
         </div>
 
@@ -455,15 +407,14 @@ function ProjectEditor({
                 return (
                   <label
                     key={s.id}
-                    className={`flex items-center gap-2 px-3 py-2 text-sm border-b border-warm-200 last:border-b-0 ${
+                    className={`flex items-center gap-2 px-3 py-2 text-sm border-b border-warm-200 last:border-b-0 cursor-pointer ${
                       checked ? 'bg-teal-50/60' : 'hover:bg-warm-100/60'
-                    } ${readOnly ? 'cursor-default' : 'cursor-pointer'}`}
+                    }`}
                   >
                     <input
                       type="checkbox"
                       checked={checked}
-                      onChange={() => !readOnly && toggleStudent(s.id)}
-                      disabled={readOnly}
+                      onChange={() => toggleStudent(s.id)}
                     />
                     <span className="flex-1 truncate">
                       <span className="font-medium text-gray-900">{s.full_name}</span>
@@ -502,7 +453,6 @@ function ProjectEditor({
                             value={role}
                             onChange={(e) => setRole(studentId, e.target.value)}
                             aria-label={`Role for ${s?.full_name ?? fallbackName}`}
-                            readOnly={readOnly}
                           />
                         </td>
                       </tr>
@@ -514,60 +464,245 @@ function ProjectEditor({
           )}
         </div>
 
-        {/* Links preview when read-only */}
-        {readOnly && (project.repo_url || project.video_url || project.image_url) && (
-          <div className="sm:col-span-2 pt-2 border-t border-warm-200 flex flex-wrap gap-3 text-xs">
-            {project.repo_url && (
-              <a href={project.repo_url} target="_blank" rel="noopener noreferrer"
-                 className="inline-flex items-center gap-1 text-teal-700 hover:underline">
-                <LinkIcon className="h-3 w-3" aria-hidden="true" /> Repo
-              </a>
-            )}
-            {project.video_url && (
-              <a href={project.video_url} target="_blank" rel="noopener noreferrer"
-                 className="inline-flex items-center gap-1 text-teal-700 hover:underline">
-                <LinkIcon className="h-3 w-3" aria-hidden="true" /> Video
-              </a>
-            )}
-            {project.image_url && (
-              <a href={project.image_url} target="_blank" rel="noopener noreferrer"
-                 className="inline-flex items-center gap-1 text-teal-700 hover:underline">
-                <LinkIcon className="h-3 w-3" aria-hidden="true" /> Image
-              </a>
-            )}
-          </div>
-        )}
-
         {errMsg && (
           <div role="alert" className="sm:col-span-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
             {errMsg}
           </div>
         )}
 
-        {!readOnly && (
-          <div className="sm:col-span-2 flex justify-end gap-2 pt-2 border-t border-warm-200 flex-wrap">
-            <button type="submit" className="btn-secondary" disabled={saving || !title.trim()}>
-              <Save className="h-4 w-4 mr-1.5" aria-hidden="true" />
-              {saving ? 'Saving…' : 'Save draft'}
-            </button>
-            <button
-              type="button"
-              onClick={onSubmitForJudging}
-              className="btn-primary"
-              disabled={saving || !title.trim()}
-            >
-              <Send className="h-4 w-4 mr-1.5" aria-hidden="true" />
-              Submit for judging
-            </button>
-          </div>
-        )}
+        <div className="sm:col-span-2 flex justify-end gap-2 pt-2 border-t border-warm-200 flex-wrap">
+          <button type="submit" className="btn-secondary" disabled={saving || !title.trim()}>
+            <Save className="h-4 w-4 mr-1.5" aria-hidden="true" />
+            {saving ? 'Saving…' : 'Save draft'}
+          </button>
+          <button
+            type="button"
+            onClick={onSubmitForJudging}
+            className="btn-primary"
+            disabled={saving || !title.trim()}
+          >
+            <Send className="h-4 w-4 mr-1.5" aria-hidden="true" />
+            Submit for judging
+          </button>
+        </div>
       </form>
-
-      {project.submitted_at && (
-        <p className="text-xs text-gray-500">
-          Submitted {new Date(project.submitted_at).toLocaleString()}.
-        </p>
-      )}
     </div>
   );
+}
+
+// =============================================================
+// ProjectSummary — rendered after submission. No form fields, no
+// "greyed-out" controls. Reads like a polished project page:
+//   • Hero card: title + status + submitted-on
+//   • Optional cover image
+//   • Description as prose
+//   • Repository / Video as proper link buttons
+//   • Team roster with role chips
+//   • If judged: prominent score panel + judge's comment
+// =============================================================
+function ProjectSummary({
+  project, team, judgment,
+}: {
+  project:  Project;
+  team:     TeamMemberRow[];
+  judgment: ProjectJudgment | null;
+}) {
+  const isJudged    = project.status === 'judged' && judgment;
+  const isImageHttp = !!project.image_url && /^https?:\/\//i.test(project.image_url);
+
+  return (
+    <div className="space-y-6">
+      {/* Score panel — only when judged. Lives ABOVE the project card
+          so the school sees their result the moment the page loads. */}
+      {isJudged && judgment && (
+        <section
+          role="region"
+          aria-labelledby="judgment-heading"
+          className="card overflow-hidden border-2 border-emerald-500"
+        >
+          <div className="bg-gradient-to-br from-emerald-50 to-emerald-50/30 px-5 sm:px-7 py-6">
+            <div className="flex items-center gap-4 flex-wrap">
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-emerald-500 text-white shadow-soft-md">
+                <Trophy className="h-7 w-7" aria-hidden="true" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs uppercase tracking-wider text-emerald-700 font-medium">Judge's score</p>
+                <h2 id="judgment-heading" className="m-0 text-3xl tabular-nums">
+                  {judgment.score}<span className="text-base text-gray-500 font-normal"> / 100</span>
+                </h2>
+                <p className="text-xs text-emerald-700 mt-1 inline-flex items-center gap-1">
+                  <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
+                  Judged on {new Date(judgment.judged_at).toLocaleDateString()}
+                </p>
+              </div>
+            </div>
+            {judgment.comment && (
+              <div className="mt-4 pt-4 border-t border-emerald-200">
+                <p className="text-xs uppercase tracking-wider text-emerald-700 font-medium mb-1.5">
+                  Judge's comment
+                </p>
+                <p className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">
+                  {judgment.comment}
+                </p>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* Project card */}
+      <article className="card overflow-hidden">
+        {/* Cover image, if provided */}
+        {isImageHttp && (
+          <div className="bg-warm-100 border-b border-warm-200">
+            <img
+              src={project.image_url!}
+              alt={`Cover image for ${project.title}`}
+              loading="lazy"
+              decoding="async"
+              className="w-full max-h-80 object-cover"
+            />
+          </div>
+        )}
+
+        <div className="p-5 sm:p-7">
+          <header className="mb-5">
+            <div className="flex items-center gap-2 text-xs uppercase tracking-wider mb-2 flex-wrap">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-warm-100 text-gray-700">
+                <Lock className="h-3 w-3" aria-hidden="true" />
+                {project.status === 'judged' ? 'Judged' : 'Submitted'}
+              </span>
+              {project.submitted_at && (
+                <span className="text-gray-500 inline-flex items-center gap-1 normal-case tracking-normal">
+                  <Calendar className="h-3 w-3" aria-hidden="true" />
+                  {new Date(project.submitted_at).toLocaleDateString(undefined, {
+                    year: 'numeric', month: 'long', day: 'numeric',
+                  })}
+                </span>
+              )}
+            </div>
+            <h2 className="m-0 text-2xl sm:text-3xl">{project.title}</h2>
+          </header>
+
+          {project.description && (
+            <p className="text-sm sm:text-base text-gray-700 whitespace-pre-wrap leading-relaxed mb-6">
+              {project.description}
+            </p>
+          )}
+
+          {/* Resource links */}
+          {(project.repo_url || project.video_url || (project.image_url && !isImageHttp)) && (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-6">
+              {project.repo_url && (
+                <ResourceLink
+                  href={project.repo_url}
+                  icon={GitBranch}
+                  label="Repository"
+                  detail={domainOf(project.repo_url)}
+                />
+              )}
+              {project.video_url && (
+                <ResourceLink
+                  href={project.video_url}
+                  icon={Video}
+                  label="Demo video"
+                  detail={domainOf(project.video_url)}
+                />
+              )}
+              {project.image_url && !isImageHttp && (
+                <ResourceLink
+                  href={project.image_url}
+                  icon={ImageIcon}
+                  label="Image"
+                  detail={domainOf(project.image_url)}
+                />
+              )}
+            </div>
+          )}
+
+          {/* Team roster */}
+          <section aria-labelledby="team-roster-heading" className="pt-4 border-t border-warm-200">
+            <h3
+              id="team-roster-heading"
+              className="text-xs uppercase tracking-wider text-gray-500 m-0 mb-3 inline-flex items-center gap-1.5"
+            >
+              <Users className="h-3.5 w-3.5" aria-hidden="true" />
+              Team {team.length > 0 && <span className="text-gray-400">· {team.length}</span>}
+            </h3>
+            {team.length === 0 ? (
+              <p className="text-sm text-gray-500 italic">No team members listed.</p>
+            ) : (
+              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 list-none p-0 m-0">
+                {team.map((tm) => {
+                  const name = tm.student?.full_name ?? 'Student';
+                  const initials = name.split(/\s+/).map((w) => w[0]).slice(0, 2).join('').toUpperCase();
+                  return (
+                    <li
+                      key={tm.student_id}
+                      className="flex items-center gap-3 px-3 py-2 bg-warm-50 rounded-md border border-warm-200"
+                    >
+                      <span
+                        aria-hidden="true"
+                        className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-teal-500/10 text-teal-700 font-semibold text-xs flex-shrink-0"
+                      >
+                        {initials || '–'}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-sm font-medium text-gray-900 truncate">{name}</div>
+                        <div className="text-xs text-gray-500 truncate">
+                          {tm.role || (tm.student?.grade ? `Grade ${tm.student.grade}` : 'Team member')}
+                        </div>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </section>
+        </div>
+
+        {/* Footer: locked-state hint */}
+        <div className="border-t border-warm-200 bg-warm-50 px-5 sm:px-7 py-3 text-xs text-gray-600 inline-flex items-center gap-2 w-full">
+          <AlertCircle className="h-3.5 w-3.5 text-amber-600 flex-shrink-0" aria-hidden="true" />
+          Submitted projects can no longer be edited. Contact ChipuRobo if you need changes.
+        </div>
+      </article>
+    </div>
+  );
+}
+
+// Small button-like resource card used for Repo / Video / Image links.
+function ResourceLink({
+  href, icon: Icon, label, detail,
+}: {
+  href:   string;
+  icon:   typeof GitBranch;
+  label:  string;
+  detail: string;
+}) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group flex items-center gap-3 px-3 py-2.5 border border-warm-200 rounded-md hover:border-teal-500 hover:bg-teal-50/30 transition-colors"
+    >
+      <span className="inline-flex items-center justify-center w-9 h-9 rounded-md bg-teal-500/10 text-teal-700 flex-shrink-0">
+        <Icon className="h-4 w-4" aria-hidden="true" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-sm font-medium text-gray-900">{label}</span>
+        <span className="block text-xs text-gray-500 truncate">{detail}</span>
+      </span>
+      <ExternalLink
+        aria-hidden="true"
+        className="h-3.5 w-3.5 text-gray-400 group-hover:text-teal-700 transition-colors flex-shrink-0"
+      />
+    </a>
+  );
+}
+
+function domainOf(url: string): string {
+  try { return new URL(url).hostname.replace(/^www\./, ''); }
+  catch { return url; }
 }

@@ -1,9 +1,13 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { supabase } from '../../lib/supabase';
+import {
+  fetchActiveProgrammeStages,
+  fetchMembersBySchoolUnordered,
+  fetchPassedCompletionsWithStudent,
+} from '../../lib/gql/queries';
 import { useAuth } from '../../lib/auth';
-import type { ProgrammeStage, StageKind, ClubMember } from '../../lib/database.types';
+import type { StageKind } from '../../lib/database.types';
 import { BookOpen, Laptop, MonitorPlay, FolderKanban, ArrowRight, GraduationCap, Megaphone } from 'lucide-react';
 import { SkeletonCards } from '../components/Skeletons';
 
@@ -52,16 +56,7 @@ export function SchoolLessons() {
   // Stages for the school's programme.
   const stagesQuery = useQuery({
     queryKey: ['programme-stages', programmeId],
-    queryFn: async (): Promise<ProgrammeStage[]> => {
-      const { data, error } = await supabase
-        .from('programme_stages')
-        .select('*')
-        .eq('programme_id', programmeId!)
-        .eq('is_active', true)
-        .order('position');
-      if (error) throw new Error(error.message);
-      return data as ProgrammeStage[];
-    },
+    queryFn: () => fetchActiveProgrammeStages(programmeId!),
     enabled: !!programmeId,
   });
 
@@ -70,14 +65,7 @@ export function SchoolLessons() {
   // we always want the count to be of THIS school's students.
   const studentsQuery = useQuery({
     queryKey: ['members', schoolId],
-    queryFn: async (): Promise<ClubMember[]> => {
-      const { data, error } = await supabase
-        .from('club_members')
-        .select('*')
-        .eq('school_id', schoolId!);
-      if (error) throw new Error(error.message);
-      return data as ClubMember[];
-    },
+    queryFn: () => fetchMembersBySchoolUnordered(schoolId!),
     enabled: !!schoolId,
   });
 
@@ -87,23 +75,9 @@ export function SchoolLessons() {
     queryFn: async (): Promise<CompletionCountRow[]> => {
       // Pull (stage_id, student_id) for every passed completion belonging
       // to one of our students.
-      const { data, error } = await supabase
-        .from('lesson_completions')
-        .select('stage_id, student_id, passed, student:student_id ( school_id )')
-        .eq('passed', true);
-      if (error) throw new Error(error.message);
-      type Row = {
-        stage_id: string;
-        student_id: string;
-        passed: boolean;
-        student: { school_id: string } | { school_id: string }[] | null;
-      };
-      const rows = (data as unknown as Row[]) ?? [];
-      return rows
-        .filter((r) => {
-          const sc = Array.isArray(r.student) ? r.student[0] : r.student;
-          return sc?.school_id === schoolId;
-        })
+      const all = await fetchPassedCompletionsWithStudent();
+      return all
+        .filter((r) => r.student?.school_id === schoolId)
         .map((r) => ({ stage_id: r.stage_id, student_id: r.student_id }));
     },
     enabled: !!schoolId,

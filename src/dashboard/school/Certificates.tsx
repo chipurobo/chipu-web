@@ -1,10 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { supabase } from '../../lib/supabase';
+import { fetchIssuancesBySchoolWithJoins } from '../../lib/gql/queries';
 import { useAuth } from '../../lib/auth';
-import type {
-  CertificateIssuance, CertificateTemplate, ClubMember,
-} from '../../lib/database.types';
 import { Award, GraduationCap, UserCog, Printer } from 'lucide-react';
 import { SkeletonRows } from '../components/Skeletons';
 
@@ -14,12 +11,10 @@ import { SkeletonRows } from '../components/Skeletons';
 // School lead's list of every certificate ever issued to their school.
 // Each row links to /dashboard/certificate/:id which renders the
 // printable artwork; lead clicks Print and hands it to the student.
+//
+// Row shape now comes from fetchIssuancesBySchoolWithJoins — pg_graphql
+// exposes the FK relations as singular field names (`template`, `student`).
 // =============================================================
-
-interface CertRow extends CertificateIssuance {
-  templates: Pick<CertificateTemplate, 'id' | 'title' | 'audience' | 'programme' | 'hero_color'> | null;
-  student:   Pick<ClubMember, 'id' | 'full_name'> | null;
-}
 
 export function SchoolCertificates() {
   const { school } = useAuth();
@@ -27,20 +22,7 @@ export function SchoolCertificates() {
 
   const { data: rows, error: queryErr } = useQuery({
     queryKey: ['issuances', { scope: 'school', schoolId }],
-    queryFn: async (): Promise<CertRow[]> => {
-      const { data, error } = await supabase
-        .from('certificate_issuances')
-        .select(`
-          *,
-          templates:template_id ( id, title, audience, programme, hero_color ),
-          student:student_id ( id, full_name )
-        `)
-        .eq('school_id', schoolId!)
-        .is('revoked_at', null)
-        .order('issued_at', { ascending: false });
-      if (error) throw new Error(error.message);
-      return data as unknown as CertRow[];
-    },
+    queryFn: () => fetchIssuancesBySchoolWithJoins(schoolId!),
     enabled: !!schoolId,
   });
   const err = queryErr?.message ?? null;
@@ -88,19 +70,19 @@ export function SchoolCertificates() {
               </tr>
             )}
             {rows?.map((r) => {
-              const isStudent = r.templates?.audience === 'student';
+              const isStudent = r.template?.audience === 'student';
               return (
                 <tr key={r.id}>
                   <td>
                     <div className="flex items-start gap-2">
                       <span
                         className="inline-block w-1 h-8 rounded-full flex-shrink-0"
-                        style={{ background: r.templates?.hero_color ?? '#0d9488' }}
+                        style={{ background: r.template?.hero_color ?? '#0d9488' }}
                       />
                       <div className="min-w-0">
-                        <div className="font-medium text-gray-900">{r.templates?.title ?? '—'}</div>
-                        {r.templates?.programme && (
-                          <div className="text-xs text-gray-500">{r.templates.programme}</div>
+                        <div className="font-medium text-gray-900">{r.template?.title ?? '—'}</div>
+                        {r.template?.programme && (
+                          <div className="text-xs text-gray-500">{r.template.programme}</div>
                         )}
                       </div>
                     </div>

@@ -46,7 +46,7 @@ const Home = () => {
  {
  icon: Brain,
  title: 'Inclusive & Accessible AI Education',
- description: 'Hackathon projects delivered Braille kits, KSL videos, and neurodiverse-friendly AI lessons.',
+ description: 'Student projects delivered Braille kits, KSL videos, and neurodiverse-friendly AI lessons.',
  impact: 'Every learner can engage with robotics.',
  },
  {
@@ -66,19 +66,6 @@ const Home = () => {
 
  return (
  <div className="bg-warm-50 ">
-
- {/* ── Announcement pill (tnkr style) ── */}
- <div className="bg-warm-50 flex justify-center pt-6 pb-2 px-4">
- <Link
- to="/kesho"
- className="group inline-flex items-center gap-2 bg-gray-800 text-white text-sm px-5 py-2.5 rounded-full hover:bg-gray-700 transition-colors"
- >
- <span className="font-pixel text-[0.55rem] tracking-widest text-teal-400">KESHO</span>
- <span className="hidden sm:inline">Hackathon · 11–12 July 2026 · register interest</span>
- <span className="sm:hidden">11–12 Jul · register</span>
- <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
- </Link>
- </div>
 
  {/* ── Hero ── */}
  <section className="relative overflow-hidden bg-warm-50 ">

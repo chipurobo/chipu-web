@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import { fetchSchoolsByCreated, fetchProgrammes } from '../../lib/gql/queries';
 import type { School, SchoolType, Programme } from '../../lib/database.types';
 import { KENYA_COUNTIES } from '../../lib/counties';
 import { Wrench, Plus, X, Check, KeyRound, Upload, Pencil, Trash2, Send, AlertCircle } from 'lucide-react';
@@ -84,14 +85,7 @@ export function AdminSchools() {
 
   const { data: schools, error: schoolsErr } = useQuery({
     queryKey: ['schools'],
-    queryFn: async (): Promise<School[]> => {
-      const { data, error } = await supabase
-        .from('schools')
-        .select('*')
-        .order('created_at', { ascending: false });
-      if (error) throw new Error(error.message);
-      return data as School[];
-    },
+    queryFn: fetchSchoolsByCreated,
   });
 
   const { data: leads, error: leadsErr } = useQuery({
@@ -105,14 +99,7 @@ export function AdminSchools() {
 
   const { data: programmes, error: programmesErr } = useQuery({
     queryKey: ['programmes'],
-    queryFn: async (): Promise<Programme[]> => {
-      const { data, error } = await supabase
-        .from('programmes')
-        .select('*')
-        .order('name');
-      if (error) throw new Error(error.message);
-      return data as Programme[];
-    },
+    queryFn: fetchProgrammes,
   });
 
   const programmesById = useMemo(() => {

@@ -2,15 +2,11 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 
-// === CURRENT HACKATHON: Kesho ===
-// When a new hackathon comes around, change the `to` and `label` of the
-// hackathon nav item below to match the new event slug & name.
 const navigationLinks = [
   { to: '/', label: 'Home' },
   { to: '/about', label: 'About' },
   { to: '/programs', label: 'Programs' },
   { to: '/maker-spaces', label: 'Maker spaces' },
-  { to: '/kesho', label: 'Kesho' },
   { to: '/impact', label: 'Impact' },
   { to: '/podcast', label: 'Podcast' },
   { to: '/contact', label: 'Contact' },

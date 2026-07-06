@@ -1,9 +1,16 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
+import {
+  fetchCertificateTemplates,
+  fetchSchools,
+  fetchRecentIssuancesAdmin,
+  fetchMembersBySchool,
+  type IssuanceAdminRow,
+} from '../../lib/gql/queries';
 import { useNotifications } from '../../lib/notifications';
 import type {
-  CertificateTemplate, CertificateIssuance, CertAudience, School, ClubMember,
+  CertificateTemplate, CertAudience, School, ClubMember,
 } from '../../lib/database.types';
 import {
   Award, Plus, X, Trash2, Pencil, GraduationCap, UserCog, CheckCircle2, AlertCircle,
@@ -30,11 +37,10 @@ interface SchoolLead {
   school_name: string | null;
 }
 
-interface IssuanceRow extends CertificateIssuance {
-  templates: Pick<CertificateTemplate, 'id' | 'title' | 'audience'> | null;
-  schools:   Pick<School, 'id' | 'name'> | null;
-  student:   Pick<ClubMember, 'id' | 'full_name'> | null;
-  teacher:   Pick<SchoolLead, 'user_id' | 'full_name'> | null;
+// Row from the GraphQL helper, plus a stitched teacher snippet from
+// admin_list_school_leads (still served via supabase.rpc).
+interface IssuanceRow extends IssuanceAdminRow {
+  teacher: Pick<SchoolLead, 'user_id' | 'full_name'> | null;
 }
 
 type Tab = 'templates' | 'issue';
@@ -45,26 +51,12 @@ export function AdminCertifications() {
 
   const templatesQuery = useQuery({
     queryKey: ['templates'],
-    queryFn: async (): Promise<CertificateTemplate[]> => {
-      const { data, error } = await supabase
-        .from('certificate_templates')
-        .select('*')
-        .order('title');
-      if (error) throw new Error(error.message);
-      return data as CertificateTemplate[];
-    },
+    queryFn: fetchCertificateTemplates,
   });
 
   const schoolsQuery = useQuery({
     queryKey: ['schools'],
-    queryFn: async (): Promise<School[]> => {
-      const { data, error } = await supabase
-        .from('schools')
-        .select('*')
-        .order('name');
-      if (error) throw new Error(error.message);
-      return data as School[];
-    },
+    queryFn: fetchSchools,
   });
 
   const leadsQuery = useQuery({
@@ -78,20 +70,7 @@ export function AdminCertifications() {
 
   const issuancesQuery = useQuery({
     queryKey: ['issuances', { scope: 'admin' }],
-    queryFn: async (): Promise<IssuanceRow[]> => {
-      const { data, error } = await supabase
-        .from('certificate_issuances')
-        .select(`
-          *,
-          templates:template_id ( id, title, audience ),
-          schools:school_id     ( id, name ),
-          student:student_id    ( id, full_name )
-        `)
-        .order('issued_at', { ascending: false })
-        .limit(30);
-      if (error) throw new Error(error.message);
-      return data as unknown as IssuanceRow[];
-    },
+    queryFn: fetchRecentIssuancesAdmin,
   });
 
   const templates = templatesQuery.data ?? null;
@@ -447,15 +426,7 @@ function IssuePanel({
   // Students at the selected school — only fetched when issuing to students.
   const studentsQuery = useQuery({
     queryKey: ['members', schoolId],
-    queryFn: async (): Promise<ClubMember[]> => {
-      const { data, error } = await supabase
-        .from('club_members')
-        .select('id, full_name, grade, in_club, is_active, has_disability, disability_notes, joined_at, created_at, school_id')
-        .eq('school_id', schoolId)
-        .order('full_name');
-      if (error) throw new Error(error.message);
-      return data as ClubMember[];
-    },
+    queryFn: () => fetchMembersBySchool(schoolId),
     enabled: audience === 'student' && !!schoolId,
   });
   // Filter to active client-side (cache stays compatible with school Members.tsx).
@@ -711,15 +682,15 @@ function RecentIssuances({ rows }: { rows: IssuanceRow[] | null }) {
             <div key={r.id} className="px-4 py-3 flex items-start justify-between gap-4 flex-wrap">
               <div className="min-w-0 flex items-start gap-3">
                 <div className="p-1.5 rounded-md bg-warm-100 mt-0.5 flex-shrink-0">
-                  {r.templates?.audience === 'teacher'
+                  {r.template?.audience === 'teacher'
                     ? <UserCog className="h-4 w-4 text-gray-700" aria-hidden="true" />
                     : <GraduationCap className="h-4 w-4 text-gray-700" aria-hidden="true" />}
                 </div>
                 <div className="min-w-0">
-                  <div className="text-sm font-medium text-gray-900">{r.templates?.title ?? '—'}</div>
+                  <div className="text-sm font-medium text-gray-900">{r.template?.title ?? '—'}</div>
                   <div className="text-xs text-gray-500 mt-0.5">
                     To <span className="text-gray-700">{r.student?.full_name ?? r.teacher?.full_name ?? '—'}</span>
-                    {' · '}{r.schools?.name ?? '—'}
+                    {' · '}{r.school?.name ?? '—'}
                   </div>
                   {r.notes && (
                     <div className="text-xs text-gray-600 italic mt-1">"{r.notes}"</div>

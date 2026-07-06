@@ -82,7 +82,6 @@ const Footer = () => {
  { to: '/about', label: 'About' },
  { to: '/about#team', label: 'Staff' },
  { to: '/programs', label: 'Programs' },
- { to: '/kesho', label: 'Kesho Hackathon' },
  { to: '/impact', label: 'Impact' },
  { to: '/podcast', label: 'Podcast' },
  { to: '/contact', label: 'Contact' },

@@ -1,20 +1,24 @@
 import { useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
+import {
+  fetchOrdersWithJoins,
+  fetchProducts,
+  fetchSchools,
+  type OrderWithJoins,
+} from '../../lib/gql/queries';
 import { useAuth } from '../../lib/auth';
-import type { Order, OrderStatus, Product, School } from '../../lib/database.types';
+import type { OrderStatus, Product, School } from '../../lib/database.types';
 import { Plus, X, Wrench, PackageCheck } from 'lucide-react';
 import { notifyOrderEvent } from '../../lib/orderEmails';
 import { useDialog } from '../../lib/useDialog';
 import { Pagination, usePaged } from '../components/Pagination';
 import { SkeletonRows } from '../components/Skeletons';
 
-// Order rows joined with product info (small subset).
-interface OrderRow extends Order {
-  products: Pick<Product, 'id' | 'name' | 'sku' | 'is_durable'> | null;
-  placer: { id: string; name: string } | null;
-  fulfiller: { id: string; name: string } | null;
-}
+// Order rows joined with product info (small subset). The new GraphQL
+// shape uses relation field names `product`, `placed_by_school` and
+// `fulfilled_by_school`, so we just re-alias the helper return type.
+type OrderRow = OrderWithJoins;
 
 const STATUS_STYLES: Record<OrderStatus, string> = {
   placed:        'badge-amber',
@@ -44,19 +48,7 @@ export function SchoolOrders() {
 
   const { data: orders, error: ordersErr } = useQuery({
     queryKey: ['orders', 'school', schoolId],
-    queryFn: async (): Promise<OrderRow[]> => {
-      const { data, error } = await supabase
-        .from('orders')
-        .select(`
-          *,
-          products ( id, name, sku, is_durable ),
-          placer:placed_by_school_id ( id, name ),
-          fulfiller:fulfilled_by_school_id ( id, name )
-        `)
-        .order('placed_at', { ascending: false });
-      if (error) throw new Error(error.message);
-      return data as unknown as OrderRow[];
-    },
+    queryFn: fetchOrdersWithJoins,
     enabled: !!schoolId,
   });
 
@@ -65,28 +57,14 @@ export function SchoolOrders() {
   // what schools can route to a maker space.
   const { data: products, error: productsErr } = useQuery({
     queryKey: ['products'],
-    queryFn: async (): Promise<Product[]> => {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .order('created_at', { ascending: false });
-      if (error) throw new Error(error.message);
-      return data as Product[];
-    },
+    queryFn: fetchProducts,
   });
   const orderableProducts = products?.filter((p) => p.is_active && p.is_durable) ?? null;
 
   // Maker-space directory: schools the placer can route their order to.
   const { data: makerSpaces, error: makerSpacesErr } = useQuery({
     queryKey: ['schools'],
-    queryFn: async (): Promise<School[]> => {
-      const { data, error } = await supabase
-        .from('schools')
-        .select('*')
-        .order('name');
-      if (error) throw new Error(error.message);
-      return data as School[];
-    },
+    queryFn: fetchSchools,
   });
   const makerSpaceOptions = makerSpaces?.filter((s) => s.is_maker_space) ?? null;
 
@@ -220,16 +198,16 @@ function OrdersTable({
           {paged?.map((o) => (
             <tr key={o.id}>
               <td>
-                <div className="font-medium text-gray-900">{o.products?.name ?? '—'}</div>
-                {o.products?.sku && (
-                  <div className="text-xs text-gray-500">{o.products.sku}</div>
+                <div className="font-medium text-gray-900">{o.product?.name ?? '—'}</div>
+                {o.product?.sku && (
+                  <div className="text-xs text-gray-500">{o.product.sku}</div>
                 )}
               </td>
               <td className="text-gray-700">{o.quantity}</td>
               <td className="text-sm text-gray-700">
                 {side === 'placer'
-                  ? (o.fulfiller?.name ?? <span className="text-teal-700">ChipuRobo</span>)
-                  : (o.placer?.name ?? '—')}
+                  ? (o.fulfilled_by_school?.name ?? <span className="text-teal-700">ChipuRobo</span>)
+                  : (o.placed_by_school?.name ?? '—')}
               </td>
               <td>
                 <span className={STATUS_STYLES[o.status]}>

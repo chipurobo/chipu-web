@@ -1,17 +1,23 @@
 import { useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
+import {
+  fetchMembersBySchool,
+  fetchUnitsAtSchoolWithJoins,
+  fetchStockOnHandBySchool,
+  fetchProductsByIds,
+  type UnitWithJoins,
+} from '../../lib/gql/queries';
 import { useAuth } from '../../lib/auth';
-import type { Product, ProductUnit, ClubMember, UnitStatus } from '../../lib/database.types';
+import type { Product, ClubMember, UnitStatus } from '../../lib/database.types';
 import { Package, Wrench, UserPlus, X } from 'lucide-react';
 import { Pagination, usePaged } from '../components/Pagination';
 import { SkeletonRows } from '../components/Skeletons';
 
-// product_units joined with product + assigned member
-interface UnitRow extends ProductUnit {
-  products: Pick<Product, 'id' | 'name' | 'sku'> | null;
-  member: Pick<ClubMember, 'id' | 'full_name' | 'in_club'> | null;
-}
+// product_units joined with product + assigned member. The new
+// fetchUnitsAtSchoolWithJoins helper returns this shape directly under
+// the relation field names `product` and `current_member`.
+type UnitRow = UnitWithJoins;
 
 interface StockRow {
   product: Product;
@@ -44,34 +50,14 @@ export function SchoolStock() {
   // Active students for the assignment picker — keyed for cross-page reuse.
   const studentsQuery = useQuery({
     queryKey: ['members', schoolId],
-    queryFn: async (): Promise<ClubMember[]> => {
-      const { data, error } = await supabase
-        .from('club_members')
-        .select('*')
-        .eq('school_id', schoolId!)
-        .order('full_name');
-      if (error) throw new Error(error.message);
-      return data as ClubMember[];
-    },
+    queryFn: () => fetchMembersBySchool(schoolId!),
     enabled: !!schoolId,
   });
   const students = studentsQuery.data?.filter((s) => s.is_active) ?? null;
 
   const unitsQuery = useQuery({
     queryKey: ['units', schoolId],
-    queryFn: async (): Promise<UnitRow[]> => {
-      const { data, error } = await supabase
-        .from('product_units')
-        .select(`
-          *,
-          products ( id, name, sku ),
-          member:current_member_id ( id, full_name, in_club )
-        `)
-        .eq('current_school_id', schoolId!)
-        .order('fabricated_at', { ascending: false });
-      if (error) throw new Error(error.message);
-      return data as unknown as UnitRow[];
-    },
+    queryFn: () => fetchUnitsAtSchoolWithJoins(schoolId!),
     enabled: !!schoolId,
   });
   const units = unitsQuery.data ?? null;
@@ -79,21 +65,11 @@ export function SchoolStock() {
   const stockQuery = useQuery({
     queryKey: ['stock', schoolId],
     queryFn: async (): Promise<StockRow[]> => {
-      const { data: sData, error: sErr } = await supabase
-        .from('stock_on_hand')
-        .select('school_id, product_id, on_hand')
-        .eq('school_id', schoolId!);
-      if (sErr) throw new Error(sErr.message);
-      if (!sData || sData.length === 0) return [];
+      const sData = await fetchStockOnHandBySchool(schoolId!);
+      if (sData.length === 0) return [];
       const ids = sData.map((r) => r.product_id);
-      const { data: pData, error: pErr } = await supabase
-        .from('products')
-        .select('*')
-        .in('id', ids);
-      if (pErr) throw new Error(pErr.message);
-      const productById = new Map<string, Product>(
-        (pData as Product[] | null ?? []).map((p) => [p.id, p]),
-      );
+      const pData = await fetchProductsByIds(ids);
+      const productById = new Map<string, Product>(pData.map((p) => [p.id, p]));
       return sData
         .map((row) => ({
           product: productById.get(row.product_id),
@@ -167,9 +143,9 @@ export function SchoolStock() {
                 <tr key={u.id}>
                   <td className="font-mono text-xs">{u.serial_number}</td>
                   <td>
-                    <div className="font-medium text-gray-900">{u.products?.name ?? '—'}</div>
-                    {u.products?.sku && (
-                      <div className="text-xs text-gray-500">{u.products.sku}</div>
+                    <div className="font-medium text-gray-900">{u.product?.name ?? '—'}</div>
+                    {u.product?.sku && (
+                      <div className="text-xs text-gray-500">{u.product.sku}</div>
                     )}
                   </td>
                   <td>
@@ -332,10 +308,10 @@ function HeldByCell({
   if (!open) {
     return (
       <div className="flex items-center gap-2">
-        {unit.member ? (
+        {unit.current_member ? (
           <>
-            <span className="text-gray-900">{unit.member.full_name}</span>
-            {unit.member.in_club === false && (
+            <span className="text-gray-900">{unit.current_member.full_name}</span>
+            {unit.current_member.in_club === false && (
               <span className="text-[0.625rem] text-gray-500 italic">non-club</span>
             )}
           </>
@@ -347,7 +323,7 @@ function HeldByCell({
           onClick={() => setOpen(true)}
           className="text-xs text-teal-700 hover:underline ml-auto"
         >
-          {unit.member ? 'Change' : 'Assign'}
+          {unit.current_member ? 'Change' : 'Assign'}
         </button>
       </div>
     );
@@ -358,7 +334,7 @@ function HeldByCell({
     <div className="space-y-2">
       <div className="flex gap-2 items-stretch">
         <select
-          aria-label={`Assign ${unit.products?.name ?? 'unit'} ${unit.serial_number} to a student`}
+          aria-label={`Assign ${unit.product?.name ?? 'unit'} ${unit.serial_number} to a student`}
           className="field-select flex-1"
           value={selected}
           onChange={(e) => setSelected(e.target.value)}

@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
+import { fetchOrdersForMakerProduction, type ProdOrderGql } from '../../lib/gql/queries';
 import { useAuth } from '../../lib/auth';
-import type { Order, OrderStatus, Product, ProductUnit } from '../../lib/database.types';
+import type { OrderStatus } from '../../lib/database.types';
 import { Wrench, Inbox, PlayCircle, Truck, Plus, AlertCircle, PackageCheck } from 'lucide-react';
 import { notifyOrderEvent } from '../../lib/orderEmails';
 
@@ -21,11 +22,9 @@ import { notifyOrderEvent } from '../../lib/orderEmails';
 // RPC; everything else is a direct UPDATE / INSERT (allowed by RLS).
 // =============================================================
 
-interface ProdOrder extends Order {
-  products: Pick<Product, 'id' | 'name' | 'sku' | 'is_durable'> | null;
-  placer:   { id: string; name: string; contact_email: string | null } | null;
-  units:    Pick<ProductUnit, 'id' | 'serial_number' | 'status'>[];
-}
+// The new GraphQL helper returns the same data shape under pg_graphql's
+// relation field names: `product`, `placed_by_school`, `product_units`.
+type ProdOrder = ProdOrderGql;
 
 export function SchoolProduction() {
   const { school } = useAuth();
@@ -34,21 +33,7 @@ export function SchoolProduction() {
 
   const ordersQuery = useQuery({
     queryKey: ['orders', 'maker', schoolId],
-    queryFn: async (): Promise<ProdOrder[]> => {
-      const { data, error } = await supabase
-        .from('orders')
-        .select(`
-          *,
-          products  ( id, name, sku, is_durable ),
-          placer:placed_by_school_id ( id, name, contact_email ),
-          units:product_units!product_units_order_id_fkey ( id, serial_number, status )
-        `)
-        .eq('fulfilled_by_school_id', schoolId!)
-        .in('status', ['placed', 'accepted', 'in_production', 'shipped'])
-        .order('placed_at', { ascending: true });
-      if (error) throw new Error(error.message);
-      return data as unknown as ProdOrder[];
-    },
+    queryFn: () => fetchOrdersForMakerProduction(schoolId!),
     enabled: !!schoolId && !!school?.is_maker_space,
   });
   const orders = ordersQuery.data ?? null;
@@ -72,13 +57,13 @@ export function SchoolProduction() {
   // fulfilling school (us) are both needed; we fire fire-and-forget so the
   // UI doesn't block on SendKit.
   const fireEmail = (status: OrderStatus, order: ProdOrder | undefined) => {
-    if (!order || !order.products || !order.placer) return;
+    if (!order || !order.product || !order.placed_by_school) return;
     void notifyOrderEvent(status, {
-      productName:    order.products.name,
-      productSku:     order.products.sku ?? null,
+      productName:    order.product.name,
+      productSku:     order.product.sku ?? null,
       quantity:       order.quantity,
-      placerName:     order.placer.name,
-      placerEmail:    order.placer.contact_email,
+      placerName:     order.placed_by_school.name,
+      placerEmail:    order.placed_by_school.contact_email,
       fulfillerName:  school?.name ?? null,
       fulfillerEmail: school?.contact_email ?? null,
     });
@@ -284,7 +269,7 @@ export function SchoolProduction() {
                 order={o}
                 onShip={() => ship(o.id)}
                 onCancel={() => cancel(o.id)}
-                onChanged={() => invalidateOrderQueries(o.placer?.id ?? null)}
+                onChanged={() => invalidateOrderQueries(o.placed_by_school?.id ?? null)}
               />
             ))}
           </div>
@@ -366,16 +351,16 @@ function SimpleTile({
   return (
     <div className={`rounded-md border border-warm-200 ${tint} p-3`}>
       <div className="font-medium text-gray-900 text-sm leading-tight">
-        {order.products?.name ?? 'Unknown product'}{' '}
+        {order.product?.name ?? 'Unknown product'}{' '}
         <span className="text-gray-500 font-normal">× {order.quantity}</span>
       </div>
       <div className="text-[0.7rem] text-gray-500 mt-1 leading-snug">
-        From <span className="text-gray-700">{order.placer?.name ?? '—'}</span>
-        {order.products?.sku && <> · <span className="font-mono">{order.products.sku}</span></>}
+        From <span className="text-gray-700">{order.placed_by_school?.name ?? '—'}</span>
+        {order.product?.sku && <> · <span className="font-mono">{order.product.sku}</span></>}
       </div>
       <div className="text-[0.7rem] mt-0.5">
-        <span className={order.products?.is_durable ? 'text-teal-700' : 'text-amber-700'}>
-          {order.products?.is_durable ? 'durable' : 'consumable'}
+        <span className={order.product?.is_durable ? 'text-teal-700' : 'text-amber-700'}>
+          {order.product?.is_durable ? 'durable' : 'consumable'}
         </span>
         <span className="text-gray-400"> · placed {new Date(order.placed_at).toLocaleDateString()}</span>
       </div>
@@ -411,11 +396,11 @@ function ShippedTile({ order, tint }: { order: ProdOrder; tint: string }) {
   return (
     <div className={`rounded-md border border-warm-200 ${tint} p-3`}>
       <div className="font-medium text-gray-900 text-sm leading-tight">
-        {order.products?.name ?? 'Unknown product'}{' '}
+        {order.product?.name ?? 'Unknown product'}{' '}
         <span className="text-gray-500 font-normal">× {order.quantity}</span>
       </div>
       <div className="text-[0.7rem] text-gray-500 mt-1 leading-snug">
-        Shipped to <span className="text-gray-700">{order.placer?.name ?? '—'}</span>
+        Shipped to <span className="text-gray-700">{order.placed_by_school?.name ?? '—'}</span>
       </div>
       <div className="mt-2 text-[0.7rem] text-emerald-700 inline-flex items-center gap-1">
         <PackageCheck className="h-3.5 w-3.5" aria-hidden="true" />
@@ -442,16 +427,16 @@ function InProductionCard({
 }: {
   order: ProdOrder; onShip: () => void; onCancel: () => void; onChanged: () => void;
 }) {
-  const isDurable = !!order.products?.is_durable;
-  const fabricated = order.units.length;
+  const isDurable = !!order.product?.is_durable;
+  const fabricated = order.product_units.length;
   const required = order.quantity;
   const ready = fabricated >= required;
 
   const addUnitMutation = useMutation({
     mutationFn: async () => {
-      if (!order.products) return;
+      if (!order.product) return;
       const { error } = await supabase.from('product_units').insert({
-        product_id:              order.products.id,
+        product_id:              order.product.id,
         order_id:                order.id,
         fabricated_by_school_id: order.fulfilled_by_school_id!,
         status:                  'with_maker',
@@ -472,11 +457,11 @@ function InProductionCard({
         <div className="flex items-start justify-between gap-3 mb-3 flex-wrap">
           <div className="min-w-0">
             <div className="font-medium text-gray-900">
-              {order.products?.name ?? 'Unknown product'}{' '}
+              {order.product?.name ?? 'Unknown product'}{' '}
               <span className="text-gray-500 font-normal">× {required}</span>
             </div>
             <div className="text-xs text-gray-500 mt-0.5">
-              For <span className="text-gray-700">{order.placer?.name ?? '—'}</span>
+              For <span className="text-gray-700">{order.placed_by_school?.name ?? '—'}</span>
               {' · '}
               <span className={isDurable ? 'text-teal-700' : 'text-amber-700'}>
                 {isDurable ? 'durable' : 'consumable'}
@@ -523,10 +508,10 @@ function InProductionCard({
             </div>
 
             {/* Serial register */}
-            {order.units.length > 0 ? (
+            {order.product_units.length > 0 ? (
               <div className="border border-warm-200 rounded-md bg-warm-50 max-h-32 overflow-y-auto p-2">
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-1">
-                  {order.units.map((u) => (
+                  {order.product_units.map((u) => (
                     <div key={u.id} className="text-xs font-mono text-gray-700 truncate">
                       · {u.serial_number}
                     </div>
@@ -537,7 +522,7 @@ function InProductionCard({
               <p className="text-xs text-gray-500 italic">
                 No units yet. Click <span className="font-medium">Add unit</span> for each one you finish —
                 serial numbers auto-generate as{' '}
-                <span className="font-mono">{order.products?.sku ?? 'SKU'}-001</span>, …
+                <span className="font-mono">{order.product?.sku ?? 'SKU'}-001</span>, …
               </p>
             )}
 

@@ -2,6 +2,7 @@ import { useMemo, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
+import { fetchProgrammesByCreated, fetchSchools } from '../../lib/gql/queries';
 import type { Programme, School } from '../../lib/database.types';
 import {
   Plus, X, Pencil, Trash2, Layers, School as SchoolIcon, ChevronRight,
@@ -30,28 +31,14 @@ export function AdminProgrammes() {
   // === All programmes ===
   const programmesQuery = useQuery({
     queryKey: ['programmes'],
-    queryFn: async (): Promise<Programme[]> => {
-      const { data, error } = await supabase
-        .from('programmes')
-        .select('*')
-        .order('created_at');
-      if (error) throw new Error(error.message);
-      return data as Programme[];
-    },
+    queryFn: fetchProgrammesByCreated,
   });
 
   // === All schools — bucketed client-side by programme_id ===
   // Shared cache key with AdminSchools so we re-use the same fetch.
   const schoolsQuery = useQuery({
     queryKey: ['schools'],
-    queryFn: async (): Promise<School[]> => {
-      const { data, error } = await supabase
-        .from('schools')
-        .select('*')
-        .order('name');
-      if (error) throw new Error(error.message);
-      return data as School[];
-    },
+    queryFn: fetchSchools,
   });
 
   const schoolsByProgramme = useMemo(() => {

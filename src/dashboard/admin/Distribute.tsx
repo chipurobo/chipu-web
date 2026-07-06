@@ -1,17 +1,19 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
-import type { Order, Product, School } from '../../lib/database.types';
+import {
+  fetchSchools,
+  fetchProducts,
+  fetchConsumableAssignments,
+  type AssignmentRowGql,
+} from '../../lib/gql/queries';
 import { Send, PlayCircle, Wrench, Truck, Plus, ChevronDown, Inbox, PackageCheck, CheckCircle2 } from 'lucide-react';
 import { notifyConsumableAssignment } from '../../lib/orderEmails';
 import { useDialog } from '../../lib/useDialog';
 import { Pagination, usePaged } from '../components/Pagination';
 import { SkeletonCards } from '../components/Skeletons';
 
-interface AssignmentRow extends Order {
-  products: Pick<Product, 'id' | 'name' | 'sku' | 'is_durable'> | null;
-  placer:   Pick<School,  'id' | 'name'> | null;
-}
+type AssignmentRow = AssignmentRowGql;
 
 /**
  * /dashboard/admin/distribute
@@ -44,26 +46,12 @@ export function AdminDistribute() {
 
   const { data: schools, error: schoolsErr } = useQuery({
     queryKey: ['schools'],
-    queryFn: async (): Promise<School[]> => {
-      const { data, error } = await supabase
-        .from('schools')
-        .select('*')
-        .order('name');
-      if (error) throw new Error(error.message);
-      return data as School[];
-    },
+    queryFn: fetchSchools,
   });
 
   const { data: products, error: productsErr } = useQuery({
     queryKey: ['products'],
-    queryFn: async (): Promise<Product[]> => {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .order('created_at', { ascending: false });
-      if (error) throw new Error(error.message);
-      return data as Product[];
-    },
+    queryFn: fetchProducts,
     // Pick the same key as Products.tsx so the cache is shared. We filter
     // client-side to active+consumable below.
   });
@@ -72,20 +60,7 @@ export function AdminDistribute() {
   // moving plus a slim look at recently-delivered ones.
   const { data: orders, error: ordersErr } = useQuery({
     queryKey: ['orders', 'admin'],
-    queryFn: async (): Promise<AssignmentRow[]> => {
-      const { data, error } = await supabase
-        .from('orders')
-        .select(`
-          *,
-          products ( id, name, sku, is_durable ),
-          placer:placed_by_school_id ( id, name )
-        `)
-        .is('fulfilled_by_school_id', null)
-        .order('placed_at', { ascending: false })
-        .limit(100);
-      if (error) throw new Error(error.message);
-      return data as unknown as AssignmentRow[];
-    },
+    queryFn: fetchConsumableAssignments,
   });
 
   // The picker only offers active consumables.
@@ -166,7 +141,7 @@ export function AdminDistribute() {
     onSettled: (_d, _e, id) => {
       void qc.invalidateQueries({ queryKey: ['orders', 'admin'] });
       // Find the placer to invalidate their stock + orders cache.
-      const placerId = orders?.find((o) => o.id === id)?.placer?.id;
+      const placerId = orders?.find((o) => o.id === id)?.placed_by_school?.id;
       if (placerId) {
         void qc.invalidateQueries({ queryKey: ['orders', 'school', placerId] });
         void qc.invalidateQueries({ queryKey: ['stock', placerId] });
@@ -410,12 +385,12 @@ export function AdminDistribute() {
               <div key={o.id} className="px-4 py-3 flex items-start justify-between gap-4 flex-wrap">
                 <div className="min-w-0">
                   <div className="font-medium text-gray-900 text-sm">
-                    {o.products?.name ?? 'Unknown product'}{' '}
+                    {o.product?.name ?? 'Unknown product'}{' '}
                     <span className="text-gray-500 font-normal">× {o.quantity}</span>
                   </div>
                   <div className="text-xs text-gray-500 mt-0.5">
-                    To {o.placer?.name ?? '—'}
-                    {o.products?.sku && <> · <span className="font-mono">{o.products.sku}</span></>}
+                    To {o.placed_by_school?.name ?? '—'}
+                    {o.product?.sku && <> · <span className="font-mono">{o.product.sku}</span></>}
                   </div>
                 </div>
                 <span className="text-xs text-emerald-700 inline-flex items-center gap-1 flex-shrink-0">
@@ -516,12 +491,12 @@ function AssignmentTile({
   return (
     <div className={`rounded-md border border-warm-200 ${tint} p-3`}>
       <div className="font-medium text-gray-900 text-sm leading-tight">
-        {o.products?.name ?? 'Unknown product'}{' '}
+        {o.product?.name ?? 'Unknown product'}{' '}
         <span className="text-gray-500 font-normal">× {o.quantity}</span>
       </div>
       <div className="text-[0.7rem] text-gray-500 mt-1 leading-snug">
-        For <span className="text-gray-700">{o.placer?.name ?? '—'}</span>
-        {o.products?.sku && <> · <span className="font-mono">{o.products.sku}</span></>}
+        For <span className="text-gray-700">{o.placed_by_school?.name ?? '—'}</span>
+        {o.product?.sku && <> · <span className="font-mono">{o.product.sku}</span></>}
       </div>
       <div className="text-[0.7rem] text-gray-400 mt-0.5">
         placed {new Date(o.placed_at).toLocaleDateString()}

@@ -1,16 +1,10 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../../lib/supabase';
-import type { Order, OrderStatus, Product, School } from '../../lib/database.types';
+import { fetchOrdersAdmin } from '../../lib/gql/queries';
+import type { OrderStatus } from '../../lib/database.types';
 import { ClipboardList } from 'lucide-react';
 import { Pagination, usePaged } from '../components/Pagination';
 import { SkeletonRows } from '../components/Skeletons';
-
-interface OrderRow extends Order {
-  products: Pick<Product, 'id' | 'name' | 'sku' | 'is_durable'> | null;
-  placer:    Pick<School,  'id' | 'name'> | null;
-  fulfiller: Pick<School,  'id' | 'name'> | null;
-}
 
 const STATUS_STYLES: Record<OrderStatus, string> = {
   placed:         'badge-amber',
@@ -44,20 +38,7 @@ export function AdminOrders() {
 
   const { data: orders, error: queryErr } = useQuery({
     queryKey: ['orders', 'admin'],
-    queryFn: async (): Promise<OrderRow[]> => {
-      const { data, error } = await supabase
-        .from('orders')
-        .select(`
-          *,
-          products  ( id, name, sku, is_durable ),
-          placer:placed_by_school_id    ( id, name ),
-          fulfiller:fulfilled_by_school_id ( id, name )
-        `)
-        .order('placed_at', { ascending: false })
-        .limit(200);
-      if (error) throw new Error(error.message);
-      return data as unknown as OrderRow[];
-    },
+    queryFn: fetchOrdersAdmin,
   });
 
   const err = queryErr?.message ?? null;
@@ -155,20 +136,20 @@ export function AdminOrders() {
                     {new Date(o.placed_at).toLocaleDateString()}
                   </td>
                   <td>
-                    <div className="font-medium text-gray-900">{o.products?.name ?? '—'}</div>
+                    <div className="font-medium text-gray-900">{o.product?.name ?? '—'}</div>
                     <div className="text-xs text-gray-500">
-                      {o.products?.sku ?? '—'}
-                      {o.products && (
+                      {o.product?.sku ?? '—'}
+                      {o.product && (
                         <span className="ml-2">
-                          {o.products.is_durable ? '· durable' : '· consumable'}
+                          {o.product.is_durable ? '· durable' : '· consumable'}
                         </span>
                       )}
                     </div>
                   </td>
                   <td className="text-right font-medium">{o.quantity}</td>
-                  <td className="text-sm text-gray-800">{o.placer?.name ?? '—'}</td>
+                  <td className="text-sm text-gray-800">{o.placed_by_school?.name ?? '—'}</td>
                   <td className="text-sm text-gray-800">
-                    {o.fulfiller?.name ?? (
+                    {o.fulfilled_by_school?.name ?? (
                       <span className="text-teal-700">ChipuRobo</span>
                     )}
                   </td>

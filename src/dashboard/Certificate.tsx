@@ -1,7 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import type { CertificateIssuance, CertificateTemplate, School, ClubMember } from '../lib/database.types';
+import {
+  fetchIssuanceByIdWithJoins,
+  type IssuanceWithJoins,
+} from '../lib/gql/queries';
 import { ArrowLeft, Printer, Award } from 'lucide-react';
 import { SkeletonBlock } from './components/Skeletons';
 
@@ -18,11 +21,9 @@ import { SkeletonBlock } from './components/Skeletons';
 // hides everything except the cert itself when printing.
 // =============================================================
 
-interface FullIssuance extends CertificateIssuance {
-  templates: CertificateTemplate | null;
-  schools:   Pick<School, 'id' | 'name' | 'county'> | null;
-  student:   Pick<ClubMember, 'id' | 'full_name' | 'grade'> | null;
-}
+// The new GraphQL helper returns the same shape under pg_graphql's
+// relation field names (`template`, `school`, `student`).
+type FullIssuance = IssuanceWithJoins;
 
 export function Certificate() {
   const { issuanceId } = useParams<{ issuanceId: string }>();
@@ -30,19 +31,9 @@ export function Certificate() {
   const issuanceQuery = useQuery({
     queryKey: ['issuance', issuanceId],
     queryFn: async (): Promise<FullIssuance> => {
-      const { data, error } = await supabase
-        .from('certificate_issuances')
-        .select(`
-          *,
-          templates:template_id ( * ),
-          schools:school_id ( id, name, county ),
-          student:student_id ( id, full_name, grade )
-        `)
-        .eq('id', issuanceId!)
-        .maybeSingle();
-      if (error) throw new Error(error.message);
-      if (!data) throw new Error('Certificate not found.');
-      return data as unknown as FullIssuance;
+      const row = await fetchIssuanceByIdWithJoins(issuanceId!);
+      if (!row) throw new Error('Certificate not found.');
+      return row;
     },
     enabled: !!issuanceId,
   });
@@ -74,7 +65,7 @@ export function Certificate() {
     );
   }
 
-  if (!iss || !iss.templates) {
+  if (!iss || !iss.template) {
     return (
       <div className="px-4 sm:px-6 lg:px-10 py-8">
         <BackLink />
@@ -86,7 +77,7 @@ export function Certificate() {
   }
 
   const recipientName = iss.student?.full_name ?? teacherName ?? '—';
-  const hero = iss.templates.hero_color ?? '#0d9488';
+  const hero = iss.template.hero_color ?? '#0d9488';
 
   return (
     <div className="px-4 sm:px-6 lg:px-10 py-8 space-y-6">
@@ -159,7 +150,7 @@ export function Certificate() {
             className="font-serif text-xl mt-2"
             style={{ color: '#1f2937', letterSpacing: '0.08em' }}
           >
-            Certificate of {iss.templates.audience === 'teacher' ? 'Recognition' : 'Achievement'}
+            Certificate of {iss.template.audience === 'teacher' ? 'Recognition' : 'Achievement'}
           </p>
           <div
             className="mx-auto mt-3"
@@ -194,12 +185,12 @@ export function Certificate() {
             }}
           />
 
-          {(iss.student?.grade || iss.schools?.name) && (
+          {(iss.student?.grade || iss.school?.name) && (
             <p className="text-sm text-gray-600 mb-5">
               {iss.student?.grade && <span>{iss.student.grade}</span>}
-              {iss.student?.grade && iss.schools?.name && <span> · </span>}
-              {iss.schools?.name}
-              {iss.schools?.county && <span> · {iss.schools.county}</span>}
+              {iss.student?.grade && iss.school?.name && <span> · </span>}
+              {iss.school?.name}
+              {iss.school?.county && <span> · {iss.school.county}</span>}
             </p>
           )}
 
@@ -213,26 +204,26 @@ export function Certificate() {
               margin: '0.5rem 0',
             }}
           >
-            {iss.templates.title}
+            {iss.template.title}
           </h2>
 
-          {iss.templates.programme && (
+          {iss.template.programme && (
             <p
               className="text-[0.7rem] uppercase tracking-[0.3em] mb-3"
               style={{ color: hero }}
             >
-              {iss.templates.programme}
+              {iss.template.programme}
             </p>
           )}
 
-          {(iss.templates.duration_text || iss.templates.criteria_text) && (
+          {(iss.template.duration_text || iss.template.criteria_text) && (
             <div className="max-w-xl mx-auto">
-              {iss.templates.duration_text && (
-                <p className="text-sm text-gray-600 mb-2">{iss.templates.duration_text}</p>
+              {iss.template.duration_text && (
+                <p className="text-sm text-gray-600 mb-2">{iss.template.duration_text}</p>
               )}
-              {iss.templates.criteria_text && (
+              {iss.template.criteria_text && (
                 <p className="text-xs text-gray-500 italic leading-relaxed">
-                  {iss.templates.criteria_text}
+                  {iss.template.criteria_text}
                 </p>
               )}
             </div>

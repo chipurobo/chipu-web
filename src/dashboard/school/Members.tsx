@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
+import { fetchMembersBySchoolJoinedDesc } from '../../lib/gql/queries';
 import { useAuth } from '../../lib/auth';
 import type { ClubMember } from '../../lib/database.types';
 import { UserPlus, Check, X, Upload, Accessibility } from 'lucide-react';
@@ -38,15 +39,7 @@ export function SchoolMembers() {
 
   const { data: members, error: queryErr } = useQuery({
     queryKey: ['members', schoolId],
-    queryFn: async (): Promise<ClubMember[]> => {
-      const { data, error } = await supabase
-        .from('club_members')
-        .select('*')
-        .eq('school_id', schoolId!)
-        .order('joined_at', { ascending: false });
-      if (error) throw new Error(error.message);
-      return data as ClubMember[];
-    },
+    queryFn: () => fetchMembersBySchoolJoinedDesc(schoolId!),
     enabled: !!schoolId,
   });
 

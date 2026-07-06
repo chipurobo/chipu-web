@@ -20,7 +20,6 @@ const BlogPost              = lazy(() => import('./pages/BlogPost'));
 const Microsoft             = lazy(() => import('./pages/Microsoft'));
 const InclusiveRobotics     = lazy(() => import('./pages/InclusiveRobotics'));
 const MicrosoftBootcamps    = lazy(() => import('./pages/MicrosoftBootcamps'));
-const Hackathons            = lazy(() => import('./pages/Hackathons'));
 const Sustainability        = lazy(() => import('./pages/Sustainability'));
 const Impact                = lazy(() => import('./pages/Impact'));
 const MakerSpaces           = lazy(() => import('./pages/MakerSpaces'));
@@ -164,15 +163,6 @@ function App() {
               <Route path="/inclusive-robotics" element={<Navigate to="/programs" replace />} />
               <Route path="/microsoft-bootcamps" element={<MicrosoftBootcamps />} />
 
-              {/* === CURRENT HACKATHON: Kesho === */}
-              <Route path="/kesho" element={<Hackathons />} />
-              {/* Legacy and alternate URLs all redirect to the current event. */}
-              <Route path="/hackathons" element={<Navigate to="/kesho" replace />} />
-              <Route path="/hackathon" element={<Navigate to="/kesho" replace />} />
-              <Route path="/kesho-hackathon" element={<Navigate to="/kesho" replace />} />
-              <Route path="/braille-challenge" element={<Navigate to="/kesho" replace />} />
-              <Route path="/finsec" element={<Navigate to="/kesho" replace />} />
-
               {/* Legacy program routes — KSEF, JSS, Bootcamps now live inside Inclusive Robotics
                   stages, so redirect to the relevant anchor. */}
               <Route path="/ksef" element={<Navigate to="/programs#year-round" replace />} />
@@ -251,14 +241,6 @@ function getPageTitle(path: string): string {
     case '/programs': return 'Programs';
     case '/inclusive-robotics': return 'Programs';
     case '/microsoft-bootcamps': return 'Microsoft Bootcamps';
-    // === CURRENT HACKATHON: Kesho ===
-    case '/kesho': return 'Kesho Hackathon';
-    case '/hackathons':
-    case '/hackathon':
-    case '/braille-challenge':
-    case '/finsec':
-    case '/kesho-hackathon':
-      return 'Kesho Hackathon';
     case '/ksef': return 'Programs';
     case '/jss': return 'Programs';
     case '/bootcamps': return 'Microsoft Bootcamps';

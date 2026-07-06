@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/auth';
-import type { LeaderboardRow, Programme } from '../lib/database.types';
+import { fetchLeaderboard, fetchProgrammes } from '../lib/gql/queries';
 import { Trophy } from 'lucide-react';
 import { SkeletonRows } from './components/Skeletons';
 
@@ -33,27 +33,18 @@ export function Leaderboard() {
     }
   }, [profile?.role, myProgrammeId, programmeFilter]);
 
+  // === Reads now go through GraphQL (pg_graphql) ===
+  // Same TanStack Query cache keys as before, so any mutation elsewhere
+  // that invalidates ['leaderboard'] / ['programmes'] still refreshes
+  // this page. Mutations themselves stay on the Supabase JS client.
   const leaderboardQuery = useQuery({
     queryKey: ['leaderboard'],
-    queryFn: async (): Promise<LeaderboardRow[]> => {
-      const { data, error } = await supabase
-        .from('school_leaderboard')
-        .select('*');
-      if (error) throw new Error(error.message);
-      return data as LeaderboardRow[];
-    },
+    queryFn:  fetchLeaderboard,
   });
 
   const programmesQuery = useQuery({
     queryKey: ['programmes'],
-    queryFn: async (): Promise<Programme[]> => {
-      const { data, error } = await supabase
-        .from('programmes')
-        .select('*')
-        .order('name');
-      if (error) throw new Error(error.message);
-      return data as Programme[];
-    },
+    queryFn:  fetchProgrammes,
   });
 
   // Realtime — invalidate the leaderboard cache on any change to the
