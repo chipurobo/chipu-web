@@ -56,12 +56,15 @@ Environment variables (all `VITE_*`-prefixed, safe for the browser):
 
 ## Backend
 
-The Supabase backend (SQL migrations, RLS policies, RPCs, edge functions,
-seed data) is version-controlled **separately** and intentionally excluded
-from this repo (see `.gitignore`). The dashboard's contract with it is
-documented in [`docs/api/schema.md`](./docs/api/schema.md).
+The Supabase backend lives in [`supabase/`](./supabase/README.md): SQL
+migrations (the schema's source of truth — every table, RLS policy, and
+RPC), the `send-email` edge function, CLI config, and local seed data.
+Apply changes with `supabase migration up` locally and `supabase db push`
+to production. A human-readable schema reference is kept in
+[`docs/api/schema.md`](./docs/api/schema.md).
 
-<!-- TODO: link the backend repo here so new contributors can find it. -->
+Function secrets (`supabase/functions/.env`) and ad-hoc SQL snippets are
+gitignored — copy `supabase/functions/.env.example` to get started locally.
 
 Two auth roles: `admin` (ChipuRobo staff, sees everything) and
 `school_lead` (one lead teacher per school, sees only their school's rows).
