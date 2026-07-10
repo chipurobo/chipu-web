@@ -17,6 +17,7 @@
 // =============================================================
 
 import { gqlClient } from '../graphqlClient';
+import { supabase } from '../supabase';
 import type {
   School, Programme, Product, Order, ClubMember, ProductUnit,
   CertificateTemplate, CertificateIssuance, LeaderboardRow,
@@ -56,29 +57,15 @@ function rows<T>(bag: EdgeBag<T> | null | undefined): T[] {
 // ─────────────────────────────────────────────────────────────
 // Leaderboard
 // ─────────────────────────────────────────────────────────────
-const LEADERBOARD_QUERY = /* GraphQL */ `
-  query GetLeaderboard {
-    school_leaderboardCollection(orderBy: [{ total_pts: DescNullsLast }]) {
-      edges {
-        node {
-          school_id
-          school_name
-          county
-          programme_id
-          programme_name
-          lesson_pts
-          project_pts
-          total_pts
-        }
-      }
-    }
-  }
-`;
+// The leaderboard is an intentional cross-school aggregate, served by the
+// SECURITY DEFINER RPC get_school_leaderboard() (authenticated only). It
+// replaced the school_leaderboard view — a definer view is flagged by the
+// Supabase Security Advisor, a definer function with pinned search_path
+// is the sanctioned pattern. Rows arrive pre-sorted by total_pts desc.
 export async function fetchLeaderboard(): Promise<LeaderboardRow[]> {
-  const data = await gqlClient.request<{
-    school_leaderboardCollection: EdgeBag<LeaderboardRow>;
-  }>(LEADERBOARD_QUERY);
-  return rows(data.school_leaderboardCollection);
+  const { data, error } = await supabase.rpc('get_school_leaderboard');
+  if (error) throw new Error(error.message);
+  return (data ?? []) as LeaderboardRow[];
 }
 
 // ─────────────────────────────────────────────────────────────
