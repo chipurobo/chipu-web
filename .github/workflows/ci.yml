@@ -23,10 +23,8 @@ jobs:
       - name: Lint (zero warnings)
         run: npm run lint
 
+      # No env vars needed: the VITE_SUPABASE_* check in src/lib/supabase.ts
+      # runs in the browser, not at build time, so tsc + vite build pass
+      # without them. Keeps real values out of this public repo entirely.
       - name: Typecheck + build
         run: npm run build
-        env:
-          # Publishable key only — RLS is the security boundary, so these
-          # are safe in CI. Mirrors .env.example.
-          VITE_SUPABASE_URL: https://csckuplkouwopgsucldb.supabase.co
-          VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_nV61rxVjrZgAZXV6Xv8MFA_0qSVebi_
