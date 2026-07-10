@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    name: Lint & build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Lint (zero warnings)
+        run: npm run lint
+
+      # No env vars needed: the VITE_SUPABASE_* check in src/lib/supabase.ts
+      # runs in the browser, not at build time, so tsc + vite build pass
+      # without them. Keeps real values out of this public repo entirely.
+      - name: Typecheck + build
+        run: npm run build

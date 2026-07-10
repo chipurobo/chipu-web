@@ -94,7 +94,10 @@ export function useOrderRealtime(): OrderCounts {
     setCounts({ inbox, awaitingDelivery, adminBacklog });
   };
 
-  // Initial + whenever auth context changes
+  // Initial + whenever auth context changes. `refresh` is recreated each
+  // render (it closes over the latest profile/school), so we key on the
+  // stable ids instead of the function identity.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { void refresh(); }, [profile?.id, school?.id]);
 
   // Realtime subscription
@@ -178,6 +181,10 @@ export function useOrderRealtime(): OrderCounts {
     return () => {
       void supabase.removeChannel(channel);
     };
+    // Re-subscribe only when the auth identity changes — `profile` (object)
+    // and `refresh` (recreated each render) would tear down and recreate
+    // the realtime channel on every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile?.id, school?.id, notify, qc]);
 
   return counts;

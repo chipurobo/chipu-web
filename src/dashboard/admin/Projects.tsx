@@ -13,7 +13,7 @@ import type {
   ProjectJudgment, ProjectStatus,
 } from '../../lib/database.types';
 import {
-  FolderKanban, X, Link as LinkIcon, Trophy, GraduationCap, Save, ChevronRight, AlertCircle,
+  X, Link as LinkIcon, Trophy, GraduationCap, Save, ChevronRight, AlertCircle,
 } from 'lucide-react';
 import { useDialog } from '../../lib/useDialog';
 import { Pagination, usePaged } from '../components/Pagination';

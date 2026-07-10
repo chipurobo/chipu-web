@@ -19,6 +19,9 @@ dist-*/
 vite.config.ts.timestamp-*
 vite.config.js.timestamp-*
 
+# TypeScript incremental-build state — machine-local, never commit.
+*.tsbuildinfo
+
 # Tooling / vendor folders that don't belong in the repo
 .bolt/
 .husky/
@@ -28,9 +31,6 @@ vite.config.js.timestamp-*
 # machine. Migrations, edge functions, config and seed data all stay
 # out of the public repo.
 supabase/
-
-# Env example template — keep local-only too
-.env.example
 
 # Editor directories and files
 .vscode/*

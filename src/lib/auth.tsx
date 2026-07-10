@@ -256,6 +256,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components -- provider + hook intentionally live together; fast refresh falls back to full reload for this file only
 export function useAuth(): AuthState {
   const ctx = useContext(AuthCtx);
   if (!ctx) throw new Error('useAuth must be used inside <AuthProvider>');

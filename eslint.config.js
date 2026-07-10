@@ -5,10 +5,16 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['dist'] },
+  // dist-* covers local build-verification scratch dirs (dist-verify, …)
+  { ignores: ['dist', 'dist-*'] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],
+    // Mirrors the old --report-unused-disable-directives CLI flag, which
+    // ESLint 9 flat config no longer accepts.
+    linterOptions: {
+      reportUnusedDisableDirectives: 'warn',
+    },
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
