@@ -19,6 +19,9 @@ dist-*/
 vite.config.ts.timestamp-*
 vite.config.js.timestamp-*
 
+# TypeScript incremental-build state — machine-local, never commit.
+*.tsbuildinfo
+
 # Tooling / vendor folders that don't belong in the repo
 .bolt/
 .husky/
