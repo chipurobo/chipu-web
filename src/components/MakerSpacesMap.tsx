@@ -9,8 +9,8 @@ import type { PublicSchoolPin } from '../lib/database.types';
 // =============================================================
 // Public ChipuRobo schools / maker-spaces map.
 //
-// • Pulls from the public.public_schools_map view via the anon key
-//   (no login required). The view exposes every school that has
+// • Pulls pins from the get_public_schools_map() RPC via the anon key
+//   (no login required). The RPC returns every school that has
 //   coordinates set, plus an is_maker_space flag.
 // • Renders a Leaflet/OpenStreetMap map centred on Kenya.
 // • Two marker colours: terracotta for maker spaces, teal for the
@@ -60,9 +60,10 @@ export function MakerSpacesMap() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const { data, error } = await supabase
-        .from('public_schools_map')
-        .select('id, name, county, latitude, longitude, is_maker_space');
+      // SECURITY DEFINER RPC (anon-callable): redacted pins only — it
+      // replaced the public_schools_map view flagged by the Security
+      // Advisor. Same columns, same rows.
+      const { data, error } = await supabase.rpc('get_public_schools_map');
       if (cancelled) return;
       if (error) setErr(error.message);
       else setPins((data ?? []) as PublicSchoolPin[]);

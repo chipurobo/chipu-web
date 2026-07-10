@@ -3,7 +3,7 @@ import { MakerSpacesMap } from '../components/MakerSpacesMap';
 /**
  * /maker-spaces
  *
- * Public-facing map. Marker source is the public.public_schools_map view —
+ * Public-facing map. Marker source is the get_public_schools_map() RPC —
  * every school whose admin has set coordinates appears, with a colour-coded
  * distinction between maker spaces (terracotta) and other code-club
  * schools (teal). Anonymous visitors can browse.
