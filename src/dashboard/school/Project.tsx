@@ -212,6 +212,10 @@ function ProjectEditor({
     setRepoUrl(project.repo_url ?? '');
     setVideoUrl(project.video_url ?? '');
     setImageUrl(project.image_url ?? '');
+    // Re-seed the form only when the project identity/version changes —
+    // depending on the field values themselves would clobber in-progress
+    // edits on every keystroke echoed back through the cache.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [project.id, project.updated_at]);
 
   useEffect(() => { setSelectedTeam(initialTeam); }, [initialTeam]);

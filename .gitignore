@@ -32,9 +32,6 @@ vite.config.js.timestamp-*
 # out of the public repo.
 supabase/
 
-# Env example template — keep local-only too
-.env.example
-
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

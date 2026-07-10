@@ -123,6 +123,7 @@ export function Pagination({
  *   return <>{paged.map(...)} <Pagination page={page} totalPages={totalPages} onChange={setPage} /></>
  */
 import { useEffect, useMemo, useState } from 'react';
+// eslint-disable-next-line react-refresh/only-export-components -- component + its pairing hook intentionally live together; fast refresh falls back to full reload for this file only
 export function usePaged<T>(rows: T[] | null | undefined, pageSize = 25) {
   const [page, setPage] = useState(1);
 

@@ -55,6 +55,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components -- provider + hook intentionally live together; fast refresh falls back to full reload for this file only
 export function useNotifications() {
   const ctx = useContext(Ctx);
   if (!ctx) throw new Error('useNotifications must be used within NotificationsProvider');

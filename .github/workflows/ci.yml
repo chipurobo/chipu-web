@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    name: Lint & build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Lint (zero warnings)
+        run: npm run lint
+
+      - name: Typecheck + build
+        run: npm run build
+        env:
+          # Publishable key only — RLS is the security boundary, so these
+          # are safe in CI. Mirrors .env.example.
+          VITE_SUPABASE_URL: https://csckuplkouwopgsucldb.supabase.co
+          VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_nV61rxVjrZgAZXV6Xv8MFA_0qSVebi_

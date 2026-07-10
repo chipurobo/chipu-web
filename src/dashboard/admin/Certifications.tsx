@@ -421,6 +421,10 @@ function IssuePanel({
 
   useEffect(() => {
     if (!templateId && activeTemplates.length > 0) setTemplateId(activeTemplates[0].id);
+    // Default-select the first template only when the list (re)arrives.
+    // activeTemplates is a fresh array each render, so depending on it
+    // would re-run every render; the !templateId guard keeps this safe.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTemplates.length]);
 
   // Students at the selected school — only fetched when issuing to students.
