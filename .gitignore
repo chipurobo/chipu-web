@@ -27,10 +27,15 @@ vite.config.js.timestamp-*
 .husky/
 .vercel/
 
-# Supabase backend — kept local, managed via the Supabase CLI on your
-# machine. Migrations, edge functions, config and seed data all stay
-# out of the public repo.
-supabase/
+# Supabase backend — migrations, edge functions, config and seed ARE
+# tracked (they're the schema's source of truth). What stays out of the
+# public repo: CLI scratch dirs, function secrets, and ad-hoc SQL
+# snippets (which may contain credentials — one historically did).
+supabase/.branches/
+supabase/.temp/
+supabase/functions/.env
+supabase/functions/.env.local
+supabase/snippets/
 
 # Editor directories and files
 .vscode/*
@@ -51,7 +56,3 @@ supabase/
 .claude/
 .env.local
 .env.*.local
-supabase/.branches
-supabase/.temp
-supabase/functions/.env
-supabase/functions/.env.local
