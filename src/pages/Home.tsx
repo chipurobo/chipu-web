@@ -74,11 +74,11 @@ const Home = () => {
 
  <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-8 text-center">
  <h1 className="heading-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-gray-900 mb-8 leading-[1.2]">
- <span className="block">The operating system</span>
+ <span className="block">Nurturing</span>
  <span className="block">
- for <span className="text-gray-400">practical engineering</span>
+ <span className="text-gray-400">Practical Skills</span>
  </span>
- <span className="block">education in Africa.</span>
+ <span className="block">Education in Africa.</span>
  </h1>
 
  <p className="text-base sm:text-lg text-gray-700 max-w-3xl mx-auto mb-10 leading-relaxed">
