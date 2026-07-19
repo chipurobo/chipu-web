@@ -37,21 +37,34 @@ additional_redirect_urls = [
   "https://chipurobo.com/dashboard"
 ]
 jwt_expiry = 3600
-enable_signup = true
 
-# === The decision you locked in: no email verification gate. ===
-# Users get a live session the moment `signUp()` completes; we lean on the
-# fact that the /dashboard/register-club URL is only shared with schools
-# ChipuRobo has already onboarded as code clubs offline.
+# === Signup is CLOSED. ===
+# 20260601000009 moved account creation to admins (create_school_with_lead)
+# and removed the self-signup RPC — but GoTrue's /auth/v1/signup endpoint is
+# governed by this config, not by that RPC. While it was true, anyone with
+# the publishable key could POST to it and receive a live `authenticated`
+# JWT, which re-scoped every `to authenticated` policy in the schema from
+# "onboarded school staff" to "the public internet".
+#
+# NOTE: this file configures the LOCAL stack only. The hosted project must
+# be changed too — Dashboard → Authentication → Providers → Email → disable
+# "Enable email signup" — or via `supabase config push`.
+enable_signup = false
+
 [auth.email]
-enable_signup = true
+enable_signup = false
 double_confirm_changes = false
 enable_confirmations = false
 secure_password_change = false
 
 # Edge functions
-# verify_jwt = false lets the OPTIONS preflight reach our handler so we can
-# return CORS headers. The function still does its own auth check by
-# requiring the Authorization header on POST requests.
+#
+# verify_jwt = true: the platform validates the JWT before the handler runs.
+# This previously read `false` on the rationale that the OPTIONS preflight
+# needed to reach the handler for CORS — but Supabase answers preflight
+# ahead of JWT verification, so nothing was gained, and the handler's own
+# check only tested that the Authorization header was PRESENT. Any string
+# passed it, making send-email an open relay on a domain with our SPF/DKIM.
+# The handler now verifies the token as well; this is belt and braces.
 [functions.send-email]
-verify_jwt = false
+verify_jwt = true

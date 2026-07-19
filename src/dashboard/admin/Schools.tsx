@@ -9,6 +9,7 @@ import { Wrench, Plus, X, Check, KeyRound, Upload, Pencil, Trash2, Send, AlertCi
 import { SchoolBulkImport } from './SchoolBulkImport';
 import { sendEmail } from '../../lib/sendEmail';
 import { getDashboardPath } from '../../lib/dashboardUrl';
+import { generatePassword } from '../../lib/password';
 import { useNotifications } from '../../lib/notifications';
 import { useDialog } from '../../lib/useDialog';
 import { Pagination, usePaged } from '../components/Pagination';
@@ -1138,9 +1139,3 @@ function escapeHtml(s: string): string {
     .replace(/'/g, '&#39;');
 }
 
-function generatePassword(): string {
-  const a = 'abcdefghjkmnpqrstuvwxyz23456789';
-  const len = 6;
-  const pick = () => Array.from({ length: len }, () => a[Math.floor(Math.random() * a.length)]).join('');
-  return `${pick()}-${pick()}`;
-}
