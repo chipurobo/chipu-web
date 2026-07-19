@@ -23,7 +23,18 @@ function normaliseHeader(h: string): string {
     .replace(/[^a-z0-9_]/g, '');
 }
 
+// Roster and school imports are tens of rows; anything approaching this is
+// either a mistake or an attempt to wedge the parser. The `accept` attribute
+// on the file input is a UI filter only — it is not a control.
+const MAX_FILE_BYTES = 5 * 1024 * 1024;
+
 export async function parseSheet(file: File): Promise<SheetRow[]> {
+  if (file.size > MAX_FILE_BYTES) {
+    throw new Error(
+      `File is too large (${(file.size / 1024 / 1024).toFixed(1)} MB). The limit is 5 MB.`,
+    );
+  }
+
   const buf = await file.arrayBuffer();
   const wb = XLSX.read(buf, { type: 'array' });
   const sheetName = wb.SheetNames[0];
@@ -91,9 +102,19 @@ export function downloadXlsx(
 }
 
 // Escape a single CSV cell.
+//
+// Values here originate in uploaded spreadsheets and are written back out to
+// files an admin opens in Excel or Sheets. A cell starting with =, +, - or @
+// is treated by those apps as a formula, so `=cmd|'/c calc'!A1` in a school
+// name becomes code execution on the admin's machine when they open the
+// credentials export. Prefixing with a single quote makes the cell literal
+// text; the quote is not displayed.
 export function csvCell(s: string | number | boolean | null | undefined): string {
   if (s === null || s === undefined) return '';
-  const str = String(s);
+
+  let str = String(s);
+  if (/^[=+\-@\t\r]/.test(str)) str = `'${str}`;
+
   if (/[",\n]/.test(str)) {
     return `"${str.replace(/"/g, '""')}"`;
   }

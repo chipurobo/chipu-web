@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
+import { safeHttpUrl, domainOf } from '../../lib/safeUrl';
 import {
   fetchProjectForSchool,
   fetchProjectTeamWithStudent,
@@ -512,7 +513,7 @@ function ProjectSummary({
   judgment: ProjectJudgment | null;
 }) {
   const isJudged    = project.status === 'judged' && judgment;
-  const isImageHttp = !!project.image_url && /^https?:\/\//i.test(project.image_url);
+  const safeImageUrl = safeHttpUrl(project.image_url);
 
   return (
     <div className="space-y-6">
@@ -557,10 +558,10 @@ function ProjectSummary({
       {/* Project card */}
       <article className="card overflow-hidden">
         {/* Cover image, if provided */}
-        {isImageHttp && (
+        {safeImageUrl && (
           <div className="bg-warm-100 border-b border-warm-200">
             <img
-              src={project.image_url!}
+              src={safeImageUrl}
               alt={`Cover image for ${project.title}`}
               loading="lazy"
               decoding="async"
@@ -595,7 +596,7 @@ function ProjectSummary({
           )}
 
           {/* Resource links */}
-          {(project.repo_url || project.video_url || (project.image_url && !isImageHttp)) && (
+          {(project.repo_url || project.video_url) && (
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-6">
               {project.repo_url && (
                 <ResourceLink
@@ -611,14 +612,6 @@ function ProjectSummary({
                   icon={Video}
                   label="Demo video"
                   detail={domainOf(project.video_url)}
-                />
-              )}
-              {project.image_url && !isImageHttp && (
-                <ResourceLink
-                  href={project.image_url}
-                  icon={ImageIcon}
-                  label="Image"
-                  detail={domainOf(project.image_url)}
                 />
               )}
             </div>
@@ -684,9 +677,13 @@ function ResourceLink({
   label:  string;
   detail: string;
 }) {
+  // Author-supplied link: render nothing rather than an unsafe scheme.
+  const safe = safeHttpUrl(href);
+  if (!safe) return null;
+
   return (
     <a
-      href={href}
+      href={safe}
       target="_blank"
       rel="noopener noreferrer"
       className="group flex items-center gap-3 px-3 py-2.5 border border-warm-200 rounded-md hover:border-teal-500 hover:bg-teal-50/30 transition-colors"
@@ -706,7 +703,4 @@ function ResourceLink({
   );
 }
 
-function domainOf(url: string): string {
-  try { return new URL(url).hostname.replace(/^www\./, ''); }
-  catch { return url; }
-}
+

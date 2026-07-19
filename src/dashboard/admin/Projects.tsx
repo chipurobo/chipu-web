@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
+import { safeHttpUrl } from '../../lib/safeUrl';
 import {
   fetchProjectsWithJoins,
   fetchAllProjectJudgments,
@@ -256,24 +257,21 @@ function ProjectPanel({
       )}
 
       <div className="flex flex-wrap gap-3 text-xs mb-4">
-        {project.repo_url && (
-          <a href={project.repo_url} target="_blank" rel="noopener noreferrer"
-             className="inline-flex items-center gap-1 text-teal-700 hover:underline">
-            <LinkIcon className="h-3 w-3" aria-hidden="true" /> Repository
-          </a>
-        )}
-        {project.video_url && (
-          <a href={project.video_url} target="_blank" rel="noopener noreferrer"
-             className="inline-flex items-center gap-1 text-teal-700 hover:underline">
-            <LinkIcon className="h-3 w-3" aria-hidden="true" /> Video
-          </a>
-        )}
-        {project.image_url && (
-          <a href={project.image_url} target="_blank" rel="noopener noreferrer"
-             className="inline-flex items-center gap-1 text-teal-700 hover:underline">
-            <LinkIcon className="h-3 w-3" aria-hidden="true" /> Image
-          </a>
-        )}
+        {/* Links are author-supplied, so anything not plainly http(s) is
+            not rendered as an anchor — see lib/safeUrl. */}
+        {([
+          ['Repository', project.repo_url],
+          ['Video',      project.video_url],
+          ['Image',      project.image_url],
+        ] as const).map(([label, raw]) => {
+          const href = safeHttpUrl(raw);
+          return href && (
+            <a key={label} href={href} target="_blank" rel="noopener noreferrer"
+               className="inline-flex items-center gap-1 text-teal-700 hover:underline">
+              <LinkIcon className="h-3 w-3" aria-hidden="true" /> {label}
+            </a>
+          );
+        })}
       </div>
 
       <section aria-label="Team members" className="mb-4">

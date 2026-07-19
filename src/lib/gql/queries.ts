@@ -17,6 +17,13 @@ export interface EventAttendanceRow {
   school_id: string;
 }
 
+/** Row shape from list_maker_spaces() — deliberately free of contact PII. */
+export interface MakerSpaceOption {
+  id:     string;
+  name:   string;
+  county: string | null;
+}
+
 function unwrap<T>(result: { data: T | null; error: { message: string } | null }): T {
   if (result.error) throw new Error(result.error.message);
   return result.data as T;
@@ -73,6 +80,22 @@ export async function fetchSchoolById(id: string): Promise<School | null> {
     .eq('id', id).maybeSingle();
   if (error) throw new Error(error.message);
   return data as School | null;
+}
+
+/**
+ * Maker spaces a school can route an order to.
+ *
+ * Backed by the list_maker_spaces() RPC rather than a `schools` select: the
+ * old schools_maker_space_directory policy granted whole rows, which handed
+ * every authenticated account the contact_name / contact_phone /
+ * contact_email of every maker space. The RPC projects only what the
+ * dropdown renders. A counterparty's contact details become readable once
+ * an order actually links the two schools (schools_order_counterparties).
+ */
+export async function fetchMakerSpaces(): Promise<MakerSpaceOption[]> {
+  const { data, error } = await supabase.rpc('list_maker_spaces');
+  if (error) throw new Error(error.message);
+  return (data ?? []) as MakerSpaceOption[];
 }
 
 export async function fetchSchoolsByCreated(): Promise<School[]> {

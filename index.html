@@ -24,43 +24,36 @@
         - Share Tech Mono → secondary mono, code/terminal blocks
       Inter & DM Serif Display kept as fallbacks / legacy.
     -->
+    <!--
+      Loaded as a plain stylesheet rather than the preload + onload swap.
+      That pattern relies on an inline event-handler attribute, which the
+      Content-Security-Policy blocks — under CSP the link would stay a
+      preload and the fonts would never apply. display=swap already keeps
+      text visible while they load.
+    -->
     <link
-      rel="preload"
-      as="style"
+      rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700;800&family=Press+Start+2P&family=Share+Tech+Mono&family=VT323&display=swap"
-      onload="this.onload=null;this.rel='stylesheet'"
     />
-    <noscript>
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700;800&family=Press+Start+2P&family=Share+Tech+Mono&family=VT323&display=swap"
-      />
-    </noscript>
 
     <!-- OpenDyslexic: only used by .dyslexic-text elements, load non-blocking -->
     <link
-      rel="preload"
-      as="style"
+      rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/open-dyslexic-regular.css"
-      onload="this.onload=null;this.rel='stylesheet'"
+      integrity="sha384-Z+4lSRMBih0T8AB126p/ZLFsykHIs89GwPBrDpIb+cC5W5ppsL+yBh/Y0JDyzb8O"
+      crossorigin="anonymous"
     />
-    <noscript>
-      <link
-        rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/open-dyslexic-regular.css"
-      />
-    </noscript>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <!--
-      EmailJS only needed on the Contact page. Defer it so it doesn't
-      block the initial render — script will execute after parsing.
+      The EmailJS CDN script that used to live here has been removed. It was
+      loaded on EVERY page — including /dashboard/login and the admin
+      screens — from an unpinned major version with no SRI hash, while
+      nothing in src/ referenced it (Contact.tsx uses mailto: links, not a
+      form). A compromise of that package or of the CDN would have executed
+      in the same origin as the dashboard session.
     -->
-    <script
-      defer
-      src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"
-    ></script>
   </body>
 </html>

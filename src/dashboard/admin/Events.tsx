@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
+import { safeHttpUrl } from '../../lib/safeUrl';
 import {
   fetchEventsWithSchools,
   fetchEventAttendancesEventId,
@@ -293,8 +294,8 @@ function EventCard({
                   {event.location}
                 </span>
               )}
-              {event.url && (
-                <a href={event.url} target="_blank" rel="noopener noreferrer"
+              {safeHttpUrl(event.url) && (
+                <a href={safeHttpUrl(event.url)!} target="_blank" rel="noopener noreferrer"
                    className="inline-flex items-center gap-1 text-teal-700 hover:underline">
                   <LinkIcon className="h-3 w-3" aria-hidden="true" />
                   Link

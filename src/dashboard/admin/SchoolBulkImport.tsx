@@ -5,6 +5,7 @@ import { parseSheet, parseBoolish, downloadCsv, downloadXlsx, csvCell, type Shee
 import type { SchoolType } from '../../lib/database.types';
 import { Upload, FileSpreadsheet, Download, X, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useDialog } from '../../lib/useDialog';
+import { generatePassword } from '../../lib/password';
 
 // =============================================================
 // Bulk school import (admin-only)
@@ -281,13 +282,6 @@ export function SchoolBulkImport({ onClose, onAllDone }: { onClose: () => void; 
       )}
     </div>
   );
-}
-
-function generatePassword(): string {
-  const a = 'abcdefghjkmnpqrstuvwxyz23456789';
-  const len = 6;
-  const pick = () => Array.from({ length: len }, () => a[Math.floor(Math.random() * a.length)]).join('');
-  return `${pick()}-${pick()}`;
 }
 
 function deriveUsername(fullName: string): string {

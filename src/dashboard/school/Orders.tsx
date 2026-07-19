@@ -4,11 +4,12 @@ import { supabase } from '../../lib/supabase';
 import {
   fetchOrdersWithJoins,
   fetchProducts,
-  fetchSchools,
+  fetchMakerSpaces,
+  type MakerSpaceOption,
   type OrderWithJoins,
 } from '../../lib/gql/queries';
 import { useAuth } from '../../lib/auth';
-import type { OrderStatus, Product, School } from '../../lib/database.types';
+import type { OrderStatus, Product } from '../../lib/database.types';
 import { Plus, X, Wrench, PackageCheck } from 'lucide-react';
 import { notifyOrderEvent } from '../../lib/orderEmails';
 import { useDialog } from '../../lib/useDialog';
@@ -62,11 +63,12 @@ export function SchoolOrders() {
   const orderableProducts = products?.filter((p) => p.is_active && p.is_durable) ?? null;
 
   // Maker-space directory: schools the placer can route their order to.
-  const { data: makerSpaces, error: makerSpacesErr } = useQuery({
-    queryKey: ['schools'],
-    queryFn: fetchSchools,
+  // The RPC returns id/name/county only — the previous `schools` select
+  // relied on a policy that also exposed every maker space's contact PII.
+  const { data: makerSpaceOptions, error: makerSpacesErr } = useQuery({
+    queryKey: ['maker-spaces'],
+    queryFn: fetchMakerSpaces,
   });
-  const makerSpaceOptions = makerSpaces?.filter((s) => s.is_maker_space) ?? null;
 
   const placedByMe   = orders?.filter((o) => o.placed_by_school_id === schoolId) ?? null;
   const toFulfil     = orders?.filter((o) => o.fulfilled_by_school_id === schoolId) ?? null;
@@ -256,7 +258,7 @@ function NewOrderForm({
   onClose,
 }: {
   products: Product[];
-  makerSpaces: School[];
+  makerSpaces: MakerSpaceOption[];
   schoolId: string;
   placerName: string;
   placerEmail: string | null;
@@ -282,11 +284,22 @@ function NewOrderForm({
         notes:                  notes.trim() || null,
       });
       if (error) throw new Error(error.message);
+
+      // Now that an order links the two schools, the counterparty row --
+      // including contact_email -- is readable under
+      // schools_order_counterparties. Before the order existed it was not,
+      // which is why the address is fetched here rather than carried in the
+      // dropdown payload.
+      const { data: fulfiller } = await supabase
+        .from('schools')
+        .select('name, contact_email')
+        .eq('id', fulfillerId)
+        .maybeSingle();
+      return fulfiller;
     },
-    onSuccess: () => {
+    onSuccess: (fulfiller) => {
       // Fire-and-forget email to both parties.
-      const product   = products.find((p)    => p.id === productId);
-      const fulfiller = makerSpaces.find((s) => s.id === fulfillerId);
+      const product = products.find((p) => p.id === productId);
       if (product && fulfiller) {
         void notifyOrderEvent('placed', {
           productName:    product.name,
