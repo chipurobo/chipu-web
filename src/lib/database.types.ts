@@ -100,6 +100,7 @@ export type StageKind =
   | 'bootcamp_physical'
   | 'bootcamp_virtual'
   | 'lesson'
+  | 'async_track'
   | 'project';
 
 export type ProjectStatus = 'draft' | 'submitted' | 'judged';
@@ -136,6 +137,9 @@ export interface LessonCompletion {
   passed: boolean;
   recorded_by: string | null;
   recorded_at: string;
+  /** Public URL proving the completion, e.g. a freeCodeCamp certification
+   *  verification link. http(s) only — enforced by a DB check constraint. */
+  evidence_url: string | null;
 }
 
 export interface Project {

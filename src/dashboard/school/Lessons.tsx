@@ -8,7 +8,7 @@ import {
 } from '../../lib/gql/queries';
 import { useAuth } from '../../lib/auth';
 import type { StageKind } from '../../lib/database.types';
-import { BookOpen, Laptop, MonitorPlay, FolderKanban, ArrowRight, GraduationCap, Megaphone } from 'lucide-react';
+import { BookOpen, Laptop, MonitorPlay, FolderKanban, ArrowRight, GraduationCap, Megaphone, Link as LinkIcon } from 'lucide-react';
 import { SkeletonCards } from '../components/Skeletons';
 
 // =============================================================
@@ -24,6 +24,7 @@ const STAGE_KIND_LABEL: Record<StageKind, string> = {
   bootcamp_physical: 'Bootcamp (Physical)',
   bootcamp_virtual:  'Bootcamp (Virtual)',
   lesson:            'Lesson',
+  async_track:       'Self-paced track',
   project:           'Project',
 };
 
@@ -32,6 +33,7 @@ const STAGE_KIND_ICON: Record<StageKind, typeof BookOpen> = {
   bootcamp_physical: Laptop,
   bootcamp_virtual:  MonitorPlay,
   lesson:            BookOpen,
+  async_track:       LinkIcon,
   project:           FolderKanban,
 };
 
@@ -40,6 +42,7 @@ const STAGE_KIND_BADGE: Record<StageKind, string> = {
   bootcamp_physical: 'badge-amber',
   bootcamp_virtual:  'badge-teal',
   lesson:            'badge-teal',
+  async_track:       'badge-amber',
   project:           'badge-terra',
 };
 
