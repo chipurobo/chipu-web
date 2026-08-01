@@ -37,13 +37,12 @@ export function SchoolProject() {
   const { school } = useAuth();
   const qc = useQueryClient();
   const { notify } = useNotifications();
-  const schoolId    = school?.id ?? null;
-  const programmeId = school?.programme_id ?? null;
+  const schoolId = school?.id ?? null;
 
   const projectQuery = useQuery({
     queryKey: ['projects', schoolId],
-    queryFn: () => fetchProjectForSchool(schoolId!, programmeId!),
-    enabled: !!schoolId && !!programmeId,
+    queryFn: () => fetchProjectForSchool(schoolId!),
+    enabled: !!schoolId,
   });
 
   const project = projectQuery.data ?? null;
@@ -71,10 +70,9 @@ export function SchoolProject() {
       const { error } = await supabase
         .from('projects')
         .insert({
-          school_id:    schoolId!,
-          programme_id: programmeId!,
-          title:        'Untitled project',
-          status:       'draft',
+          school_id: schoolId!,
+          title:     'Untitled project',
+          status:    'draft',
         });
       if (error) throw new Error(error.message);
     },
@@ -90,19 +88,6 @@ export function SchoolProject() {
     ?? studentsQuery.error?.message
     ?? startMutation.error?.message
     ?? null;
-
-  if (!programmeId) {
-    return (
-      <div className="px-4 sm:px-6 lg:px-10 py-8">
-        <Header school={school?.name ?? null} />
-        <div className="card p-8 text-center mt-6">
-          <FolderKanban className="h-7 w-7 text-gray-300 mx-auto mb-2" aria-hidden="true" />
-          <p className="text-sm text-gray-600">Your school isn't enrolled in a programme yet.</p>
-          <p className="text-xs text-gray-500 mt-1">Ask ChipuRobo to assign one.</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="px-4 sm:px-6 lg:px-10 py-8 space-y-6">

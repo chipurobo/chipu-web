@@ -63,6 +63,36 @@ insert into public.schools (id, name, type, is_maker_space, county) values
    'Kiambu')
 on conflict (id) do nothing;
 
+-- ---- Demo workshop + lessons ----------------------------------------------
+-- A workshop (events row) is the unit of enrolment. Lessons hang off it, and
+-- a school sees a workshop's lessons only once it is enrolled (event_schools).
+insert into public.events (id, title, description, event_type, start_at) values
+  ('e0000000-0000-0000-0000-000000000001',
+   'Software Foundations',
+   'Self-paced software tracks that pair with the hardware labs.',
+   'bootcamp_webinar',
+   now())
+on conflict (id) do nothing;
+
+insert into public.lessons (id, event_id, position, title, description, kind, points) values
+  ('10000000-0000-0000-0000-000000000001',
+   'e0000000-0000-0000-0000-000000000001', 1,
+   'Intro to Python',
+   'Self-paced: Raspberry Pi Foundation — https://rpf.io/python-intro',
+   'async_track', 2),
+  ('10000000-0000-0000-0000-000000000002',
+   'e0000000-0000-0000-0000-000000000001', 2,
+   'Intro to Git and GitHub',
+   'Self-paced: freeCodeCamp — https://www.freecodecamp.org/learn/introduction-to-git-and-github/',
+   'async_track', 2)
+on conflict (id) do nothing;
+
+-- Enrol the two mainstream demo schools in the workshop so their leads see it.
+insert into public.event_schools (event_id, school_id) values
+  ('e0000000-0000-0000-0000-000000000001', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
+  ('e0000000-0000-0000-0000-000000000001', 'cccccccc-cccc-cccc-cccc-cccccccccccc')
+on conflict (event_id, school_id) do nothing;
+
 -- ============================================================================
 -- POST-SEED: promote yourself to admin
 -- ============================================================================

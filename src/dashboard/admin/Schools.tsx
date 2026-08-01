@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useMemo, useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import { fetchSchoolsByCreated, fetchProgrammes } from '../../lib/gql/queries';
-import type { School, SchoolType, Programme } from '../../lib/database.types';
+import { fetchSchoolsByCreated } from '../../lib/gql/queries';
+import type { School, SchoolType } from '../../lib/database.types';
 import { KENYA_COUNTIES } from '../../lib/counties';
 import { Wrench, Plus, X, Check, KeyRound, Upload, Pencil, Trash2, Send, AlertCircle } from 'lucide-react';
 import { SchoolBulkImport } from './SchoolBulkImport';
@@ -98,17 +98,6 @@ export function AdminSchools() {
     },
   });
 
-  const { data: programmes, error: programmesErr } = useQuery({
-    queryKey: ['programmes'],
-    queryFn: fetchProgrammes,
-  });
-
-  const programmesById = useMemo(() => {
-    const m = new Map<string, Programme>();
-    (programmes ?? []).forEach((p) => m.set(p.id, p));
-    return m;
-  }, [programmes]);
-
   // Bulk-delete: hit admin_delete_school once per id. Each call is its own
   // transaction so a failure on one school doesn't roll back the others.
   const deleteSchoolsMutation = useMutation({
@@ -137,7 +126,7 @@ export function AdminSchools() {
     },
   });
 
-  const err = schoolsErr?.message ?? leadsErr?.message ?? programmesErr?.message ?? deleteSchoolsMutation.error?.message ?? null;
+  const err = schoolsErr?.message ?? leadsErr?.message ?? deleteSchoolsMutation.error?.message ?? null;
   const deleting = deleteSchoolsMutation.isPending;
 
   const leadBySchool = useMemo(() => {
@@ -222,7 +211,6 @@ export function AdminSchools() {
 
       {creating && (
         <CreateSchoolForm
-          programmes={programmes ?? []}
           onClose={() => setCreating(false)}
           onCreated={(c) => {
             setCreating(false);
@@ -262,7 +250,6 @@ export function AdminSchools() {
       {editingSchool && (
         <EditSchoolPanel
           school={editingSchool}
-          programmes={programmes ?? []}
           onClose={() => setEditingSchool(null)}
           onSaved={() => {
             setEditingSchool(null);
@@ -320,7 +307,6 @@ export function AdminSchools() {
               <th scope="col">Type</th>
               <th scope="col">Maker</th>
               <th scope="col">County</th>
-              <th scope="col">Programme</th>
               <th scope="col">Lead teacher</th>
               <th scope="col">Email (login)</th>
               <th scope="col" className="text-right">Actions</th>
@@ -369,11 +355,6 @@ export function AdminSchools() {
                     ) : <span className="text-xs text-gray-400">—</span>}
                   </td>
                   <td className="text-sm">{s.county ?? '—'}</td>
-                  <td className="text-sm">
-                    {s.programme_id
-                      ? (programmesById.get(s.programme_id)?.name ?? <span className="text-xs text-gray-400">unknown</span>)
-                      : <span className="text-xs text-gray-400">—</span>}
-                  </td>
                   <td className="text-sm">
                     <div className="text-gray-800">{lead?.full_name ?? s.contact_name ?? '—'}</div>
                     {(lead?.phone || s.contact_phone) && (
@@ -439,9 +420,8 @@ const SCHOOL_TYPES: { value: SchoolType; label: string }[] = [
 ];
 
 function CreateSchoolForm({
-  programmes, onClose, onCreated,
+  onClose, onCreated,
 }: {
-  programmes: Programme[];
   onClose: () => void;
   onCreated: (c: NewCreds) => void;
 }) {
@@ -451,20 +431,11 @@ function CreateSchoolForm({
   const [isMaker,      setIsMaker]      = useState(false);
   const [latitude,     setLatitude]     = useState<string>('');
   const [longitude,    setLongitude]    = useState<string>('');
-  const [programmeId,  setProgrammeId]  = useState<string>('');
 
   const [fullName,     setFullName]     = useState('');
   const [phone,        setPhone]        = useState('');
   const [contactEmail, setContactEmail] = useState('');
   const [password,     setPassword]     = useState(() => generatePassword());
-
-  // Default new schools to "Inclusive Robotics" once programmes load.
-  useEffect(() => {
-    if (programmeId) return;
-    const ir = programmes.find((p) => p.slug === 'inclusive-robotics');
-    if (ir) setProgrammeId(ir.id);
-    else if (programmes.length > 0) setProgrammeId(programmes[0].id);
-  }, [programmes, programmeId]);
 
   const [submitting, setSubmitting] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -514,17 +485,15 @@ function CreateSchoolForm({
     }
 
     // The RPC returns a table; the row holds user_id + school_id. If coords
-    // or a non-default programme were typed, patch them onto the school
     // straight after creation. Admin RLS lets us update any school.
     const row = Array.isArray(data) ? data[0] : data;
     const schoolId: string | undefined = row?.school_id;
-    if (schoolId && (lat !== null || lng !== null || programmeId)) {
+    if (schoolId && (lat !== null || lng !== null)) {
       const patch: Record<string, unknown> = {};
       if (lat !== null || lng !== null) {
         patch.latitude  = lat;
         patch.longitude = lng;
       }
-      if (programmeId) patch.programme_id = programmeId;
       const { error: uErr } = await supabase
         .from('schools')
         .update(patch)
@@ -590,20 +559,6 @@ function CreateSchoolForm({
               <option key={t.value} value={t.value}>{t.label}</option>
             ))}
           </select>
-        </div>
-
-        <div>
-          <label className="field-label" htmlFor="create-school-programme">Programme</label>
-          <select
-            id="create-school-programme" className="field-select" value={programmeId}
-            onChange={(e) => setProgrammeId(e.target.value)}
-          >
-            <option value="">— none —</option>
-            {programmes.map((p) => (
-              <option key={p.id} value={p.id}>{p.name}</option>
-            ))}
-          </select>
-          <p className="field-help">New schools default to Inclusive Robotics.</p>
         </div>
 
         <div className="sm:col-span-2">
@@ -729,10 +684,9 @@ function CreateSchoolForm({
 }
 
 function EditSchoolPanel({
-  school, programmes, onClose, onSaved,
+  school, onClose, onSaved,
 }: {
   school: School;
-  programmes: Programme[];
   onClose: () => void;
   onSaved: () => void;
 }) {
@@ -744,7 +698,6 @@ function EditSchoolPanel({
   const [contactEmail, setContactEmail] = useState<string>(school.contact_email ?? '');
   const [latitude,     setLatitude]     = useState<string>(school.latitude  != null ? String(school.latitude)  : '');
   const [longitude,    setLongitude]    = useState<string>(school.longitude != null ? String(school.longitude) : '');
-  const [programmeId,  setProgrammeId]  = useState<string>(school.programme_id ?? '');
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -775,7 +728,6 @@ function EditSchoolPanel({
         contact_email:  contactEmail.trim() || null,
         latitude:       lat,
         longitude:      lng,
-        programme_id:   programmeId || null,
       })
       .eq('id', school.id);
 
@@ -829,19 +781,6 @@ function EditSchoolPanel({
           >
             {SCHOOL_TYPES.map((t) => (
               <option key={t.value} value={t.value}>{t.label}</option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="field-label" htmlFor="edit-school-programme">Programme</label>
-          <select
-            id="edit-school-programme" className="field-select"
-            value={programmeId} onChange={(e) => setProgrammeId(e.target.value)}
-          >
-            <option value="">— none —</option>
-            {programmes.map((p) => (
-              <option key={p.id} value={p.id}>{p.name}</option>
             ))}
           </select>
         </div>

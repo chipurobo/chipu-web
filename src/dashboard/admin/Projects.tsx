@@ -112,7 +112,6 @@ export function AdminProjects() {
           <thead>
             <tr>
               <th scope="col">School</th>
-              <th scope="col">Programme</th>
               <th scope="col">Title</th>
               <th scope="col">Status</th>
               <th scope="col">Score</th>
@@ -122,17 +121,16 @@ export function AdminProjects() {
           </thead>
           <tbody>
             {!projects && (
-              <SkeletonRows rows={5} cols={7} label="Loading projects" />
+              <SkeletonRows rows={5} cols={6} label="Loading projects" />
             )}
             {projects && projects.length === 0 && (
-              <tr><td colSpan={7} className="text-center text-gray-500 py-8">No projects yet.</td></tr>
+              <tr><td colSpan={6} className="text-center text-gray-500 py-8">No projects yet.</td></tr>
             )}
             {paged?.map((p) => {
               const isOpen = selected?.id === p.id;
               return (
                 <tr key={p.id} className={isOpen ? 'bg-warm-100/60' : ''}>
                   <td className="font-medium text-gray-900">{p.school?.name ?? '—'}</td>
-                  <td className="text-sm text-gray-700">{p.programme?.name ?? '—'}</td>
                   <td className="text-sm">{p.title}</td>
                   <td><span className={STATUS_BADGE[p.status]}>{p.status}</span></td>
                   <td className="text-sm">
@@ -237,9 +235,6 @@ function ProjectPanel({
           <h2 className="m-0" id="project-panel-heading">{project.title}</h2>
           <div className="flex items-center gap-2 flex-wrap mt-2">
             <span className={STATUS_BADGE[project.status]}>{project.status}</span>
-            {project.programme?.name && (
-              <span className="text-xs text-gray-500">{project.programme.name}</span>
-            )}
             {project.submitted_at && (
               <span className="text-xs text-gray-500">
                 · submitted {new Date(project.submitted_at).toLocaleDateString()}

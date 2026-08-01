@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
-import { School, Package, ClipboardList, Users, Boxes, Wrench, Send } from 'lucide-react';
+import { School, Package, ClipboardList, Users, Boxes, Wrench, Send, BookOpen } from 'lucide-react';
 
 /**
  * The post-login landing. Picks the right copy + tile set based on whether
@@ -44,6 +44,8 @@ export function DashboardHome() {
           <>
             <Tile to="/dashboard/school/members" icon={Users}
                   title="Students" body="Roster + students who hold equipment." />
+            <Tile to="/dashboard/school/lessons" icon={BookOpen}
+                  title="Lessons" body="Track progress through your programme's activities." />
             <Tile to="/dashboard/school/orders" icon={ClipboardList}
                   title={isMakerSpace ? 'Orders to fulfil' : 'My orders'}
                   body={isMakerSpace

@@ -1,8 +1,8 @@
 import { supabase } from '../supabase';
 import type {
-  School, Programme, Product, Order, ClubMember, ProductUnit,
-  CertificateTemplate, CertificateIssuance, LeaderboardRow,
-  ProgrammeStage, LessonCompletion, Project, ProjectTeamMember,
+  School, Product, Order, ClubMember, ProductUnit,
+  CertificateTemplate, CertificateIssuance,
+  Lesson, LessonCompletion, Project, ProjectTeamMember,
   ProjectJudgment, ChipuEvent, EventSchoolLink, Profile,
 } from '../database.types';
 
@@ -29,45 +29,30 @@ function unwrap<T>(result: { data: T | null; error: { message: string } | null }
   return result.data as T;
 }
 
-// ── Leaderboard ─────────────────────────────────────────────
-export async function fetchLeaderboard(): Promise<LeaderboardRow[]> {
-  const { data, error } = await supabase.rpc('get_school_leaderboard');
-  if (error) throw new Error(error.message);
-  return (data ?? []) as LeaderboardRow[];
-}
-
-// ── Programmes ──────────────────────────────────────────────
-export async function fetchProgrammes(): Promise<Programme[]> {
-  return unwrap(await supabase.from('programmes').select('*').order('name'));
-}
-
-export async function fetchProgrammesByCreated(): Promise<Programme[]> {
-  return unwrap(await supabase.from('programmes').select('*').order('created_at'));
-}
-
-// ── Programme stages ────────────────────────────────────────
-export async function fetchProgrammeStages(programmeId: string): Promise<ProgrammeStage[]> {
+// ── Lessons (belong to a workshop / events row) ─────────────
+// RLS scopes reads: a school lead sees only lessons for workshops their
+// school is enrolled in; admins see all.
+export async function fetchLessonsForSchool(): Promise<Lesson[]> {
   return unwrap(
-    await supabase.from('programme_stages').select('*')
-      .eq('programme_id', programmeId)
-      .order('position'),
-  );
-}
-
-export async function fetchActiveProgrammeStages(programmeId: string): Promise<ProgrammeStage[]> {
-  return unwrap(
-    await supabase.from('programme_stages').select('*')
-      .eq('programme_id', programmeId)
+    await supabase.from('lessons').select('*')
       .eq('is_active', true)
       .order('position'),
   );
 }
 
-export async function fetchProgrammeStageById(id: string): Promise<ProgrammeStage | null> {
-  const { data, error } = await supabase.from('programme_stages').select('*')
+export async function fetchLessonsForWorkshop(eventId: string): Promise<Lesson[]> {
+  return unwrap(
+    await supabase.from('lessons').select('*')
+      .eq('event_id', eventId)
+      .order('position'),
+  );
+}
+
+export async function fetchLessonById(id: string): Promise<Lesson | null> {
+  const { data, error } = await supabase.from('lessons').select('*')
     .eq('id', id).maybeSingle();
   if (error) throw new Error(error.message);
-  return data as ProgrammeStage | null;
+  return data as Lesson | null;
 }
 
 // ── Schools ─────────────────────────────────────────────────
@@ -255,14 +240,14 @@ export async function fetchUnitsAtSchoolWithJoins(schoolId: string): Promise<Uni
 }
 
 // ── Lesson completions ──────────────────────────────────────
-export async function fetchCompletionsForStage(stageId: string): Promise<LessonCompletion[]> {
+export async function fetchCompletionsForLesson(lessonId: string): Promise<LessonCompletion[]> {
   return unwrap(
-    await supabase.from('lesson_completions').select('*').eq('stage_id', stageId),
+    await supabase.from('lesson_completions').select('*').eq('lesson_id', lessonId),
   );
 }
 
 export interface PassedCompletionWithStudent {
-  stage_id:   string;
+  lesson_id:  string;
   student_id: string;
   passed:     boolean;
   student:    { school_id: string } | null;
@@ -271,7 +256,7 @@ export interface PassedCompletionWithStudent {
 export async function fetchPassedCompletionsWithStudent(): Promise<PassedCompletionWithStudent[]> {
   return unwrap(
     await supabase.from('lesson_completions')
-      .select('stage_id, student_id, passed, student:club_members!lesson_completions_student_id_fkey(school_id)')
+      .select('lesson_id, student_id, passed, student:club_members!lesson_completions_student_id_fkey(school_id)')
       .eq('passed', true),
   ) as PassedCompletionWithStudent[];
 }
@@ -283,14 +268,10 @@ export async function fetchStockOnHandBySchool(schoolId: string): Promise<StockO
   ) as StockOnHandRow[];
 }
 
-// ── Projects ────────────────────────────────────────────────
-export async function fetchProjectForSchool(
-  schoolId: string,
-  programmeId: string,
-): Promise<Project | null> {
+// ── Projects (free-standing, one per school) ────────────────
+export async function fetchProjectForSchool(schoolId: string): Promise<Project | null> {
   const { data, error } = await supabase.from('projects').select('*')
     .eq('school_id', schoolId)
-    .eq('programme_id', programmeId)
     .maybeSingle();
   if (error) throw new Error(error.message);
   return data as Project | null;
@@ -334,16 +315,14 @@ export async function fetchAllProjectJudgments(): Promise<ProjectJudgment[]> {
 }
 
 export interface ProjectWithJoins extends Project {
-  school:    Pick<School,    'id' | 'name' | 'county'> | null;
-  programme: Pick<Programme, 'id' | 'name'> | null;
+  school: Pick<School, 'id' | 'name' | 'county'> | null;
 }
 
 export async function fetchProjectsWithJoins(): Promise<ProjectWithJoins[]> {
   return unwrap(
     await supabase.from('projects').select(`
       *,
-      school:schools!projects_school_id_fkey(id, name, county),
-      programme:programmes!projects_programme_id_fkey(id, name)
+      school:schools!projects_school_id_fkey(id, name, county)
     `)
       .order('submitted_at', { ascending: false, nullsFirst: false })
       .order('created_at', { ascending: false }),

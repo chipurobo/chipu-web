@@ -3,20 +3,22 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import {
-  fetchProgrammeStageById,
+  fetchLessonById,
   fetchMembersBySchool,
-  fetchCompletionsForStage,
+  fetchCompletionsForLesson,
 } from '../../lib/gql/queries';
 import { useAuth } from '../../lib/auth';
 import { useNotifications } from '../../lib/notifications';
 import type { LessonCompletion, StageKind } from '../../lib/database.types';
 import {
   ArrowLeft, Save, Star, BookOpen, Laptop, MonitorPlay, FolderKanban, GraduationCap, Megaphone,
+  Link as LinkIcon, ExternalLink,
 } from 'lucide-react';
 import { SkeletonRows } from '../components/Skeletons';
+import { safeHttpUrl } from '../../lib/safeUrl';
 
 // =============================================================
-// /dashboard/school/lessons/:stageId
+// /dashboard/school/lessons/:lessonId
 //
 // Roster for a single activity. Teacher ticks who passed + optionally rates
 // their confidence 1-5. Local edits are tracked in a Map and saved as a
@@ -28,6 +30,7 @@ const STAGE_KIND_LABEL: Record<StageKind, string> = {
   bootcamp_physical: 'Bootcamp (Physical)',
   bootcamp_virtual:  'Bootcamp (Virtual)',
   lesson:            'Lesson',
+  async_track:       'Self-paced track',
   project:           'Project',
 };
 
@@ -36,6 +39,7 @@ const STAGE_KIND_ICON: Record<StageKind, typeof BookOpen> = {
   bootcamp_physical: Laptop,
   bootcamp_virtual:  MonitorPlay,
   lesson:            BookOpen,
+  async_track:       LinkIcon,
   project:           FolderKanban,
 };
 
@@ -44,32 +48,34 @@ const STAGE_KIND_BADGE: Record<StageKind, string> = {
   bootcamp_physical: 'badge-amber',
   bootcamp_virtual:  'badge-teal',
   lesson:            'badge-teal',
+  async_track:       'badge-amber',
   project:           'badge-terra',
 };
 
 interface RowState {
-  passed:     boolean;
-  confidence: number | null;
+  passed:      boolean;
+  confidence:  number | null;
+  evidenceUrl: string;
 }
 
 export function SchoolLessonStage() {
-  const { stageId } = useParams<{ stageId: string }>();
+  const { lessonId } = useParams<{ lessonId: string }>();
   const { school, profile } = useAuth();
   const qc = useQueryClient();
   const { notify } = useNotifications();
   const schoolId = school?.id ?? null;
 
-  // Stage metadata. fetchProgrammeStageById returns T | null; the .single()
+  // Lesson metadata. fetchLessonById returns T | null; the .single()
   // behaviour of the old code threw on missing rows, so we surface the same
   // contract by throwing here.
   const stageQuery = useQuery({
-    queryKey: ['programme-stage', stageId],
+    queryKey: ['lesson', lessonId],
     queryFn: async () => {
-      const row = await fetchProgrammeStageById(stageId!);
+      const row = await fetchLessonById(lessonId!);
       if (!row) throw new Error('Activity not found.');
       return row;
     },
-    enabled: !!stageId,
+    enabled: !!lessonId,
   });
 
   // Active club members at this school. We include in_club + non-club so
@@ -82,9 +88,9 @@ export function SchoolLessonStage() {
 
   // Existing completions for this stage. RLS already scopes to our students.
   const completionsQuery = useQuery({
-    queryKey: ['lesson-completions', stageId],
-    queryFn: () => fetchCompletionsForStage(stageId!),
-    enabled: !!stageId,
+    queryKey: ['lesson-completions', lessonId],
+    queryFn: () => fetchCompletionsForLesson(lessonId!),
+    enabled: !!lessonId,
   });
 
   const stage       = stageQuery.data ?? null;
@@ -116,8 +122,9 @@ export function SchoolLessonStage() {
     if (edits.has(studentId)) return edits.get(studentId)!;
     const existing = existingByStudent.get(studentId);
     return {
-      passed:     existing?.passed ?? false,
-      confidence: existing?.confidence ?? null,
+      passed:      existing?.passed ?? false,
+      confidence:  existing?.confidence ?? null,
+      evidenceUrl: existing?.evidence_url ?? '',
     };
   };
 
@@ -126,8 +133,9 @@ export function SchoolLessonStage() {
       const next = new Map(cur);
       const existing = existingByStudent.get(studentId);
       const current = next.get(studentId) ?? {
-        passed:     existing?.passed ?? false,
-        confidence: existing?.confidence ?? null,
+        passed:      existing?.passed ?? false,
+        confidence:  existing?.confidence ?? null,
+        evidenceUrl: existing?.evidence_url ?? '',
       };
       next.set(studentId, { ...current, ...patch });
       return next;
@@ -141,29 +149,40 @@ export function SchoolLessonStage() {
       const ex = existingByStudent.get(studentId);
       const exPassed = ex?.passed ?? false;
       const exConf   = ex?.confidence ?? null;
-      if (v.passed !== exPassed || v.confidence !== exConf) out.push(studentId);
+      const exUrl    = ex?.evidence_url ?? '';
+      if (v.passed !== exPassed || v.confidence !== exConf || v.evidenceUrl.trim() !== exUrl) {
+        out.push(studentId);
+      }
     });
     return out;
   }, [edits, existingByStudent]);
 
   const saveMutation = useMutation({
     mutationFn: async () => {
-      if (!stageId) throw new Error('No activity id.');
+      if (!lessonId) throw new Error('No lesson id.');
       if (dirtyStudentIds.length === 0) return 0;
       const rows = dirtyStudentIds.map((studentId) => {
         const r = rowState(studentId);
+        const typed = r.evidenceUrl.trim();
+        if (typed && !safeHttpUrl(typed)) {
+          throw new Error(
+            'Evidence links must start with http:// or https:// — check the link for ' +
+            (activeMembers.find((m) => m.id === studentId)?.full_name ?? 'this student') + '.',
+          );
+        }
         return {
-          stage_id:    stageId,
-          student_id:  studentId,
-          passed:      r.passed,
-          confidence:  r.confidence,
-          recorded_by: profile?.id ?? null,
-          recorded_at: new Date().toISOString(),
+          lesson_id:    lessonId,
+          student_id:   studentId,
+          passed:       r.passed,
+          confidence:   r.confidence,
+          evidence_url: typed || null,
+          recorded_by:  profile?.id ?? null,
+          recorded_at:  new Date().toISOString(),
         };
       });
       const { error } = await supabase
         .from('lesson_completions')
-        .upsert(rows, { onConflict: 'stage_id,student_id' });
+        .upsert(rows, { onConflict: 'lesson_id,student_id' });
       if (error) throw new Error(error.message);
       return rows.length;
     },
@@ -173,9 +192,8 @@ export function SchoolLessonStage() {
       }
     },
     onSettled: () => {
-      void qc.invalidateQueries({ queryKey: ['lesson-completions', stageId] });
+      void qc.invalidateQueries({ queryKey: ['lesson-completions', lessonId] });
       void qc.invalidateQueries({ queryKey: ['lesson-completions', 'school', schoolId] });
-      void qc.invalidateQueries({ queryKey: ['leaderboard'] });
     },
   });
 
@@ -185,6 +203,13 @@ export function SchoolLessonStage() {
     ?? completionsQuery.error?.message
     ?? saveMutation.error?.message
     ?? null;
+
+  // Self-paced stages are usually external certifications, so hint at the
+  // shape of a verification link. Other stages take any http(s) evidence.
+  const evidencePlaceholder =
+    stage?.kind === 'async_track'
+      ? 'https://freecodecamp.org/certification/…'
+      : 'https://…';
 
   const Icon = stage ? STAGE_KIND_ICON[stage.kind] : BookOpen;
   const badge = stage ? STAGE_KIND_BADGE[stage.kind] : 'badge-teal';
@@ -244,16 +269,17 @@ export function SchoolLessonStage() {
               <th scope="col">Grade</th>
               <th scope="col">Passed</th>
               <th scope="col">Confidence</th>
+              <th scope="col">Evidence</th>
               <th scope="col">Last recorded</th>
             </tr>
           </thead>
           <tbody>
             {!members && (
-              <SkeletonRows rows={5} cols={5} label="Loading roster" />
+              <SkeletonRows rows={5} cols={6} label="Loading roster" />
             )}
             {members && activeMembers.length === 0 && (
               <tr>
-                <td colSpan={5} className="text-center text-gray-500 py-8">
+                <td colSpan={6} className="text-center text-gray-500 py-8">
                   No active students on the roster. Add them under Students first.
                 </td>
               </tr>
@@ -283,6 +309,14 @@ export function SchoolLessonStage() {
                       value={state.confidence}
                       onChange={(v) => setRow(m.id, { confidence: v })}
                       studentName={m.full_name}
+                    />
+                  </td>
+                  <td>
+                    <EvidenceUrlField
+                      value={state.evidenceUrl}
+                      onChange={(v) => setRow(m.id, { evidenceUrl: v })}
+                      studentName={m.full_name}
+                      placeholder={evidencePlaceholder}
                     />
                   </td>
                   <td className="text-xs text-gray-500">
@@ -355,6 +389,73 @@ function ConfidenceStars({
         >
           clear
         </button>
+      )}
+    </div>
+  );
+}
+
+// =============================================================
+// Evidence link for a completion.
+//
+// A teacher records the URL that proves the work — e.g. a freeCodeCamp
+// certification verification page. Students have no accounts here, so the
+// teacher enters it on their behalf.
+//
+// Deliberately a link and not a file upload: a verification URL resolves
+// against the issuer's own domain and so proves the certificate exists,
+// whereas a screenshot proves only that someone had an image.
+//
+// safeHttpUrl mirrors the DB check constraint on the column. The database
+// is the real boundary — this is here to fail fast and explain, not to
+// secure.
+// =============================================================
+function EvidenceUrlField({
+  value, onChange, studentName, placeholder,
+}: {
+  value:       string;
+  onChange:    (v: string) => void;
+  studentName: string;
+  placeholder: string;
+}) {
+  const trimmed = value.trim();
+  const safe    = safeHttpUrl(trimmed);
+  const invalid = trimmed.length > 0 && !safe;
+
+  return (
+    <div className="flex items-center gap-1.5 min-w-[13rem]">
+      <input
+        type="url"
+        inputMode="url"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        aria-label={`Evidence link for ${studentName}`}
+        aria-invalid={invalid || undefined}
+        aria-errormessage={invalid ? `evidence-error-${studentName}` : undefined}
+        className={`field-input text-xs py-1 flex-1 ${invalid ? 'border-red-500' : ''}`}
+      />
+
+      {safe && (
+        <a
+          href={safe}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="p-1 text-teal-700 hover:text-teal-900 flex-shrink-0"
+          title="Open to verify"
+          aria-label={`Open evidence link for ${studentName} in a new tab`}
+        >
+          <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+        </a>
+      )}
+
+      {invalid && (
+        <span
+          id={`evidence-error-${studentName}`}
+          role="alert"
+          className="text-[0.7rem] text-red-600 flex-shrink-0"
+        >
+          http(s) only
+        </span>
       )}
     </div>
   );

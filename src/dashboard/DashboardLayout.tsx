@@ -5,7 +5,7 @@ import { NotificationsProvider, NotificationToaster } from '../lib/notifications
 import { useOrderRealtime, type OrderCounts } from '../lib/useOrderRealtime';
 import {
   LogOut, Home, School, Package, ClipboardList, Users, Boxes, Wrench, Send, Menu, X,
-  Award, Layers, FolderKanban, Trophy, BookOpen,
+  Award, Layers, FolderKanban, BookOpen,
 } from 'lucide-react';
 
 // ----- Page titles for the SPA route announcer -----
@@ -20,7 +20,7 @@ const DASHBOARD_PAGE_TITLES: Record<string, string> = {
   '/dashboard/admin/orders':        'All orders',
   '/dashboard/admin/distribute':    'Distribute',
   '/dashboard/admin/certifications':'Certifications',
-  '/dashboard/admin/programmes':    'Programmes',
+  '/dashboard/admin/workshops':     'Workshops',
   '/dashboard/admin/projects':      'Projects',
   '/dashboard/school/members':      'Students',
   '/dashboard/school/orders':       'Orders',
@@ -29,7 +29,6 @@ const DASHBOARD_PAGE_TITLES: Record<string, string> = {
   '/dashboard/school/certificates': 'Certificates',
   '/dashboard/school/lessons':      'Lessons',
   '/dashboard/school/project':      'Project',
-  '/dashboard/leaderboard':         'Leaderboard',
 };
 function getDashboardPageTitle(path: string): string {
   if (DASHBOARD_PAGE_TITLES[path]) return DASHBOARD_PAGE_TITLES[path];
@@ -269,12 +268,12 @@ function DashboardShell() {
 
           {isAdmin ? (
             <>
-              {/* ─── Programmes group ───
-                  The learning pipeline: programmes, the schools enrolled
-                  in them, projects, certifications, leaderboard. */}
-              <SidebarGroupLabel>Programmes</SidebarGroupLabel>
-              <SidebarLink to="/dashboard/admin/programmes" icon={Layers}>
-                Programmes
+              {/* ─── Learning group ───
+                  Workshops (the unit of enrolment), the schools that attend
+                  them, projects, and certifications. */}
+              <SidebarGroupLabel>Learning</SidebarGroupLabel>
+              <SidebarLink to="/dashboard/admin/workshops" icon={Layers}>
+                Workshops
               </SidebarLink>
               <SidebarLink to="/dashboard/admin/schools" icon={School}>
                 Schools
@@ -284,9 +283,6 @@ function DashboardShell() {
               </SidebarLink>
               <SidebarLink to="/dashboard/admin/certifications" icon={Award}>
                 Certifications
-              </SidebarLink>
-              <SidebarLink to="/dashboard/leaderboard" icon={Trophy}>
-                Leaderboard
               </SidebarLink>
 
               {/* ─── Manufacturing group ───
@@ -304,9 +300,9 @@ function DashboardShell() {
             </>
           ) : (
             <>
-              {/* ─── Programme group ───
+              {/* ─── Learning group ───
                   Day-to-day learning work with the school's students. */}
-              <SidebarGroupLabel>Programme</SidebarGroupLabel>
+              <SidebarGroupLabel>Learning</SidebarGroupLabel>
               <SidebarLink to="/dashboard/school/members" icon={Users}>
                 Students
               </SidebarLink>
@@ -318,9 +314,6 @@ function DashboardShell() {
               </SidebarLink>
               <SidebarLink to="/dashboard/school/certificates" icon={Award}>
                 Certificates
-              </SidebarLink>
-              <SidebarLink to="/dashboard/leaderboard" icon={Trophy}>
-                Leaderboard
               </SidebarLink>
 
               {/* ─── Manufacturing group ───
