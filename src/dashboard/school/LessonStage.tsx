@@ -3,9 +3,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import {
-  fetchProgrammeStageById,
+  fetchLessonById,
   fetchMembersBySchool,
-  fetchCompletionsForStage,
+  fetchCompletionsForLesson,
 } from '../../lib/gql/queries';
 import { useAuth } from '../../lib/auth';
 import { useNotifications } from '../../lib/notifications';
@@ -18,7 +18,7 @@ import { SkeletonRows } from '../components/Skeletons';
 import { safeHttpUrl } from '../../lib/safeUrl';
 
 // =============================================================
-// /dashboard/school/lessons/:stageId
+// /dashboard/school/lessons/:lessonId
 //
 // Roster for a single activity. Teacher ticks who passed + optionally rates
 // their confidence 1-5. Local edits are tracked in a Map and saved as a
@@ -59,23 +59,23 @@ interface RowState {
 }
 
 export function SchoolLessonStage() {
-  const { stageId } = useParams<{ stageId: string }>();
+  const { lessonId } = useParams<{ lessonId: string }>();
   const { school, profile } = useAuth();
   const qc = useQueryClient();
   const { notify } = useNotifications();
   const schoolId = school?.id ?? null;
 
-  // Stage metadata. fetchProgrammeStageById returns T | null; the .single()
+  // Lesson metadata. fetchLessonById returns T | null; the .single()
   // behaviour of the old code threw on missing rows, so we surface the same
   // contract by throwing here.
   const stageQuery = useQuery({
-    queryKey: ['programme-stage', stageId],
+    queryKey: ['lesson', lessonId],
     queryFn: async () => {
-      const row = await fetchProgrammeStageById(stageId!);
+      const row = await fetchLessonById(lessonId!);
       if (!row) throw new Error('Activity not found.');
       return row;
     },
-    enabled: !!stageId,
+    enabled: !!lessonId,
   });
 
   // Active club members at this school. We include in_club + non-club so
@@ -88,9 +88,9 @@ export function SchoolLessonStage() {
 
   // Existing completions for this stage. RLS already scopes to our students.
   const completionsQuery = useQuery({
-    queryKey: ['lesson-completions', stageId],
-    queryFn: () => fetchCompletionsForStage(stageId!),
-    enabled: !!stageId,
+    queryKey: ['lesson-completions', lessonId],
+    queryFn: () => fetchCompletionsForLesson(lessonId!),
+    enabled: !!lessonId,
   });
 
   const stage       = stageQuery.data ?? null;
@@ -159,7 +159,7 @@ export function SchoolLessonStage() {
 
   const saveMutation = useMutation({
     mutationFn: async () => {
-      if (!stageId) throw new Error('No activity id.');
+      if (!lessonId) throw new Error('No lesson id.');
       if (dirtyStudentIds.length === 0) return 0;
       const rows = dirtyStudentIds.map((studentId) => {
         const r = rowState(studentId);
@@ -171,7 +171,7 @@ export function SchoolLessonStage() {
           );
         }
         return {
-          stage_id:     stageId,
+          lesson_id:    lessonId,
           student_id:   studentId,
           passed:       r.passed,
           confidence:   r.confidence,
@@ -182,7 +182,7 @@ export function SchoolLessonStage() {
       });
       const { error } = await supabase
         .from('lesson_completions')
-        .upsert(rows, { onConflict: 'stage_id,student_id' });
+        .upsert(rows, { onConflict: 'lesson_id,student_id' });
       if (error) throw new Error(error.message);
       return rows.length;
     },
@@ -192,9 +192,8 @@ export function SchoolLessonStage() {
       }
     },
     onSettled: () => {
-      void qc.invalidateQueries({ queryKey: ['lesson-completions', stageId] });
+      void qc.invalidateQueries({ queryKey: ['lesson-completions', lessonId] });
       void qc.invalidateQueries({ queryKey: ['lesson-completions', 'school', schoolId] });
-      void qc.invalidateQueries({ queryKey: ['leaderboard'] });
     },
   });
 

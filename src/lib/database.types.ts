@@ -88,12 +88,11 @@ export interface School {
   contact_email: string | null;
   latitude: number | null;
   longitude: number | null;
-  programme_id: string | null;
   created_at: string;
   updated_at: string;
 }
 
-// === Programme pipeline ===
+// === Lessons (belong to a workshop / events row) ===
 
 export type StageKind =
   | 'outreach'
@@ -105,24 +104,15 @@ export type StageKind =
 
 export type ProjectStatus = 'draft' | 'submitted' | 'judged';
 
-export interface Programme {
+export interface Lesson {
   id: string;
-  slug: string;
-  name: string;
-  description: string | null;
-  is_active: boolean;
-  created_at: string;
-}
-
-export interface ProgrammeStage {
-  id: string;
-  programme_id: string;
+  /** The workshop (events row) this lesson belongs to. */
+  event_id: string;
   position: number;
   title: string;
   description: string | null;
   kind: StageKind;
-  /** Points awarded per student per completion. Project stages typically
-   *  carry 0 — the project's 0–100 judgment score is added separately. */
+  /** Points awarded per student per completion. */
   points: number;
   required_for_certificate: boolean;
   is_active: boolean;
@@ -131,7 +121,7 @@ export interface ProgrammeStage {
 
 export interface LessonCompletion {
   id: string;
-  stage_id: string;
+  lesson_id: string;
   student_id: string;
   confidence: number | null;   // 1–5
   passed: boolean;
@@ -145,7 +135,6 @@ export interface LessonCompletion {
 export interface Project {
   id: string;
   school_id: string;
-  programme_id: string;
   title: string;
   description: string | null;
   repo_url: string | null;
@@ -169,18 +158,6 @@ export interface ProjectJudgment {
   comment: string | null;
   judged_by: string;
   judged_at: string;
-}
-
-/** Row shape from public.school_leaderboard view. Order: total_pts desc. */
-export interface LeaderboardRow {
-  school_id: string;
-  school_name: string;
-  county: string | null;
-  programme_id: string | null;
-  programme_name: string | null;
-  lesson_pts: number;
-  project_pts: number;
-  total_pts: number;
 }
 
 // Row shape returned by the public.public_schools_map view — visible to

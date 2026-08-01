@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import {
-  fetchActiveProgrammeStages,
+  fetchLessonsForSchool,
   fetchMembersBySchoolUnordered,
   fetchPassedCompletionsWithStudent,
 } from '../../lib/gql/queries';
@@ -14,9 +14,9 @@ import { SkeletonCards } from '../components/Skeletons';
 // =============================================================
 // /dashboard/school/lessons
 //
-// Activity roster for the school's enrolled programme. Each activity shows
-// title · kind · points · how many students have passed. Click into an
-// activity to tick off completions on the full class list.
+// Lessons for every workshop the school is enrolled in (RLS scopes the
+// list). Each lesson shows title · kind · points · how many students have
+// passed. Click in to tick off completions on the full class list.
 // =============================================================
 
 const STAGE_KIND_LABEL: Record<StageKind, string> = {
@@ -47,20 +47,19 @@ const STAGE_KIND_BADGE: Record<StageKind, string> = {
 };
 
 interface CompletionCountRow {
-  stage_id: string;
+  lesson_id: string;
   student_id: string;
 }
 
 export function SchoolLessons() {
   const { school } = useAuth();
-  const schoolId    = school?.id ?? null;
-  const programmeId = school?.programme_id ?? null;
+  const schoolId = school?.id ?? null;
 
-  // Stages for the school's programme.
-  const stagesQuery = useQuery({
-    queryKey: ['programme-stages', programmeId],
-    queryFn: () => fetchActiveProgrammeStages(programmeId!),
-    enabled: !!programmeId,
+  // Lessons for the workshops this school is enrolled in (RLS-scoped).
+  const lessonsQuery = useQuery({
+    queryKey: ['lessons', 'school', schoolId],
+    queryFn: fetchLessonsForSchool,
+    enabled: !!schoolId,
   });
 
   // Students at the school — used to scope the "students passed" count
@@ -76,31 +75,31 @@ export function SchoolLessons() {
   const completionsQuery = useQuery({
     queryKey: ['lesson-completions', 'school', schoolId],
     queryFn: async (): Promise<CompletionCountRow[]> => {
-      // Pull (stage_id, student_id) for every passed completion belonging
+      // Pull (lesson_id, student_id) for every passed completion belonging
       // to one of our students.
       const all = await fetchPassedCompletionsWithStudent();
       return all
         .filter((r) => r.student?.school_id === schoolId)
-        .map((r) => ({ stage_id: r.stage_id, student_id: r.student_id }));
+        .map((r) => ({ lesson_id: r.lesson_id, student_id: r.student_id }));
     },
     enabled: !!schoolId,
   });
 
-  const stages       = stagesQuery.data ?? null;
+  const lessons      = lessonsQuery.data ?? null;
   const students     = studentsQuery.data ?? null;
   const completions  = completionsQuery.data ?? null;
 
-  const passedByStage = useMemo(() => {
+  const passedByLesson = useMemo(() => {
     const m = new Map<string, number>();
     if (!completions) return m;
-    completions.forEach((c) => m.set(c.stage_id, (m.get(c.stage_id) ?? 0) + 1));
+    completions.forEach((c) => m.set(c.lesson_id, (m.get(c.lesson_id) ?? 0) + 1));
     return m;
   }, [completions]);
 
   const activeStudentCount = students?.filter((s) => s.is_active).length ?? 0;
 
   const err =
-    stagesQuery.error?.message
+    lessonsQuery.error?.message
     ?? studentsQuery.error?.message
     ?? completionsQuery.error?.message
     ?? null;
@@ -113,7 +112,7 @@ export function SchoolLessons() {
         </p>
         <h1>Lessons</h1>
         <p className="text-sm text-gray-600 mt-1 max-w-2xl">
-          Tick the students who completed each activity. Save once you're done — points appear on the leaderboard.
+          Tick the students who completed each lesson, and record a verification link for self-paced tracks. Save once you're done.
         </p>
         {activeStudentCount > 0 && (
           <p className="text-xs text-gray-500 mt-1">
@@ -128,29 +127,24 @@ export function SchoolLessons() {
         </div>
       )}
 
-      {!programmeId && (
+      {!lessons && <SkeletonCards count={3} label="Loading lessons" />}
+
+      {lessons && lessons.length === 0 && (
         <div className="card p-8 text-center">
           <BookOpen className="h-7 w-7 text-gray-300 mx-auto mb-2" aria-hidden="true" />
-          <p className="text-sm text-gray-600">Your school isn't enrolled in a programme yet.</p>
-          <p className="text-xs text-gray-500 mt-1">Ask ChipuRobo to assign one.</p>
+          <p className="text-sm text-gray-600">No lessons yet.</p>
+          <p className="text-xs text-gray-500 mt-1">
+            Lessons appear once your school is enrolled in a workshop that has them.
+          </p>
         </div>
       )}
 
-      {!stages && programmeId && <SkeletonCards count={3} label="Loading activities" />}
-
-      {stages && stages.length === 0 && (
-        <div className="card p-8 text-center">
-          <BookOpen className="h-7 w-7 text-gray-300 mx-auto mb-2" aria-hidden="true" />
-          <p className="text-sm text-gray-600">No activities defined for this programme yet.</p>
-        </div>
-      )}
-
-      {stages && stages.length > 0 && (
+      {lessons && lessons.length > 0 && (
         <div className="grid sm:grid-cols-2 gap-4">
-          {stages.map((s) => {
+          {lessons.map((s) => {
             const Icon = STAGE_KIND_ICON[s.kind];
             const badge = STAGE_KIND_BADGE[s.kind];
-            const passed = passedByStage.get(s.id) ?? 0;
+            const passed = passedByLesson.get(s.id) ?? 0;
             const contribution = passed * s.points;
             return (
               <article key={s.id} className="card p-4 flex flex-col">

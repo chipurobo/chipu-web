@@ -42,7 +42,7 @@ const AdminProducts         = lazy(() => import('./dashboard/admin/Products').th
 const AdminOrders           = lazy(() => import('./dashboard/admin/Orders').then((m) => ({ default: m.AdminOrders })));
 const AdminDistribute       = lazy(() => import('./dashboard/admin/Distribute').then((m) => ({ default: m.AdminDistribute })));
 const AdminCertifications   = lazy(() => import('./dashboard/admin/Certifications').then((m) => ({ default: m.AdminCertifications })));
-const AdminProgrammes       = lazy(() => import('./dashboard/admin/Programmes').then((m) => ({ default: m.AdminProgrammes })));
+const AdminWorkshops        = lazy(() => import('./dashboard/admin/Events').then((m) => ({ default: m.AdminEvents })));
 const AdminProjects         = lazy(() => import('./dashboard/admin/Projects').then((m) => ({ default: m.AdminProjects })));
 const SchoolCertificates    = lazy(() => import('./dashboard/school/Certificates').then((m) => ({ default: m.SchoolCertificates })));
 const Certificate           = lazy(() => import('./dashboard/Certificate').then((m) => ({ default: m.Certificate })));
@@ -53,7 +53,6 @@ const SchoolProduction      = lazy(() => import('./dashboard/school/Production')
 const SchoolLessons         = lazy(() => import('./dashboard/school/Lessons').then((m) => ({ default: m.SchoolLessons })));
 const SchoolLessonStage     = lazy(() => import('./dashboard/school/LessonStage').then((m) => ({ default: m.SchoolLessonStage })));
 const SchoolProject         = lazy(() => import('./dashboard/school/Project').then((m) => ({ default: m.SchoolProject })));
-const Leaderboard           = lazy(() => import('./dashboard/Leaderboard').then((m) => ({ default: m.Leaderboard })));
 
 // === Accessible Suspense fallback ===
 // Renders an aria-live "Loading" message so screen-reader users hear
@@ -130,8 +129,8 @@ function App() {
                 element={<RequireAuth role="admin"><AdminCertifications /></RequireAuth>}
               />
               <Route
-                path="admin/programmes"
-                element={<RequireAuth role="admin"><AdminProgrammes /></RequireAuth>}
+                path="admin/workshops"
+                element={<RequireAuth role="admin"><AdminWorkshops /></RequireAuth>}
               />
               <Route
                 path="admin/projects"
@@ -144,9 +143,8 @@ function App() {
               <Route path="school/stock" element={<SchoolStock />} />
               <Route path="school/production" element={<SchoolProduction />} />
               <Route path="school/lessons" element={<SchoolLessons />} />
-              <Route path="school/lessons/:stageId" element={<SchoolLessonStage />} />
+              <Route path="school/lessons/:lessonId" element={<SchoolLessonStage />} />
               <Route path="school/project" element={<SchoolProject />} />
-              <Route path="leaderboard" element={<Leaderboard />} />
             </Route>
 
             {/* === Public marketing site ===

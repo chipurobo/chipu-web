@@ -5,13 +5,15 @@ import { safeHttpUrl } from '../../lib/safeUrl';
 import {
   fetchEventsWithSchools,
   fetchEventAttendancesEventId,
+  fetchLessonsForWorkshop,
   fetchSchools,
   type EventWithSchools,
 } from '../../lib/gql/queries';
-import type { EventType, School } from '../../lib/database.types';
+import type { EventType, School, StageKind } from '../../lib/database.types';
 import {
   CalendarDays, Plus, X, Trash2, MapPin, Link as LinkIcon,
   Megaphone, Laptop, MonitorPlay, Users, CheckCircle2, Clock,
+  BookOpen, GraduationCap,
 } from 'lucide-react';
 import { useDialog } from '../../lib/useDialog';
 import { SkeletonCards } from '../components/Skeletons';
@@ -412,8 +414,197 @@ function EventCard({
             {localErr}
           </div>
         )}
+
+        {/* Lessons belonging to this workshop */}
+        <LessonManager eventId={event.id} eventTitle={event.title} />
       </div>
     </article>
+  );
+}
+
+// -----------------------------------------------------------------
+// Lessons for a workshop — list, add, remove. Enrolled schools see
+// these in their Lessons view; teachers record completions + evidence.
+// -----------------------------------------------------------------
+
+const LESSON_KIND_OPTIONS: { value: StageKind; label: string }[] = [
+  { value: 'lesson',      label: 'Lesson' },
+  { value: 'async_track', label: 'Self-paced track' },
+  { value: 'project',     label: 'Project' },
+];
+
+const LESSON_KIND_LABEL: Partial<Record<StageKind, string>> = {
+  lesson:            'Lesson',
+  async_track:       'Self-paced track',
+  project:           'Project',
+  bootcamp_physical: 'Bootcamp (physical)',
+  bootcamp_virtual:  'Bootcamp (virtual)',
+  outreach:          'Outreach',
+};
+
+function LessonManager({ eventId, eventTitle }: { eventId: string; eventTitle: string }) {
+  const qc = useQueryClient();
+  const [adding, setAdding] = useState(false);
+
+  const lessonsQuery = useQuery({
+    queryKey: ['lessons', 'workshop', eventId],
+    queryFn: () => fetchLessonsForWorkshop(eventId),
+  });
+  const lessons = lessonsQuery.data ?? null;
+
+  const [title, setTitle]       = useState('');
+  const [kind, setKind]         = useState<StageKind>('lesson');
+  const [points, setPoints]     = useState('1');
+  const [detail, setDetail]     = useState('');
+
+  const invalidate = () => {
+    void qc.invalidateQueries({ queryKey: ['lessons', 'workshop', eventId] });
+    void qc.invalidateQueries({ queryKey: ['lessons'] });
+  };
+
+  const addMutation = useMutation({
+    mutationFn: async () => {
+      const trimmedDetail = detail.trim();
+      if (kind === 'async_track' && trimmedDetail && !safeHttpUrl(trimmedDetail)) {
+        throw new Error('A self-paced track link must start with http:// or https://');
+      }
+      const nextPos = (lessons ?? []).reduce((max, l) => Math.max(max, l.position), 0) + 1;
+      const { error } = await supabase.from('lessons').insert({
+        event_id:    eventId,
+        position:    nextPos,
+        title:       title.trim(),
+        description: trimmedDetail || null,
+        kind,
+        points:      Math.max(0, Number(points) || 0),
+      });
+      if (error) throw new Error(error.message);
+    },
+    onSuccess: () => {
+      setTitle(''); setKind('lesson'); setPoints('1'); setDetail('');
+      setAdding(false);
+    },
+    onSettled: invalidate,
+  });
+
+  const removeMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('lessons').delete().eq('id', id);
+      if (error) throw new Error(error.message);
+    },
+    onSettled: invalidate,
+  });
+
+  const onAdd = (e: FormEvent) => {
+    e.preventDefault();
+    if (!title.trim()) return;
+    addMutation.mutate();
+  };
+  const onRemove = (id: string, name: string) => {
+    if (!window.confirm(`Delete lesson "${name}"? Any recorded completions for it are also removed.`)) return;
+    removeMutation.mutate(id);
+  };
+
+  const err = lessonsQuery.error?.message ?? addMutation.error?.message ?? removeMutation.error?.message ?? null;
+
+  return (
+    <div className="mt-4 border-t border-warm-200 pt-3">
+      <div className="flex items-center justify-between gap-3 mb-2">
+        <h3 className="m-0 text-xs font-semibold uppercase tracking-wider text-gray-500 inline-flex items-center gap-1.5">
+          <BookOpen className="h-3.5 w-3.5" aria-hidden="true" />
+          Lessons
+        </h3>
+        <button
+          type="button"
+          onClick={() => setAdding((v) => !v)}
+          className="text-xs text-teal-700 hover:underline inline-flex items-center gap-1"
+        >
+          <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+          {adding ? 'Cancel' : 'Add lesson'}
+        </button>
+      </div>
+
+      {lessons && lessons.length > 0 && (
+        <ul className="space-y-1.5 mb-2">
+          {lessons.map((l) => (
+            <li key={l.id} className="flex items-center gap-2 text-sm">
+              <span className="text-gray-400 tabular-nums w-5 text-right flex-shrink-0">{l.position}.</span>
+              <span className="font-medium text-gray-900 min-w-0 truncate">{l.title}</span>
+              <span className="badge-teal flex-shrink-0">{LESSON_KIND_LABEL[l.kind] ?? l.kind}</span>
+              <span className="text-xs text-gray-500 flex-shrink-0">{l.points} pt{l.points === 1 ? '' : 's'}</span>
+              {l.required_for_certificate && (
+                <GraduationCap className="h-3.5 w-3.5 text-amber-500 flex-shrink-0" aria-label="Required for certificate" />
+              )}
+              <button
+                type="button"
+                onClick={() => onRemove(l.id, l.title)}
+                className="ml-auto p-1 rounded text-gray-400 hover:text-red-700 hover:bg-red-50 flex-shrink-0"
+                aria-label={`Delete lesson ${l.title}`}
+                title="Delete lesson"
+              >
+                <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {lessons && lessons.length === 0 && !adding && (
+        <p className="text-xs text-gray-500 italic mb-2">No lessons yet.</p>
+      )}
+
+      {adding && (
+        <form onSubmit={onAdd} aria-label={`Add a lesson to ${eventTitle}`} className="grid gap-2 sm:grid-cols-6 items-end bg-warm-50 rounded-md p-3">
+          <div className="sm:col-span-3">
+            <label className="field-label" htmlFor={`lesson-title-${eventId}`}>Title</label>
+            <input
+              id={`lesson-title-${eventId}`} className="field-input" value={title}
+              onChange={(e) => setTitle(e.target.value)} required
+              placeholder="e.g. Intro to Python"
+            />
+          </div>
+          <div className="sm:col-span-2">
+            <label className="field-label" htmlFor={`lesson-kind-${eventId}`}>Kind</label>
+            <select
+              id={`lesson-kind-${eventId}`} className="field-select" value={kind}
+              onChange={(e) => setKind(e.target.value as StageKind)}
+            >
+              {LESSON_KIND_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+          </div>
+          <div className="sm:col-span-1">
+            <label className="field-label" htmlFor={`lesson-points-${eventId}`}>Points</label>
+            <input
+              id={`lesson-points-${eventId}`} className="field-input" type="number" min={0}
+              value={points} onChange={(e) => setPoints(e.target.value)}
+            />
+          </div>
+          <div className="sm:col-span-6">
+            <label className="field-label" htmlFor={`lesson-detail-${eventId}`}>
+              {kind === 'async_track' ? 'Course link (http/https)' : 'Description (optional)'}
+            </label>
+            <input
+              id={`lesson-detail-${eventId}`} className="field-input" value={detail}
+              onChange={(e) => setDetail(e.target.value)}
+              placeholder={kind === 'async_track' ? 'https://…' : 'What this lesson covers'}
+            />
+          </div>
+          <div className="sm:col-span-6 flex justify-end">
+            <button type="submit" className="btn-secondary" disabled={addMutation.isPending || !title.trim()}>
+              <Plus className="h-4 w-4 mr-1.5" aria-hidden="true" />
+              Add lesson
+            </button>
+          </div>
+        </form>
+      )}
+
+      {err && (
+        <div role="alert" className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2 mt-2">
+          {err}
+        </div>
+      )}
+    </div>
   );
 }
 
