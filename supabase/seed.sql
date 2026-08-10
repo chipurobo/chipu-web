@@ -106,3 +106,15 @@ on conflict (event_id, school_id) do nothing;
 --
 -- That user can then access everything site-wide.
 -- ============================================================================
+
+-- ---- Enter the demo schools in the current competition cycle ---------------
+-- 20260810000006 seeds the cycle and enters every school that exists at
+-- migration time. Locally that is none, because seed.sql runs afterwards — so
+-- the demo schools are entered here instead. On a real project the migration
+-- has already done this.
+insert into public.competition_schools (competition_id, school_id)
+select c.id, s.id
+from public.competitions c
+cross join public.schools s
+where c.slug = 'inclusive-robotics-2026'
+on conflict (competition_id, school_id) do nothing;

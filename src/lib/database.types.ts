@@ -135,6 +135,9 @@ export interface LessonCompletion {
 export interface Project {
   id: string;
   school_id: string;
+  /** The competition cycle this project is entered into. Null for work
+   *  predating competitions being modelled. */
+  competition_id: string | null;
   title: string;
   description: string | null;
   repo_url: string | null;
@@ -460,13 +463,32 @@ export interface ProgrammeAction {
 }
 
 // ============================================================================
-// Workshops — training requested against a lesson
-// (migration 20260810000003)
+// Workshops and bookings
+// (migrations 20260810000003, 20260810000005)
 //
-// The relationship runs lesson → workshop, not the reverse. A lesson is
-// curriculum and stands alone; a workshop is a school's request for training
-// on that lesson, delivered physically or virtually.
+// A WORKSHOP is predefined by ChipuRobo and tied to a lesson — exactly one per
+// lesson, created automatically, saying training on it can be booked. It is a
+// catalogue entry, not a request, so it counts towards nothing in the
+// Indicator Matrix.
+//
+// A WORKSHOP BOOKING is a school clicking "request training" against one,
+// choosing in person or online. That is the real event, with a lifecycle.
 // ============================================================================
+
+/** A bookable workshop. title/description are optional overrides — null means
+ *  fall back to the lesson's own, so making curriculum bookable needs no
+ *  retyping. */
+export interface Workshop {
+  id: string;
+  lesson_id: string;
+  title: string | null;
+  description: string | null;
+  allows_physical: boolean;
+  allows_virtual: boolean;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
 
 export type WorkshopMode = 'physical' | 'virtual';
 export type WorkshopStatus =
@@ -476,8 +498,11 @@ export type WorkshopStatus =
   | 'declined'
   | 'cancelled';
 
-export interface Workshop {
+export interface WorkshopBooking {
   id: string;
+  /** The catalogue entry booked. Null on rows migrated from bootcamp
+   *  events that had no single lesson. */
+  workshop_id: string | null;
   /** Null only on rows migrated from bootcamp events that taught zero or
    *  several lessons — new requests always carry one. */
   lesson_id: string | null;
@@ -496,4 +521,37 @@ export interface Workshop {
   source_event_id: string | null;
   created_at: string;
   updated_at: string;
+}
+
+// ============================================================================
+// Competitions (migration 20260810000006)
+//
+// One row per cycle of ChipuRobo's Pan-African STEM competition. A new year is
+// a new row, so a past cycle keeps its own entered schools and projects.
+// Lessons and workshops are deliberately not tied to a cycle — the curriculum
+// is taught whether or not a school competes.
+// ============================================================================
+
+export type CompetitionStatus = 'draft' | 'open' | 'closed' | 'judged';
+
+export interface Competition {
+  id: string;
+  slug: string;
+  name: string;
+  year: number;
+  description: string | null;
+  status: CompetitionStatus;
+  opens_on: string | null;
+  closes_on: string | null;
+  showcase_on: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CompetitionSchool {
+  competition_id: string;
+  school_id: string;
+  entered_at: string;
+  entered_by: string | null;
+  withdrawn_at: string | null;
 }

@@ -1,23 +1,24 @@
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  fetchWorkshopsForSchool, fetchCurriculumLessons, requestWorkshop, updateWorkshop,
+  fetchBookingsForSchool, fetchBookableWorkshops, requestWorkshop, updateBooking,
 } from '../../lib/gql/queries';
 import { useAuth } from '../../lib/auth';
 import { useNotifications } from '../../lib/notifications';
 import type { WorkshopMode, WorkshopStatus } from '../../lib/database.types';
-import { Presentation, Plus, MapPin, MonitorPlay, Clock } from 'lucide-react';
+import { Presentation, MapPin, MonitorPlay, Clock, BookOpen } from 'lucide-react';
 import { SkeletonRows } from '../components/Skeletons';
 
 // =============================================================
 // /dashboard/school/workshops
 //
-// A school's own training requests. Pick a lesson from the curriculum, say
-// whether you want it in person or online, and ChipuRobo schedules it.
+// The catalogue, not a blank form. Every lesson has a bookable workshop
+// created for it automatically, so booking training is two clicks — pick the
+// workshop, pick in person or online — rather than composing a request and
+// hoping it names something ChipuRobo actually offers.
 //
-// The school can create a request and cancel its own, but cannot schedule or
-// mark one delivered — a database trigger enforces that, so the restriction
-// holds even if a request is made outside this UI.
+// A school can book and cancel its own. It cannot schedule or mark delivered:
+// a database trigger enforces that, so the rule holds even outside this UI.
 // =============================================================
 
 const STATUS_LABEL: Record<WorkshopStatus, string> = {
@@ -36,174 +37,199 @@ const STATUS_BADGE: Record<WorkshopStatus, string> = {
   cancelled: 'badge-gray',
 };
 
+// A workshop is open to booking again once any previous booking has finished.
+const LIVE: WorkshopStatus[] = ['requested', 'scheduled'];
+
 export function SchoolWorkshops() {
   const { school, profile } = useAuth();
   const schoolId = school?.id ?? null;
   const { notify } = useNotifications();
   const qc = useQueryClient();
+  const [note, setNote] = useState<Record<string, string>>({});
 
-  const [requesting, setRequesting] = useState(false);
-  const [lessonId, setLessonId] = useState('');
-  const [mode, setMode] = useState<WorkshopMode>('physical');
-  const [note, setNote] = useState('');
+  const catalogueQuery = useQuery({
+    queryKey: ['workshops', 'catalogue'],
+    queryFn: fetchBookableWorkshops,
+  });
 
-  const workshopsQuery = useQuery({
-    queryKey: ['workshops', schoolId],
-    queryFn: () => fetchWorkshopsForSchool(schoolId!),
+  const bookingsQuery = useQuery({
+    queryKey: ['bookings', schoolId],
+    queryFn: () => fetchBookingsForSchool(schoolId!),
     enabled: !!schoolId,
   });
 
-  const lessonsQuery = useQuery({
-    queryKey: ['lessons', 'curriculum'],
-    queryFn: fetchCurriculumLessons,
-  });
+  // The live booking per workshop, so a catalogue row can show "Scheduled"
+  // instead of offering a second booking for training already coming.
+  const liveByWorkshop = useMemo(() => {
+    const map = new Map<string, { id: string; status: WorkshopStatus; mode: WorkshopMode; scheduled_for: string | null }>();
+    for (const b of bookingsQuery.data ?? []) {
+      if (b.workshop_id && LIVE.includes(b.status)) {
+        map.set(b.workshop_id, { id: b.id, status: b.status, mode: b.mode, scheduled_for: b.scheduled_for });
+      }
+    }
+    return map;
+  }, [bookingsQuery.data]);
 
-  const selectedLesson = useMemo(
-    () => (lessonsQuery.data ?? []).find((l) => l.id === lessonId) ?? null,
-    [lessonsQuery.data, lessonId],
-  );
-
-  const requestMutation = useMutation({
-    mutationFn: () => requestWorkshop({
-      lesson_id: lessonId,
-      school_id: schoolId!,
-      requested_by: profile?.id ?? null,
-      mode,
-      request_note: note.trim() || null,
-      title: selectedLesson?.title ?? null,
-    }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['workshops'] });
-      notify('success', 'Workshop requested', 'ChipuRobo will confirm a date with you.');
-      setLessonId(''); setNote(''); setMode('physical'); setRequesting(false);
+  const bookMutation = useMutation({
+    mutationFn: ({ workshopId, lessonId, mode, title }:
+      { workshopId: string; lessonId: string; mode: WorkshopMode; title: string | null }) =>
+      requestWorkshop({
+        workshop_id: workshopId,
+        lesson_id: lessonId,
+        school_id: schoolId!,
+        requested_by: profile?.id ?? null,
+        mode,
+        request_note: (note[workshopId] ?? '').trim() || null,
+        title,
+      }),
+    onSuccess: (_b, vars) => {
+      qc.invalidateQueries({ queryKey: ['bookings'] });
+      setNote((n) => ({ ...n, [vars.workshopId]: '' }));
+      notify('success', 'Training requested', 'ChipuRobo will confirm a date with you.');
     },
-    onError: (err: Error) => notify('warning', 'Could not send request', err.message),
+    onError: (err: Error) => notify('warning', 'Could not book', err.message),
   });
 
   const cancelMutation = useMutation({
-    mutationFn: (id: string) => updateWorkshop(id, { status: 'cancelled' }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['workshops'] }),
+    mutationFn: (id: string) => updateBooking(id, { status: 'cancelled' }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['bookings'] }),
     onError: (err: Error) => notify('warning', 'Could not cancel', err.message),
   });
 
-  const rows = workshopsQuery.data ?? [];
+  const catalogue = catalogueQuery.data ?? [];
+  const history = (bookingsQuery.data ?? []).filter((b) => !LIVE.includes(b.status));
 
   return (
     <div>
-      <div className="flex items-start justify-between gap-4 flex-wrap mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <Presentation className="h-6 w-6 text-teal-600" aria-hidden="true" />
-            Workshops
-          </h1>
-          <p className="text-sm text-gray-600 mt-1">
-            Request training on any lesson in the curriculum — in person at your school, or online.
-          </p>
-        </div>
-        <button className="btn-primary" onClick={() => setRequesting((v) => !v)}>
-          <Plus className="h-4 w-4 mr-1.5" aria-hidden="true" />
-          {requesting ? 'Cancel' : 'Request a workshop'}
-        </button>
-      </div>
+      <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+        <Presentation className="h-6 w-6 text-teal-600" aria-hidden="true" />
+        Workshops
+      </h1>
+      <p className="text-sm text-gray-600 mt-1 mb-6">
+        Every lesson has a workshop you can book. Choose one and say whether you would like it
+        in person at your school or online.
+      </p>
 
-      {requesting && (
-        <div className="card p-4 mb-6">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="sm:col-span-2">
-              <label className="field-label" htmlFor="w-lesson">Lesson</label>
-              <select id="w-lesson" className="field-input" value={lessonId}
-                onChange={(e) => setLessonId(e.target.value)}>
-                <option value="">— choose a lesson —</option>
-                {(lessonsQuery.data ?? []).map((l) => (
-                  <option key={l.id} value={l.id}>{l.title}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="field-label" htmlFor="w-mode">How should it be delivered?</label>
-              <select id="w-mode" className="field-input" value={mode}
-                onChange={(e) => setMode(e.target.value as WorkshopMode)}>
-                <option value="physical">In person, at our school</option>
-                <option value="virtual">Online</option>
-              </select>
-            </div>
-            <div className="sm:col-span-2">
-              <label className="field-label" htmlFor="w-note">Anything ChipuRobo should know?</label>
-              <textarea id="w-note" className="field-input" rows={2} value={note}
-                onChange={(e) => setNote(e.target.value)}
-                placeholder="Preferred dates, number of teachers, access needs…" />
-            </div>
-          </div>
-          <div className="mt-4">
-            <button className="btn-primary" disabled={!lessonId || requestMutation.isPending}
-              onClick={() => requestMutation.mutate()}>
-              {requestMutation.isPending ? 'Sending…' : 'Send request'}
-            </button>
-          </div>
+      {catalogueQuery.isPending ? (
+        <p className="text-sm text-gray-500">Loading workshops…</p>
+      ) : catalogue.length === 0 ? (
+        <div className="card p-8 text-center text-sm text-gray-600">
+          No workshops are open for booking yet.
         </div>
-      )}
+      ) : (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {catalogue.map((w) => {
+            const live = liveByWorkshop.get(w.id);
+            const title = w.title ?? w.lesson?.title ?? 'Workshop';
+            const desc = w.description ?? w.lesson?.description ?? null;
+            return (
+              <div key={w.id} className="card p-4 flex flex-col">
+                <h2 className="font-semibold text-gray-900 flex items-center gap-2">
+                  <BookOpen className="h-4 w-4 text-teal-600 flex-shrink-0" aria-hidden="true" />
+                  {title}
+                </h2>
+                {desc && <p className="text-xs text-gray-500 mt-1 line-clamp-3">{desc}</p>}
 
-      <div className="card overflow-x-auto">
-        <table className="data-table" aria-label="Our workshop requests">
-          <thead>
-            <tr>
-              <th>Lesson</th>
-              <th>Mode</th>
-              <th>Status</th>
-              <th>When</th>
-              <th />
-            </tr>
-          </thead>
-          <tbody>
-            {workshopsQuery.isPending ? (
-              <SkeletonRows rows={3} cols={5} label="Loading workshops" />
-            ) : rows.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="text-sm text-gray-500 py-6 text-center">
-                  No workshops yet. Request one above.
-                </td>
-              </tr>
-            ) : (
-              rows.map((w) => (
-                <tr key={w.id}>
-                  <td className="font-medium text-gray-900">
-                    {w.lesson?.title ?? (
-                      <span className="text-gray-400 italic">{w.title ?? '—'}</span>
-                    )}
-                  </td>
-                  <td>
-                    <span className="badge-gray inline-flex items-center">
-                      {w.mode === 'physical'
+                {live ? (
+                  <div className="mt-3">
+                    <span className={STATUS_BADGE[live.status]}>{STATUS_LABEL[live.status]}</span>
+                    <span className="badge-gray ml-1.5 inline-flex items-center">
+                      {live.mode === 'physical'
                         ? <><MapPin className="h-3 w-3 mr-1" aria-hidden="true" />In person</>
                         : <><MonitorPlay className="h-3 w-3 mr-1" aria-hidden="true" />Online</>}
                     </span>
+                    {live.scheduled_for && (
+                      <p className="text-xs text-gray-500 mt-1 inline-flex items-center gap-1">
+                        <Clock className="h-3 w-3" aria-hidden="true" />
+                        {new Date(live.scheduled_for).toLocaleDateString()}
+                      </p>
+                    )}
+                    <button
+                      className="btn-secondary !py-1 !text-xs mt-2 self-start"
+                      disabled={cancelMutation.isPending}
+                      onClick={() => cancelMutation.mutate(live.id)}
+                    >
+                      Cancel booking
+                    </button>
+                  </div>
+                ) : (
+                  <div className="mt-3">
+                    <input
+                      className="field-input !py-1 !text-xs mb-2"
+                      placeholder="Anything we should know? (optional)"
+                      aria-label={`Note for ${title}`}
+                      value={note[w.id] ?? ''}
+                      onChange={(e) => setNote((n) => ({ ...n, [w.id]: e.target.value }))}
+                    />
+                    <div className="flex flex-wrap gap-1.5">
+                      {w.allows_physical && (
+                        <button
+                          className="btn-primary !py-1 !text-xs"
+                          disabled={!w.lesson || bookMutation.isPending}
+                          onClick={() => bookMutation.mutate({
+                            workshopId: w.id, lessonId: w.lesson!.id, mode: 'physical', title,
+                          })}
+                        >
+                          <MapPin className="h-3 w-3 mr-1" aria-hidden="true" />
+                          Request in person
+                        </button>
+                      )}
+                      {w.allows_virtual && (
+                        <button
+                          className="btn-secondary !py-1 !text-xs"
+                          disabled={!w.lesson || bookMutation.isPending}
+                          onClick={() => bookMutation.mutate({
+                            workshopId: w.id, lessonId: w.lesson!.id, mode: 'virtual', title,
+                          })}
+                        >
+                          <MonitorPlay className="h-3 w-3 mr-1" aria-hidden="true" />
+                          Request online
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      <h2 className="text-sm font-semibold text-gray-700 mt-8 mb-2">Past bookings</h2>
+      <div className="card overflow-x-auto">
+        <table className="data-table" aria-label="Past workshop bookings">
+          <thead>
+            <tr>
+              <th>Workshop</th>
+              <th>Mode</th>
+              <th>Status</th>
+              <th>When</th>
+            </tr>
+          </thead>
+          <tbody>
+            {bookingsQuery.isPending ? (
+              <SkeletonRows rows={3} cols={4} label="Loading bookings" />
+            ) : history.length === 0 ? (
+              <tr>
+                <td colSpan={4} className="text-sm text-gray-500 py-6 text-center">
+                  Nothing yet.
+                </td>
+              </tr>
+            ) : (
+              history.map((b) => (
+                <tr key={b.id}>
+                  <td className="font-medium text-gray-900">
+                    {b.lesson?.title ?? <span className="text-gray-400 italic">{b.title ?? '—'}</span>}
                   </td>
+                  <td className="text-sm">{b.mode === 'physical' ? 'In person' : 'Online'}</td>
                   <td>
-                    <span className={STATUS_BADGE[w.status]}>{STATUS_LABEL[w.status]}</span>
-                    {w.status === 'declined' && w.decline_reason && (
-                      <p className="text-xs text-gray-500 mt-1">{w.decline_reason}</p>
+                    <span className={STATUS_BADGE[b.status]}>{STATUS_LABEL[b.status]}</span>
+                    {b.status === 'declined' && b.decline_reason && (
+                      <p className="text-xs text-gray-500 mt-1">{b.decline_reason}</p>
                     )}
                   </td>
                   <td className="text-sm whitespace-nowrap">
-                    {w.delivered_at
-                      ? new Date(w.delivered_at).toLocaleDateString()
-                      : w.scheduled_for
-                        ? <span className="inline-flex items-center gap-1">
-                            <Clock className="h-3 w-3 text-gray-400" aria-hidden="true" />
-                            {new Date(w.scheduled_for).toLocaleDateString()}
-                          </span>
-                        : '—'}
-                  </td>
-                  <td className="text-right">
-                    {(w.status === 'requested' || w.status === 'scheduled') && (
-                      <button
-                        className="btn-secondary !py-1 !text-xs"
-                        disabled={cancelMutation.isPending}
-                        onClick={() => cancelMutation.mutate(w.id)}
-                      >
-                        Cancel
-                      </button>
-                    )}
+                    {b.delivered_at ? new Date(b.delivered_at).toLocaleDateString() : '—'}
                   </td>
                 </tr>
               ))

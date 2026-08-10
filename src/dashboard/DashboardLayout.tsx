@@ -6,7 +6,7 @@ import { useOrderRealtime, type OrderCounts } from '../lib/useOrderRealtime';
 import {
   LogOut, Home, School, Package, ClipboardList, Users, Boxes, Wrench, Send, Menu, X,
   Award, Layers, FolderKanban, BookOpen, CalendarDays, ClipboardCheck, ListChecks,
-  Presentation,
+  Presentation, Trophy,
 } from 'lucide-react';
 
 // ----- Page titles for the SPA route announcer -----
@@ -22,6 +22,7 @@ const DASHBOARD_PAGE_TITLES: Record<string, string> = {
   '/dashboard/admin/distribute':    'Distribute',
   '/dashboard/admin/certifications':'Certifications',
   '/dashboard/admin/lessons':       'Lessons',
+  '/dashboard/admin/competitions':  'Competitions',
   '/dashboard/admin/workshops':     'Workshops',
   '/dashboard/admin/outreach':      'Outreach',
   '/dashboard/admin/projects':      'Projects',
@@ -290,6 +291,9 @@ function DashboardShell() {
               </SidebarLink>
               <SidebarLink to="/dashboard/admin/outreach" icon={Layers}>
                 Outreach
+              </SidebarLink>
+              <SidebarLink to="/dashboard/admin/competitions" icon={Trophy}>
+                Competitions
               </SidebarLink>
               <SidebarLink to="/dashboard/admin/schools" icon={School}>
                 Schools

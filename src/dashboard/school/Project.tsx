@@ -7,12 +7,13 @@ import {
   fetchProjectTeamWithStudent,
   fetchProjectJudgment,
   fetchMembersBySchool,
+  fetchCompetitions,
   type ProjectTeamMemberWithStudent,
 } from '../../lib/gql/queries';
 import { useAuth } from '../../lib/auth';
 import { useNotifications } from '../../lib/notifications';
 import type {
-  Project, ProjectJudgment, ClubMember,
+  Project, ProjectJudgment, ClubMember, Competition,
 } from '../../lib/database.types';
 import {
   FolderKanban, Save, Send, ExternalLink, Image as ImageIcon, Video, GitBranch,
@@ -46,6 +47,11 @@ export function SchoolProject() {
   });
 
   const project = projectQuery.data ?? null;
+
+  const competitionsQuery = useQuery({
+    queryKey: ['competitions'],
+    queryFn: fetchCompetitions,
+  });
 
   const teamQuery = useQuery({
     queryKey: ['project-team', project?.id],
@@ -89,9 +95,16 @@ export function SchoolProject() {
     ?? startMutation.error?.message
     ?? null;
 
+  // The cycle this entry belongs to; falls back to the newest open cycle so a
+  // school without a project yet still sees what it is working towards.
+  const competition =
+    (competitionsQuery.data ?? []).find((c) => c.id === project?.competition_id)
+    ?? (competitionsQuery.data ?? []).find((c) => c.status === 'open')
+    ?? null;
+
   return (
     <div className="px-4 sm:px-6 lg:px-10 py-8 space-y-6">
-      <Header school={school?.name ?? null} status={project?.status} />
+      <Header school={school?.name ?? null} status={project?.status} competition={competition} />
 
       {err && (
         <div role="alert" className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
@@ -139,10 +152,11 @@ export function SchoolProject() {
 }
 
 function Header({
-  school, status,
+  school, status, competition,
 }: {
   school: string | null;
   status?: Project['status'];
+  competition?: Competition | null;
 }) {
   return (
     <div className="flex items-start justify-between gap-3 flex-wrap">
@@ -150,8 +164,17 @@ function Header({
         <p className="text-xs uppercase tracking-wider text-gray-500 mb-1">{school ?? 'Your school'}</p>
         <h1>Project</h1>
         <p className="text-sm text-gray-600 mt-1 max-w-2xl">
-          The one team project your school submits for judging. Draft it, then submit when it's ready.
+          Your school's entry to the competition. Draft it, then submit when it's ready.
         </p>
+        {competition && (
+          <p className="text-xs text-gray-500 mt-1 inline-flex items-center gap-1.5">
+            <Trophy className="h-3.5 w-3.5 text-amber-500" aria-hidden="true" />
+            Entered in {competition.name} {competition.year}
+            {competition.closes_on && (
+              <> · entries close {new Date(competition.closes_on).toLocaleDateString()}</>
+            )}
+          </p>
+        )}
       </div>
       {status && <StatusBadge status={status} />}
     </div>
