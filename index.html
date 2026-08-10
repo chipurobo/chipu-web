@@ -14,6 +14,19 @@
     <title>ChipuRobo - Robotics & AI Education</title>
 
     <!--
+      Google tag (gtag.js) — GA4 property G-BRZM039CGC.
+
+      Google ships this as an external <script> plus an inline block. The
+      inline half has been moved to /gtag-init.js because script-src has no
+      'unsafe-inline' (see security-headers.js); it is loaded first so
+      window.dataLayer exists before googletagmanager.com starts reading it.
+
+      Changing the measurement ID means editing gtag-init.js, not this file.
+    -->
+    <script src="/gtag-init.js"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-BRZM039CGC"></script>
+
+    <!--
       Non-blocking Google Fonts: load with rel="preload" + onload swap
       pattern so the request doesn't block first paint. A <noscript>
       fallback ensures fonts still load when JS is disabled.

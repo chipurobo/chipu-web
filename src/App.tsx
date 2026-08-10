@@ -30,6 +30,7 @@ const Podcast               = lazy(() => import('./pages/Podcast'));
 // === Dashboard (Supabase-backed) — auth + layout eager so the gate is fast,
 // every screen inside the gate lazy. ===
 import { AuthProvider } from './lib/auth';
+import { trackPageView } from './lib/analytics';
 import { RequireAuth } from './dashboard/RequireAuth';
 import { DashboardLayout } from './dashboard/DashboardLayout';
 
@@ -73,6 +74,21 @@ function RouteLoading() {
       </span>
     </div>
   );
+}
+
+/**
+ * Sends a GA4 page_view on every navigation, covering both the marketing site
+ * and the dashboard. Rendered after <AuthProvider> so its effect runs after
+ * PublicLayout's document.title effect and reports the settled title rather
+ * than the previous route's. See lib/analytics.ts for why gtag's own
+ * page_view is switched off.
+ */
+function RouteAnalytics() {
+  const location = useLocation();
+  useEffect(() => {
+    trackPageView(location.pathname, location.search);
+  }, [location.pathname, location.search]);
+  return null;
 }
 
 function App() {
@@ -185,6 +201,7 @@ function App() {
           </Routes>
         </Suspense>
       </AuthProvider>
+      <RouteAnalytics />
     </Router>
   );
 }
