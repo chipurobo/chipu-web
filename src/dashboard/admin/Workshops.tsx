@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { fetchWorkshops, updateWorkshop } from '../../lib/gql/queries';
+import { fetchBookings, updateBooking } from '../../lib/gql/queries';
 import { useNotifications } from '../../lib/notifications';
 import type { WorkshopStatus } from '../../lib/database.types';
 import { Presentation, MapPin, MonitorPlay, CheckCircle2, X, Clock } from 'lucide-react';
@@ -9,13 +9,13 @@ import { SkeletonRows } from '../components/Skeletons';
 // =============================================================
 // /dashboard/admin/workshops
 //
-// The request queue. Schools ask for training on a lesson; ChipuRobo schedules
-// it, delivers it, or declines it.
+// The booking queue. Every lesson already has a bookable workshop (created
+// automatically), so a teacher books rather than composes a request; this is
+// where ChipuRobo schedules, delivers or declines what comes in.
 //
-// A workshop hangs off a LESSON — it is not a container of lessons. Rows with
-// no lesson came from bootcamp events migrated in 20260810000003, where the
-// source event taught zero or several lessons and guessing one would have been
-// worse than leaving it unset.
+// Rows with no lesson came from bootcamp events migrated in 20260810000003,
+// where the source event taught zero or several lessons and guessing one would
+// have been worse than leaving it unset.
 // =============================================================
 
 const STATUS_LABEL: Record<WorkshopStatus, string> = {
@@ -44,45 +44,45 @@ export function AdminWorkshops() {
   const [scheduleDate, setScheduleDate] = useState('');
   const [facilitator, setFacilitator] = useState('');
 
-  const workshopsQuery = useQuery({
-    queryKey: ['workshops'],
-    queryFn: fetchWorkshops,
+  const bookingsQuery = useQuery({
+    queryKey: ['bookings'],
+    queryFn: fetchBookings,
   });
 
   const rows = useMemo(() => {
-    const all = workshopsQuery.data ?? [];
+    const all = bookingsQuery.data ?? [];
     const filtered = filter === 'all' ? all : all.filter((w) => w.status === filter);
     return filtered.slice().sort(
       (a, b) => ORDER.indexOf(a.status) - ORDER.indexOf(b.status),
     );
-  }, [workshopsQuery.data, filter]);
+  }, [bookingsQuery.data, filter]);
 
   const counts = useMemo(() => {
     const map = new Map<WorkshopStatus, number>();
-    for (const w of workshopsQuery.data ?? []) {
+    for (const w of bookingsQuery.data ?? []) {
       map.set(w.status, (map.get(w.status) ?? 0) + 1);
     }
     return map;
-  }, [workshopsQuery.data]);
+  }, [bookingsQuery.data]);
 
   const mutate = useMutation({
-    mutationFn: ({ id, patch }: { id: string; patch: Parameters<typeof updateWorkshop>[1] }) =>
-      updateWorkshop(id, patch),
+    mutationFn: ({ id, patch }: { id: string; patch: Parameters<typeof updateBooking>[1] }) =>
+      updateBooking(id, patch),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['workshops'] });
+      qc.invalidateQueries({ queryKey: ['bookings'] });
       setScheduling(null); setScheduleDate(''); setFacilitator('');
     },
-    onError: (err: Error) => notify('warning', 'Could not update workshop', err.message),
+    onError: (err: Error) => notify('warning', 'Could not update booking', err.message),
   });
 
   return (
     <div className="px-4 sm:px-6 lg:px-10 py-8 space-y-6">
       <div>
         <p className="text-xs uppercase tracking-wider text-gray-500 mb-1">Admin</p>
-        <h1>Workshops</h1>
+        <h1>Workshop bookings</h1>
         <p className="text-sm text-gray-600 mt-1 max-w-2xl">
-          Training requested by schools and teachers against a lesson, delivered in person or
-          online. Schedule a request, then mark it delivered once it has run.
+          Training booked by schools and teachers, delivered in person or online. Schedule a
+          booking, then mark it delivered once it has run.
         </p>
       </div>
 
@@ -91,7 +91,7 @@ export function AdminWorkshops() {
           className={filter === 'all' ? 'badge-teal' : 'badge-gray'}
           onClick={() => setFilter('all')}
         >
-          All ({workshopsQuery.data?.length ?? 0})
+          All ({bookingsQuery.data?.length ?? 0})
         </button>
         {ORDER.map((s) => (
           <button
@@ -105,7 +105,7 @@ export function AdminWorkshops() {
       </div>
 
       <div className="card overflow-x-auto">
-        <table className="data-table" aria-label="Workshop requests">
+        <table className="data-table" aria-label="Workshop bookings">
           <thead>
             <tr>
               <th>School</th>
@@ -117,7 +117,7 @@ export function AdminWorkshops() {
             </tr>
           </thead>
           <tbody>
-            {workshopsQuery.isPending ? (
+            {bookingsQuery.isPending ? (
               <SkeletonRows rows={4} cols={6} label="Loading workshops" />
             ) : rows.length === 0 ? (
               <tr>

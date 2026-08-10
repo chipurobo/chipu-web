@@ -45,6 +45,7 @@ const AdminDistribute       = lazy(() => import('./dashboard/admin/Distribute').
 const AdminCertifications   = lazy(() => import('./dashboard/admin/Certifications').then((m) => ({ default: m.AdminCertifications })));
 const AdminOutreach         = lazy(() => import('./dashboard/admin/Events').then((m) => ({ default: m.AdminEvents })));
 const AdminLessons          = lazy(() => import('./dashboard/admin/Lessons').then((m) => ({ default: m.AdminLessons })));
+const AdminCompetitions     = lazy(() => import('./dashboard/admin/Competitions').then((m) => ({ default: m.AdminCompetitions })));
 const AdminWorkshops        = lazy(() => import('./dashboard/admin/Workshops').then((m) => ({ default: m.AdminWorkshops })));
 const AdminProjects         = lazy(() => import('./dashboard/admin/Projects').then((m) => ({ default: m.AdminProjects })));
 const SchoolCertificates    = lazy(() => import('./dashboard/school/Certificates').then((m) => ({ default: m.SchoolCertificates })));
@@ -155,6 +156,10 @@ function App() {
               <Route
                 path="admin/lessons"
                 element={<RequireAuth role="admin"><AdminLessons /></RequireAuth>}
+              />
+              <Route
+                path="admin/competitions"
+                element={<RequireAuth role="admin"><AdminCompetitions /></RequireAuth>}
               />
               <Route
                 path="admin/workshops"

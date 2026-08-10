@@ -209,7 +209,7 @@ function TemplatesPanel({
             <tr>
               <th scope="col">Title</th>
               <th scope="col">Audience</th>
-              <th scope="col">Programme</th>
+              <th scope="col">Competition</th>
               <th scope="col">State</th>
               <th scope="col" className="text-right">Actions</th>
             </tr>
@@ -333,10 +333,10 @@ function TemplateForm({
         </div>
 
         <div>
-          <label className="field-label" htmlFor="template-programme">Programme</label>
+          <label className="field-label" htmlFor="template-programme">Competition</label>
           <input id="template-programme" className="field-input" value={programme}
                  onChange={(e) => setProgramme(e.target.value)}
-                 placeholder="e.g. Inclusive Robotics" />
+                 placeholder="e.g. Inclusive Robotics — Pan-African STEM competition" />
         </div>
 
         <div>

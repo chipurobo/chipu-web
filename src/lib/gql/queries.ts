@@ -6,7 +6,8 @@ import type {
   ProjectJudgment, ChipuEvent, EventSchoolLink, Profile,
   ProgrammeSession, SessionAttendance, SessionActivity, YpnStatus,
   Instrument, InstrumentVersion, InstrumentResponse, InstrumentAnswer,
-  ProgrammeAction, Workshop, WorkshopMode, StageKind,
+  ProgrammeAction, Workshop, WorkshopBooking, WorkshopMode, StageKind,
+  Competition, CompetitionSchool,
 } from '../database.types';
 
 export interface StockOnHandRow {
@@ -739,51 +740,147 @@ export async function updateLesson(id: string, patch: Partial<Lesson>): Promise<
 
 // ── Workshops ───────────────────────────────────────────────
 
-export interface WorkshopWithJoins extends Workshop {
+export interface BookingWithJoins extends WorkshopBooking {
   lesson: Pick<Lesson, 'id' | 'title' | 'kind'> | null;
   school: Pick<School, 'id' | 'name'> | null;
 }
 
-const WORKSHOP_SELECT = `
+const BOOKING_SELECT = `
   *,
-  lesson:lessons!workshops_lesson_id_fkey(id, title, kind),
-  school:schools!workshops_school_id_fkey(id, name)
+  lesson:lessons!workshop_bookings_lesson_id_fkey(id, title, kind),
+  school:schools!workshop_bookings_school_id_fkey(id, name)
 `;
 
 /** Every workshop the caller can see. RLS gives a school lead their own
  *  school's rows and an admin the full queue, so this is the same call for
  *  both roles. */
-export async function fetchWorkshops(): Promise<WorkshopWithJoins[]> {
+export async function fetchBookings(): Promise<BookingWithJoins[]> {
   return unwrap(
-    await supabase.from('workshops').select(WORKSHOP_SELECT)
+    await supabase.from('workshop_bookings').select(BOOKING_SELECT)
       .order('created_at', { ascending: false }),
-  ) as WorkshopWithJoins[];
+  ) as BookingWithJoins[];
 }
 
-export async function fetchWorkshopsForSchool(schoolId: string): Promise<WorkshopWithJoins[]> {
+export async function fetchBookingsForSchool(schoolId: string): Promise<BookingWithJoins[]> {
   return unwrap(
-    await supabase.from('workshops').select(WORKSHOP_SELECT)
+    await supabase.from('workshop_bookings').select(BOOKING_SELECT)
       .eq('school_id', schoolId)
       .order('created_at', { ascending: false }),
-  ) as WorkshopWithJoins[];
+  ) as BookingWithJoins[];
 }
 
 /** A school or teacher asking for training on a lesson. Status is left at the
  *  default: a database trigger rejects any non-admin trying to create a
  *  workshop that is already scheduled or delivered. */
 export async function requestWorkshop(input: {
+  workshop_id: string;
   lesson_id: string;
   school_id: string;
   requested_by: string | null;
   mode: WorkshopMode;
   request_note: string | null;
   title: string | null;
-}): Promise<Workshop> {
-  return unwrap(await supabase.from('workshops').insert(input).select().single());
+}): Promise<WorkshopBooking> {
+  return unwrap(await supabase.from('workshop_bookings').insert(input).select().single());
 }
 
-export async function updateWorkshop(id: string, patch: Partial<Workshop>): Promise<Workshop> {
+export async function updateBooking(id: string, patch: Partial<WorkshopBooking>): Promise<WorkshopBooking> {
+  return unwrap(
+    await supabase.from('workshop_bookings').update(patch).eq('id', id).select().single(),
+  );
+}
+
+// ── Bookable workshop catalogue ─────────────────────────────
+// One workshop per lesson, created automatically by a trigger, so this is
+// always the full curriculum rather than whatever an admin remembered to add.
+
+export interface BookableWorkshop extends Workshop {
+  lesson: Pick<Lesson, 'id' | 'title' | 'description' | 'kind' | 'points'> | null;
+}
+
+export async function fetchBookableWorkshops(): Promise<BookableWorkshop[]> {
+  return unwrap(
+    await supabase.from('workshops').select(`
+      *,
+      lesson:lessons!workshops_lesson_id_fkey(id, title, description, kind, points)
+    `).eq('is_active', true),
+  ) as BookableWorkshop[];
+}
+
+/** Admin view: the whole catalogue including anything withdrawn from booking. */
+export async function fetchAllWorkshops(): Promise<BookableWorkshop[]> {
+  return unwrap(
+    await supabase.from('workshops').select(`
+      *,
+      lesson:lessons!workshops_lesson_id_fkey(id, title, description, kind, points)
+    `),
+  ) as BookableWorkshop[];
+}
+
+export async function updateWorkshopCatalogue(
+  id: string, patch: Partial<Workshop>,
+): Promise<Workshop> {
   return unwrap(
     await supabase.from('workshops').update(patch).eq('id', id).select().single(),
   );
+}
+
+// ── Competitions ────────────────────────────────────────────
+// RLS hides draft cycles from schools and scopes competition_schools to the
+// caller's own entry, so a school lead cannot enumerate the field.
+
+export async function fetchCompetitions(): Promise<Competition[]> {
+  return unwrap(
+    await supabase.from('competitions').select('*')
+      .order('year', { ascending: false }),
+  );
+}
+
+export interface CompetitionEntry extends CompetitionSchool {
+  school: Pick<School, 'id' | 'name' | 'county'> | null;
+}
+
+export async function fetchCompetitionEntries(competitionId: string): Promise<CompetitionEntry[]> {
+  return unwrap(
+    await supabase.from('competition_schools').select(`
+      *,
+      school:schools!competition_schools_school_id_fkey(id, name, county)
+    `).eq('competition_id', competitionId),
+  ) as CompetitionEntry[];
+}
+
+/** The cycles this school is entered in — one row per cycle for a school lead,
+ *  because RLS filters competition_schools to their own school. */
+export async function fetchMyCompetitions(): Promise<CompetitionSchool[]> {
+  return unwrap(await supabase.from('competition_schools').select('*'));
+}
+
+export async function createCompetition(
+  input: Partial<Competition> & { slug: string; name: string; year: number },
+): Promise<Competition> {
+  return unwrap(await supabase.from('competitions').insert(input).select().single());
+}
+
+export async function updateCompetition(
+  id: string, patch: Partial<Competition>,
+): Promise<Competition> {
+  return unwrap(
+    await supabase.from('competitions').update(patch).eq('id', id).select().single(),
+  );
+}
+
+export async function enterSchool(competitionId: string, schoolId: string): Promise<void> {
+  const res = await supabase.from('competition_schools')
+    .upsert({ competition_id: competitionId, school_id: schoolId, withdrawn_at: null },
+            { onConflict: 'competition_id,school_id' });
+  if (res.error) throw new Error(res.error.message);
+}
+
+/** Withdrawal is a timestamp, not a delete: the school did take part, and
+ *  removing the row would erase that from the record. */
+export async function withdrawSchool(competitionId: string, schoolId: string): Promise<void> {
+  const res = await supabase.from('competition_schools')
+    .update({ withdrawn_at: new Date().toISOString() })
+    .eq('competition_id', competitionId).eq('school_id', schoolId);
+  if (res.error) throw new Error(res.error.message);
 }
