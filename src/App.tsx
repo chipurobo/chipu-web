@@ -63,6 +63,7 @@ const SchoolAssessments     = lazy(() => import('./dashboard/school/Assessments'
 const InstrumentForm        = lazy(() => import('./dashboard/school/InstrumentForm').then((m) => ({ default: m.InstrumentForm })));
 const SchoolActions         = lazy(() => import('./dashboard/school/Actions').then((m) => ({ default: m.SchoolActions })));
 const SchoolWorkshops       = lazy(() => import('./dashboard/school/Workshops').then((m) => ({ default: m.SchoolWorkshops })));
+const Leaderboard           = lazy(() => import('./dashboard/Leaderboard').then((m) => ({ default: m.Leaderboard })));
 
 // === Accessible Suspense fallback ===
 // Renders an aria-live "Loading" message so screen-reader users hear
@@ -129,6 +130,8 @@ function App() {
               }
             >
               <Route index element={<DashboardHome />} />
+              {/* Both roles: standings are cross-school by design. */}
+              <Route path="leaderboard" element={<Leaderboard />} />
               <Route
                 path="admin/schools"
                 element={<RequireAuth role="admin"><AdminSchools /></RequireAuth>}

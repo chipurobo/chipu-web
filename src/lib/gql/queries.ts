@@ -884,3 +884,54 @@ export async function withdrawSchool(competitionId: string, schoolId: string): P
     .eq('competition_id', competitionId).eq('school_id', schoolId);
   if (res.error) throw new Error(res.error.message);
 }
+
+// ── Leaderboard ─────────────────────────────────────────────
+// Served by a SECURITY DEFINER RPC, not a view. The original school_leaderboard
+// was a view with anon SELECT and security_invoker off, which made every
+// school's standing readable by anyone holding the publishable key; the
+// hardening migration's durable fix was an RPC with EXECUTE revoked from anon.
+// It returns per-school counts only — never learner names or codes.
+
+export interface LeaderboardRow {
+  school_id:           string;
+  school_name:         string;
+  county:              string | null;
+  lesson_points:       number;
+  lessons_completed:   number;
+  assessments_done:    number;
+  sessions_delivered:  number;
+  certificates_earned: number;
+  workshops_attended:  number;
+  project_points:      number;
+  total_points:        number;
+}
+
+export async function fetchLeaderboard(): Promise<LeaderboardRow[]> {
+  const { data, error } = await supabase.rpc('get_school_leaderboard');
+  if (error) throw new Error(error.message);
+  return (data ?? []) as LeaderboardRow[];
+}
+
+/** A school's own passed completions, for the recognition feed. RLS scopes
+ *  this to the caller's school, so no cross-school leakage is possible even
+ *  though the leaderboard above is deliberately cross-school. */
+export interface CompletionFeedRow {
+  lesson_id: string;
+  student_id: string;
+  recorded_at: string;
+  lesson: Pick<Lesson, 'id' | 'title' | 'points'> | null;
+  student: Pick<ClubMember, 'id' | 'full_name'> | null;
+}
+
+export async function fetchRecentCompletions(limit = 25): Promise<CompletionFeedRow[]> {
+  return unwrap(
+    await supabase.from('lesson_completions').select(`
+      lesson_id, student_id, recorded_at,
+      lesson:lessons!lesson_completions_lesson_id_fkey(id, title, points),
+      student:club_members!lesson_completions_student_id_fkey(id, full_name)
+    `)
+      .eq('passed', true)
+      .order('recorded_at', { ascending: false })
+      .limit(limit),
+  ) as CompletionFeedRow[];
+}

@@ -6,7 +6,7 @@ import { useOrderRealtime, type OrderCounts } from '../lib/useOrderRealtime';
 import {
   LogOut, Home, School, Package, ClipboardList, Users, Boxes, Wrench, Send, Menu, X,
   Award, Layers, FolderKanban, BookOpen, CalendarDays, ClipboardCheck, ListChecks,
-  Presentation, Trophy,
+  Presentation, Trophy, Medal,
 } from 'lucide-react';
 
 // ----- Page titles for the SPA route announcer -----
@@ -16,6 +16,7 @@ import {
 // "Navigated to <page name>" the same way they would on a full page load.
 const DASHBOARD_PAGE_TITLES: Record<string, string> = {
   '/dashboard':                     'Overview',
+  '/dashboard/leaderboard':         'Leaderboard',
   '/dashboard/admin/schools':       'Schools',
   '/dashboard/admin/products':      'Products',
   '/dashboard/admin/orders':        'All orders',
@@ -295,6 +296,9 @@ function DashboardShell() {
               <SidebarLink to="/dashboard/admin/competitions" icon={Trophy}>
                 Competitions
               </SidebarLink>
+              <SidebarLink to="/dashboard/leaderboard" icon={Medal}>
+                Leaderboard
+              </SidebarLink>
               <SidebarLink to="/dashboard/admin/schools" icon={School}>
                 Schools
               </SidebarLink>
@@ -331,6 +335,9 @@ function DashboardShell() {
               </SidebarLink>
               <SidebarLink to="/dashboard/school/workshops" icon={Presentation}>
                 Workshops
+              </SidebarLink>
+              <SidebarLink to="/dashboard/leaderboard" icon={Medal}>
+                Leaderboard
               </SidebarLink>
               <SidebarLink to="/dashboard/school/project" icon={FolderKanban}>
                 Project
