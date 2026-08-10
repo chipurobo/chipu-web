@@ -45,7 +45,7 @@ export function DashboardHome() {
             <Tile to="/dashboard/school/members" icon={Users}
                   title="Students" body="Roster + students who hold equipment." />
             <Tile to="/dashboard/school/lessons" icon={BookOpen}
-                  title="Lessons" body="Track progress through your programme's activities." />
+                  title="Lessons" body="Track progress through the competition curriculum." />
             <Tile to="/dashboard/school/orders" icon={ClipboardList}
                   title={isMakerSpace ? 'Orders to fulfil' : 'My orders'}
                   body={isMakerSpace
