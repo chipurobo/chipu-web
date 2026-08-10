@@ -2,9 +2,12 @@ import { useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchAllLessonsAdmin, createLesson, updateLesson } from '../../lib/gql/queries';
 import { useNotifications } from '../../lib/notifications';
-import type { StageKind } from '../../lib/database.types';
-import { BookOpen, Plus, GraduationCap, EyeOff, Eye } from 'lucide-react';
+import type { StageKind, LessonLevel } from '../../lib/database.types';
+import { BookOpen, Plus, GraduationCap, EyeOff, Eye, ExternalLink } from 'lucide-react';
 import { SkeletonRows } from '../components/Skeletons';
+import { safeHttpUrl } from '../../lib/safeUrl';
+import { LevelFilter } from '../components/LevelFilter';
+import { matchesLevel, LEVEL_LABEL, type LevelChoice } from '../components/levels';
 
 // =============================================================
 // /dashboard/admin/lessons
@@ -35,6 +38,9 @@ export function AdminLessons() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [kind, setKind] = useState<StageKind>('lesson');
+  const [resourceUrl, setResourceUrl] = useState('');
+  const [newLevel, setNewLevel] = useState<LessonLevel>('both');
+  const [filterLevel, setFilterLevel] = useState<LevelChoice>('all');
   const [points, setPoints] = useState(1);
   const [required, setRequired] = useState(false);
 
@@ -48,6 +54,10 @@ export function AdminLessons() {
       title: title.trim(),
       description: description.trim() || null,
       kind,
+      // Empty string would fail the http(s) check constraint; null means
+      // "this lesson has no online resource", which is true of taught ones.
+      resource_url: resourceUrl.trim() || null,
+      level: newLevel,
       points,
       required_for_certificate: required,
       // Appended to the end of the curriculum. event_id is deliberately
@@ -58,7 +68,8 @@ export function AdminLessons() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['lessons'] });
       notify('success', 'Lesson added', 'Schools can now request a workshop on it.');
-      setTitle(''); setDescription(''); setKind('lesson'); setPoints(1); setRequired(false);
+      setTitle(''); setDescription(''); setKind('lesson'); setPoints(1);
+      setRequired(false); setResourceUrl(''); setNewLevel('both');
       setCreating(false);
     },
     onError: (err: Error) => notify('warning', 'Could not add lesson', err.message),
@@ -76,7 +87,8 @@ export function AdminLessons() {
     if (title.trim()) createMutation.mutate();
   };
 
-  const lessons = lessonsQuery.data ?? [];
+  const all = lessonsQuery.data ?? [];
+  const lessons = all.filter((l) => matchesLevel(l.level, filterLevel));
 
   return (
     <div className="px-4 sm:px-6 lg:px-10 py-8 space-y-6">
@@ -118,6 +130,23 @@ export function AdminLessons() {
                 ))}
               </select>
             </div>
+            <div className="sm:col-span-2">
+              <label className="field-label" htmlFor="l-url">
+                Resource link <span className="text-gray-400">(where the teacher goes)</span>
+              </label>
+              <input id="l-url" type="url" className="field-input" value={resourceUrl}
+                onChange={(e) => setResourceUrl(e.target.value)}
+                placeholder="https://projects.raspberrypi.org/en/projects/…" />
+            </div>
+            <div>
+              <label className="field-label" htmlFor="l-level">School level</label>
+              <select id="l-level" className="field-input" value={newLevel}
+                onChange={(e) => setNewLevel(e.target.value as LessonLevel)}>
+                <option value="both">Primary &amp; secondary</option>
+                <option value="primary">Primary</option>
+                <option value="secondary">Secondary</option>
+              </select>
+            </div>
             <div>
               <label className="field-label" htmlFor="l-points">Points</label>
               <input id="l-points" type="number" min={0} className="field-input" value={points}
@@ -140,6 +169,16 @@ export function AdminLessons() {
         </form>
       )}
 
+      <LevelFilter
+        value={filterLevel}
+        onChange={setFilterLevel}
+        counts={{
+          all: all.length,
+          primary: all.filter((l) => matchesLevel(l.level, 'primary')).length,
+          secondary: all.filter((l) => matchesLevel(l.level, 'secondary')).length,
+        }}
+      />
+
       <div className="card overflow-x-auto">
         <table className="data-table" aria-label="Curriculum lessons">
           <thead>
@@ -147,6 +186,8 @@ export function AdminLessons() {
               <th>#</th>
               <th>Lesson</th>
               <th>Kind</th>
+              <th>Level</th>
+              <th>Resource</th>
               <th>Points</th>
               <th>Status</th>
               <th />
@@ -154,10 +195,10 @@ export function AdminLessons() {
           </thead>
           <tbody>
             {lessonsQuery.isPending ? (
-              <SkeletonRows rows={4} cols={6} label="Loading lessons" />
+              <SkeletonRows rows={4} cols={8} label="Loading lessons" />
             ) : lessons.length === 0 ? (
               <tr>
-                <td colSpan={6} className="text-sm text-gray-500 py-6 text-center">
+                <td colSpan={8} className="text-sm text-gray-500 py-6 text-center">
                   No lessons yet. Add the first one above.
                 </td>
               </tr>
@@ -176,6 +217,15 @@ export function AdminLessons() {
                     )}
                   </td>
                   <td className="text-sm text-gray-600">{KIND_LABEL[l.kind]}</td>
+                  <td><span className="badge-gray">{LEVEL_LABEL[l.level]}</span></td>
+                  <td className="text-sm">
+                    {safeHttpUrl(l.resource_url) ? (
+                      <a href={safeHttpUrl(l.resource_url)!} target="_blank" rel="noopener noreferrer"
+                         className="text-teal-700 hover:underline inline-flex items-center gap-1">
+                        <ExternalLink className="h-3 w-3" aria-hidden="true" />Open
+                      </a>
+                    ) : <span className="text-gray-400">—</span>}
+                  </td>
                   <td className="text-sm">{l.points}</td>
                   <td>
                     <span className={l.is_active ? 'badge-teal' : 'badge-gray'}>

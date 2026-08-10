@@ -104,6 +104,10 @@ export type StageKind =
 
 export type ProjectStatus = 'draft' | 'submitted' | 'judged';
 
+/** Which school level a lesson suits. 'both' is a real answer — much of the
+ *  curriculum is taught in upper primary and junior secondary alike. */
+export type LessonLevel = 'primary' | 'secondary' | 'both';
+
 export interface Lesson {
   id: string;
   /** The workshop (events row) this lesson belongs to. */
@@ -112,6 +116,11 @@ export interface Lesson {
   title: string;
   description: string | null;
   kind: StageKind;
+  /** Where a teacher or learner goes to do this lesson. http(s) only —
+   *  enforced by a DB check constraint, and re-checked with safeHttpUrl()
+   *  before it is ever rendered as an anchor. */
+  resource_url: string | null;
+  level: LessonLevel;
   /** Points awarded per student per completion. */
   points: number;
   required_for_certificate: boolean;

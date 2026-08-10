@@ -8,6 +8,9 @@ import { useNotifications } from '../../lib/notifications';
 import type { WorkshopMode, WorkshopStatus } from '../../lib/database.types';
 import { Presentation, MapPin, MonitorPlay, Clock, BookOpen } from 'lucide-react';
 import { SkeletonRows } from '../components/Skeletons';
+import { safeHttpUrl } from '../../lib/safeUrl';
+import { LevelFilter } from '../components/LevelFilter';
+import { matchesLevel, type LevelChoice } from '../components/levels';
 
 // =============================================================
 // /dashboard/school/workshops
@@ -46,6 +49,7 @@ export function SchoolWorkshops() {
   const { notify } = useNotifications();
   const qc = useQueryClient();
   const [note, setNote] = useState<Record<string, string>>({});
+  const [level, setLevel] = useState<LevelChoice>('all');
 
   const catalogueQuery = useQuery({
     queryKey: ['workshops', 'catalogue'],
@@ -96,7 +100,10 @@ export function SchoolWorkshops() {
     onError: (err: Error) => notify('warning', 'Could not cancel', err.message),
   });
 
-  const catalogue = catalogueQuery.data ?? [];
+  const allWorkshops = catalogueQuery.data ?? [];
+  const catalogue = allWorkshops.filter(
+    (w) => !w.lesson || matchesLevel(w.lesson.level, level),
+  );
   const history = (bookingsQuery.data ?? []).filter((b) => !LIVE.includes(b.status));
 
   return (
@@ -109,6 +116,18 @@ export function SchoolWorkshops() {
         Every lesson has a workshop you can book. Choose one and say whether you would like it
         in person at your school or online.
       </p>
+
+      <div className="mb-4">
+        <LevelFilter
+          value={level}
+          onChange={setLevel}
+          counts={{
+            all: allWorkshops.length,
+            primary: allWorkshops.filter((w) => !w.lesson || matchesLevel(w.lesson.level, 'primary')).length,
+            secondary: allWorkshops.filter((w) => !w.lesson || matchesLevel(w.lesson.level, 'secondary')).length,
+          }}
+        />
+      </div>
 
       {catalogueQuery.isPending ? (
         <p className="text-sm text-gray-500">Loading workshops…</p>
@@ -136,6 +155,17 @@ export function SchoolWorkshops() {
                   {title}
                 </h2>
                 {desc && <p className="text-xs text-gray-500 mt-1 line-clamp-3">{desc}</p>}
+                {safeHttpUrl(w.lesson?.resource_url) && (
+                  <a
+                    href={safeHttpUrl(w.lesson?.resource_url)!}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-teal-700 hover:underline inline-flex items-center gap-1 mt-1"
+                  >
+                    <ExternalLink className="h-3 w-3" aria-hidden="true" />
+                    Open the resource
+                  </a>
+                )}
 
                 {live ? (
                   <div className="mt-3">
