@@ -6,7 +6,7 @@ import {
 } from '../../lib/gql/queries';
 import { useNotifications } from '../../lib/notifications';
 import type { CompetitionStatus } from '../../lib/database.types';
-import { Trophy, Plus, School as SchoolIcon, X } from 'lucide-react';
+import { Trophy, Plus, X } from 'lucide-react';
 import { SkeletonCards } from '../components/Skeletons';
 
 // =============================================================
@@ -45,7 +45,6 @@ export function AdminCompetitions() {
   const [name, setName] = useState('');
   const [year, setYear] = useState(new Date().getFullYear());
   const [description, setDescription] = useState('');
-  const [openFor, setOpenFor] = useState<string | null>(null);
 
   const competitionsQuery = useQuery({
     queryKey: ['competitions'],
@@ -156,17 +155,10 @@ export function AdminCompetitions() {
                     <option key={s} value={s}>{STATUS_LABEL[s]}</option>
                   ))}
                 </select>
-                <button
-                  className="btn-secondary !py-1 !text-xs"
-                  onClick={() => setOpenFor(openFor === c.id ? null : c.id)}
-                >
-                  <SchoolIcon className="h-3 w-3 mr-1" aria-hidden="true" />
-                  Schools
-                </button>
               </div>
             </div>
 
-            {openFor === c.id && <EntryManager competitionId={c.id} />}
+            <EntryManager competitionId={c.id} />
           </div>
         ))
       )}
