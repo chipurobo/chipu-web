@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import {
-  fetchLessonsForSchool,
+  fetchCurriculumLessons,
   fetchMembersBySchoolUnordered,
   fetchPassedCompletionsWithStudent,
 } from '../../lib/gql/queries';
@@ -14,7 +14,7 @@ import { SkeletonCards } from '../components/Skeletons';
 // =============================================================
 // /dashboard/school/lessons
 //
-// Lessons for every workshop the school is enrolled in (RLS scopes the
+// The curriculum. Lessons stand alone — a school no longer has to be
 // list). Each lesson shows title · kind · points · how many students have
 // passed. Click in to tick off completions on the full class list.
 // =============================================================
@@ -55,10 +55,10 @@ export function SchoolLessons() {
   const { school } = useAuth();
   const schoolId = school?.id ?? null;
 
-  // Lessons for the workshops this school is enrolled in (RLS-scoped).
+  // The whole active curriculum. Request training on any of it via Workshops.
   const lessonsQuery = useQuery({
     queryKey: ['lessons', 'school', schoolId],
-    queryFn: fetchLessonsForSchool,
+    queryFn: fetchCurriculumLessons,
     enabled: !!schoolId,
   });
 
@@ -134,7 +134,7 @@ export function SchoolLessons() {
           <BookOpen className="h-7 w-7 text-gray-300 mx-auto mb-2" aria-hidden="true" />
           <p className="text-sm text-gray-600">No lessons yet.</p>
           <p className="text-xs text-gray-500 mt-1">
-            Lessons appear once your school is enrolled in a workshop that has them.
+            No lessons published yet. Once ChipuRobo adds them you can request a workshop on any of them.
           </p>
         </div>
       )}

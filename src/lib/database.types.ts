@@ -458,3 +458,42 @@ export interface ProgrammeAction {
   created_at: string;
   updated_at: string;
 }
+
+// ============================================================================
+// Workshops — training requested against a lesson
+// (migration 20260810000003)
+//
+// The relationship runs lesson → workshop, not the reverse. A lesson is
+// curriculum and stands alone; a workshop is a school's request for training
+// on that lesson, delivered physically or virtually.
+// ============================================================================
+
+export type WorkshopMode = 'physical' | 'virtual';
+export type WorkshopStatus =
+  | 'requested'
+  | 'scheduled'
+  | 'delivered'
+  | 'declined'
+  | 'cancelled';
+
+export interface Workshop {
+  id: string;
+  /** Null only on rows migrated from bootcamp events that taught zero or
+   *  several lessons — new requests always carry one. */
+  lesson_id: string | null;
+  school_id: string;
+  requested_by: string | null;
+  title: string | null;
+  mode: WorkshopMode;
+  status: WorkshopStatus;
+  request_note: string | null;
+  scheduled_for: string | null;
+  facilitator: string | null;
+  delivered_at: string | null;
+  decline_reason: string | null;
+  /** Provenance for rows migrated out of events; attendance still resolves
+   *  through the original event row, which was not deleted. */
+  source_event_id: string | null;
+  created_at: string;
+  updated_at: string;
+}

@@ -6,6 +6,7 @@ import { useOrderRealtime, type OrderCounts } from '../lib/useOrderRealtime';
 import {
   LogOut, Home, School, Package, ClipboardList, Users, Boxes, Wrench, Send, Menu, X,
   Award, Layers, FolderKanban, BookOpen, CalendarDays, ClipboardCheck, ListChecks,
+  Presentation,
 } from 'lucide-react';
 
 // ----- Page titles for the SPA route announcer -----
@@ -20,7 +21,9 @@ const DASHBOARD_PAGE_TITLES: Record<string, string> = {
   '/dashboard/admin/orders':        'All orders',
   '/dashboard/admin/distribute':    'Distribute',
   '/dashboard/admin/certifications':'Certifications',
+  '/dashboard/admin/lessons':       'Lessons',
   '/dashboard/admin/workshops':     'Workshops',
+  '/dashboard/admin/outreach':      'Outreach',
   '/dashboard/admin/projects':      'Projects',
   '/dashboard/school/members':      'Students',
   '/dashboard/school/orders':       'Orders',
@@ -28,6 +31,7 @@ const DASHBOARD_PAGE_TITLES: Record<string, string> = {
   '/dashboard/school/stock':        'Stock and units',
   '/dashboard/school/certificates': 'Certificates',
   '/dashboard/school/lessons':      'Lessons',
+  '/dashboard/school/workshops':    'Workshops',
   '/dashboard/school/project':      'Project',
   '/dashboard/school/sessions':     'Sessions',
   '/dashboard/school/assessments':  'Assessments',
@@ -274,11 +278,18 @@ function DashboardShell() {
           {isAdmin ? (
             <>
               {/* ─── Learning group ───
-                  Workshops (the unit of enrolment), the schools that attend
-                  them, projects, and certifications. */}
+                  Lessons are the curriculum and stand alone. A workshop is
+                  training a school requests against a lesson. Outreach keeps
+                  its own screen — it is a genuine event, not lesson training. */}
               <SidebarGroupLabel>Learning</SidebarGroupLabel>
-              <SidebarLink to="/dashboard/admin/workshops" icon={Layers}>
+              <SidebarLink to="/dashboard/admin/lessons" icon={BookOpen}>
+                Lessons
+              </SidebarLink>
+              <SidebarLink to="/dashboard/admin/workshops" icon={Presentation}>
                 Workshops
+              </SidebarLink>
+              <SidebarLink to="/dashboard/admin/outreach" icon={Layers}>
+                Outreach
               </SidebarLink>
               <SidebarLink to="/dashboard/admin/schools" icon={School}>
                 Schools
@@ -313,6 +324,9 @@ function DashboardShell() {
               </SidebarLink>
               <SidebarLink to="/dashboard/school/lessons" icon={BookOpen}>
                 Lessons
+              </SidebarLink>
+              <SidebarLink to="/dashboard/school/workshops" icon={Presentation}>
+                Workshops
               </SidebarLink>
               <SidebarLink to="/dashboard/school/project" icon={FolderKanban}>
                 Project
