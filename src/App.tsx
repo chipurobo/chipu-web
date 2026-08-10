@@ -43,7 +43,9 @@ const AdminProducts         = lazy(() => import('./dashboard/admin/Products').th
 const AdminOrders           = lazy(() => import('./dashboard/admin/Orders').then((m) => ({ default: m.AdminOrders })));
 const AdminDistribute       = lazy(() => import('./dashboard/admin/Distribute').then((m) => ({ default: m.AdminDistribute })));
 const AdminCertifications   = lazy(() => import('./dashboard/admin/Certifications').then((m) => ({ default: m.AdminCertifications })));
-const AdminWorkshops        = lazy(() => import('./dashboard/admin/Events').then((m) => ({ default: m.AdminEvents })));
+const AdminOutreach         = lazy(() => import('./dashboard/admin/Events').then((m) => ({ default: m.AdminEvents })));
+const AdminLessons          = lazy(() => import('./dashboard/admin/Lessons').then((m) => ({ default: m.AdminLessons })));
+const AdminWorkshops        = lazy(() => import('./dashboard/admin/Workshops').then((m) => ({ default: m.AdminWorkshops })));
 const AdminProjects         = lazy(() => import('./dashboard/admin/Projects').then((m) => ({ default: m.AdminProjects })));
 const SchoolCertificates    = lazy(() => import('./dashboard/school/Certificates').then((m) => ({ default: m.SchoolCertificates })));
 const Certificate           = lazy(() => import('./dashboard/Certificate').then((m) => ({ default: m.Certificate })));
@@ -59,6 +61,7 @@ const SessionRegister       = lazy(() => import('./dashboard/school/SessionRegis
 const SchoolAssessments     = lazy(() => import('./dashboard/school/Assessments').then((m) => ({ default: m.SchoolAssessments })));
 const InstrumentForm        = lazy(() => import('./dashboard/school/InstrumentForm').then((m) => ({ default: m.InstrumentForm })));
 const SchoolActions         = lazy(() => import('./dashboard/school/Actions').then((m) => ({ default: m.SchoolActions })));
+const SchoolWorkshops       = lazy(() => import('./dashboard/school/Workshops').then((m) => ({ default: m.SchoolWorkshops })));
 
 // === Accessible Suspense fallback ===
 // Renders an aria-live "Loading" message so screen-reader users hear
@@ -150,8 +153,17 @@ function App() {
                 element={<RequireAuth role="admin"><AdminCertifications /></RequireAuth>}
               />
               <Route
+                path="admin/lessons"
+                element={<RequireAuth role="admin"><AdminLessons /></RequireAuth>}
+              />
+              <Route
                 path="admin/workshops"
                 element={<RequireAuth role="admin"><AdminWorkshops /></RequireAuth>}
+              />
+              {/* Outreach kept its own screen; bootcamps moved to workshops. */}
+              <Route
+                path="admin/outreach"
+                element={<RequireAuth role="admin"><AdminOutreach /></RequireAuth>}
               />
               <Route
                 path="admin/projects"
@@ -164,6 +176,7 @@ function App() {
               <Route path="school/stock" element={<SchoolStock />} />
               <Route path="school/production" element={<SchoolProduction />} />
               <Route path="school/lessons" element={<SchoolLessons />} />
+              <Route path="school/workshops" element={<SchoolWorkshops />} />
               <Route path="school/lessons/:lessonId" element={<SchoolLessonStage />} />
               <Route path="school/project" element={<SchoolProject />} />
               {/* MERL — sessions, registers, assessments and actions */}

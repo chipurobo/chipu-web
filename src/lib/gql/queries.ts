@@ -6,7 +6,7 @@ import type {
   ProjectJudgment, ChipuEvent, EventSchoolLink, Profile,
   ProgrammeSession, SessionAttendance, SessionActivity, YpnStatus,
   Instrument, InstrumentVersion, InstrumentResponse, InstrumentAnswer,
-  ProgrammeAction,
+  ProgrammeAction, Workshop, WorkshopMode, StageKind,
 } from '../database.types';
 
 export interface StockOnHandRow {
@@ -704,4 +704,86 @@ export interface ResponseWithForm extends InstrumentResponse {
       }>;
     }>;
   }) | null;
+}
+
+// ── Curriculum lessons ──────────────────────────────────────
+// Lessons stand alone now: they are the curriculum, not the contents of a
+// workshop. Every signed-in user can read the active set, which is what makes
+// "browse the curriculum and request a workshop" possible.
+
+export async function fetchCurriculumLessons(): Promise<Lesson[]> {
+  return unwrap(
+    await supabase.from('lessons').select('*')
+      .eq('is_active', true)
+      .order('position'),
+  );
+}
+
+export async function fetchAllLessonsAdmin(): Promise<Lesson[]> {
+  return unwrap(
+    await supabase.from('lessons').select('*').order('position'),
+  );
+}
+
+export async function createLesson(
+  input: Partial<Lesson> & { title: string; kind: StageKind; position: number },
+): Promise<Lesson> {
+  return unwrap(await supabase.from('lessons').insert(input).select().single());
+}
+
+export async function updateLesson(id: string, patch: Partial<Lesson>): Promise<Lesson> {
+  return unwrap(
+    await supabase.from('lessons').update(patch).eq('id', id).select().single(),
+  );
+}
+
+// ── Workshops ───────────────────────────────────────────────
+
+export interface WorkshopWithJoins extends Workshop {
+  lesson: Pick<Lesson, 'id' | 'title' | 'kind'> | null;
+  school: Pick<School, 'id' | 'name'> | null;
+}
+
+const WORKSHOP_SELECT = `
+  *,
+  lesson:lessons!workshops_lesson_id_fkey(id, title, kind),
+  school:schools!workshops_school_id_fkey(id, name)
+`;
+
+/** Every workshop the caller can see. RLS gives a school lead their own
+ *  school's rows and an admin the full queue, so this is the same call for
+ *  both roles. */
+export async function fetchWorkshops(): Promise<WorkshopWithJoins[]> {
+  return unwrap(
+    await supabase.from('workshops').select(WORKSHOP_SELECT)
+      .order('created_at', { ascending: false }),
+  ) as WorkshopWithJoins[];
+}
+
+export async function fetchWorkshopsForSchool(schoolId: string): Promise<WorkshopWithJoins[]> {
+  return unwrap(
+    await supabase.from('workshops').select(WORKSHOP_SELECT)
+      .eq('school_id', schoolId)
+      .order('created_at', { ascending: false }),
+  ) as WorkshopWithJoins[];
+}
+
+/** A school or teacher asking for training on a lesson. Status is left at the
+ *  default: a database trigger rejects any non-admin trying to create a
+ *  workshop that is already scheduled or delivered. */
+export async function requestWorkshop(input: {
+  lesson_id: string;
+  school_id: string;
+  requested_by: string | null;
+  mode: WorkshopMode;
+  request_note: string | null;
+  title: string | null;
+}): Promise<Workshop> {
+  return unwrap(await supabase.from('workshops').insert(input).select().single());
+}
+
+export async function updateWorkshop(id: string, patch: Partial<Workshop>): Promise<Workshop> {
+  return unwrap(
+    await supabase.from('workshops').update(patch).eq('id', id).select().single(),
+  );
 }

@@ -70,13 +70,18 @@ export function AdminEvents() {
     queryFn: fetchSchools,
   });
 
+  // Outreach only. Bootcamps that were really workshops moved to
+  // public.workshops in 20260810000003 and are managed from
+  // /dashboard/admin/workshops; listing them here too would show the same
+  // training in two places under two names, which is the confusion this
+  // split exists to remove.
   const events: EventRow[] | null = (() => {
     if (!eventsQuery.data) return null;
     const counts = new Map<string, number>();
     (attendancesQuery.data ?? []).forEach((r) =>
       counts.set(r.event_id, (counts.get(r.event_id) ?? 0) + 1),
     );
-    return eventsQuery.data.map((e) => ({
+    return eventsQuery.data.filter((e) => e.event_type === 'outreach').map((e) => ({
       ...e,
       attendance_count: counts.get(e.id) ?? 0,
     })) as EventRow[];
@@ -110,10 +115,11 @@ export function AdminEvents() {
       <div className="flex items-end justify-between gap-4 flex-wrap">
         <div>
           <p className="text-xs uppercase tracking-wider text-gray-500 mb-1">Admin</p>
-          <h1>Activities</h1>
+          <h1>Outreach</h1>
           <p className="text-sm text-gray-600 mt-1 max-w-2xl">
-            Outreach trips and bootcamps. Attach the schools that are taking part, then mark them
-            attended once they show up — every active student at the school is auto-credited.
+            Outreach trips. Attach the schools taking part, then mark them attended once they show
+            up — every active student at the school is auto-credited. Training requested against a
+            lesson lives under Workshops.
           </p>
         </div>
         <button
