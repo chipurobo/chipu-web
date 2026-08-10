@@ -52,7 +52,9 @@ jwt_expiry = 3600
 enable_signup = false
 
 [auth.email]
-enable_signup = false
+# Keep the email/password provider enabled so admin-created users can sign in.
+# Public signup remains closed by the top-level [auth].enable_signup = false.
+enable_signup = true
 double_confirm_changes = false
 enable_confirmations = false
 secure_password_change = false
