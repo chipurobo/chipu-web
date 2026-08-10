@@ -3,6 +3,8 @@ import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-do
 import { useAuth } from '../lib/auth';
 import { NotificationsProvider, NotificationToaster } from '../lib/notifications';
 import { useOrderRealtime, type OrderCounts } from '../lib/useOrderRealtime';
+import { useQuery } from '@tanstack/react-query';
+import { fetchPendingBookingCount } from '../lib/gql/queries';
 import {
   LogOut, Home, School, Package, ClipboardList, Users, Boxes, Wrench, Send, Menu, X,
   Award, Layers, FolderKanban, BookOpen, CalendarDays, ClipboardCheck, ListChecks,
@@ -78,6 +80,16 @@ function DashboardShell() {
   const isAdmin = profile?.role === 'admin';
   const isMakerSpace = !!school?.is_maker_space;
   const counts: OrderCounts = useOrderRealtime();
+
+  // Workshop bookings still awaiting a decision. RLS scopes it, so an admin
+  // sees the incoming queue and a school lead sees their own outstanding
+  // requests. Polled rather than realtime — a badge that is a minute stale is
+  // fine, and it keeps this off the realtime channel budget.
+  const { data: pendingWorkshops = 0 } = useQuery({
+    queryKey: ['bookings', 'pending-count'],
+    queryFn: fetchPendingBookingCount,
+    refetchInterval: 60_000,
+  });
   const [mobileOpen, setMobileOpen] = useState(false);
   const [routeMessage, setRouteMessage] = useState('');
   const drawerRef = useRef<HTMLElement | null>(null);
@@ -287,7 +299,7 @@ function DashboardShell() {
               <SidebarLink to="/dashboard/admin/lessons" icon={BookOpen}>
                 Lessons
               </SidebarLink>
-              <SidebarLink to="/dashboard/admin/workshops" icon={Presentation}>
+              <SidebarLink to="/dashboard/admin/workshops" icon={Presentation} badge={pendingWorkshops}>
                 Workshops
               </SidebarLink>
               <SidebarLink to="/dashboard/admin/outreach" icon={Layers}>
@@ -333,7 +345,7 @@ function DashboardShell() {
               <SidebarLink to="/dashboard/school/lessons" icon={BookOpen}>
                 Lessons
               </SidebarLink>
-              <SidebarLink to="/dashboard/school/workshops" icon={Presentation}>
+              <SidebarLink to="/dashboard/school/workshops" icon={Presentation} badge={pendingWorkshops}>
                 Workshops
               </SidebarLink>
               <SidebarLink to="/dashboard/leaderboard" icon={Medal}>

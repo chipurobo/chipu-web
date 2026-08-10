@@ -935,3 +935,16 @@ export async function fetchRecentCompletions(limit = 25): Promise<CompletionFeed
       .limit(limit),
   ) as CompletionFeedRow[];
 }
+
+/** Count of bookings still awaiting a decision, for the sidebar badge.
+ *  RLS scopes it: an admin gets the whole incoming queue, a school lead gets
+ *  only their own outstanding requests. head:true so nothing is transferred
+ *  beyond the count. */
+export async function fetchPendingBookingCount(): Promise<number> {
+  const { count, error } = await supabase
+    .from('workshop_bookings')
+    .select('id', { count: 'exact', head: true })
+    .eq('status', 'requested');
+  if (error) throw new Error(error.message);
+  return count ?? 0;
+}
