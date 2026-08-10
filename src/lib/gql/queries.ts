@@ -795,14 +795,14 @@ export async function updateBooking(id: string, patch: Partial<WorkshopBooking>)
 // always the full curriculum rather than whatever an admin remembered to add.
 
 export interface BookableWorkshop extends Workshop {
-  lesson: Pick<Lesson, 'id' | 'title' | 'description' | 'kind' | 'points'> | null;
+  lesson: Pick<Lesson, 'id' | 'title' | 'description' | 'resource_url' | 'kind' | 'points' | 'level'> | null;
 }
 
 export async function fetchBookableWorkshops(): Promise<BookableWorkshop[]> {
   return unwrap(
     await supabase.from('workshops').select(`
       *,
-      lesson:lessons!workshops_lesson_id_fkey(id, title, description, kind, points)
+      lesson:lessons!workshops_lesson_id_fkey(id, title, description, resource_url, kind, points, level)
     `).eq('is_active', true),
   ) as BookableWorkshop[];
 }
@@ -812,7 +812,7 @@ export async function fetchAllWorkshops(): Promise<BookableWorkshop[]> {
   return unwrap(
     await supabase.from('workshops').select(`
       *,
-      lesson:lessons!workshops_lesson_id_fkey(id, title, description, kind, points)
+      lesson:lessons!workshops_lesson_id_fkey(id, title, description, resource_url, kind, points, level)
     `),
   ) as BookableWorkshop[];
 }

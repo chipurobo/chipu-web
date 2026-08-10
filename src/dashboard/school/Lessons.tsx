@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import {
@@ -8,8 +8,11 @@ import {
 } from '../../lib/gql/queries';
 import { useAuth } from '../../lib/auth';
 import type { StageKind } from '../../lib/database.types';
-import { BookOpen, Laptop, MonitorPlay, FolderKanban, ArrowRight, GraduationCap, Megaphone, Link as LinkIcon } from 'lucide-react';
+import { BookOpen, Laptop, MonitorPlay, FolderKanban, ArrowRight, GraduationCap, Megaphone, Link as LinkIcon, ExternalLink } from 'lucide-react';
 import { SkeletonCards } from '../components/Skeletons';
+import { safeHttpUrl } from '../../lib/safeUrl';
+import { LevelFilter } from '../components/LevelFilter';
+import { matchesLevel, LEVEL_LABEL, type LevelChoice } from '../components/levels';
 
 // =============================================================
 // /dashboard/school/lessons
@@ -52,6 +55,7 @@ interface CompletionCountRow {
 }
 
 export function SchoolLessons() {
+  const [level, setLevel] = useState<LevelChoice>('all');
   const { school } = useAuth();
   const schoolId = school?.id ?? null;
 
@@ -121,6 +125,16 @@ export function SchoolLessons() {
         )}
       </div>
 
+      <LevelFilter
+        value={level}
+        onChange={setLevel}
+        counts={{
+          all: lessons?.length,
+          primary: lessons?.filter((l) => matchesLevel(l.level, 'primary')).length,
+          secondary: lessons?.filter((l) => matchesLevel(l.level, 'secondary')).length,
+        }}
+      />
+
       {err && (
         <div role="alert" className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
           {err}
@@ -141,7 +155,7 @@ export function SchoolLessons() {
 
       {lessons && lessons.length > 0 && (
         <div className="grid sm:grid-cols-2 gap-4">
-          {lessons.map((s) => {
+          {lessons.filter((l) => matchesLevel(l.level, level)).map((s) => {
             const Icon = STAGE_KIND_ICON[s.kind];
             const badge = STAGE_KIND_BADGE[s.kind];
             const passed = passedByLesson.get(s.id) ?? 0;
@@ -157,6 +171,7 @@ export function SchoolLessons() {
                     <div className="flex items-center gap-2 flex-wrap mt-1">
                       <span className={`${badge}`}>{STAGE_KIND_LABEL[s.kind]}</span>
                       <span className="text-xs text-gray-500">{s.points} pt{s.points === 1 ? '' : 's'}</span>
+                      <span className="badge-gray">{LEVEL_LABEL[s.level]}</span>
                       {s.required_for_certificate && (
                         <span className="badge-amber inline-flex items-center">
                           <GraduationCap className="h-3 w-3 mr-1" aria-hidden="true" />
@@ -168,7 +183,22 @@ export function SchoolLessons() {
                 </div>
 
                 {s.description && (
-                  <p className="text-sm text-gray-700 mb-3">{s.description}</p>
+                  <p className="text-sm text-gray-700 mb-2">{s.description}</p>
+                )}
+
+                {/* The resource is the lesson, for a self-paced track. Rendered
+                    through safeHttpUrl so a non-http(s) value is refused rather
+                    than turned into an href. */}
+                {safeHttpUrl(s.resource_url) && (
+                  <a
+                    href={safeHttpUrl(s.resource_url)!}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-teal-700 hover:underline inline-flex items-center gap-1 mb-3 break-all"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" />
+                    Open the resource
+                  </a>
                 )}
 
                 <div className="mt-auto pt-3 border-t border-warm-200 flex items-center justify-between gap-3">
