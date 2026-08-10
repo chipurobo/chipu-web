@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchBookings, updateBooking } from '../../lib/gql/queries';
 import { useNotifications } from '../../lib/notifications';
 import type { WorkshopStatus } from '../../lib/database.types';
-import { Presentation, MapPin, MonitorPlay, CheckCircle2, X, Clock } from 'lucide-react';
+import { Presentation, MapPin, MonitorPlay, CheckCircle2, X, Clock, Bell } from 'lucide-react';
 import { SkeletonRows } from '../components/Skeletons';
 
 // =============================================================
@@ -39,7 +39,7 @@ const ORDER: WorkshopStatus[] = ['requested', 'scheduled', 'delivered', 'decline
 export function AdminWorkshops() {
   const { notify } = useNotifications();
   const qc = useQueryClient();
-  const [filter, setFilter] = useState<WorkshopStatus | 'all'>('requested');
+  const [filter, setFilter] = useState<WorkshopStatus | 'all'>('all');
   const [scheduling, setScheduling] = useState<string | null>(null);
   const [scheduleDate, setScheduleDate] = useState('');
   const [facilitator, setFacilitator] = useState('');
@@ -48,6 +48,8 @@ export function AdminWorkshops() {
     queryKey: ['bookings'],
     queryFn: fetchBookings,
   });
+
+  const pendingCount = (bookingsQuery.data ?? []).filter((w) => w.status === 'requested').length;
 
   const rows = useMemo(() => {
     const all = bookingsQuery.data ?? [];
@@ -79,7 +81,14 @@ export function AdminWorkshops() {
     <div className="px-4 sm:px-6 lg:px-10 py-8 space-y-6">
       <div>
         <p className="text-xs uppercase tracking-wider text-gray-500 mb-1">Admin</p>
-        <h1>Workshop bookings</h1>
+        <h1>
+          Workshop bookings
+          {pendingCount > 0 && (
+            <span className="badge-amber ml-2 align-middle text-sm">
+              {pendingCount} awaiting you
+            </span>
+          )}
+        </h1>
         <p className="text-sm text-gray-600 mt-1 max-w-2xl">
           Training booked by schools and teachers, delivered in person or online. Schedule a
           booking, then mark it delivered once it has run.
@@ -133,8 +142,16 @@ export function AdminWorkshops() {
               </tr>
             ) : (
               rows.map((w) => (
-                <tr key={w.id}>
-                  <td className="font-medium text-gray-900">{w.school?.name ?? '—'}</td>
+                <tr key={w.id} className={w.status === 'requested' ? 'bg-amber-50' : undefined}>
+                  <td className="font-medium text-gray-900">
+                    {w.status === 'requested' && (
+                      <span className="badge-amber mr-1.5 inline-flex items-center">
+                        <Bell className="h-3 w-3 mr-1" aria-hidden="true" />
+                        New
+                      </span>
+                    )}
+                    {w.school?.name ?? '—'}
+                  </td>
                   <td className="text-sm text-gray-600">
                     {w.lesson?.title ?? (
                       <span className="text-gray-400 italic">
