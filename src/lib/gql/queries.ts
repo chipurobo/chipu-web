@@ -4,6 +4,9 @@ import type {
   CertificateTemplate, CertificateIssuance,
   Lesson, LessonCompletion, Project, ProjectTeamMember,
   ProjectJudgment, ChipuEvent, EventSchoolLink, Profile,
+  ProgrammeSession, SessionAttendance, SessionActivity, YpnStatus,
+  Instrument, InstrumentVersion, InstrumentResponse, InstrumentAnswer,
+  ProgrammeAction,
 } from '../database.types';
 
 export interface StockOnHandRow {
@@ -478,4 +481,227 @@ export async function fetchEventSchoolsWithEvent(): Promise<EventSchoolWithEvent
 // ── Profiles ────────────────────────────────────────────────
 export async function fetchProfiles(): Promise<Profile[]> {
   return unwrap(await supabase.from('profiles').select('*'));
+}
+
+// ── MERL: sessions and attendance ───────────────────────────
+// RLS scopes every read and write below to the caller's school (admins see
+// all), so none of these filter by school defensively in the client.
+
+export interface SessionWithLesson extends ProgrammeSession {
+  lesson: Pick<Lesson, 'id' | 'title'> | null;
+}
+
+export async function fetchSessionsForSchool(schoolId: string): Promise<SessionWithLesson[]> {
+  return unwrap(
+    await supabase.from('sessions').select(`
+      *,
+      lesson:lessons!sessions_lesson_id_fkey(id, title)
+    `)
+      .eq('school_id', schoolId)
+      .order('session_date', { ascending: false }),
+  ) as SessionWithLesson[];
+}
+
+export async function fetchSession(sessionId: string): Promise<SessionWithLesson> {
+  return unwrap(
+    await supabase.from('sessions').select(`
+      *,
+      lesson:lessons!sessions_lesson_id_fkey(id, title)
+    `).eq('id', sessionId).single(),
+  ) as SessionWithLesson;
+}
+
+export async function createSession(
+  input: Partial<ProgrammeSession> & { school_id: string; activity_type: SessionActivity; session_date: string; delivered: YpnStatus },
+): Promise<ProgrammeSession> {
+  return unwrap(await supabase.from('sessions').insert(input).select().single());
+}
+
+export async function updateSession(
+  sessionId: string, patch: Partial<ProgrammeSession>,
+): Promise<ProgrammeSession> {
+  return unwrap(
+    await supabase.from('sessions').update(patch).eq('id', sessionId).select().single(),
+  );
+}
+
+export async function fetchSessionAttendance(sessionId: string): Promise<SessionAttendance[]> {
+  return unwrap(
+    await supabase.from('session_attendance').select('*').eq('session_id', sessionId),
+  );
+}
+
+/** Bulk upsert of only the rows the facilitator actually touched, matching the
+ *  dirty-row pattern the lesson roster already uses — a register filled on a
+ *  weak connection should not resend the whole class. */
+export async function saveSessionAttendance(
+  rows: Array<Pick<SessionAttendance, 'session_id' | 'learner_id' | 'teacher_id' | 'present' | 'support_note'>>,
+): Promise<void> {
+  if (rows.length === 0) return;
+  const learners = rows.filter((r) => r.learner_id);
+  const teachers = rows.filter((r) => r.teacher_id);
+  // Two calls because the unique indexes are partial (one per participant
+  // kind); a single upsert cannot name both conflict targets.
+  if (learners.length) {
+    const res = await supabase.from('session_attendance')
+      .upsert(learners, { onConflict: 'session_id,learner_id' });
+    if (res.error) throw new Error(res.error.message);
+  }
+  if (teachers.length) {
+    const res = await supabase.from('session_attendance')
+      .upsert(teachers, { onConflict: 'session_id,teacher_id' });
+    if (res.error) throw new Error(res.error.message);
+  }
+}
+
+// ── MERL: instruments ───────────────────────────────────────
+
+export async function fetchInstruments(): Promise<Instrument[]> {
+  return unwrap(
+    await supabase.from('instruments').select('*').eq('is_active', true).order('title'),
+  );
+}
+
+/** The active version of an instrument with its sections and questions, ready
+ *  to render. Ordering is explicit so the form matches the printed document. */
+export async function fetchActiveInstrumentVersion(slug: string): Promise<InstrumentVersion> {
+  return unwrap(
+    await supabase.from('instrument_versions').select(`
+      *,
+      instruments!inner(*),
+      instrument_sections(
+        *,
+        instrument_questions(*)
+      )
+    `)
+      .eq('instruments.slug', slug)
+      .eq('status', 'active')
+      .order('position', { referencedTable: 'instrument_sections' })
+      .order('position', { referencedTable: 'instrument_sections.instrument_questions' })
+      .single(),
+  ) as InstrumentVersion;
+}
+
+export interface ResponseWithMeta extends InstrumentResponse {
+  version: (InstrumentVersion & { instruments: Instrument | null }) | null;
+}
+
+export async function fetchResponsesForSchool(schoolId: string): Promise<ResponseWithMeta[]> {
+  return unwrap(
+    await supabase.from('instrument_responses').select(`
+      *,
+      version:instrument_versions!instrument_responses_version_id_fkey(
+        *, instruments!instrument_versions_instrument_id_fkey(*)
+      )
+    `)
+      .eq('school_id', schoolId)
+      .order('collected_at', { ascending: false }),
+  ) as ResponseWithMeta[];
+}
+
+export async function createResponse(
+  input: Partial<InstrumentResponse> & { version_id: string },
+): Promise<InstrumentResponse> {
+  return unwrap(await supabase.from('instrument_responses').insert(input).select().single());
+}
+
+export async function fetchAnswers(responseId: string): Promise<InstrumentAnswer[]> {
+  return unwrap(
+    await supabase.from('instrument_answers').select('*').eq('response_id', responseId),
+  );
+}
+
+export async function saveAnswers(
+  rows: Array<Omit<InstrumentAnswer, 'id'>>,
+): Promise<void> {
+  if (rows.length === 0) return;
+  const res = await supabase.from('instrument_answers')
+    .upsert(rows, { onConflict: 'response_id,question_id' });
+  if (res.error) throw new Error(res.error.message);
+}
+
+export async function submitResponse(responseId: string): Promise<void> {
+  const res = await supabase.from('instrument_responses')
+    .update({ status: 'submitted', submitted_at: new Date().toISOString() })
+    .eq('id', responseId);
+  if (res.error) throw new Error(res.error.message);
+}
+
+// ── MERL: programme actions ─────────────────────────────────
+
+export async function fetchActionsForSchool(schoolId: string): Promise<ProgrammeAction[]> {
+  return unwrap(
+    await supabase.from('programme_actions').select('*')
+      .eq('school_id', schoolId)
+      .order('status')
+      .order('due_date', { nullsFirst: false }),
+  );
+}
+
+export async function createAction(
+  input: Partial<ProgrammeAction> & { school_id: string; description: string },
+): Promise<ProgrammeAction> {
+  return unwrap(await supabase.from('programme_actions').insert(input).select().single());
+}
+
+export async function updateAction(
+  actionId: string, patch: Partial<ProgrammeAction>,
+): Promise<ProgrammeAction> {
+  return unwrap(
+    await supabase.from('programme_actions').update(patch).eq('id', actionId).select().single(),
+  );
+}
+
+/** Attendance rows for a batch of sessions, so a session list can show
+ *  present/absent counts without one query per row. */
+export async function fetchAttendanceForSessions(sessionIds: string[]): Promise<SessionAttendance[]> {
+  if (sessionIds.length === 0) return [];
+  return unwrap(
+    await supabase.from('session_attendance').select('*').in('session_id', sessionIds),
+  );
+}
+
+/** School leads at a school — the teachers who can appear on a register.
+ *  Admin profiles are excluded: they are staff, not programme participants. */
+export async function fetchTeachersAtSchool(schoolId: string): Promise<Profile[]> {
+  return unwrap(
+    await supabase.from('profiles').select('*')
+      .eq('school_id', schoolId)
+      .eq('role', 'school_lead')
+      .order('full_name'),
+  );
+}
+
+/** A single response with the frozen version it was collected against —
+ *  sections and questions come from that version, never from the instrument's
+ *  current wording, so historical answers keep their original meaning. */
+export async function fetchResponseWithForm(responseId: string): Promise<ResponseWithForm> {
+  return unwrap(
+    await supabase.from('instrument_responses').select(`
+      *,
+      version:instrument_versions!instrument_responses_version_id_fkey(
+        *,
+        instruments!instrument_versions_instrument_id_fkey(*),
+        instrument_sections(*, instrument_questions(*))
+      )
+    `)
+      .eq('id', responseId)
+      .order('position', { referencedTable: 'version.instrument_sections' })
+      .order('position', { referencedTable: 'version.instrument_sections.instrument_questions' })
+      .single(),
+  ) as ResponseWithForm;
+}
+
+export interface ResponseWithForm extends InstrumentResponse {
+  version: (InstrumentVersion & {
+    instruments: Instrument | null;
+    instrument_sections: Array<{
+      id: string; position: number; code: string | null; title: string;
+      description: string | null; staff_only: boolean;
+      instrument_questions: Array<{
+        id: string; position: number; code: string | null; prompt: string;
+        help_text: string | null; qtype: string; options: unknown; required: boolean;
+      }>;
+    }>;
+  }) | null;
 }

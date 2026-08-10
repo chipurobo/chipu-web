@@ -188,6 +188,9 @@ export interface Profile {
   phone: string | null;
   role: UserRole;
   school_id: string | null;
+  // Non-identifying code required by the MERL Plan for analysis and shared
+  // reports. Issued to school leads only; null on admin accounts.
+  teacher_code: string | null;
   created_at: string;
 }
 
@@ -198,6 +201,9 @@ export interface ClubMember {
   id: string;
   school_id: string;
   full_name: string;
+  // Non-identifying analysis code. Use this, never full_name, in exports and
+  // anything shared outside the school that owns the roster.
+  learner_code: string | null;
   grade: string | null;
   is_active: boolean;
   in_club: boolean;
@@ -269,4 +275,186 @@ export interface RegisterSchoolWithClubArgs {
   p_full_name: string;
   p_phone: string;
   p_contact_email?: string | null;
+}
+
+// ============================================================================
+// MERL — sessions, attendance, instruments and actions
+// (migrations 20260810000000 – 20260810000002)
+// ============================================================================
+
+export type SessionActivity =
+  | 'weekly_code_club'
+  | 'teacher_support'
+  | 'bootcamp'
+  | 'hackathon'
+  | 'webinar'
+  | 'other';
+
+/** "Yes / Partly / No" — the recurring three-state answer in the MERL forms. */
+export type YpnStatus = 'yes' | 'partly' | 'no';
+
+// One delivered (or attempted) activity. Carries the weekly monitoring form's
+// narrative fields; `delivered` is the signal that separates "taught it" from
+// "could not teach it", which used to be indistinguishable.
+export interface ProgrammeSession {
+  id: string;
+  school_id: string;
+  activity_type: SessionActivity;
+  activity_other: string | null;
+  session_date: string;
+  week_ending: string | null;
+  lesson_id: string | null;
+  facilitators: string | null;
+  delivered: YpnStatus;
+  delivery_note: string | null;
+  focus: string | null;
+  learner_activity: string | null;
+  evidence_observed: string | null;
+  inclusion_supports: string | null;
+  resources_adequate: YpnStatus | null;
+  resources_note: string | null;
+  notable_pattern: string | null;
+  new_participants: number | null;
+  recorded_by: string | null;
+  recorded_at: string;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  created_at: string;
+}
+
+// Exactly one of learner_id / teacher_id is set — enforced by a check
+// constraint, so teachers attending their own training are recordable.
+export interface SessionAttendance {
+  id: string;
+  session_id: string;
+  learner_id: string | null;
+  teacher_id: string | null;
+  present: boolean;
+  support_note: string | null;
+  created_at: string;
+}
+
+export type InstrumentSubject = 'teacher' | 'learner' | 'school' | 'participant';
+export type InstrumentRound = 'baseline' | 'endline' | 'adhoc';
+export type ResponseStatus = 'draft' | 'submitted';
+export type AssessorMode = 'self' | 'assessor';
+export type QuestionType =
+  | 'scale'
+  | 'single_select'
+  | 'multi_select'
+  | 'short_text'
+  | 'long_text'
+  | 'boolean'
+  | 'integer'
+  | 'date';
+
+/** One option on a scale/select question. `score` is null for opt-outs
+ *  ("Not sure", "Not applicable") so they stay out of any mean. */
+export interface QuestionOption {
+  value: string;
+  label: string;
+  score?: number | null;
+}
+
+export interface Instrument {
+  id: string;
+  slug: string;
+  title: string;
+  subtitle: string | null;
+  subject_type: InstrumentSubject;
+  description: string | null;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface InstrumentQuestion {
+  id: string;
+  section_id: string;
+  position: number;
+  code: string | null;
+  prompt: string;
+  help_text: string | null;
+  qtype: QuestionType;
+  options: QuestionOption[] | null;
+  required: boolean;
+}
+
+export interface InstrumentSection {
+  id: string;
+  version_id: string;
+  position: number;
+  code: string | null;
+  title: string;
+  description: string | null;
+  // "Completed by programme team" — never rendered to a self-administering
+  // respondent.
+  staff_only: boolean;
+  instrument_questions?: InstrumentQuestion[];
+}
+
+export interface InstrumentVersion {
+  id: string;
+  instrument_id: string;
+  version: number;
+  status: 'draft' | 'active' | 'retired';
+  notes: string | null;
+  published_at: string | null;
+  instruments?: Instrument;
+  instrument_sections?: InstrumentSection[];
+}
+
+export interface InstrumentResponse {
+  id: string;
+  version_id: string;
+  school_id: string | null;
+  learner_id: string | null;
+  teacher_id: string | null;
+  is_anonymous: boolean;
+  round: InstrumentRound;
+  matched_response_id: string | null;
+  consent_confirmed: boolean;
+  consent_note: string | null;
+  assessor_mode: AssessorMode;
+  status: ResponseStatus;
+  collected_at: string;
+  collected_by: string | null;
+  submitted_at: string | null;
+  created_at: string;
+}
+
+export interface InstrumentAnswer {
+  id: string;
+  response_id: string;
+  question_id: string;
+  value_number: number | null;
+  value_text: string | null;
+  value_bool: boolean | null;
+  value_options: string[] | null;
+}
+
+export type ActionStatus = 'open' | 'closed';
+export type ActionSource =
+  | 'weekly_session'
+  | 'school_baseline'
+  | 'school_visit'
+  | 'other';
+
+// The action/owner/due-date/status tracker that appears three times in the
+// paper toolkit, modelled once.
+export interface ProgrammeAction {
+  id: string;
+  school_id: string;
+  source: ActionSource;
+  session_id: string | null;
+  response_id: string | null;
+  description: string;
+  owner_profile_id: string | null;
+  owner_name: string | null;
+  due_date: string | null;
+  status: ActionStatus;
+  closed_at: string | null;
+  closed_note: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
 }

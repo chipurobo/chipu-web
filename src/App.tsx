@@ -54,6 +54,11 @@ const SchoolProduction      = lazy(() => import('./dashboard/school/Production')
 const SchoolLessons         = lazy(() => import('./dashboard/school/Lessons').then((m) => ({ default: m.SchoolLessons })));
 const SchoolLessonStage     = lazy(() => import('./dashboard/school/LessonStage').then((m) => ({ default: m.SchoolLessonStage })));
 const SchoolProject         = lazy(() => import('./dashboard/school/Project').then((m) => ({ default: m.SchoolProject })));
+const SchoolSessions        = lazy(() => import('./dashboard/school/Sessions').then((m) => ({ default: m.SchoolSessions })));
+const SessionRegister       = lazy(() => import('./dashboard/school/SessionRegister').then((m) => ({ default: m.SessionRegister })));
+const SchoolAssessments     = lazy(() => import('./dashboard/school/Assessments').then((m) => ({ default: m.SchoolAssessments })));
+const InstrumentForm        = lazy(() => import('./dashboard/school/InstrumentForm').then((m) => ({ default: m.InstrumentForm })));
+const SchoolActions         = lazy(() => import('./dashboard/school/Actions').then((m) => ({ default: m.SchoolActions })));
 
 // === Accessible Suspense fallback ===
 // Renders an aria-live "Loading" message so screen-reader users hear
@@ -161,6 +166,12 @@ function App() {
               <Route path="school/lessons" element={<SchoolLessons />} />
               <Route path="school/lessons/:lessonId" element={<SchoolLessonStage />} />
               <Route path="school/project" element={<SchoolProject />} />
+              {/* MERL — sessions, registers, assessments and actions */}
+              <Route path="school/sessions" element={<SchoolSessions />} />
+              <Route path="school/sessions/:sessionId" element={<SessionRegister />} />
+              <Route path="school/assessments" element={<SchoolAssessments />} />
+              <Route path="school/assessments/:responseId" element={<InstrumentForm />} />
+              <Route path="school/actions" element={<SchoolActions />} />
             </Route>
 
             {/* === Public marketing site ===
