@@ -30,6 +30,7 @@ const Podcast               = lazy(() => import('./pages/Podcast'));
 // === Dashboard (Supabase-backed) — auth + layout eager so the gate is fast,
 // every screen inside the gate lazy. ===
 import { AuthProvider } from './lib/auth';
+import { trackPageView } from './lib/analytics';
 import { RequireAuth } from './dashboard/RequireAuth';
 import { DashboardLayout } from './dashboard/DashboardLayout';
 
@@ -53,6 +54,11 @@ const SchoolProduction      = lazy(() => import('./dashboard/school/Production')
 const SchoolLessons         = lazy(() => import('./dashboard/school/Lessons').then((m) => ({ default: m.SchoolLessons })));
 const SchoolLessonStage     = lazy(() => import('./dashboard/school/LessonStage').then((m) => ({ default: m.SchoolLessonStage })));
 const SchoolProject         = lazy(() => import('./dashboard/school/Project').then((m) => ({ default: m.SchoolProject })));
+const SchoolSessions        = lazy(() => import('./dashboard/school/Sessions').then((m) => ({ default: m.SchoolSessions })));
+const SessionRegister       = lazy(() => import('./dashboard/school/SessionRegister').then((m) => ({ default: m.SessionRegister })));
+const SchoolAssessments     = lazy(() => import('./dashboard/school/Assessments').then((m) => ({ default: m.SchoolAssessments })));
+const InstrumentForm        = lazy(() => import('./dashboard/school/InstrumentForm').then((m) => ({ default: m.InstrumentForm })));
+const SchoolActions         = lazy(() => import('./dashboard/school/Actions').then((m) => ({ default: m.SchoolActions })));
 
 // === Accessible Suspense fallback ===
 // Renders an aria-live "Loading" message so screen-reader users hear
@@ -73,6 +79,21 @@ function RouteLoading() {
       </span>
     </div>
   );
+}
+
+/**
+ * Sends a GA4 page_view on every navigation, covering both the marketing site
+ * and the dashboard. Rendered after <AuthProvider> so its effect runs after
+ * PublicLayout's document.title effect and reports the settled title rather
+ * than the previous route's. See lib/analytics.ts for why gtag's own
+ * page_view is switched off.
+ */
+function RouteAnalytics() {
+  const location = useLocation();
+  useEffect(() => {
+    trackPageView(location.pathname, location.search);
+  }, [location.pathname, location.search]);
+  return null;
 }
 
 function App() {
@@ -145,6 +166,12 @@ function App() {
               <Route path="school/lessons" element={<SchoolLessons />} />
               <Route path="school/lessons/:lessonId" element={<SchoolLessonStage />} />
               <Route path="school/project" element={<SchoolProject />} />
+              {/* MERL — sessions, registers, assessments and actions */}
+              <Route path="school/sessions" element={<SchoolSessions />} />
+              <Route path="school/sessions/:sessionId" element={<SessionRegister />} />
+              <Route path="school/assessments" element={<SchoolAssessments />} />
+              <Route path="school/assessments/:responseId" element={<InstrumentForm />} />
+              <Route path="school/actions" element={<SchoolActions />} />
             </Route>
 
             {/* === Public marketing site ===
@@ -185,6 +212,7 @@ function App() {
           </Routes>
         </Suspense>
       </AuthProvider>
+      <RouteAnalytics />
     </Router>
   );
 }
