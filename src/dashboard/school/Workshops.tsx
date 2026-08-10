@@ -112,6 +112,13 @@ export function SchoolWorkshops() {
 
       {catalogueQuery.isPending ? (
         <p className="text-sm text-gray-500">Loading workshops…</p>
+      ) : catalogueQuery.error ? (
+        /* A failed query used to fall through to `data ?? []` and render as
+           "none open for booking", which is how a broken embed reached
+           production looking like an empty catalogue. Say what went wrong. */
+        <div role="alert" className="card p-4 text-sm text-red-700 bg-red-50 border border-red-200">
+          Could not load the workshops: {(catalogueQuery.error as Error).message}
+        </div>
       ) : catalogue.length === 0 ? (
         <div className="card p-8 text-center text-sm text-gray-600">
           No workshops are open for booking yet.
