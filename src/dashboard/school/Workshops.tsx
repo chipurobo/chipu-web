@@ -6,7 +6,7 @@ import {
 import { useAuth } from '../../lib/auth';
 import { useNotifications } from '../../lib/notifications';
 import type { WorkshopMode, WorkshopStatus } from '../../lib/database.types';
-import { Presentation, MapPin, MonitorPlay, Clock, BookOpen } from 'lucide-react';
+import { Presentation, MapPin, MonitorPlay, Clock, BookOpen, ExternalLink } from 'lucide-react';
 import { SkeletonRows } from '../components/Skeletons';
 import { safeHttpUrl } from '../../lib/safeUrl';
 import { LevelFilter } from '../components/LevelFilter';
