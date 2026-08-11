@@ -170,7 +170,7 @@ export function InstrumentForm() {
           )}
 
           <div className="mt-4 space-y-5">
-            {section.instrument_questions
+            {(section.instrument_questions ?? [])
               .slice()
               .sort((a, b) => a.position - b.position)
               .map((q) => (

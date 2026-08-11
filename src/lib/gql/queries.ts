@@ -933,7 +933,7 @@ export async function fetchRecentCompletions(limit = 25): Promise<CompletionFeed
       .eq('passed', true)
       .order('recorded_at', { ascending: false })
       .limit(limit),
-  ) as CompletionFeedRow[];
+  ) as unknown as CompletionFeedRow[];
 }
 
 /** Count of bookings still awaiting a decision, for the sidebar badge.
