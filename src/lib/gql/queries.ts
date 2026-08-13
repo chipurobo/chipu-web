@@ -7,7 +7,7 @@ import type {
   ProgrammeSession, SessionAttendance, SessionActivity, YpnStatus,
   Instrument, InstrumentVersion, InstrumentResponse, InstrumentAnswer,
   ProgrammeAction, Workshop, WorkshopBooking, WorkshopMode, StageKind,
-  Competition, CompetitionSchool,
+  Competition, CompetitionSchool, AdaptationType, SessionAdaptation,
 } from '../database.types';
 
 export interface StockOnHandRow {
@@ -947,4 +947,48 @@ export async function fetchPendingBookingCount(): Promise<number> {
     .eq('status', 'requested');
   if (error) throw new Error(error.message);
   return count ?? 0;
+}
+
+// ── Adaptations ─────────────────────────────────────────────
+// The vocabulary is readable by every signed-in user (a teacher must see the
+// options to record them); only admins curate it.
+
+export async function fetchAdaptationTypes(): Promise<AdaptationType[]> {
+  return unwrap(
+    await supabase.from('adaptation_types').select('*')
+      .eq('is_active', true).order('position'),
+  );
+}
+
+export async function fetchSessionAdaptations(sessionId: string): Promise<SessionAdaptation[]> {
+  return unwrap(
+    await supabase.from('session_adaptations').select('*').eq('session_id', sessionId),
+  );
+}
+
+/** Replace the adaptations recorded against a session. Deleting what was
+ *  removed matters: an adaptation un-ticked must stop being counted, or the
+ *  "adapted delivery" figure only ever grows. */
+export async function saveSessionAdaptations(
+  sessionId: string, codes: string[],
+): Promise<void> {
+  const del = await supabase.from('session_adaptations')
+    .delete().eq('session_id', sessionId)
+    .not('adaptation_code', 'in', `(${codes.length ? codes.join(',') : 'null'})`);
+  if (del.error) throw new Error(del.error.message);
+  if (codes.length === 0) return;
+  const ins = await supabase.from('session_adaptations')
+    .upsert(codes.map((c) => ({ session_id: sessionId, adaptation_code: c })),
+            { onConflict: 'session_id,adaptation_code' });
+  if (ins.error) throw new Error(ins.error.message);
+}
+
+/** Adaptations across a school's sessions, for the "adapted delivery" count. */
+export async function fetchAdaptationsForSessions(
+  sessionIds: string[],
+): Promise<SessionAdaptation[]> {
+  if (sessionIds.length === 0) return [];
+  return unwrap(
+    await supabase.from('session_adaptations').select('*').in('session_id', sessionIds),
+  );
 }
