@@ -5,7 +5,10 @@ import {
   fetchSessionsForSchool,
   fetchAttendanceForSessions,
   fetchLessonsForSchool,
+  fetchAdaptationTypes,
+  fetchAdaptationsForSessions,
   createSession,
+  saveSessionAdaptations,
 } from '../../lib/gql/queries';
 import { useAuth } from '../../lib/auth';
 import { useNotifications } from '../../lib/notifications';
@@ -73,6 +76,15 @@ export function SchoolSessions() {
   const [inclusionSupports, setInclusionSupports] = useState('');
   const [resourcesAdequate, setResourcesAdequate] = useState<YpnStatus | ''>('');
   const [notablePattern, setNotablePattern] = useState('');
+  // Which adaptations the session used. The ToC's central Activity is adapting
+  // delivery for HI and VI learners; recording it as codes rather than prose is
+  // what lets "adapted delivery" be counted.
+  const [adaptations, setAdaptations] = useState<string[]>([]);
+
+  const adaptationsQuery = useQuery({
+    queryKey: ['adaptation-types'],
+    queryFn: fetchAdaptationTypes,
+  });
 
   const sessionsQuery = useQuery({
     queryKey: ['sessions', schoolId],
@@ -90,6 +102,14 @@ export function SchoolSessions() {
     () => (sessionsQuery.data ?? []).map((s) => s.id),
     [sessionsQuery.data],
   );
+
+  // Adaptations across the listed sessions, so the count is visible without
+  // opening each one — this is the ToC Output the dashboard could not evidence.
+  const adaptationRowsQuery = useQuery({
+    queryKey: ['session-adaptations', 'batch', sessionIds],
+    queryFn: () => fetchAdaptationsForSessions(sessionIds),
+    enabled: sessionIds.length > 0,
+  });
 
   const attendanceQuery = useQuery({
     queryKey: ['session-attendance', 'batch', sessionIds],
@@ -110,6 +130,16 @@ export function SchoolSessions() {
     return map;
   }, [attendanceQuery.data]);
 
+  const adaptationsBySession = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const r of adaptationRowsQuery.data ?? []) {
+      m.set(r.session_id, (m.get(r.session_id) ?? 0) + 1);
+    }
+    return m;
+  }, [adaptationRowsQuery.data]);
+
+  const adaptedSessions = adaptationsBySession.size;
+
   function resetForm() {
     setActivityType('weekly_code_club');
     setSessionDate(TODAY());
@@ -123,6 +153,7 @@ export function SchoolSessions() {
     setInclusionSupports('');
     setResourcesAdequate('');
     setNotablePattern('');
+    setAdaptations([]);
   }
 
   const saveMutation = useMutation({
@@ -144,6 +175,10 @@ export function SchoolSessions() {
         resources_adequate: resourcesAdequate || null,
         notable_pattern: notablePattern.trim() || null,
         recorded_by: profile?.id ?? null,
+      }).then(async (created) => {
+        // Written after the session exists, because the join hangs off its id.
+        if (adaptations.length) await saveSessionAdaptations(created.id, adaptations);
+        return created;
       }),
     onSuccess: (created) => {
       queryClient.invalidateQueries({ queryKey: ['sessions', schoolId] });
@@ -170,6 +205,11 @@ export function SchoolSessions() {
           <p className="text-sm text-gray-600 mt-1">
             One record per club session or activity — including the ones that could not go ahead.
           </p>
+          {sessions.length > 0 && (
+            <p className="text-xs text-gray-500 mt-1">
+              {adaptedSessions} of {sessions.length} recorded an adaptation.
+            </p>
+          )}
         </div>
         <button className="btn-primary" onClick={() => setShowForm((v) => !v)}>
           <Plus className="h-4 w-4 mr-1.5" aria-hidden="true" />
@@ -297,6 +337,32 @@ export function SchoolSessions() {
               </select>
             </div>
 
+            <div className="sm:col-span-2">
+              <span className="field-label">Adaptations used</span>
+              <p className="text-xs text-gray-500 mb-2">
+                How delivery was adapted. This records what the programme did — never a
+                learner's condition.
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {(adaptationsQuery.data ?? []).map((a) => {
+                  const on = adaptations.includes(a.code);
+                  return (
+                    <button
+                      key={a.code}
+                      type="button"
+                      aria-pressed={on}
+                      title={a.description ?? undefined}
+                      className={on ? 'badge-teal' : 'badge-gray'}
+                      onClick={() => setAdaptations((prev) =>
+                        on ? prev.filter((c) => c !== a.code) : [...prev, a.code])}
+                    >
+                      {a.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             <div>
               <label className="field-label" htmlFor="pattern">Notable attendance pattern or barrier</label>
               <input id="pattern" className="field-input"
@@ -330,15 +396,16 @@ export function SchoolSessions() {
               <th>Delivered</th>
               <th>Lesson</th>
               <th>Register</th>
+              <th>Adaptations</th>
               <th />
             </tr>
           </thead>
           <tbody>
             {sessionsQuery.isPending ? (
-              <SkeletonRows rows={4} cols={6} label="Loading sessions" />
+              <SkeletonRows rows={4} cols={7} label="Loading sessions" />
             ) : sessions.length === 0 ? (
               <tr>
-                <td colSpan={6} className="text-sm text-gray-500 py-6 text-center">
+                <td colSpan={7} className="text-sm text-gray-500 py-6 text-center">
                   No sessions recorded yet.
                 </td>
               </tr>
@@ -359,6 +426,11 @@ export function SchoolSessions() {
                     <td className="text-sm text-gray-600">{s.lesson?.title ?? '—'}</td>
                     <td className="text-sm text-gray-600">
                       {c ? `${c.present} of ${c.total} present` : 'not taken'}
+                    </td>
+                    <td className="text-sm text-gray-600">
+                      {adaptationsBySession.get(s.id)
+                        ? <span className="badge-teal">{adaptationsBySession.get(s.id)} used</span>
+                        : <span className="text-gray-400">—</span>}
                     </td>
                     <td className="text-right">
                       <Link className="btn-secondary !py-1 !text-xs" to={`/dashboard/school/sessions/${s.id}`}>

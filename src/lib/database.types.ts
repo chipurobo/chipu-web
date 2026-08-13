@@ -564,3 +564,29 @@ export interface CompetitionSchool {
   entered_by: string | null;
   withdrawn_at: string | null;
 }
+
+// ============================================================================
+// Adaptations (migration 20260810000012)
+//
+// A controlled vocabulary for HOW delivery was adapted — the ToC's core
+// Activity ("adapt and label robotics kits") and a named Output ("adapted kits
+// in use"). It describes the adaptation, never the learner's condition, which
+// is the line 03_MERL_Plan §4 draws.
+// ============================================================================
+
+export interface AdaptationType {
+  code: string;
+  label: string;
+  description: string | null;
+  /** Which impairment it primarily serves; 'any' is not specific to one. */
+  serves: 'hearing' | 'visual' | 'any';
+  position: number;
+  is_active: boolean;
+}
+
+export interface SessionAdaptation {
+  session_id: string;
+  adaptation_code: string;
+  learner_count: number | null;
+  created_at: string;
+}
