@@ -21,7 +21,8 @@ import { safeHttpUrl } from '../../lib/safeUrl';
 // /dashboard/school/lessons/:lessonId
 //
 // Roster for a single activity. Teacher ticks who passed + optionally rates
-// their confidence 1-5. Local edits are tracked in a Map and saved as a
+// their confidence 1-5 and how independently they worked. Local edits are
+// tracked in a Map and saved as a
 // single bulk upsert against lesson_completions.
 // =============================================================
 
@@ -55,6 +56,7 @@ const STAGE_KIND_BADGE: Record<StageKind, string> = {
 interface RowState {
   passed:      boolean;
   confidence:  number | null;
+  independence: number | null;
   evidenceUrl: string;
 }
 
@@ -124,6 +126,7 @@ export function SchoolLessonStage() {
     return {
       passed:      existing?.passed ?? false,
       confidence:  existing?.confidence ?? null,
+      independence: existing?.independence ?? null,
       evidenceUrl: existing?.evidence_url ?? '',
     };
   };
@@ -135,6 +138,8 @@ export function SchoolLessonStage() {
       const current = next.get(studentId) ?? {
         passed:      existing?.passed ?? false,
         confidence:  existing?.confidence ?? null,
+        independence: existing?.independence ?? null,
+      independence: existing?.independence ?? null,
         evidenceUrl: existing?.evidence_url ?? '',
       };
       next.set(studentId, { ...current, ...patch });
@@ -149,8 +154,9 @@ export function SchoolLessonStage() {
       const ex = existingByStudent.get(studentId);
       const exPassed = ex?.passed ?? false;
       const exConf   = ex?.confidence ?? null;
+      const exIndep  = ex?.independence ?? null;
       const exUrl    = ex?.evidence_url ?? '';
-      if (v.passed !== exPassed || v.confidence !== exConf || v.evidenceUrl.trim() !== exUrl) {
+      if (v.passed !== exPassed || v.confidence !== exConf || v.independence !== exIndep || v.evidenceUrl.trim() !== exUrl) {
         out.push(studentId);
       }
     });
@@ -175,6 +181,7 @@ export function SchoolLessonStage() {
           student_id:   studentId,
           passed:       r.passed,
           confidence:   r.confidence,
+          independence: r.independence,
           evidence_url: typed || null,
           recorded_by:  profile?.id ?? null,
           recorded_at:  new Date().toISOString(),
@@ -312,6 +319,13 @@ export function SchoolLessonStage() {
                     />
                   </td>
                   <td>
+                    <IndependenceScale
+                      value={state.independence}
+                      onChange={(v) => setRow(m.id, { independence: v })}
+                      studentName={m.full_name}
+                    />
+                  </td>
+                  <td>
                     <EvidenceUrlField
                       value={state.evidenceUrl}
                       onChange={(v) => setRow(m.id, { evidenceUrl: v })}
@@ -347,6 +361,50 @@ export function SchoolLessonStage() {
           {saveMutation.isPending ? 'Saving…' : 'Save changes'}
         </button>
       </div>
+    </div>
+  );
+}
+
+// How much support the learner needed — the ToC outcome is that they build,
+// program and debug with little or no sighted assistance. Deliberately worded
+// as support needed rather than ability, so it records the delivery rather than
+// judging the child, and deliberately separate from confidence: a learner can
+// feel confident while being walked through every step.
+const INDEPENDENCE_LABEL: Record<number, string> = {
+  1: 'Fully supported throughout',
+  2: 'Supported most of the way',
+  3: 'Some prompting',
+  4: 'Mostly unaided',
+  5: 'Worked unaided',
+};
+
+function IndependenceScale({
+  value, onChange, studentName,
+}: {
+  value: number | null;
+  onChange: (v: number | null) => void;
+  studentName: string;
+}) {
+  return (
+    <div className="inline-flex items-center gap-0.5" role="group"
+         aria-label={`Independence for ${studentName}`}>
+      {[1, 2, 3, 4, 5].map((n) => {
+        const on = value !== null && n <= value;
+        return (
+          <button
+            key={n}
+            type="button"
+            title={INDEPENDENCE_LABEL[n]}
+            aria-label={`${INDEPENDENCE_LABEL[n]} for ${studentName}`}
+            aria-pressed={value === n}
+            onClick={() => onChange(value === n ? null : n)}
+            className={`h-5 w-2.5 rounded-sm ${on ? 'bg-teal-500' : 'bg-gray-200'} hover:opacity-80`}
+          />
+        );
+      })}
+      <span className="text-xs text-gray-500 ml-1.5 whitespace-nowrap">
+        {value ? INDEPENDENCE_LABEL[value] : 'not assessed'}
+      </span>
     </div>
   );
 }

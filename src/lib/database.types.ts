@@ -132,7 +132,12 @@ export interface LessonCompletion {
   id: string;
   lesson_id: string;
   student_id: string;
-  confidence: number | null;   // 1–5
+  confidence: number | null;   // 1–5 — how the learner FELT
+  /** How much support the learner needed, 1–5: 1 = fully supported,
+   *  5 = worked unaided. Evidences the ToC outcome that learners build,
+   *  program and debug with little or no sighted assistance. Distinct from
+   *  confidence — the two move independently. Null means not assessed. */
+  independence: number | null;
   passed: boolean;
   recorded_by: string | null;
   recorded_at: string;
