@@ -139,12 +139,12 @@ export function AdminLessons() {
                 placeholder="https://projects.raspberrypi.org/en/projects/…" />
             </div>
             <div>
-              <label className="field-label" htmlFor="l-level">School level</label>
+              <label className="field-label" htmlFor="l-level">Delivery track</label>
               <select id="l-level" className="field-input" value={newLevel}
                 onChange={(e) => setNewLevel(e.target.value as LessonLevel)}>
-                <option value="both">Primary &amp; secondary</option>
-                <option value="primary">Primary</option>
-                <option value="secondary">Secondary</option>
+                <option value="both">Both tracks</option>
+                <option value="primary">Primary track</option>
+                <option value="secondary">Secondary track</option>
               </select>
             </div>
             <div>
@@ -186,7 +186,7 @@ export function AdminLessons() {
               <th>#</th>
               <th>Lesson</th>
               <th>Kind</th>
-              <th>Level</th>
+              <th>Track</th>
               <th>Resource</th>
               <th>Points</th>
               <th>Status</th>

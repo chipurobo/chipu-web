@@ -11,7 +11,7 @@ export function LevelFilter({
 }) {
   const options: LevelChoice[] = ['all', 'primary', 'secondary'];
   return (
-    <div className="flex flex-wrap gap-1.5" role="group" aria-label="Filter by school level">
+    <div className="flex flex-wrap gap-1.5" role="group" aria-label="Filter by delivery track">
       {options.map((o) => (
         <button
           key={o}
