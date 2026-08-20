@@ -139,7 +139,6 @@ export function SchoolLessonStage() {
         passed:      existing?.passed ?? false,
         confidence:  existing?.confidence ?? null,
         independence: existing?.independence ?? null,
-      independence: existing?.independence ?? null,
         evidenceUrl: existing?.evidence_url ?? '',
       };
       next.set(studentId, { ...current, ...patch });
