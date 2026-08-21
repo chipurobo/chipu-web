@@ -59,48 +59,47 @@ const ACTIVITIES = [
   },
 ];
 
-// === The work done with each partner ===
+// === Partners ===
 //
-// Sourced from the partner table in README.md rather than invented. Where a
-// partner has reach figures of its own they are given; where the contribution
-// is capability rather than headcount, that is said plainly instead of
-// reaching for a number.
+// Roles are taken verbatim from the partner table in README.md. Reach figures
+// are only given where the repo already carried them — no narrative has been
+// written around a partner that the repo does not state.
 
 const PARTNERSHIPS = [
   {
     name: 'Raspberry Pi Foundation',
     role: 'Code Clubs, hardware support, computing education framework',
-    detail: '100 schools across all 47 counties · 10,000 students · 200 teachers · 15 inclusive schools. The self-paced project library the competition curriculum draws on comes from the Foundation.',
+    detail: '100 schools across all 47 counties \u00b7 10,000 students \u00b7 200 teachers \u00b7 15 inclusive schools',
   },
   {
     name: 'Microsoft ADC',
-    role: 'Technical enablement, AI resources, mentorship',
-    detail: 'Hosts the intensive bootcamp stage at the Africa Development Centre in Westlands, with AI curriculum and mentorship across every cohort.',
+    role: 'Technical enablement, AI learning resources, mentorship',
+    detail: null,
   },
   {
     name: 'CEMASTEA',
     role: 'KSEF alignment, teacher training, curriculum validation',
-    detail: 'Hosts the national showcase where entries are judged, validates the certificates learners earn, and co-runs quarterly teacher training.',
+    detail: null,
   },
   {
     name: 'eKitabu',
-    role: 'LMS integration, inclusive content distribution',
-    detail: 'Carries inclusive learning content to schools already using the platform, so adapted material reaches learners beyond our own network.',
+    role: 'LMS platform integration, inclusive learning content distribution',
+    detail: null,
   },
   {
     name: 'Young Scientists Kenya (YSK)',
     role: 'Outreach network',
-    detail: 'The network through which schools first meet the competition — the outreach stage runs on it.',
+    detail: null,
   },
   {
-    name: 'NIBF — Nairobi International Book Fair',
+    name: 'NIBF \u2014 Nairobi International Book Fair',
     role: 'Public demonstration',
-    detail: '6 schools · 54 students reached via STEM and Raspberry Pi demonstrations.',
+    detail: '6 schools \u00b7 54 students reached via STEM and Raspberry Pi demonstrations.',
   },
   {
-    name: 'ZeeTech Foundation — Nigeria',
+    name: 'ZeeTech Foundation \u2014 Nigeria',
     role: 'Pan-African expansion',
-    detail: 'Recycling machines and kits shipped to Nigeria, taking the PET-to-filament model beyond Kenya.',
+    detail: 'Machines and kits shipped to Nigeria.',
   },
 ];
 
@@ -283,8 +282,8 @@ const Impact = () => {
             {PARTNERSHIPS.map((p) => (
               <div key={p.name} className="card p-5">
                 <h3 className="text-base font-semibold text-gray-900 m-0 mb-1">{p.name}</h3>
-                <p className="text-xs font-medium text-teal-700 m-0 mb-2">{p.role}</p>
-                <p className="text-sm text-gray-600 m-0">{p.detail}</p>
+                <p className="text-xs font-medium text-teal-700 m-0">{p.role}</p>
+                {p.detail && <p className="text-sm text-gray-600 m-0 mt-2">{p.detail}</p>}
               </div>
             ))}
           </div>
