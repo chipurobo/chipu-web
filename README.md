@@ -34,15 +34,19 @@ inclusive tools — empowering **4 million youth across Africa by 2030**.
 
 ## What we do
 
-**Inclusive Robotics is a Pan-African STEM competition**, run in year-long
-cycles. A learner meets us during outreach through the Young Scientists Kenya
-(YSK) network, steps up to an intensive Microsoft ADC bootcamp, then works
-across the year through Code Clubs and a team project, culminating in a national
-showcase at CEMASTEA. CBC aligned throughout.
+**Inclusive Robotics is a Pan-African robotics competition**, run in one cycle
+a year. Schools are entered into a cycle, learners work the curriculum on one of
+two tracks, and each school builds a single team project as its entry. An entry
+is drafted, submitted, then judged — scored out of 100 with written feedback —
+and presented at the National Showcase. CBC aligned throughout.
 
 Learning runs on two tracks. The **primary track** covers robotics concepts,
 problem-solving and introductory coding. The **secondary track** covers coding,
 AI, and 3D design and print.
+
+The outreach, bootcamps and teacher training below are how that work is
+delivered, and who we deliver it with. They support the competition rather than
+being it.
 
 ### What we run
 
