@@ -21,7 +21,7 @@ const PROGRAM_TOTALS = {
   yearsCovered:  '2023 – 2025',
 };
 
-// === Three activities inside the Inclusive Robotics programme ===
+// === The three stages of the Inclusive Robotics competition ===
 
 const ACTIVITIES = [
   {
@@ -59,24 +59,48 @@ const ACTIVITIES = [
   },
 ];
 
-// === Partner programmes that amplify reach ===
+// === The work done with each partner ===
+//
+// Sourced from the partner table in README.md rather than invented. Where a
+// partner has reach figures of its own they are given; where the contribution
+// is capability rather than headcount, that is said plainly instead of
+// reaching for a number.
 
 const PARTNERSHIPS = [
   {
-    name: 'Raspberry Pi Code Clubs',
-    detail: '100 schools across all 47 counties · 10,000 students · 200 teachers · 15 inclusive schools',
+    name: 'Raspberry Pi Foundation',
+    role: 'Code Clubs, hardware support, computing education framework',
+    detail: '100 schools across all 47 counties · 10,000 students · 200 teachers · 15 inclusive schools. The self-paced project library the competition curriculum draws on comes from the Foundation.',
   },
   {
     name: 'Microsoft ADC',
-    detail: 'Technical enablement, AI curriculum and mentorship across every bootcamp cohort.',
+    role: 'Technical enablement, AI resources, mentorship',
+    detail: 'Hosts the intensive bootcamp stage at the Africa Development Centre in Westlands, with AI curriculum and mentorship across every cohort.',
+  },
+  {
+    name: 'CEMASTEA',
+    role: 'KSEF alignment, teacher training, curriculum validation',
+    detail: 'Hosts the national showcase where entries are judged, validates the certificates learners earn, and co-runs quarterly teacher training.',
+  },
+  {
+    name: 'eKitabu',
+    role: 'LMS integration, inclusive content distribution',
+    detail: 'Carries inclusive learning content to schools already using the platform, so adapted material reaches learners beyond our own network.',
+  },
+  {
+    name: 'Young Scientists Kenya (YSK)',
+    role: 'Outreach network',
+    detail: 'The network through which schools first meet the competition — the outreach stage runs on it.',
   },
   {
     name: 'NIBF — Nairobi International Book Fair',
+    role: 'Public demonstration',
     detail: '6 schools · 54 students reached via STEM and Raspberry Pi demonstrations.',
   },
   {
-    name: 'ChipuRobo Internships',
-    detail: '3-month post-programme placements helping students commercialise their projects.',
+    name: 'ZeeTech Foundation — Nigeria',
+    role: 'Pan-African expansion',
+    detail: 'Recycling machines and kits shipped to Nigeria, taking the PET-to-filament model beyond Kenya.',
   },
 ];
 
@@ -140,7 +164,8 @@ const Impact = () => {
               Inclusive Robotics
             </h1>
             <p className="text-lg text-gray-700 mb-3 max-w-2xl mx-auto">
-              One programme. Pan-African in scope. Three activities feeding the same mission.
+              A Pan-African robotics competition, run in year-long cycles — and the partner work
+              that carries it across the continent.
             </p>
             <p className="inline-flex items-center gap-1.5 text-sm text-gray-500 mb-8">
               <Globe className="h-4 w-4" aria-hidden="true" />
@@ -183,14 +208,14 @@ const Impact = () => {
         </div>
       </section>
 
-      {/* === Three activities === */}
+      {/* === The competition's three stages === */}
       <section className="py-12 sm:py-16" aria-labelledby="activities-heading">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10">
             <h2 id="activities-heading" className="heading-display text-3xl font-bold tracking-tight text-gray-900 mb-2">
-              Activities inside the programme
+              Stages of the competition
             </h2>
-            <p className="text-base text-gray-600">YSK Outreach · Microsoft Bootcamps · Nationals (KSEF)</p>
+            <p className="text-base text-gray-600">YSK Outreach · Microsoft Bootcamps · National showcase (KSEF)</p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -248,13 +273,17 @@ const Impact = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
             <h2 id="partners-heading" className="heading-display text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 mb-2">
-              Partners that amplify reach
+              The work behind the competition
             </h2>
+            <p className="text-base text-gray-600">
+              What each partner contributes, and what it has reached.
+            </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-4xl mx-auto">
             {PARTNERSHIPS.map((p) => (
               <div key={p.name} className="card p-5">
-                <h3 className="text-base font-semibold text-gray-900 m-0 mb-1.5">{p.name}</h3>
+                <h3 className="text-base font-semibold text-gray-900 m-0 mb-1">{p.name}</h3>
+                <p className="text-xs font-medium text-teal-700 m-0 mb-2">{p.role}</p>
                 <p className="text-sm text-gray-600 m-0">{p.detail}</p>
               </div>
             ))}

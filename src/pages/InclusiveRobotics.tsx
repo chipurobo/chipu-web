@@ -164,18 +164,24 @@ const InclusiveRobotics = () => {
         <div className="code-bg absolute inset-0 opacity-30" aria-hidden="true" />
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 text-center">
           <p className="font-pixel text-[0.55rem] sm:text-[0.65rem] tracking-[0.25em] text-terracotta-600 mb-5 uppercase">
-            // programs
+            // the competition
           </p>
           <h1 className="heading-display text-3xl md:text-4xl lg:text-5xl text-gray-900 mb-6 leading-[1.2]">
-            One Year-Round Program · Three Stages
+            Inclusive Robotics · A Pan-African Robotics Competition
           </h1>
+          <p className="text-base sm:text-lg text-gray-700 max-w-3xl mx-auto leading-relaxed mb-6">
+            One competition, run in year-long cycles. A school enters, meets us during outreach from the
+            Young Scientists Kenya (YSK) network, comes up through an intensive Microsoft ADC bootcamp, then
+            works across the year — Code Clubs, a team project, and the national showcase at CEMASTEA where
+            entries are judged. CBC aligned throughout.
+          </p>
           <p className="text-base sm:text-lg text-gray-700 max-w-3xl mx-auto leading-relaxed mb-10">
-            A learner meets us during outreach from the Young Scientists Kenya (YSK) network, comes up through
-            an intensive Microsoft ADC bootcamp, and then trains across the year — research projects, Code Clubs,
-            and a national showcase at CEMASTEA. One program, three stages, CBC aligned.
+            Learning runs on two tracks. The <strong>primary track</strong> covers robotics concepts,
+            problem-solving and introductory coding. The <strong>secondary track</strong> covers coding, AI,
+            and 3D design and print.
           </p>
 
-          {/* Stage navigator */}
+          {/* The competition's stages — one journey, not separate programmes */}
           <ol className="flex flex-wrap justify-center gap-3 text-sm">
             <li>
               <a href="#outreach" className="inline-flex items-center px-4 py-2 bg-white border border-warm-200 rounded-lg text-gray-800 hover:border-teal-500 transition-colors">
@@ -453,9 +459,10 @@ const InclusiveRobotics = () => {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(20,184,166,0.12),transparent_70%)]" />
         <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
           <MapPin className="h-10 w-10 text-teal-400 mx-auto mb-4" aria-hidden="true" />
-          <h2 className="heading-display text-2xl sm:text-3xl text-white mb-4">Run This Program At Your School</h2>
+          <h2 className="heading-display text-2xl sm:text-3xl text-white mb-4">Enter Your School</h2>
           <p className="text-lg text-gray-300 mb-10 max-w-2xl mx-auto">
-            We bring the YSK outreach, the Microsoft bootcamp partnership, and the year-round training. You bring the learners.
+            Entries run in year-long cycles. We bring the YSK outreach, the Microsoft bootcamp partnership,
+            the year-round training and the showcase. You bring the learners.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
             <Link to="/contact" className="btn-cta">Talk to the Team</Link>
