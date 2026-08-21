@@ -398,8 +398,8 @@ const Home = () => {
  <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
  <p className="font-pixel text-teal-400 text-[0.6rem] sm:text-xs mb-4 tracking-widest">// 2026</p>
  <h2 className="heading-display text-2xl sm:text-3xl md:text-4xl text-white mb-6">
- 2026 Programmes <br className="sm:hidden" />
- <span className="text-teal-400">Are Loading</span>
+ The 2026 Competition <br className="sm:hidden" />
+ <span className="text-teal-400">Is Loading</span>
  </h2>
  <p className="text-lg sm:text-xl text-gray-300 mb-3 max-w-3xl mx-auto">
  Outreach, Microsoft bootcamps, and the National Showcase — all expanding.
