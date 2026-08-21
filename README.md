@@ -34,13 +34,17 @@ inclusive tools — empowering **4 million youth across Africa by 2030**.
 
 ## What we do
 
-One year-round programme, three stages. A learner meets us during outreach
-through the Young Scientists Kenya (YSK) network, steps up to an intensive
-Microsoft ADC bootcamp, then trains across the year through research projects
-and Code Clubs, culminating in a national showcase at CEMASTEA. CBC aligned
-throughout.
+**Inclusive Robotics is a Pan-African STEM competition**, run in year-long
+cycles. A learner meets us during outreach through the Young Scientists Kenya
+(YSK) network, steps up to an intensive Microsoft ADC bootcamp, then works
+across the year through Code Clubs and a team project, culminating in a national
+showcase at CEMASTEA. CBC aligned throughout.
 
-### Programmes
+Learning runs on two tracks. The **primary track** covers robotics concepts,
+problem-solving and introductory coding. The **secondary track** covers coding,
+AI, and 3D design and print.
+
+### What we run
 
 **AI Literacy Bootcamps** — Hands-on AI and robotics education aligned with the
 CBC framework, delivered through locally fabricated kits. 5-day intensive,
@@ -84,6 +88,73 @@ accessibility hardware for the rest of the network.
 
 > Names of partner schools serving learners with disabilities are deliberately
 > not published, to protect the learners and educators at those schools.
+
+---
+
+## The dashboard
+
+Every school in the network works from a shared dashboard. It is where the
+curriculum lives, where teachers book training, and where delivery is recorded
+as it happens — so reporting from here on is built from what schools actually
+did, rather than assembled from spreadsheets at reporting time. The 2023–2025
+figures below predate it.
+
+**The curriculum.** Close to two hundred lessons, each with a direct link to the
+resource a teacher opens to run it. Lessons are split across the two delivery
+tracks: the **primary track** covers robotics concepts, problem-solving and
+introductory coding; the **secondary track** covers coding, AI, and 3D design
+and print. Lessons that suit both appear under either.
+
+**Workshops.** Every lesson has a workshop a school can book, in person or
+online. A teacher picks the lesson and the mode; ChipuRobo schedules it, runs
+it, and marks it delivered. Nothing has to be composed from scratch, and no
+school has to guess what is on offer.
+
+**Sessions and registers.** One record per club session, including the ones that
+could not go ahead — a session marked *partly delivered* with a reason is how a
+school signals that it needs support, so it counts rather than disappearing.
+Registers record presence and absence for learners **and** for teachers, because
+teacher participation in their own training is part of what the programme is
+trying to change.
+
+**Adaptations.** How delivery was adapted is recorded against each session from
+a fixed list — Kenyan Sign Language interpretation, braille and tactile
+materials, audio description, screen readers, large print, adapted kits. It
+records what the programme did, never a learner's condition. This is what turns
+"we adapt for learners with hearing and visual impairments" from a claim into a
+number.
+
+**Assessment.** The monitoring, evaluation and learning instruments — teacher,
+learner and school baselines, endline, webinar feedback and the school visit
+checklist — are built into the dashboard rather than circulated as paper.
+Instruments are versioned, so answers keep their meaning when questions change.
+
+**Competition and recognition.** Each cycle of the Pan-African STEM competition
+records which schools entered and which projects were submitted and judged. A
+leaderboard scores what a club actually does — lessons completed, assessments
+returned, sessions run, certificates earned — so the effort of keeping a club
+going is visible, not just the results.
+
+**Kits and stock.** Orders, fabrication at maker-space schools, and distribution
+of kits and printed parts are tracked end to end, including which kits are
+adapted variants.
+
+### How learner data is handled
+
+Most learners in this network are children, many with disabilities, so the
+design is deliberately conservative.
+
+- **Codes, not names.** Every learner and teacher has a non-identifying code.
+  Names stay with the school that already knows them; codes are what appear in
+  analysis and anything shared.
+- **The adaptation, never the diagnosis.** The dashboard records that braille
+  materials were used, not why a particular learner needed them.
+- **A school sees only its own.** Row-level security in the database — not a
+  filter in the interface — scopes rosters, registers, assessments and bookings
+  to the school they belong to.
+- **Cross-school views are counts only.** The leaderboard and outcome summaries
+  return totals per school and never a learner row, so standings can be shared
+  without exposing anyone.
 
 ---
 
