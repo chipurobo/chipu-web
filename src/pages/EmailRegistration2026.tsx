@@ -6,19 +6,24 @@ const EmailRegistration2026 = () => {
  const [isCopied, setIsCopied] = useState(false);
 
  // Email template content
- const emailTemplate = `Subject: Expression of Interest – ChipuRobo 2026 Season 2 Registration
+ const emailTemplate = `Subject: Registration – Inclusive Robotics 2026
 
 Dear ChipuRobo Team,
 
-I am interested in registering our school for the ChipuRobo 2026 AI & Robotics Programme.
+I would like to register our school for Inclusive Robotics, the 2026 cycle of
+the Pan-African robotics competition. I understand registration is KES 2,000
+per school and covers entry, dashboard access, the full curriculum and judging.
 
 SCHOOL DETAILS:
 • School Name: [Enter your school name]
-• School Category: [Primary/Secondary/Technical/etc]
 • County: [Enter your county]
+• Public or private? [Enter one]
 • Student Enrollment: [Number of students]
-• Is your school public or private? [Enter one]
-• Has your school been nominated by CEMASTEA or are you expressing interest independently?
+
+WHICH TRACK:
+☐ Primary track — robotics concepts, problem-solving, introductory coding
+☐ Secondary track — coding, AI, and 3D design and print
+☐ Not sure yet — happy to be advised
 
 CONTACT INFORMATION:
 • Contact Person: [Your full name]
@@ -26,17 +31,17 @@ CONTACT INFORMATION:
 • Email: [Your email address]
 • Phone: [Your phone number]
 
-PROGRAMS OF INTEREST: (Check all that apply)
-☐ Code Club (Raspberry Pi Computing)
-☐ AI & Robotics Bootcamp
-☐ Maker Space Setup
-☐ Teacher Professional Development
-☐ Inclusive Technology Program
+SUPPORT WE MAY WANT (optional — not required to compete):
+☐ Virtual assistance with the lesson plans (KES 1,000 per hour)
+☐ An in-person visit (arranged directly with your team)
+☐ Help completing our project
+
+ACCESSIBILITY:
+[Tell us about learners with hearing or visual impairments, and any
+adaptations that would help them take part]
 
 ADDITIONAL INFORMATION:
-[Please share any specific needs, current technology infrastructure, or questions]
-
-Thank you for considering our school for this program.
+[Current technology at the school, or any questions]
 
 Best regards,
 [Your name]
@@ -61,13 +66,29 @@ Best regards,
  }
  };
 
- const programOptions = [
- { id: 'codeclub', label: 'Code Club (Raspberry Pi Computing)', description: 'Weekly coding sessions with Raspberry Pi' },
- { id: 'bootcamp', label: 'AI & Robotics Bootcamp', description: '4-day intensive training aligned with national AI curriculum' },
- { id: 'makerspace', label: 'Maker Space Setup', description: 'Digital fabrication and 3D printing lab' },
- { id: 'teacher-training', label: 'Teacher Professional Development', description: 'Training aligned with CEMASTEA and KSEF frameworks' },
- { id: 'inclusive', label: 'Inclusive Technology Program', description: 'Accessibility-focused STEM education' }
- ];
+ const participationLevels = [
+    {
+      id: 'beginner',
+      label: 'Beginner — included with registration',
+      description:
+        'Register, work the curriculum, submit your team project and be judged, through to the end ' +
+        'of the year. Everything a school needs to compete.',
+    },
+    {
+      id: 'intermediate',
+      label: 'Intermediate — KES 1,000 per hour',
+      description:
+        'Ask for help and request parts from the dashboard. Virtual assistance walks a teacher ' +
+        'through the lesson plans. In-person visits are arranged directly once you ask.',
+    },
+    {
+      id: 'advanced',
+      label: 'Advanced — arranged per project',
+      description:
+        'Where a school needs help completing its project, our team works with them through to a ' +
+        'finished build.',
+    },
+  ];
 
  return (
  <div className="bg-warm-50 ">
@@ -78,22 +99,32 @@ Best regards,
  <div className="text-center">
  <div className="mb-8">
  <span className="inline-block bg-green-400 text-green-900 px-4 py-2 rounded-full text-sm font-semibold mb-4">
- 🚀 Building on 2025 Success - Registration Now Open
+ The 2026 cycle is open for entries
  </span>
  </div>
  <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 mb-6 heading-display">
- Register for ChipuRobo 2026 – Season 2
+ Register for Inclusive Robotics 2026
  </h1>
  <p className="text-lg text-gray-700 mb-8 max-w-4xl mx-auto">
- We're launching Season 2 of the ChipuRobo Programme — empowering 100 new schools across 47 counties through inclusive, hands-on AI and robotics learning.
+ Inclusive Robotics is a Pan-African robotics competition, run in one cycle a year. Registration is KES 2,000 per school and covers entry, the dashboard, the full curriculum on both tracks, and judging at the end of the year.
  </p>
+ {/* The fee, stated where someone arriving from a "KES 2,000" call to
+     action expects to find it. */}
+ <div className="bg-white border border-teal-200 rounded-xl p-6 max-w-md mx-auto shadow-soft-sm mb-6 text-center">
+   <p className="text-sm font-medium text-gray-600 mb-1">Registration</p>
+   <p className="font-pixel text-4xl text-gray-900 mb-1">KES 2,000</p>
+   <p className="text-sm text-gray-600">
+     One-off, per school. Entry, dashboard, curriculum and judging.
+   </p>
+ </div>
+
  <div className="bg-white border border-warm-200 rounded-xl p-6 max-w-3xl mx-auto shadow-soft-sm">
  <div className="flex items-center justify-center mb-4">
  <Mail className="h-7 w-7 text-terracotta-600 mr-3" aria-hidden="true" />
  <h2 className="text-2xl font-bold text-gray-900 heading-display">Ready to Transform Your School?</h2>
  </div>
  <p className="text-gray-700 text-base mb-4">
- Registration for the 2026 programme is simple - just send us an email with your school information:
+ Registration is by email. Send us your school's details and we will take it from there:
  </p>
  <div className="bg-warm-50 border border-warm-200 rounded-xl p-4 text-center">
  <p className="font-pixel text-lg text-gray-900">chipurobo@gmail.com</p>
@@ -109,15 +140,15 @@ Best regards,
  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
  <div className="text-center mb-16">
  <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 mb-6 heading-display">
- Available Programs for 2026
+ How schools take part
  </h2>
  <p className="text-lg text-gray-600 max-w-3xl mx-auto">
- Choose from our comprehensive suite of AI and robotics programs designed to transform education in your school.
+ Registration covers Beginner in full. The two levels above it are support you can ask for later — neither is required to compete.
  </p>
  </div>
 
  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
- {programOptions.map((program) => (
+ {participationLevels.map((program) => (
  <div key={program.id} className="bg-white rounded-xl shadow-soft-md p-6 border border-gray-100 transition-all duration-300 hover:shadow-soft-lg hover:-translate-y-1.5">
  <div className="flex items-center mb-4">
  <CheckSquare className="h-8 w-8 text-primary-600 mr-3" aria-hidden="true" />
@@ -211,7 +242,7 @@ Best regards,
  {/* Email Header */}
  <div className="bg-gradient-to-r from-primary-600 to-primary-700 p-4 rounded-t-xl">
  <h3 className="font-semibold text-white text-lg">📧 Email Preview</h3>
- <p className="text-primary-100 text-sm">Subject: Expression of Interest – ChipuRobo 2026 Season 2 Registration</p>
+ <p className="text-primary-100 text-sm">Subject: Registration – Inclusive Robotics 2026</p>
  </div>
 
  {/* Email Body Preview */}
@@ -250,13 +281,13 @@ Best regards,
  <div className="relative">
  <h2 className="text-3xl font-bold tracking-tight mb-4 heading-display text-gray-900 ">Ready to Get Started?</h2>
  <p className="text-lg mb-6 text-gray-300">
- Be part of 100+ schools joining Season 2 of the ChipuRobo Programme in 2026
+ Register your school for the 2026 cycle — KES 2,000, covering entry through to judging
  </p>
  <div className="bg-white/5 border border-white/10 rounded-xl p-6 max-w-md mx-auto">
  <p className="text-lg font-semibold mb-2">Send your registration email to:</p>
  <p className="text-2xl font-bold">chipurobo@gmail.com</p>
  <p className="mt-4 text-gray-300 text-sm">
- Season 2 is open — Register your school and get ready to participate in the 2026 rollout, culminating in the National Robotics Competition under KSEF.
+ The 2026 cycle is open. Register your school, work the curriculum, build your team project, and have it judged at the National Showcase.
  </p>
  </div>
  </div>
