@@ -53,6 +53,14 @@ export const teamMembers: TeamMember[] = [
     },
   },
   {
+    name: 'Deborah Masubo',
+    role: 'Program Lead',
+    bio: 'Program lead directing strategy, program evaluation and partnerships — an economics and statistics background applied to evidence-based design, and to turning local plastic waste into filament for STEM kits.',
+    social: {
+      linkedin: 'https://www.linkedin.com/in/deborah-masubo-12307a1b6/',
+    },
+  },
+  {
     name: 'Ryan Muuo',
     role: 'Workshop Lead & Operations Manager',
     bio: 'Workshop lead keeping labs running, mentoring students, and building hands-on curriculum.',
