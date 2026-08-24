@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   Trophy, Users, BookOpen, Brain, Cog, Code, Award, CheckCircle,
   ArrowRight, GitBranch, Video, FileText, Medal, Presentation, School,
-  MonitorPlay, Wrench, Mail, Copy, Check, ChevronDown, ChevronUp,
+  MonitorPlay, Wrench, Mail, Copy, Check, ChevronDown, ChevronUp, ExternalLink,
 } from 'lucide-react';
 
 // =============================================================
@@ -26,10 +26,15 @@ const TRACKS = [
   {
     icon: Cog,
     name: 'Primary track',
-    focus: 'Robotics concepts · problem-solving · introductory coding',
+    focus: 'Open to upper and lower primary',
     body:
-      'Younger learners meet robotics through building and problem-solving, with coding introduced ' +
-      'gently. Designed to run where school resources are thin.',
+      'The primary track is built around the CyberBrick SoccerBot — learners build a soccer robot, ' +
+      'and meet robotics concepts, problem-solving and introductory coding through getting it onto ' +
+      'the pitch. Open to both upper and lower primary.',
+    link: {
+      href: 'https://makerworld.com/en/models/1395987-cyberbrick-official-soccerbot',
+      label: 'CyberBrick Official SoccerBot',
+    },
   },
   {
     icon: Brain,
@@ -297,6 +302,17 @@ const InclusiveRobotics = () => {
               </div>
               <p className="text-sm font-medium text-teal-700 mb-3">{t.focus}</p>
               <p className="text-sm text-gray-600 leading-relaxed">{t.body}</p>
+              {'link' in t && t.link && (
+                <a
+                  href={t.link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-teal-700 hover:underline inline-flex items-center gap-1.5 mt-3"
+                >
+                  <ExternalLink className="h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" />
+                  {t.link.label}
+                </a>
+              )}
             </div>
           ))}
         </div>
