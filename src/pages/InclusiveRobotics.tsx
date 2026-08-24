@@ -1,8 +1,9 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Trophy, Users, BookOpen, Brain, Cog, Code, Award, CheckCircle,
   ArrowRight, GitBranch, Video, FileText, Medal, Presentation, School,
-  MonitorPlay, Wrench,
+  MonitorPlay, Wrench, Mail, Copy, Check, ChevronDown, ChevronUp, ExternalLink,
 } from 'lucide-react';
 
 // =============================================================
@@ -25,10 +26,15 @@ const TRACKS = [
   {
     icon: Cog,
     name: 'Primary track',
-    focus: 'Robotics concepts · problem-solving · introductory coding',
+    focus: 'Open to upper and lower primary',
     body:
-      'Younger learners meet robotics through building and problem-solving, with coding introduced ' +
-      'gently. Designed to run where school resources are thin.',
+      'The primary track is built around the CyberBrick SoccerBot — learners build a soccer robot, ' +
+      'and meet robotics concepts, problem-solving and introductory coding through getting it onto ' +
+      'the pitch. Open to both upper and lower primary.',
+    link: {
+      href: 'https://makerworld.com/en/models/1395987-cyberbrick-official-soccerbot',
+      label: 'CyberBrick Official SoccerBot',
+    },
   },
   {
     icon: Brain,
@@ -135,6 +141,51 @@ const LEVELS = [
   },
 ];
 
+// Registration is by email — this is the template a school sends. Folded in
+// from the old /register-2026 page so the competition lives on one page.
+const EMAIL_TEMPLATE = `Subject: Registration – Inclusive Robotics 2026
+
+Dear ChipuRobo Team,
+
+I would like to register our school for Inclusive Robotics, the 2026 cycle of
+the Pan-African robotics competition. I understand registration is KES 2,000
+per school and covers entry, dashboard access, the full curriculum and judging.
+
+SCHOOL DETAILS:
+• School Name: [Enter your school name]
+• County: [Enter your county]
+• Public or private? [Enter one]
+• Student Enrollment: [Number of students]
+
+WHICH TRACK:
+☐ Primary track — robotics concepts, problem-solving, introductory coding
+☐ Secondary track — coding, AI, and 3D design and print
+☐ Not sure yet — happy to be advised
+
+CONTACT INFORMATION:
+• Contact Person: [Your full name]
+• Position: [Your position at the school]
+• Email: [Your email address]
+• Phone: [Your phone number]
+
+SUPPORT WE MAY WANT (optional — not required to compete):
+☐ Virtual assistance with the lesson plans (KES 1,000 per hour)
+☐ An in-person visit (arranged directly with your team)
+☐ Help completing our project
+
+ACCESSIBILITY:
+[Tell us about learners with hearing or visual impairments, and any
+adaptations that would help them take part]
+
+ADDITIONAL INFORMATION:
+[Current technology at the school, or any questions]
+
+Best regards,
+[Your name]
+[School name]`;
+
+const REGISTER_TO = 'chipurobo@gmail.com';
+
 const ENTRY_PARTS = [
   { icon: FileText, label: 'Title and description', hint: 'What the team built, and the problem it set out to solve.' },
   { icon: GitBranch, label: 'Code repository', hint: 'The project\'s source, so judges can see the work itself.' },
@@ -142,7 +193,24 @@ const ENTRY_PARTS = [
   { icon: Users, label: 'The team', hint: 'Which learners took part, and the role each of them held.' },
 ];
 
-const InclusiveRobotics = () => (
+const InclusiveRobotics = () => {
+  const [showTemplate, setShowTemplate] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const copyTemplate = async () => {
+    try {
+      await navigator.clipboard.writeText(EMAIL_TEMPLATE);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard is unavailable over plain http and in some embedded
+      // browsers. The template is on screen either way, so failing to copy
+      // is not failing to register.
+      setCopied(false);
+    }
+  };
+
+  return (
   <div className="bg-white">
     {/* ============================================================
         Hero
@@ -168,10 +236,10 @@ const InclusiveRobotics = () => (
         </div>
 
         <div className="flex flex-wrap gap-3 justify-center">
-          <Link to="/register-2026" className="btn-cta">
+          <a href="#register" className="btn-cta">
             Register Your School — KES 2,000
             <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
-          </Link>
+          </a>
           <a
             href="#taking-part"
             className="inline-flex items-center px-6 py-3 rounded-lg border border-warm-300 text-gray-800 hover:border-teal-500 transition-colors"
@@ -234,6 +302,17 @@ const InclusiveRobotics = () => (
               </div>
               <p className="text-sm font-medium text-teal-700 mb-3">{t.focus}</p>
               <p className="text-sm text-gray-600 leading-relaxed">{t.body}</p>
+              {'link' in t && t.link && (
+                <a
+                  href={t.link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-teal-700 hover:underline inline-flex items-center gap-1.5 mt-3"
+                >
+                  <ExternalLink className="h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" />
+                  {t.link.label}
+                </a>
+              )}
             </div>
           ))}
         </div>
@@ -381,35 +460,80 @@ const InclusiveRobotics = () => (
     </section>
 
     {/* ============================================================
-        CTA
+        Register — everything the old /register-2026 page carried,
+        on the one page the competition lives on.
     ============================================================ */}
-    <section className="relative overflow-hidden bg-gray-900 py-20 sm:py-24 scanlines">
+    <section id="register" className="scroll-mt-20 relative overflow-hidden bg-gray-900 py-16 sm:py-20 scanlines">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(20,184,166,0.12),transparent_70%)]" />
-      <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
-        <Trophy className="h-10 w-10 text-teal-400 mx-auto mb-4" aria-hidden="true" />
-        <h2 className="heading-display text-2xl sm:text-3xl text-white mb-4">Register for the 2026 cycle</h2>
-        <p className="text-lg text-gray-300 mb-3 max-w-2xl mx-auto">
-          Entries are open. Registration is <strong className="text-white">KES 2,000</strong> per
-          school and covers everything through to judging.
-        </p>
-        <p className="text-sm text-gray-400 mb-10 max-w-2xl mx-auto">
-          Not sure yet? Talk to us first — we can walk you through what taking part involves.
-        </p>
-        <div className="flex flex-wrap gap-4 justify-center">
-          <Link to="/register-2026" className="btn-cta">
-            Register Your School
-            <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
-          </Link>
-          <Link
-            to="/contact"
-            className="inline-flex items-center px-6 py-3 rounded-lg border border-gray-600 text-gray-200 hover:border-teal-400 hover:text-white transition-colors"
-          >
-            Talk to the Team
-          </Link>
+      <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-white">
+        <div className="text-center mb-10">
+          <Trophy className="h-10 w-10 text-teal-400 mx-auto mb-4" aria-hidden="true" />
+          <h2 className="heading-display text-2xl sm:text-3xl text-white mb-3">Register for the 2026 cycle</h2>
+          <p className="text-lg text-gray-300 max-w-2xl mx-auto">
+            Registration is <strong className="text-white">KES 2,000</strong> per school and covers
+            entry, the dashboard, the curriculum and judging.
+          </p>
         </div>
+
+        {/* Where to send it */}
+        <div className="bg-white/5 border border-white/10 rounded-xl p-6 text-center mb-6">
+          <p className="text-sm text-gray-300 mb-2 inline-flex items-center gap-2">
+            <Mail className="h-4 w-4 text-teal-400" aria-hidden="true" />
+            Send your registration to
+          </p>
+          <p className="font-pixel text-lg sm:text-xl text-teal-300 break-all">{REGISTER_TO}</p>
+          <p className="text-sm text-gray-400 mt-3">
+            We reply within 48 hours to confirm your entry and set up your dashboard.
+          </p>
+        </div>
+
+        {/* The template */}
+        <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
+          <div className="flex items-center justify-between gap-3 p-4 flex-wrap">
+            <p className="text-sm font-medium text-gray-200 m-0">
+              Use this email template — it has everything we need
+            </p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={copyTemplate}
+                className="inline-flex items-center px-3 py-1.5 rounded-md bg-teal-600 hover:bg-teal-500 text-white text-sm transition-colors"
+              >
+                {copied
+                  ? <><Check className="h-4 w-4 mr-1.5" aria-hidden="true" />Copied</>
+                  : <><Copy className="h-4 w-4 mr-1.5" aria-hidden="true" />Copy</>}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowTemplate((v) => !v)}
+                aria-expanded={showTemplate}
+                className="inline-flex items-center px-3 py-1.5 rounded-md border border-white/20 text-gray-200 hover:border-teal-400 text-sm transition-colors"
+              >
+                {showTemplate
+                  ? <><ChevronUp className="h-4 w-4 mr-1.5" aria-hidden="true" />Hide</>
+                  : <><ChevronDown className="h-4 w-4 mr-1.5" aria-hidden="true" />Show</>}
+              </button>
+            </div>
+          </div>
+
+          {showTemplate && (
+            <pre className="text-xs text-gray-300 bg-black/30 p-4 overflow-x-auto whitespace-pre-wrap border-t border-white/10 m-0">
+              {EMAIL_TEMPLATE}
+            </pre>
+          )}
+        </div>
+
+        <p className="text-sm text-gray-400 text-center mt-8">
+          Not ready to commit?{' '}
+          <Link to="/contact" className="text-teal-300 hover:text-teal-200 underline">
+            Talk to the team
+          </Link>{' '}
+          and we will walk you through what taking part involves.
+        </p>
       </div>
     </section>
   </div>
-);
+  );
+};
 
 export default InclusiveRobotics;

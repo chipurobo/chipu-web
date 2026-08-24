@@ -5,7 +5,7 @@ import { Menu, X } from 'lucide-react';
 const navigationLinks = [
   { to: '/', label: 'Home' },
   { to: '/about', label: 'About' },
-  { to: '/programs', label: 'Competition' },
+  { to: '/competition', label: 'Competition' },
   { to: '/maker-spaces', label: 'Maker spaces' },
   { to: '/impact', label: 'Impact' },
   { to: '/podcast', label: 'Podcast' },

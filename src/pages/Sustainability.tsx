@@ -261,7 +261,7 @@ const Sustainability = () => {
  Partner With Us
  </Link>
  <Link
- to="/register-2026"
+ to="/competition#register"
  className="bg-white/5 border border-white/10 backdrop-blur-lg text-white px-8 py-4 rounded-xl hover:bg-white/10 transition-all duration-200 text-lg font-semibold inline-flex items-center justify-center"
  aria-label="Learn more about ChipuRobo's 2026 sustainability programs"
  >

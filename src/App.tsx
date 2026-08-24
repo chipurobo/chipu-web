@@ -23,7 +23,6 @@ const MicrosoftBootcamps    = lazy(() => import('./pages/MicrosoftBootcamps'));
 const Sustainability        = lazy(() => import('./pages/Sustainability'));
 const Impact                = lazy(() => import('./pages/Impact'));
 const MakerSpaces           = lazy(() => import('./pages/MakerSpaces'));
-const EmailRegistration2026 = lazy(() => import('./pages/EmailRegistration2026'));
 const NotFound              = lazy(() => import('./pages/NotFound'));
 const Podcast               = lazy(() => import('./pages/Podcast'));
 
@@ -202,17 +201,21 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/about" element={<About />} />
 
-              {/* Programs IS the three-stage page (Outreach / Microsoft Bootcamps /
-                  Training Across the Year). What used to be /inclusive-robotics
-                  now lives at /programs; the old slug redirects. */}
-              <Route path="/programs" element={<InclusiveRobotics />} />
-              <Route path="/inclusive-robotics" element={<Navigate to="/programs" replace />} />
+              {/* One competition, one page. /competition is the canonical URL;
+                  /programs, /inclusive-robotics and /register-2026 are older
+                  slugs kept as redirects so existing links keep working. */}
+              <Route path="/competition" element={<InclusiveRobotics />} />
+              {/* Old slugs. /register-2026 folded into the competition page, so
+                  it lands on the register section rather than a page of its own. */}
+              <Route path="/programs" element={<Navigate to="/competition" replace />} />
+              <Route path="/inclusive-robotics" element={<Navigate to="/competition" replace />} />
+              <Route path="/register-2026" element={<Navigate to="/competition#register" replace />} />
               <Route path="/microsoft-bootcamps" element={<MicrosoftBootcamps />} />
 
               {/* Legacy program routes — KSEF, JSS, Bootcamps now live inside Inclusive Robotics
                   stages, so redirect to the relevant anchor. */}
-              <Route path="/ksef" element={<Navigate to="/programs#year-round" replace />} />
-              <Route path="/jss" element={<Navigate to="/programs#year-round" replace />} />
+              <Route path="/ksef" element={<Navigate to="/competition" replace />} />
+              <Route path="/jss" element={<Navigate to="/competition" replace />} />
               <Route path="/bootcamps" element={<Navigate to="/microsoft-bootcamps" replace />} />
               <Route path="/adc-bootcamp" element={<Navigate to="/microsoft-bootcamps" replace />} />
 
@@ -226,7 +229,6 @@ function App() {
               <Route path="/microsoft" element={<Microsoft />} />
               <Route path="/impact" element={<Impact />} />
               <Route path="/maker-spaces" element={<MakerSpaces />} />
-              <Route path="/register-2026" element={<EmailRegistration2026 />} />
               <Route path="/podcast" element={<Podcast />} />
               <Route path="*" element={<NotFound />} />
             </Route>
@@ -285,7 +287,7 @@ function getPageTitle(path: string): string {
   switch (path) {
     case '/': return 'Home';
     case '/about': return 'About ChipuRobo';
-    case '/programs': return 'Programs';
+    case '/competition': return 'Competition';
     case '/inclusive-robotics': return 'Programs';
     case '/microsoft-bootcamps': return 'Microsoft Bootcamps';
     case '/ksef': return 'Programs';
@@ -300,7 +302,6 @@ function getPageTitle(path: string): string {
     case '/microsoft': return 'Microsoft Partnership';
     case '/impact': return 'Impact Report';
     case '/maker-spaces': return 'Maker Spaces';
-    case '/register-2026': return '2026 Registration';
     case '/podcast': return 'Africa Builds Podcast';
     default: return 'ChipuRobo';
   }
