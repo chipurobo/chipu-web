@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Brain, Award, Users, Notebook as Robot, Code, School, Globe, Heart, Leaf, ArrowRight, Rocket, Recycle, Target, Calendar } from 'lucide-react';
+import { Brain, Award, Users, Notebook as Robot, Code, School, Globe, Heart, Leaf, ArrowRight, Rocket, Recycle, Target, Trophy } from 'lucide-react';
 
 const Home = () => {
  const partners = [
@@ -73,6 +73,17 @@ const Home = () => {
  <div className="code-bg absolute inset-0 opacity-40 " aria-hidden="true" />
 
  <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-8 text-center">
+ {/* Entries are open — say so before the mission statement. The
+     competition was previously invisible above the fold. */}
+ <Link
+   to="/competition#register"
+   className="inline-flex items-center gap-2 bg-teal-50 border border-teal-200 hover:border-teal-400 px-4 py-1.5 rounded-full text-teal-800 text-sm font-medium mb-8 transition-colors"
+ >
+   <Trophy className="h-4 w-4" aria-hidden="true" />
+   Inclusive Robotics 2026 — entries are open
+   <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+ </Link>
+
  <h1 className="heading-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-gray-900 mb-8 leading-[1.2]">
  <span className="block">Nurturing</span>
  <span className="block">
@@ -87,11 +98,12 @@ const Home = () => {
  </p>
 
  <div className="flex flex-wrap gap-5 justify-center mb-16">
- <Link to="/competition" className="btn-cta">
- ▶ Get Started
+ <Link to="/competition#register" className="btn-cta">
+   Register Your School — KES 2,000
+   <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
  </Link>
- <Link to="/impact" className="btn-outline">
- ◇ Explore Impact
+ <Link to="/competition" className="btn-outline">
+   ◇ How the competition works
  </Link>
  </div>
  </div>
@@ -398,19 +410,20 @@ const Home = () => {
  <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
  <p className="font-pixel text-teal-400 text-[0.6rem] sm:text-xs mb-4 tracking-widest">// 2026</p>
  <h2 className="heading-display text-2xl sm:text-3xl md:text-4xl text-white mb-6">
- The 2026 Competition <br className="sm:hidden" />
- <span className="text-teal-400">Is Loading</span>
+ Inclusive Robotics 2026
+            <br className="sm:hidden" />
+            <span className="text-teal-400">Entries Are Open</span>
  </h2>
  <p className="text-lg sm:text-xl text-gray-300 mb-3 max-w-3xl mx-auto">
- Outreach, Microsoft bootcamps, and the National Showcase — all expanding.
+ Register your school, work the curriculum, build your team project, and have it judged at the National Showcase.
  </p>
  <p className="text-base text-gray-400 mb-10 max-w-2xl mx-auto">
- Join the mission to empower 4 million youth across Africa by 2030.
+ KES 2,000 per school — covering entry, the dashboard, the curriculum and judging.
  </p>
  <div className="flex flex-wrap gap-5 justify-center">
- <Link to="/competition" className="btn-cta">
- <Calendar className="mr-2 h-4 w-4" aria-hidden="true" />
- Programs 2026
+ <Link to="/competition#register" className="btn-cta">
+ <Trophy className="mr-2 h-4 w-4" aria-hidden="true" />
+ Register Your School
  </Link>
  <Link
  to="/about"
