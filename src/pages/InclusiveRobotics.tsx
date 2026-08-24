@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import {
   Trophy, Users, BookOpen, Brain, Cog, Code, Award, CheckCircle,
   ArrowRight, GitBranch, Video, FileText, Medal, Presentation, School,
+  MonitorPlay, Wrench,
 } from 'lucide-react';
 
 // =============================================================
@@ -74,6 +75,66 @@ const STEPS = [
   },
 ];
 
+// How a school takes part. Beginner is what the registration fee buys; the two
+// levels above it are support a school asks for when it wants it, and are not
+// required to compete.
+//
+// Prices are exactly as given: KES 2,000 to register, KES 1,000 per hour for
+// virtual assistance. Where no price was given — physical visits, project
+// support — the page says how it is arranged rather than inventing a figure.
+const LEVELS = [
+  {
+    level: 'Beginner',
+    tagline: 'Included with registration',
+    price: 'KES 2,000',
+    priceNote: 'One-off, per school',
+    icon: Trophy,
+    accent: 'border-teal-300',
+    body:
+      'Register, work the curriculum, submit your project and be judged. This runs to the end of ' +
+      'the year, and it is everything a school needs to compete.',
+    points: [
+      'Your school entered into the cycle',
+      'The dashboard, with the full curriculum on both tracks',
+      'Submit your team project and have it judged',
+    ],
+  },
+  {
+    level: 'Intermediate',
+    tagline: 'Support when you want it',
+    price: 'KES 1,000',
+    priceNote: 'Per hour, virtual assistance',
+    icon: MonitorPlay,
+    accent: 'border-indigo-300',
+    body:
+      'Ask for help from the dashboard, and request parts from it too. Virtual assistance walks a ' +
+      'teacher through the lesson plans — it covers the lesson plans and whatever further help the ' +
+      'teacher needs with them.',
+    points: [
+      'Request help on any lesson, from the dashboard',
+      'Request parts and kits from the dashboard',
+      'Virtual assistance at KES 1,000 per hour',
+      'In-person visits arranged directly once you ask',
+    ],
+  },
+  {
+    level: 'Advanced',
+    tagline: 'For schools building something bigger',
+    price: 'Arranged',
+    priceNote: 'Quoted against the project',
+    icon: Wrench,
+    accent: 'border-amber-300',
+    body:
+      'When a school needs help completing its project, the ChipuRobo team works with the team ' +
+      'through to a finished build.',
+    points: [
+      'Hands-on technical support',
+      'Carried through to a completed project',
+      'Arranged case by case',
+    ],
+  },
+];
+
 const ENTRY_PARTS = [
   { icon: FileText, label: 'Title and description', hint: 'What the team built, and the problem it set out to solve.' },
   { icon: GitBranch, label: 'Code repository', hint: 'The project\'s source, so judges can see the work itself.' },
@@ -101,9 +162,22 @@ const InclusiveRobotics = () => (
           National Showcase. One cycle runs each year.
         </p>
 
-        <div className="inline-flex items-center bg-teal-50 border border-teal-200 px-4 py-1.5 rounded-full text-teal-700 text-sm font-medium">
+        <div className="inline-flex items-center bg-teal-50 border border-teal-200 px-4 py-1.5 rounded-full text-teal-700 text-sm font-medium mb-8">
           <Trophy className="h-4 w-4 mr-2" aria-hidden="true" />
           The 2026 cycle is open for entries
+        </div>
+
+        <div className="flex flex-wrap gap-3 justify-center">
+          <Link to="/register-2026" className="btn-cta">
+            Register Your School — KES 2,000
+            <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
+          </Link>
+          <a
+            href="#taking-part"
+            className="inline-flex items-center px-6 py-3 rounded-lg border border-warm-300 text-gray-800 hover:border-teal-500 transition-colors"
+          >
+            What it costs
+          </a>
         </div>
       </div>
     </section>
@@ -245,20 +319,92 @@ const InclusiveRobotics = () => (
     </section>
 
     {/* ============================================================
+        Taking part — registration and the three levels
+    ============================================================ */}
+    <section id="taking-part" className="scroll-mt-20 py-16 sm:py-20">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-10">
+          <h2 className="heading-display text-2xl md:text-3xl text-gray-900 mb-3">Taking part</h2>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            Registration is a one-off fee and covers everything needed to compete. The two levels
+            above it are support a school asks for when it wants it — neither is required to enter.
+          </p>
+        </div>
+
+        {/* Registration price, stated plainly */}
+        <div className="card p-6 sm:p-8 mb-10 text-center bg-warm-50 border-teal-200">
+          <p className="text-sm font-medium text-gray-600 mb-2">To register a school for the 2026 cycle</p>
+          <p className="font-pixel text-4xl sm:text-5xl text-gray-900 mb-2">KES 2,000</p>
+          <p className="text-sm text-gray-600">
+            One-off, per school. Covers entry, the dashboard and the full curriculum, through to
+            judging at the end of the year.
+          </p>
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-3">
+          {LEVELS.map((l) => (
+            <div key={l.level} className={`card p-6 flex flex-col border-t-4 ${l.accent}`}>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 rounded-md bg-warm-50">
+                  <l.icon className="h-5 w-5 text-teal-600" aria-hidden="true" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 m-0">{l.level}</h3>
+                  <p className="text-xs text-gray-500 m-0">{l.tagline}</p>
+                </div>
+              </div>
+
+              <div className="mb-4">
+                <p className="font-pixel text-2xl text-gray-900 m-0">{l.price}</p>
+                <p className="text-xs text-gray-500 m-0">{l.priceNote}</p>
+              </div>
+
+              <p className="text-sm text-gray-600 leading-relaxed mb-4">{l.body}</p>
+
+              <ul className="space-y-2 mt-auto">
+                {l.points.map((pt) => (
+                  <li key={pt} className="flex items-start gap-2 text-sm text-gray-700">
+                    <CheckCircle className="h-4 w-4 text-teal-600 flex-shrink-0 mt-0.5" aria-hidden="true" />
+                    <span>{pt}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        <p className="text-xs text-gray-500 text-center mt-6 max-w-2xl mx-auto">
+          Help and parts are requested from the dashboard once a school is registered. In-person
+          visits have no fixed price — the ChipuRobo team gets in touch to arrange one after you ask.
+        </p>
+      </div>
+    </section>
+
+    {/* ============================================================
         CTA
     ============================================================ */}
     <section className="relative overflow-hidden bg-gray-900 py-20 sm:py-24 scanlines">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(20,184,166,0.12),transparent_70%)]" />
       <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
         <Trophy className="h-10 w-10 text-teal-400 mx-auto mb-4" aria-hidden="true" />
-        <h2 className="heading-display text-2xl sm:text-3xl text-white mb-4">Enter the 2026 cycle</h2>
-        <p className="text-lg text-gray-300 mb-10 max-w-2xl mx-auto">
-          Entries for 2026 are open. Talk to us about bringing your school into the competition.
+        <h2 className="heading-display text-2xl sm:text-3xl text-white mb-4">Register for the 2026 cycle</h2>
+        <p className="text-lg text-gray-300 mb-3 max-w-2xl mx-auto">
+          Entries are open. Registration is <strong className="text-white">KES 2,000</strong> per
+          school and covers everything through to judging.
+        </p>
+        <p className="text-sm text-gray-400 mb-10 max-w-2xl mx-auto">
+          Not sure yet? Talk to us first — we can walk you through what taking part involves.
         </p>
         <div className="flex flex-wrap gap-4 justify-center">
-          <Link to="/contact" className="btn-cta">
-            Talk to the Team
+          <Link to="/register-2026" className="btn-cta">
+            Register Your School
             <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
+          </Link>
+          <Link
+            to="/contact"
+            className="inline-flex items-center px-6 py-3 rounded-lg border border-gray-600 text-gray-200 hover:border-teal-400 hover:text-white transition-colors"
+          >
+            Talk to the Team
           </Link>
         </div>
       </div>
