@@ -391,7 +391,7 @@ const Microsoft = () => {
  Interested schools can register for Season 2 of the programme using the button below or reach out via email for more details.
  </p>
  <button
- onClick={() => navigate('/register-2026')}
+ onClick={() => navigate('/competition#register')}
  className="bg-terracotta-500 hover:bg-terracotta-600 text-white px-8 py-4 rounded-xl transition-all duration-200 text-lg font-semibold inline-flex items-center hover:shadow-soft-xl"
  >
  <Rocket className="mr-2 h-5 w-5" aria-hidden="true" />

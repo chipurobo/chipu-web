@@ -20,7 +20,7 @@ const Services = () => {
  const navigate = useNavigate();
 
  const handleEnroll = () => {
- navigate('/register-2026');
+ navigate('/competition#register');
  };
 
  const mainPrograms = [

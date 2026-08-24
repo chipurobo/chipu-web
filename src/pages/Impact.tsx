@@ -181,7 +181,7 @@ const Impact = () => {
                 Download impact CSV
               </button>
               <Link
-                to="/programs"
+                to="/competition"
                 className="bg-white border border-gray-300 text-gray-800 px-6 py-3 rounded-xl hover:bg-warm-100 transition-colors text-base font-semibold inline-flex items-center justify-center"
               >
                 <ExternalLink className="mr-2 h-5 w-5" aria-hidden="true" />
@@ -323,7 +323,7 @@ const Impact = () => {
           </p>
           <button
             type="button"
-            onClick={() => navigate('/register-2026')}
+            onClick={() => navigate('/competition#register')}
             className="bg-terracotta-500 hover:bg-terracotta-600 text-white px-6 py-3 rounded-xl transition-colors text-base font-semibold"
           >
             Register for 2026

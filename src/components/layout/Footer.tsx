@@ -81,7 +81,7 @@ const Footer = () => {
  { to: '/', label: 'Home' },
  { to: '/about', label: 'About' },
  { to: '/about#team', label: 'Staff' },
- { to: '/programs', label: 'Programs' },
+ { to: '/competition', label: 'Competition' },
  { to: '/impact', label: 'Impact' },
  { to: '/podcast', label: 'Podcast' },
  { to: '/contact', label: 'Contact' },
