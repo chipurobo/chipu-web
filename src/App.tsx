@@ -248,8 +248,11 @@ function PublicLayout() {
   const location = useLocation();
   useEffect(() => {
     const pageName = getPageTitle(location.pathname);
+    // Keep the Home string identical to <title> in index.html — otherwise the
+    // title flips the moment React mounts, and the two disagree about what the
+    // site leads with.
     document.title = pageName === 'Home'
-      ? 'ChipuRobo - Robotics & AI Education'
+      ? 'Inclusive Robotics — A Pan-African Robotics Competition | ChipuRobo'
       : `${pageName} | ChipuRobo`;
     const node = document.getElementById('route-announcer');
     if (node) node.textContent = `Navigated to ${pageName} page`;

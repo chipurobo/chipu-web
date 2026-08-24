@@ -73,8 +73,8 @@ const Home = () => {
  <div className="code-bg absolute inset-0 opacity-40 " aria-hidden="true" />
 
  <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-8 text-center">
- {/* Entries are open — say so before the mission statement. The
-     competition was previously invisible above the fold. */}
+ {/* The headline is the competition itself. This pill carries what the
+     headline cannot: which cycle, and that it is open right now. */}
  <Link
    to="/competition#register"
    className="inline-flex items-center gap-2 bg-teal-50 border border-teal-200 hover:border-teal-400 px-4 py-1.5 rounded-full text-teal-800 text-sm font-medium mb-8 transition-colors"
@@ -85,16 +85,17 @@ const Home = () => {
  </Link>
 
  <h1 className="heading-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-gray-900 mb-8 leading-[1.2]">
- <span className="block">Nurturing</span>
+ <span className="block">A Pan-African</span>
  <span className="block">
- <span className="text-gray-400">Practical Skills</span>
+ <span className="text-gray-400">Robotics</span>
  </span>
- <span className="block">Education in Africa.</span>
+ <span className="block">Competition.</span>
  </h1>
 
  <p className="text-base sm:text-lg text-gray-700 max-w-3xl mx-auto mb-10 leading-relaxed">
- Empowering 4 million youth across Africa by 2030 through hands-on AI,
- robotics, and sustainable innovation — CBC aligned, inclusive, and locally fabricated.
+ Inclusive Robotics is ChipuRobo&rsquo;s competition for African schools. Learners work a
+ curriculum on one of two tracks, each school builds one team project, and every entry
+ is judged at the National Showcase. Inclusive by design, CBC aligned.
  </p>
 
  <div className="flex flex-wrap gap-5 justify-center mb-16">
