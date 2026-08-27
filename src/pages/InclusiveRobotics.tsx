@@ -141,15 +141,20 @@ const LEVELS = [
   },
 ];
 
-// Registration is by email — this is the template a school sends. Folded in
+// The waitlist is by email — this is the template a school sends. Folded in
 // from the old /register-2026 page so the competition lives on one page.
-const EMAIL_TEMPLATE = `Subject: Registration – Inclusive Robotics 2026
+//
+// Joining costs nothing. The fee is still stated here, and on the page, because
+// a school should know what registration will cost before it puts its name
+// down — a waitlist that hides the price only moves the surprise later.
+const EMAIL_TEMPLATE = `Subject: Waitlist – Inclusive Robotics 2026
 
 Dear ChipuRobo Team,
 
-I would like to register our school for Inclusive Robotics, the 2026 cycle of
-the Pan-African robotics competition. I understand registration is KES 2,000
-per school and covers entry, dashboard access, the full curriculum and judging.
+I would like to join the waitlist for Inclusive Robotics, the 2026 cycle of the
+Pan-African robotics competition. I understand there is nothing to pay to join,
+and that registration is KES 2,000 per school when the cycle opens, covering
+entry, dashboard access, the full curriculum and judging.
 
 SCHOOL DETAILS:
 • School Name: [Enter your school name]
@@ -184,7 +189,7 @@ Best regards,
 [Your name]
 [School name]`;
 
-const REGISTER_TO = 'chipurobo@gmail.com';
+const WAITLIST_TO = 'chipurobo@gmail.com';
 
 const ENTRY_PARTS = [
   { icon: FileText, label: 'Title and description', hint: 'What the team built, and the problem it set out to solve.' },
@@ -232,12 +237,12 @@ const InclusiveRobotics = () => {
 
         <div className="inline-flex items-center bg-teal-50 border border-teal-200 px-4 py-1.5 rounded-full text-teal-700 text-sm font-medium mb-8">
           <Trophy className="h-4 w-4 mr-2" aria-hidden="true" />
-          The 2026 cycle is open for entries
+          The 2026 cycle — waitlist open
         </div>
 
         <div className="flex flex-wrap gap-3 justify-center">
           <a href="#register" className="btn-cta">
-            Register Your School — KES 2,000
+            Join the Waitlist
             <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
           </a>
           <a
@@ -247,6 +252,10 @@ const InclusiveRobotics = () => {
             What it costs
           </a>
         </div>
+
+        <p className="text-sm text-gray-500 mt-5">
+          Free to join. Registration is KES 2,000 per school when the cycle opens.
+        </p>
       </div>
     </section>
 
@@ -405,18 +414,20 @@ const InclusiveRobotics = () => {
         <div className="text-center mb-10">
           <h2 className="heading-display text-2xl md:text-3xl text-gray-900 mb-3">Taking part</h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Registration is a one-off fee and covers everything needed to compete. The two levels
-            above it are support a school asks for when it wants it — neither is required to enter.
+            Nothing is payable to join the waitlist. Registration is a one-off fee and covers
+            everything needed to compete. The two levels above it are support a school asks for
+            when it wants it — neither is required to enter.
           </p>
         </div>
 
         {/* Registration price, stated plainly */}
         <div className="card p-6 sm:p-8 mb-10 text-center bg-warm-50 border-teal-200">
-          <p className="text-sm font-medium text-gray-600 mb-2">To register a school for the 2026 cycle</p>
+          <p className="text-sm font-medium text-gray-600 mb-2">Registration for the 2026 cycle</p>
           <p className="font-pixel text-4xl sm:text-5xl text-gray-900 mb-2">KES 2,000</p>
           <p className="text-sm text-gray-600">
             One-off, per school. Covers entry, the dashboard and the full curriculum, through to
-            judging at the end of the year.
+            judging at the end of the year. Payable when the cycle opens — joining the waitlist
+            costs nothing.
           </p>
         </div>
 
@@ -460,18 +471,23 @@ const InclusiveRobotics = () => {
     </section>
 
     {/* ============================================================
-        Register — everything the old /register-2026 page carried,
-        on the one page the competition lives on.
+        Waitlist — everything the old /register-2026 page carried, on the
+        one page the competition lives on.
+
+        The anchor stays #register: the home page, the /impact CTA and the
+        /register-2026 redirect all point at it, and renaming it would break
+        every one of those links plus anything already shared.
     ============================================================ */}
     <section id="register" className="scroll-mt-20 relative overflow-hidden bg-gray-900 py-16 sm:py-20 scanlines">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(20,184,166,0.12),transparent_70%)]" />
       <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-white">
         <div className="text-center mb-10">
           <Trophy className="h-10 w-10 text-teal-400 mx-auto mb-4" aria-hidden="true" />
-          <h2 className="heading-display text-2xl sm:text-3xl text-white mb-3">Register for the 2026 cycle</h2>
+          <h2 className="heading-display text-2xl sm:text-3xl text-white mb-3">Join the waitlist for the 2026 cycle</h2>
           <p className="text-lg text-gray-300 max-w-2xl mx-auto">
-            Registration is <strong className="text-white">KES 2,000</strong> per school and covers
-            entry, the dashboard, the curriculum and judging.
+            Joining the waitlist is <strong className="text-white">free</strong>. Registration is{' '}
+            <strong className="text-white">KES 2,000</strong> per school when the cycle opens, and
+            covers entry, the dashboard, the curriculum and judging.
           </p>
         </div>
 
@@ -479,11 +495,12 @@ const InclusiveRobotics = () => {
         <div className="bg-white/5 border border-white/10 rounded-xl p-6 text-center mb-6">
           <p className="text-sm text-gray-300 mb-2 inline-flex items-center gap-2">
             <Mail className="h-4 w-4 text-teal-400" aria-hidden="true" />
-            Send your registration to
+            Send your waitlist request to
           </p>
-          <p className="font-pixel text-lg sm:text-xl text-teal-300 break-all">{REGISTER_TO}</p>
+          <p className="font-pixel text-lg sm:text-xl text-teal-300 break-all">{WAITLIST_TO}</p>
           <p className="text-sm text-gray-400 mt-3">
-            We reply within 48 hours to confirm your entry and set up your dashboard.
+            We reply within 48 hours to confirm your place on the waitlist, and get in touch
+            again the moment registration opens.
           </p>
         </div>
 
