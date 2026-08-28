@@ -80,7 +80,7 @@ const Home = () => {
    className="inline-flex items-center gap-2 bg-teal-50 border border-teal-200 hover:border-teal-400 px-4 py-1.5 rounded-full text-teal-800 text-sm font-medium mb-8 transition-colors"
  >
    <Trophy className="h-4 w-4" aria-hidden="true" />
-   Inclusive Robotics 2026 — entries are open
+   Inclusive Robotics 2026 — the waitlist is open
    <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
  </Link>
 
@@ -100,13 +100,17 @@ const Home = () => {
 
  <div className="flex flex-wrap gap-5 justify-center mb-16">
  <Link to="/competition#register" className="btn-cta">
-   Register Your School — KES 2,000
+   Join the Waitlist
    <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
  </Link>
  <Link to="/competition" className="btn-outline">
    ◇ How the competition works
  </Link>
  </div>
+
+ <p className="text-sm text-gray-500 -mt-10 mb-16">
+ Free to join. Registration is KES 2,000 per school when the cycle opens.
+ </p>
  </div>
 
  {/* Hero image with bracket frame */}
@@ -413,18 +417,18 @@ const Home = () => {
  <h2 className="heading-display text-2xl sm:text-3xl md:text-4xl text-white mb-6">
  Inclusive Robotics 2026
             <br className="sm:hidden" />
-            <span className="text-teal-400">Entries Are Open</span>
+            <span className="text-teal-400">The Waitlist Is Open</span>
  </h2>
  <p className="text-lg sm:text-xl text-gray-300 mb-3 max-w-3xl mx-auto">
- Register your school, work the curriculum, build your team project, and have it judged at the National Showcase.
+ Join the waitlist now. When the cycle opens you register, work the curriculum, build your team project, and have it judged at the National Showcase.
  </p>
  <p className="text-base text-gray-400 mb-10 max-w-2xl mx-auto">
- KES 2,000 per school — covering entry, the dashboard, the curriculum and judging.
+ Nothing to pay to join. Registration is KES 2,000 per school — covering entry, the dashboard, the curriculum and judging.
  </p>
  <div className="flex flex-wrap gap-5 justify-center">
  <Link to="/competition#register" className="btn-cta">
  <Trophy className="mr-2 h-4 w-4" aria-hidden="true" />
- Register Your School
+ Join the Waitlist
  </Link>
  <Link
  to="/about"

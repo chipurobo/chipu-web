@@ -19,6 +19,9 @@ import {
 const Services = () => {
  const navigate = useNavigate();
 
+ // Every "join the waitlist" button on this page lands on the competition
+ // page's waitlist section — there is one competition, and one place to put
+ // your name down for it.
  const handleEnroll = () => {
  navigate('/competition#register');
  };
@@ -213,9 +216,9 @@ const Services = () => {
  <button
  onClick={handleEnroll}
  className="w-full bg-teal-600 text-white px-6 py-3 rounded-xl hover:bg-teal-700 transition-all duration-200 flex items-center justify-center group/btn font-semibold text-sm focus-visible"
- aria-label={`Enroll in ${program.title} program`}
+ aria-label={`Join the waitlist for ${program.title}`}
  >
- <span>Enroll Now</span>
+ <span>Join the Waitlist</span>
  <ArrowRight className="ml-2 h-4 w-4 transform group-hover/btn:translate-x-1 transition-transform" aria-hidden="true" />
  </button>
  </div>
@@ -294,7 +297,7 @@ const Services = () => {
  onClick={handleEnroll}
  className="bg-terracotta-500 hover:bg-terracotta-600 text-white px-8 py-4 rounded-xl transition-all duration-200 text-lg font-semibold inline-flex items-center group hover:shadow-soft-xl"
  >
- <span>Enroll Now</span>
+ <span>Join the Waitlist</span>
  <ArrowRight className="ml-2 h-5 w-5 transform group-hover:translate-x-1 transition-transform" aria-hidden="true" />
  </button>
  </div>

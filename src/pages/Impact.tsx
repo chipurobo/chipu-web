@@ -326,7 +326,7 @@ const Impact = () => {
             onClick={() => navigate('/competition#register')}
             className="bg-terracotta-500 hover:bg-terracotta-600 text-white px-6 py-3 rounded-xl transition-colors text-base font-semibold"
           >
-            Register for 2026
+            Join the 2026 Waitlist
           </button>
         </div>
       </section>

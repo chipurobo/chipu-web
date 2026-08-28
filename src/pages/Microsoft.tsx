@@ -388,14 +388,14 @@ const Microsoft = () => {
  The 2026 programme runs from January to April, aligning with the Kenya Science and Engineering Fair (KSEF) calendar. Term 1 introduces robotics, Term 2 covers AI and computer vision, and the programme culminates in a national judging round by KSEF in April. Schools across all 47 counties are encouraged to express interest and register early to participate.
  </p>
  <p className="text-lg text-gray-300 mb-8">
- Interested schools can register for Season 2 of the programme using the button below or reach out via email for more details.
+ Interested schools can join the waitlist for Season 2 using the button below, or reach out via email for more details. Joining costs nothing.
  </p>
  <button
  onClick={() => navigate('/competition#register')}
  className="bg-terracotta-500 hover:bg-terracotta-600 text-white px-8 py-4 rounded-xl transition-all duration-200 text-lg font-semibold inline-flex items-center hover:shadow-soft-xl"
  >
  <Rocket className="mr-2 h-5 w-5" aria-hidden="true" />
- Register for 2026 Programme
+ Join the 2026 Waitlist
  </button>
  </div>
  </section>
