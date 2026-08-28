@@ -77,10 +77,22 @@ export interface EventAttendance {
   attended_at: string;
 }
 
+// primary or secondary — the same line the two delivery tracks split on.
+export type SchoolLevel = 'primary' | 'secondary';
+
+// A special school's own designation. SchoolType collapses every special
+// school into 'special', which loses whether a school serves learners who are
+// deaf or learners who are blind — and that decides whether a session needs
+// KSL interpretation or braille. Null for mainstream and integrated schools.
+// A fact about the school, never about a learner.
+export type SpecialNeedsFocus = 'visual_impairment' | 'hearing_impairment';
+
 export interface School {
   id: string;
   name: string;
   type: SchoolType;
+  level: SchoolLevel | null;
+  special_needs_focus: SpecialNeedsFocus | null;
   is_maker_space: boolean;
   county: string | null;
   contact_name: string | null;
