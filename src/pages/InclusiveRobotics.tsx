@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 
 // =============================================================
-// Inclusive Robotics — ChipuRobo's Pan-African robotics competition.
+// Inclusive Robotics — ChipuRobo's schools robotics competition.
 //
 // This page describes the COMPETITION and nothing else. Outreach,
 // bootcamps, teacher training and the partners who help deliver them
@@ -151,8 +151,8 @@ const EMAIL_TEMPLATE = `Subject: Waitlist – Inclusive Robotics 2026
 
 Dear ChipuRobo Team,
 
-I would like to join the waitlist for Inclusive Robotics, the 2026 cycle of the
-Pan-African robotics competition. I understand there is nothing to pay to join,
+I would like to join the waitlist for Inclusive Robotics, the 2026 schools
+competition cycle. I understand there is nothing to pay to join,
 and that registration is KES 2,000 per school when the cycle opens, covering
 entry, dashboard access, the full curriculum and judging.
 
@@ -228,7 +228,7 @@ const InclusiveRobotics = () => {
         <h1 className="heading-display text-3xl md:text-4xl lg:text-5xl text-gray-900 mb-6 leading-[1.2]">
           Inclusive Robotics
           <br />
-          <span className="text-teal-600">A Pan-African Robotics Competition</span>
+          <span className="text-teal-600">One cycle a year. Two tracks. One team project per school.</span>
         </h1>
         <p className="text-base sm:text-lg text-gray-700 max-w-3xl mx-auto leading-relaxed mb-8">
           Schools build inclusive robotics projects through the curriculum and present them at the

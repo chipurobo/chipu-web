@@ -252,7 +252,7 @@ function PublicLayout() {
     // title flips the moment React mounts, and the two disagree about what the
     // site leads with.
     document.title = pageName === 'Home'
-      ? 'Inclusive Robotics — A Pan-African Robotics Competition | ChipuRobo'
+      ? 'ChipuRobo — Nurturing Practical Skills Education in Africa'
       : `${pageName} | ChipuRobo`;
     const node = document.getElementById('route-announcer');
     if (node) node.textContent = `Navigated to ${pageName} page`;

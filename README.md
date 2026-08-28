@@ -34,8 +34,8 @@ inclusive tools — empowering **4 million youth across Africa by 2030**.
 
 ## What we do
 
-**Inclusive Robotics is a Pan-African robotics competition**, run in one cycle
-a year. Schools are entered into a cycle, learners work the curriculum on one of
+**Inclusive Robotics is our schools robotics competition**, run in one cycle
+a year across the continent. Schools are entered into a cycle, learners work the curriculum on one of
 two tracks, and each school builds a single team project as its entry. An entry
 is drafted, submitted, then judged — scored out of 100 with written feedback —
 and presented at the National Showcase. CBC aligned throughout.
