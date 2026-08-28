@@ -163,8 +163,8 @@ const Impact = () => {
               Inclusive Robotics
             </h1>
             <p className="text-lg text-gray-700 mb-3 max-w-2xl mx-auto">
-              A Pan-African robotics competition, run in year-long cycles — and the partner work
-              that carries it across the continent.
+              Our schools competition, run in year-long cycles across the continent — and the
+              partner work that carries it.
             </p>
             <p className="inline-flex items-center gap-1.5 text-sm text-gray-500 mb-8">
               <Globe className="h-4 w-4" aria-hidden="true" />

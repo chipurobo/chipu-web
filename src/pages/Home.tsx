@@ -85,17 +85,17 @@ const Home = () => {
  </Link>
 
  <h1 className="heading-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-gray-900 mb-8 leading-[1.2]">
- <span className="block">A Pan-African</span>
+ <span className="block">Nurturing</span>
  <span className="block">
- <span className="text-gray-400">Robotics</span>
+ <span className="text-gray-400">Practical Skills</span>
  </span>
- <span className="block">Competition.</span>
+ <span className="block">Education in Africa.</span>
  </h1>
 
  <p className="text-base sm:text-lg text-gray-700 max-w-3xl mx-auto mb-10 leading-relaxed">
- Inclusive Robotics is ChipuRobo&rsquo;s competition for African schools. Learners work a
- curriculum on one of two tracks, each school builds one team project, and every entry
- is judged at the National Showcase. Inclusive by design, CBC aligned.
+ Empowering 4 million youth across Africa by 2030 through hands-on AI, robotics, and
+ sustainable innovation — CBC aligned, inclusive, and locally fabricated. Inclusive
+ Robotics, our schools competition, is where it gets built.
  </p>
 
  <div className="flex flex-wrap gap-5 justify-center mb-16">
