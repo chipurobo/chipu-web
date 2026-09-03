@@ -6,6 +6,7 @@ import type { SchoolType } from '../../lib/database.types';
 import { Upload, FileSpreadsheet, Download, X, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useDialog } from '../../lib/useDialog';
 import { generatePassword } from '../../lib/password';
+import { sendInvite } from '../../lib/inviteEmail';
 
 // =============================================================
 // Bulk school import (admin-only)
@@ -22,12 +23,17 @@ import { generatePassword } from '../../lib/password';
 const COUNTY_LOOKUP = new Map(KENYA_COUNTIES.map((c) => [c.toLowerCase(), c]));
 const SCHOOL_TYPES: SchoolType[] = ['mainstream', 'integrated', 'special'];
 
-interface ParsedRow extends SheetRow {
+// An interface inheriting SheetRow's `[key: string]: string` index signature
+// cannot declare optional non-string members — TS2411, four of the thirteen
+// standing errors, in the one flow where a silent type error costs most. An
+// intersection expresses the same shape without the conflict.
+type ParsedRow = SheetRow & {
   __status?: 'pending' | 'ok' | 'error';
   __message?: string;
   __email?: string;
   __password?: string;
-}
+  __invited?: string;
+};
 
 export function SchoolBulkImport({ onClose, onAllDone }: { onClose: () => void; onAllDone: () => void }) {
   const [rows, setRows] = useState<ParsedRow[] | null>(null);
@@ -92,20 +98,24 @@ export function SchoolBulkImport({ onClose, onAllDone }: { onClose: () => void; 
         : 'mainstream';
 
       const password = generatePassword();
-      const username = deriveUsername(fullName);
 
-      if (username.length < 3) {
-        updated[i] = { ...row, __status: 'error', __message: 'Full name too short to derive a username' };
+      // The email column is now the login, so a row without a usable one
+      // cannot be onboarded at all — previously it was optional and the login
+      // was invented from the teacher's name.
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        updated[i] = {
+          ...row, __status: 'error',
+          __message: 'A real email address is required — it is the teacher\u2019s login',
+        };
         setRows([...updated]);
         continue;
       }
 
       const { error } = await supabase.rpc('create_school_with_lead', {
-        p_username:       username,
+        p_login_email:    email,
         p_password:       password,
         p_full_name:      fullName,
         p_phone:          phone,
-        p_contact_email:  email || null,
         p_school_name:    schoolName,
         p_county:         county,
         p_school_type:    type,
@@ -116,11 +126,18 @@ export function SchoolBulkImport({ onClose, onAllDone }: { onClose: () => void; 
       if (error) {
         updated[i] = { ...row, __status: 'error', __message: error.message };
       } else {
+        // Send the same welcome the single-school path sends. The account
+        // exists either way, so a failed send is reported on the row rather
+        // than treated as a failed import — that is what the CSV is now for.
+        const invite = await sendInvite(email, {
+          school: schoolName, loginEmail: email, password,
+        });
         updated[i] = {
           ...row,
           __status: 'ok',
-          __email:  `${username}@chipurobo.local`,
+          __email:  email,
           __password: password,
+          __invited: invite.ok ? 'yes' : `no — ${invite.error ?? 'send failed'}`,
         };
       }
       setRows([...updated]);
@@ -135,13 +152,14 @@ export function SchoolBulkImport({ onClose, onAllDone }: { onClose: () => void; 
     if (!rows) return;
     const successful = rows.filter((r) => r.__status === 'ok');
     if (successful.length === 0) return;
-    const lines = ['school,full_name,email,password'];
+    const lines = ['school,full_name,email,password,invited'];
     successful.forEach((r) => {
       lines.push([
         csvCell(r.school_name ?? r.school ?? ''),
         csvCell(r.full_name ?? ''),
         csvCell(r.__email ?? ''),
         csvCell(r.__password ?? ''),
+        csvCell(r.__invited ?? ''),
       ].join(','));
     });
     downloadCsv('chipurobo-school-credentials.csv', lines.join('\n'));
@@ -158,6 +176,8 @@ export function SchoolBulkImport({ onClose, onAllDone }: { onClose: () => void; 
 
   const okCount = rows?.filter((r) => r.__status === 'ok').length ?? 0;
   const errCount = rows?.filter((r) => r.__status === 'error').length ?? 0;
+  // A created account whose welcome did not send still needs the CSV.
+  const notInvited = (rows ?? []).filter((r) => r.__status === 'ok' && r.__invited !== 'yes').length;
 
   return (
     <div ref={dialogRef} role="region" aria-labelledby="school-bulk-import-heading" className="card p-5">
@@ -258,6 +278,11 @@ export function SchoolBulkImport({ onClose, onAllDone }: { onClose: () => void; 
                   {' · '}
                   <span className="text-emerald-700">{okCount} created</span>
                   {errCount > 0 && <> · <span className="text-red-700">{errCount} failed</span></>}
+                  {okCount > 0 && (
+                    <> · <span className={notInvited > 0 ? 'text-amber-700' : 'text-emerald-700'}>
+                      {okCount - notInvited} of {okCount} emailed
+                    </span></>
+                  )}
                 </>
               )}
             </div>
@@ -284,14 +309,3 @@ export function SchoolBulkImport({ onClose, onAllDone }: { onClose: () => void; 
   );
 }
 
-function deriveUsername(fullName: string): string {
-  return fullName
-    .normalize('NFKD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9\s.-]/g, '')
-    .trim()
-    .replace(/\s+/g, '.')
-    .replace(/\.+/g, '.')
-    .slice(0, 32);
-}
