@@ -58,8 +58,6 @@ const SchoolLessonStage     = lazy(() => import('./dashboard/school/LessonStage'
 const SchoolProject         = lazy(() => import('./dashboard/school/Project').then((m) => ({ default: m.SchoolProject })));
 const SchoolSessions        = lazy(() => import('./dashboard/school/Sessions').then((m) => ({ default: m.SchoolSessions })));
 const SessionRegister       = lazy(() => import('./dashboard/school/SessionRegister').then((m) => ({ default: m.SessionRegister })));
-const SchoolAssessments     = lazy(() => import('./dashboard/school/Assessments').then((m) => ({ default: m.SchoolAssessments })));
-const InstrumentForm        = lazy(() => import('./dashboard/school/InstrumentForm').then((m) => ({ default: m.InstrumentForm })));
 const SchoolActions         = lazy(() => import('./dashboard/school/Actions').then((m) => ({ default: m.SchoolActions })));
 const SchoolWorkshops       = lazy(() => import('./dashboard/school/Workshops').then((m) => ({ default: m.SchoolWorkshops })));
 const Leaderboard           = lazy(() => import('./dashboard/Leaderboard').then((m) => ({ default: m.Leaderboard })));
@@ -186,11 +184,9 @@ function App() {
               <Route path="school/workshops" element={<SchoolWorkshops />} />
               <Route path="school/lessons/:lessonId" element={<SchoolLessonStage />} />
               <Route path="school/project" element={<SchoolProject />} />
-              {/* MERL — sessions, registers, assessments and actions */}
+              {/* MERL — sessions, registers and actions */}
               <Route path="school/sessions" element={<SchoolSessions />} />
               <Route path="school/sessions/:sessionId" element={<SessionRegister />} />
-              <Route path="school/assessments" element={<SchoolAssessments />} />
-              <Route path="school/assessments/:responseId" element={<InstrumentForm />} />
               <Route path="school/actions" element={<SchoolActions />} />
             </Route>
 
