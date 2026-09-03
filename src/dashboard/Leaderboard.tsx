@@ -6,7 +6,7 @@ import {
 } from '../lib/gql/queries';
 import { useAuth } from '../lib/auth';
 import {
-  Trophy, Medal, Award, BookOpen, ClipboardCheck, CalendarDays, Presentation,
+  Trophy, Medal, Award, BookOpen, CalendarDays, Presentation,
   FolderKanban, ExternalLink,
 } from 'lucide-react';
 import { SkeletonRows } from './components/Skeletons';
@@ -79,7 +79,7 @@ export function Leaderboard() {
         </h1>
         <p className="text-sm text-gray-600 mt-1 max-w-2xl">
           Every school in the competition, scored on what the club actually does — lessons
-          completed, assessments returned, sessions run, certificates earned and the project.
+          completed, sessions run, certificates earned and the project.
         </p>
       </div>
 
@@ -91,7 +91,6 @@ export function Leaderboard() {
           </p>
           <div className="flex flex-wrap gap-1.5 mt-2">
             <Chip icon={BookOpen}       label={`${mine.lessons_completed} lessons completed`} />
-            <Chip icon={ClipboardCheck} label={`${mine.assessments_done} assessments returned`} />
             <Chip icon={CalendarDays}   label={`${mine.sessions_delivered} sessions delivered`} />
             <Chip icon={Award}          label={`${mine.certificates_earned} certificates`} />
             <Chip icon={Presentation}   label={`${mine.workshops_attended} workshops attended`} />
@@ -115,7 +114,6 @@ export function Leaderboard() {
               <th>#</th>
               <th>School</th>
               <th>Lessons</th>
-              <th>Assessments</th>
               <th>Sessions</th>
               <th>Certificates</th>
               <th>Workshops</th>
@@ -141,7 +139,6 @@ export function Leaderboard() {
                     {r.county && <span className="text-xs text-gray-500 ml-1.5">{r.county}</span>}
                   </td>
                   <td className="text-sm">{r.lessons_completed}</td>
-                  <td className="text-sm">{r.assessments_done}</td>
                   <td className="text-sm">{r.sessions_delivered}</td>
                   <td className="text-sm">{r.certificates_earned}</td>
                   <td className="text-sm">{r.workshops_attended}</td>
@@ -160,7 +157,6 @@ export function Leaderboard() {
         </summary>
         <ul className="text-sm text-gray-600 mt-3 space-y-1 list-disc pl-5">
           <li>Each learner who passes a lesson earns that lesson's points.</li>
-          <li><strong>5</strong> for every assessment returned — a submitted one, not a draft.</li>
           <li><strong>3</strong> for a session delivered, and <strong>1</strong> for one delivered
             partly. Recording an honest "partly" still counts, because it is the record that
             tells ChipuRobo where support is needed.</li>

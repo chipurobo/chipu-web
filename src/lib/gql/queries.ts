@@ -1,11 +1,11 @@
 import { supabase } from '../supabase';
 import type {
+  Incident, NewIncident,
   School, Product, Order, ClubMember, ProductUnit,
   CertificateTemplate, CertificateIssuance,
   Lesson, LessonCompletion, Project, ProjectTeamMember,
   ProjectJudgment, ChipuEvent, EventSchoolLink, Profile,
   ProgrammeSession, SessionAttendance, SessionActivity, YpnStatus,
-  Instrument, InstrumentVersion, InstrumentResponse, InstrumentAnswer,
   ProgrammeAction, Workshop, WorkshopBooking, WorkshopMode, StageKind,
   Competition, CompetitionSchool, AdaptationType, SessionAdaptation,
 } from '../database.types';
@@ -555,79 +555,6 @@ export async function saveSessionAttendance(
   }
 }
 
-// ── MERL: instruments ───────────────────────────────────────
-
-export async function fetchInstruments(): Promise<Instrument[]> {
-  return unwrap(
-    await supabase.from('instruments').select('*').eq('is_active', true).order('title'),
-  );
-}
-
-/** The active version of an instrument with its sections and questions, ready
- *  to render. Ordering is explicit so the form matches the printed document. */
-export async function fetchActiveInstrumentVersion(slug: string): Promise<InstrumentVersion> {
-  return unwrap(
-    await supabase.from('instrument_versions').select(`
-      *,
-      instruments!inner(*),
-      instrument_sections(
-        *,
-        instrument_questions(*)
-      )
-    `)
-      .eq('instruments.slug', slug)
-      .eq('status', 'active')
-      .order('position', { referencedTable: 'instrument_sections' })
-      .order('position', { referencedTable: 'instrument_sections.instrument_questions' })
-      .single(),
-  ) as InstrumentVersion;
-}
-
-export interface ResponseWithMeta extends InstrumentResponse {
-  version: (InstrumentVersion & { instruments: Instrument | null }) | null;
-}
-
-export async function fetchResponsesForSchool(schoolId: string): Promise<ResponseWithMeta[]> {
-  return unwrap(
-    await supabase.from('instrument_responses').select(`
-      *,
-      version:instrument_versions!instrument_responses_version_id_fkey(
-        *, instruments!instrument_versions_instrument_id_fkey(*)
-      )
-    `)
-      .eq('school_id', schoolId)
-      .order('collected_at', { ascending: false }),
-  ) as ResponseWithMeta[];
-}
-
-export async function createResponse(
-  input: Partial<InstrumentResponse> & { version_id: string },
-): Promise<InstrumentResponse> {
-  return unwrap(await supabase.from('instrument_responses').insert(input).select().single());
-}
-
-export async function fetchAnswers(responseId: string): Promise<InstrumentAnswer[]> {
-  return unwrap(
-    await supabase.from('instrument_answers').select('*').eq('response_id', responseId),
-  );
-}
-
-export async function saveAnswers(
-  rows: Array<Omit<InstrumentAnswer, 'id'>>,
-): Promise<void> {
-  if (rows.length === 0) return;
-  const res = await supabase.from('instrument_answers')
-    .upsert(rows, { onConflict: 'response_id,question_id' });
-  if (res.error) throw new Error(res.error.message);
-}
-
-export async function submitResponse(responseId: string): Promise<void> {
-  const res = await supabase.from('instrument_responses')
-    .update({ status: 'submitted', submitted_at: new Date().toISOString() })
-    .eq('id', responseId);
-  if (res.error) throw new Error(res.error.message);
-}
-
 // ── MERL: programme actions ─────────────────────────────────
 
 export async function fetchActionsForSchool(schoolId: string): Promise<ProgrammeAction[]> {
@@ -673,38 +600,42 @@ export async function fetchTeachersAtSchool(schoolId: string): Promise<Profile[]
   );
 }
 
-/** A single response with the frozen version it was collected against —
- *  sections and questions come from that version, never from the instrument's
- *  current wording, so historical answers keep their original meaning. */
-export async function fetchResponseWithForm(responseId: string): Promise<ResponseWithForm> {
-  return unwrap(
-    await supabase.from('instrument_responses').select(`
-      *,
-      version:instrument_versions!instrument_responses_version_id_fkey(
-        *,
-        instruments!instrument_versions_instrument_id_fkey(*),
-        instrument_sections(*, instrument_questions(*))
-      )
-    `)
-      .eq('id', responseId)
-      .order('position', { referencedTable: 'version.instrument_sections' })
-      .order('position', { referencedTable: 'version.instrument_sections.instrument_questions' })
-      .single(),
-  ) as ResponseWithForm;
+// ── Safeguarding incidents ──────────────────────────────────
+// createIncident does NOT ask for the row back. A school lead cannot read
+// incidents, and a RETURNING clause is subject to the select policy, so
+// requesting a representation makes the entire insert fail with what looks
+// like a check violation. Verified against the database, not assumed.
+
+export async function createIncident(input: NewIncident): Promise<void> {
+  const res = await supabase.from('incidents').insert(input);
+  if (res.error) throw new Error(res.error.message);
 }
 
-export interface ResponseWithForm extends InstrumentResponse {
-  version: (InstrumentVersion & {
-    instruments: Instrument | null;
-    instrument_sections: Array<{
-      id: string; position: number; code: string | null; title: string;
-      description: string | null; staff_only: boolean;
-      instrument_questions: Array<{
-        id: string; position: number; code: string | null; prompt: string;
-        help_text: string | null; qtype: string; options: unknown; required: boolean;
-      }>;
-    }>;
-  }) | null;
+/** A school lead cannot read their reports back — only count them. */
+export async function fetchMySchoolIncidentCount(): Promise<number> {
+  const res = await supabase.rpc('my_school_incident_count');
+  if (res.error) throw new Error(res.error.message);
+  return Number(res.data ?? 0);
+}
+
+/** Admin only; RLS enforces that, the route guard merely agrees with it. */
+export async function fetchIncidents(
+  opts: { includeClosed?: boolean } = {},
+): Promise<Array<Incident & { school: { name: string } | null }>> {
+  let q = supabase
+    .from('incidents')
+    .select('*, school:schools!incidents_school_id_fkey(name)')
+    .order('occurred_on', { ascending: false });
+  if (!opts.includeClosed) q = q.neq('status', 'closed');
+  return unwrap(await q) as Array<Incident & { school: { name: string } | null }>;
+}
+
+export async function updateIncident(
+  id: string,
+  patch: Partial<Pick<Incident, 'status' | 'admin_notes' | 'closed_at'>>,
+): Promise<void> {
+  const res = await supabase.from('incidents').update(patch).eq('id', id);
+  if (res.error) throw new Error(res.error.message);
 }
 
 // ── Curriculum lessons ──────────────────────────────────────
@@ -898,7 +829,6 @@ export interface LeaderboardRow {
   county:              string | null;
   lesson_points:       number;
   lessons_completed:   number;
-  assessments_done:    number;
   sessions_delivered:  number;
   certificates_earned: number;
   workshops_attended:  number;

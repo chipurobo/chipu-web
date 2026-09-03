@@ -104,6 +104,35 @@ export interface School {
   updated_at: string;
 }
 
+// === Safeguarding incidents ===
+//
+// The learner is a participant CODE, never a name, and learner_code is
+// deliberately not a foreign key — see 20260904000001_incidents.sql. Reading a
+// row is admin-only, including for whoever filed it.
+
+export type IncidentStatus   = 'reported' | 'acknowledged' | 'under_review' | 'closed';
+export type IncidentSeverity = 'low' | 'medium' | 'high';
+
+export interface Incident {
+  id:           string;
+  school_id:    string;
+  learner_code: string | null;
+  occurred_on:  string;
+  severity:     IncidentSeverity;
+  description:  string;
+  reported_by:  string;
+  status:       IncidentStatus;
+  admin_notes:  string | null;
+  closed_at:    string | null;
+  closed_by:    string | null;
+  created_at:   string;
+  updated_at:   string;
+}
+
+export type NewIncident = Pick<
+  Incident, 'school_id' | 'reported_by' | 'learner_code' | 'occurred_on' | 'severity' | 'description'
+>;
+
 // === Lessons (belong to a workshop / events row) ===
 
 export type StageKind =

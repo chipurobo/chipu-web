@@ -7,7 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchPendingBookingCount } from '../lib/gql/queries';
 import {
   LogOut, Home, School, Package, ClipboardList, Users, Boxes, Wrench, Send, Menu, X,
-  Award, Layers, FolderKanban, BookOpen, CalendarDays, ClipboardCheck, ListChecks,
+  Award, Layers, FolderKanban, BookOpen, CalendarDays, ListChecks, ShieldAlert,
   Presentation, Trophy, Medal,
 } from 'lucide-react';
 
@@ -38,8 +38,9 @@ const DASHBOARD_PAGE_TITLES: Record<string, string> = {
   '/dashboard/school/workshops':    'Workshops',
   '/dashboard/school/project':      'Project',
   '/dashboard/school/sessions':     'Sessions',
-  '/dashboard/school/assessments':  'Assessments',
   '/dashboard/school/actions':      'Actions',
+  '/dashboard/school/report-incident': 'Report a concern',
+  '/dashboard/admin/incidents':     'Safeguarding',
 };
 function getDashboardPageTitle(path: string): string {
   if (DASHBOARD_PAGE_TITLES[path]) return DASHBOARD_PAGE_TITLES[path];
@@ -47,7 +48,6 @@ function getDashboardPageTitle(path: string): string {
   if (path.startsWith('/dashboard/certificate/'))   return 'Certificate';
   if (path.startsWith('/dashboard/school/lessons/')) return 'Lesson roster';
   if (path.startsWith('/dashboard/school/sessions/')) return 'Attendance register';
-  if (path.startsWith('/dashboard/school/assessments/')) return 'Assessment';
   return 'Dashboard';
 }
 
@@ -314,6 +314,9 @@ function DashboardShell() {
               <SidebarLink to="/dashboard/admin/schools" icon={School}>
                 Schools
               </SidebarLink>
+              <SidebarLink to="/dashboard/admin/incidents" icon={ShieldAlert}>
+                Safeguarding
+              </SidebarLink>
               <SidebarLink to="/dashboard/admin/projects" icon={FolderKanban}>
                 Projects
               </SidebarLink>
@@ -359,17 +362,17 @@ function DashboardShell() {
               </SidebarLink>
 
               {/* ─── Monitoring group ───
-                  The MERL toolkit: what was delivered, who was there, the
-                  baseline/endline instruments and anything still outstanding. */}
+                  What was delivered, who was there, and anything still
+                  outstanding. */}
               <SidebarGroupLabel>Monitoring</SidebarGroupLabel>
               <SidebarLink to="/dashboard/school/sessions" icon={CalendarDays}>
                 Sessions
               </SidebarLink>
-              <SidebarLink to="/dashboard/school/assessments" icon={ClipboardCheck}>
-                Assessments
-              </SidebarLink>
               <SidebarLink to="/dashboard/school/actions" icon={ListChecks}>
                 Actions
+              </SidebarLink>
+              <SidebarLink to="/dashboard/school/report-incident" icon={ShieldAlert}>
+                Report a concern
               </SidebarLink>
 
               {/* ─── Manufacturing group ───
