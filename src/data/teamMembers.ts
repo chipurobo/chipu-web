@@ -4,7 +4,7 @@ export interface TeamMember {
   bio: string;
   photo?: string;
   social: {
-    linkedin: string;
+    linkedin?: string;
   };
 }
 
@@ -59,6 +59,12 @@ export const teamMembers: TeamMember[] = [
     social: {
       linkedin: 'https://www.linkedin.com/in/deborah-masubo-12307a1b6/',
     },
+  },
+  {
+    name: 'Shekinah Muthoni',
+    role: 'Safeguarding Lead & Community',
+    bio: 'Safeguarding lead, responsible for how the programme keeps learners safe, and for the relationships with the schools and communities it runs in.',
+    social: {},
   },
   {
     name: 'Ryan Muuo',
