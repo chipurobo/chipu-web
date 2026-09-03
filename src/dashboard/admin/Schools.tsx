@@ -28,24 +28,8 @@ import { SkeletonRows } from '../components/Skeletons';
 // =============================================================
 export const CHIPUROBO_EMAIL_DOMAIN = 'chipurobo.local';
 
-function deriveUsername(fullName: string): string {
-  return fullName
-    .normalize('NFKD')
-    .replace(/[̀-ͯ]/g, '')   // strip combining diacritics
-    .toLowerCase()
-    .replace(/[^a-z0-9\s.-]/g, '')
-    .trim()
-    .replace(/\s+/g, '.')
-    .replace(/\.+/g, '.')
-    .slice(0, 32);
-}
-
-function deriveLoginEmail(fullName: string): string {
-  const u = deriveUsername(fullName);
-  return u ? `${u}@${CHIPUROBO_EMAIL_DOMAIN}` : '';
-}
-
-// Re-attach the @chipurobo.local suffix to a stored username for display.
+// Legacy leads store a bare username; new ones store a real address. Passing
+// anything containing "@" straight through covers both.
 function usernameToLoginEmail(username: string): string {
   return username.includes('@') ? username : `${username}@${CHIPUROBO_EMAIL_DOMAIN}`;
 }
@@ -62,7 +46,8 @@ interface SchoolLead {
 interface NewCreds {
   school:        string;
   username:      string;
-  password:      string;
+  // Null when only the login email changed — there is no new password to show.
+  password:      string | null;
   contactEmail?: string | null;   // teacher's real address — enables the Send button
 }
 
@@ -442,16 +427,15 @@ function CreateSchoolForm({
 
   const dialogRef = useDialog<HTMLDivElement>({ open: true, onClose, trapFocus: false });
 
-  // Username is ALWAYS slug(full_name). No separate field, no override.
-  const username = useMemo(() => deriveUsername(fullName), [fullName]);
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     setErr(null);
-    if (username.length < 3) {
+    const loginEmail = contactEmail.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(loginEmail)) {
       setSubmitting(false);
-      setErr('Full name must contain at least 3 valid characters.');
+      setErr('A real email address is required — it is the teacher’s login, and the only way to reach them for a reset.');
       return;
     }
 
@@ -466,11 +450,10 @@ function CreateSchoolForm({
     }
 
     const { data, error } = await supabase.rpc('create_school_with_lead', {
-      p_username:       username,
+      p_login_email:    loginEmail,
       p_password:       password,
       p_full_name:      fullName.trim(),
       p_phone:          phone.trim(),
-      p_contact_email:  contactEmail.trim() || null,
       p_school_name:    schoolName.trim(),
       p_county:         county.trim() || null,
       p_school_type:    type,
@@ -508,9 +491,9 @@ function CreateSchoolForm({
     setSubmitting(false);
     onCreated({
       school:       schoolName.trim(),
-      username,
+      username:     loginEmail,
       password,
-      contactEmail: contactEmail.trim() || null,
+      contactEmail: loginEmail,
     });
   };
 
@@ -624,26 +607,18 @@ function CreateSchoolForm({
           />
         </div>
 
-        <div>
-          <label className="field-label" htmlFor="create-school-email">Teacher's email (for your records)</label>
+        <div className="sm:col-span-2">
+          <label className="field-label" htmlFor="create-school-email">
+            Teacher&rsquo;s email <span aria-hidden="true">*</span>
+          </label>
           <input
-            id="create-school-email" type="email" className="field-input"
+            id="create-school-email" type="email" required className="field-input"
             value={contactEmail} onChange={(e) => setContactEmail(e.target.value)}
-          />
-          <p className="field-help">Optional — kept on the school record so you know how to reach them.</p>
-        </div>
-
-        <div>
-          <label className="field-label" htmlFor="create-school-auto-email">Email (auto)</label>
-          <input
-            id="create-school-auto-email"
-            type="text" readOnly
-            className="field-input font-mono bg-warm-100 text-gray-700"
-            value={username ? deriveLoginEmail(fullName) : '— enter a full name above —'}
-            tabIndex={-1}
+            placeholder="mary.wanjiku@school.ac.ke"
           />
           <p className="field-help">
-            The teacher logs in with this email. It's derived from the full name above.
+            Their real address. This is the login, and the only way to send an invite or
+            recover the account &mdash; which is why it is required rather than optional.
           </p>
         </div>
 
@@ -858,13 +833,36 @@ function EditCredentialsPanel({
   // the school was created. Editing it would break the "one consistent
   // naming scheme" invariant, so we just display it read-only.
 
+  const [loginEmail, setLoginEmail] = useState('');
+
+  const saveLoginEmail = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!loginEmail) return;
+    setSaving(true); setErr(null);
+    const { error } = await supabase.rpc('admin_update_login', {
+      p_user_id:     lead.user_id,
+      p_login_email: loginEmail.trim().toLowerCase(),
+    });
+    setSaving(false);
+    if (error) { setErr(error.message); return; }
+    setLoginEmail('');
+    // Same channel the password reset uses, so the parent list refreshes and
+    // the new address is what gets shown and shared.
+    onSaved({
+      school:       lead.school_name ?? '—',
+      username:     loginEmail.trim().toLowerCase(),
+      password:     null,
+      contactEmail: loginEmail.trim().toLowerCase(),
+    });
+  };
+
   const savePassword = async (e: FormEvent) => {
     e.preventDefault();
     if (!password) return;
     setSaving(true); setErr(null);
-    const { error } = await supabase.rpc('admin_reset_lead_password', {
-      p_user_id:      lead.user_id,
-      p_new_password: password,
+    const { error } = await supabase.rpc('admin_update_login', {
+      p_user_id:  lead.user_id,
+      p_password: password,
     });
     setSaving(false);
     if (error) {
@@ -900,6 +898,38 @@ function EditCredentialsPanel({
           {err}
         </div>
       )}
+
+      {lead.username.endsWith(CHIPUROBO_EMAIL_DOMAIN) || !lead.username.includes('@') ? (
+        <div className="border border-amber-300 bg-amber-50 rounded-md p-3 mb-3">
+          <p className="text-sm text-amber-900 m-0">
+            This teacher still signs in with a <span className="font-mono">@{CHIPUROBO_EMAIL_DOMAIN}</span>{' '}
+            address. Nothing can be sent there. Move them onto their real address below &mdash;
+            their password is unchanged, but the address they type to sign in will be.
+          </p>
+        </div>
+      ) : null}
+
+      <form onSubmit={saveLoginEmail} aria-labelledby="login-email-heading" className="border border-warm-200 rounded-md p-3 bg-warm-50 mb-3">
+        <h3 id="login-email-heading" className="m-0 mb-2 flex items-center text-sm">
+          <KeyRound className="h-3.5 w-3.5 mr-1 text-teal-700" aria-hidden="true" />
+          Change login email
+        </h3>
+        <div className="flex gap-2">
+          <label htmlFor="login-email-input" className="sr-only">New login email</label>
+          <input
+            id="login-email-input" type="email" className="field-input font-mono"
+            placeholder="teacher@school.ac.ke"
+            value={loginEmail}
+            onChange={(e) => setLoginEmail(e.target.value)}
+          />
+          <button type="submit" className="btn-primary" disabled={saving || !loginEmail}>
+            Change
+          </button>
+        </div>
+        <p className="field-help">
+          Tell them before you do this &mdash; it is the address they type to sign in.
+        </p>
+      </form>
 
       <form onSubmit={savePassword} aria-labelledby="reset-password-heading" className="border border-warm-200 rounded-md p-3 bg-warm-50">
         <h3 id="reset-password-heading" className="m-0 mb-2 flex items-center text-sm">
@@ -946,7 +976,7 @@ function CredentialsCard({
   title, school, username, password, contactEmail, onDismiss,
 }: {
   title: string;
-  school: string; username: string; password: string;
+  school: string; username: string; password: string | null;
   contactEmail?: string | null;
   onDismiss: () => void;
 }) {
@@ -986,8 +1016,10 @@ Please sign in and let us know if anything looks off.
             <td style="padding:4px 0;"><a href="${escapeHtml(loginUrl)}">${escapeHtml(loginUrl)}</a></td></tr>
         <tr><td style="padding:4px 12px 4px 0;color:#6b7280;">Email</td>
             <td style="padding:4px 0;font-family:monospace;">${escapeHtml(loginEmail)}</td></tr>
-        <tr><td style="padding:4px 12px 4px 0;color:#6b7280;">Password</td>
-            <td style="padding:4px 0;font-family:monospace;">${escapeHtml(password)}</td></tr>
+        ${password
+          ? `<tr><td style="padding:4px 12px 4px 0;color:#6b7280;">Password</td>
+                 <td style="padding:4px 0;font-family:monospace;">${escapeHtml(password)}</td></tr>`
+          : ''}
       </table>
       <p style="color:#6b7280;font-size:13px;">Please sign in and let us know if anything looks off.</p>
       <p style="color:#6b7280;font-size:13px;">— ChipuRobo</p>

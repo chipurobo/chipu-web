@@ -4,10 +4,13 @@ import { parseSheet, parseBoolish, downloadXlsx, type SheetRow } from '../../lib
 import { Upload, FileSpreadsheet, Download, X, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useDialog } from '../../lib/useDialog';
 
-interface ParsedRow extends SheetRow {
+// Same TS2411 as SchoolBulkImport: an interface cannot add optional
+// non-string members over SheetRow's string index signature. An intersection
+// can.
+type ParsedRow = SheetRow & {
   __status?: 'pending' | 'ok' | 'error';
   __message?: string;
-}
+};
 
 /**
  * Bulk import students into club_members.
