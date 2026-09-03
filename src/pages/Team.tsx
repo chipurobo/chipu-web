@@ -61,7 +61,10 @@ const Team = () => {
  </p>
  </div>
 
- {/* Social Links */}
+ {/* Social Links — only where there is a real profile to link to. This
+     used to render an <a href="#"> for anyone without one, which looked
+     like a link and went nowhere. */}
+ {member.social.linkedin && member.social.linkedin !== '#' && (
  <div className="px-6 pb-6 pt-2 border-t border-gray-100 mt-2">
  <div className="flex justify-center pt-4">
  <a
@@ -75,6 +78,7 @@ const Team = () => {
  </a>
  </div>
  </div>
+ )}
  </div>
  ))}
  </div>
