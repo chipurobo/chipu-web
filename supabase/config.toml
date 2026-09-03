@@ -34,7 +34,11 @@ enabled = true
 site_url = "http://localhost:5173"
 additional_redirect_urls = [
   "http://localhost:5173/dashboard",
-  "https://chipurobo.com/dashboard"
+  "https://chipurobo.com/dashboard",
+  # Where a password-reset link lands. GoTrue refuses any redirect target not
+  # listed here, so the mail would arrive and the link would then fail.
+  "http://localhost:5173/dashboard/reset-password",
+  "https://chipurobo.com/dashboard/reset-password"
 ]
 jwt_expiry = 3600
 
@@ -58,6 +62,38 @@ enable_signup = true
 double_confirm_changes = false
 enable_confirmations = false
 secure_password_change = false
+
+# === Outbound mail: SendKit over SMTP ===
+#
+# Without this, GoTrue falls back to Supabase's built-in sender, which is rate
+# limited to a handful of messages an hour and documented as test-only. That is
+# why "forgot password" could not exist: the reset mail would silently not
+# arrive for most people.
+#
+# The password is the SendKit API key. It is NOT written here — `env()` reads it
+# at startup, and the value stays in .env.local locally and in the project's
+# secrets in the hosted environment. The same key already backs the send-email
+# edge function.
+#
+# Port 465 is implicit TLS, which is what SendKit lists first. 587 or 2587 are
+# available for STARTTLS if a host blocks 465.
+#
+# NOTE: like enable_signup above, this file configures the LOCAL stack only.
+# The hosted project must be set separately — Dashboard → Authentication →
+# Emails → SMTP Settings — using the same four values.
+# enabled = false ON PURPOSE. This file configures the LOCAL stack, where mail
+# should land in Mailpit (http://127.0.0.1:54324) and not be sent to a real
+# teacher from someone's laptop. Turning this on locally also needs
+# SENDKIT_API_KEY in .env.local, which developers do not have and should not
+# need. Flip it only to debug the real sender deliberately.
+[auth.email.smtp]
+enabled     = false
+host        = "smtp.sendkit.dev"
+port        = 465
+user        = "sendkit"
+pass        = "env(SENDKIT_API_KEY)"
+admin_email = "chipurobo@gmail.com"
+sender_name = "ChipuRobo"
 
 # Edge functions
 #

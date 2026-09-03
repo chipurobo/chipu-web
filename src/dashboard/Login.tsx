@@ -6,8 +6,8 @@ import { Sparkles } from 'lucide-react';
 const ONBOARDING_KEY = 'chipurobo:onboarding-seen';
 
 // Self-signup is intentionally absent. Schools (and their lead-teacher
-// logins) are created by ChipuRobo admins on /dashboard/admin/schools.
-// The teacher receives email + temp password from the admin manually.
+// logins) are created by ChipuRobo admins on /dashboard/admin/schools, and the
+// teacher is emailed their login automatically on creation.
 //
 // Login is EMAIL + password. The field is forgiving — if the user pastes
 // only the "username" half of their school-lead login (e.g. "mary.wanjiku"),
@@ -116,6 +116,12 @@ export function Login() {
             <button type="submit" className="btn-primary w-full" disabled={submitting}>
               {submitting ? 'Signing in…' : 'Sign in'}
             </button>
+
+            <p className="text-sm text-center mt-3 mb-0">
+              <Link to="/dashboard/forgot-password" className="text-teal-700 hover:underline">
+                Forgot your password?
+              </Link>
+            </p>
           </form>
 
           <div className="text-xs text-gray-500 mt-6 text-center flex flex-col gap-2">

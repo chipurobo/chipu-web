@@ -25,6 +25,10 @@ export const supabase = createClient(url, key, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
-    detectSessionInUrl: false, // no OAuth/magic-link callbacks; we use email+password
+    // Password recovery is a link-based callback: GoTrue puts the recovery
+    // tokens in the URL fragment, and supabase-js only picks them up when this
+    // is on. It was off because email+password was the only flow; now it is
+    // not. There is still no OAuth or magic-link sign-in.
+    detectSessionInUrl: true,
   },
 });

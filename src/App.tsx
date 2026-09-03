@@ -35,6 +35,8 @@ import { DashboardLayout } from './dashboard/DashboardLayout';
 
 const DashLogin             = lazy(() => import('./dashboard/Login').then((m) => ({ default: m.Login })));
 const DashWelcome           = lazy(() => import('./dashboard/Welcome').then((m) => ({ default: m.Welcome })));
+const DashForgotPassword    = lazy(() => import('./dashboard/ForgotPassword').then((m) => ({ default: m.ForgotPassword })));
+const DashResetPassword     = lazy(() => import('./dashboard/ResetPassword').then((m) => ({ default: m.ResetPassword })));
 const DashboardHome         = lazy(() => import('./dashboard/DashboardHome').then((m) => ({ default: m.DashboardHome })));
 const AdminSchools          = lazy(() => import('./dashboard/admin/Schools').then((m) => ({ default: m.AdminSchools })));
 const AdminSchoolDetails    = lazy(() => import('./dashboard/admin/SchoolDetails').then((m) => ({ default: m.AdminSchoolDetails })));
@@ -118,6 +120,9 @@ function App() {
                 pages render bare; everything else is gated by <RequireAuth>. */}
             <Route path="/dashboard/login" element={<DashLogin />} />
             <Route path="/dashboard/welcome" element={<DashWelcome />} />
+            {/* Password recovery. Both render bare, like login. */}
+            <Route path="/dashboard/forgot-password" element={<DashForgotPassword />} />
+            <Route path="/dashboard/reset-password" element={<DashResetPassword />} />
             {/* Legacy self-signup URL — redirect to login. */}
             <Route path="/dashboard/register-club" element={<Navigate to="/dashboard/login" replace />} />
             <Route
