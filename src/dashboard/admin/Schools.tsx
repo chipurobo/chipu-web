@@ -8,7 +8,7 @@ import { KENYA_COUNTIES } from '../../lib/counties';
 import { Wrench, Plus, X, Check, KeyRound, Upload, Pencil, Trash2, Send, AlertCircle } from 'lucide-react';
 import { SchoolBulkImport } from './SchoolBulkImport';
 import { sendEmail } from '../../lib/sendEmail';
-import { getDashboardPath } from '../../lib/dashboardUrl';
+import { buildInvite } from '../../lib/inviteEmail';
 import { generatePassword } from '../../lib/password';
 import { useNotifications } from '../../lib/notifications';
 import { useDialog } from '../../lib/useDialog';
@@ -991,50 +991,14 @@ function CredentialsCard({
   const dialogRef = useDialog<HTMLDivElement>({ open: true, onClose: onDismiss, trapFocus: false });
 
   const loginEmail = usernameToLoginEmail(username);
-  const loginUrl   = getDashboardPath('/dashboard/login');
 
-  const text =
-`Hi,
-
-Your ChipuRobo code-club dashboard is ready.
-
-  School:   ${school}
-  Login:    ${loginUrl}
-  Email:    ${loginEmail}
-  Password: ${password}
-
-Please sign in and let us know if anything looks off.
-
-— ChipuRobo`;
-
-  const html = `
-    <div style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;color:#1f2937;max-width:560px;">
-      <h2 style="margin:0 0 8px;">Welcome to ChipuRobo</h2>
-      <p>Your code-club dashboard for <strong>${escapeHtml(school)}</strong> is ready.</p>
-      <table style="border-collapse:collapse;margin:16px 0;">
-        <tr><td style="padding:4px 12px 4px 0;color:#6b7280;">Login</td>
-            <td style="padding:4px 0;"><a href="${escapeHtml(loginUrl)}">${escapeHtml(loginUrl)}</a></td></tr>
-        <tr><td style="padding:4px 12px 4px 0;color:#6b7280;">Email</td>
-            <td style="padding:4px 0;font-family:monospace;">${escapeHtml(loginEmail)}</td></tr>
-        ${password
-          ? `<tr><td style="padding:4px 12px 4px 0;color:#6b7280;">Password</td>
-                 <td style="padding:4px 0;font-family:monospace;">${escapeHtml(password)}</td></tr>`
-          : ''}
-      </table>
-      <p style="color:#6b7280;font-size:13px;">Please sign in and let us know if anything looks off.</p>
-      <p style="color:#6b7280;font-size:13px;">— ChipuRobo</p>
-    </div>`;
+  const { subject, text, html } = buildInvite({ school, loginEmail, password });
 
   const doSend = async () => {
     if (!contactEmail) return;
     setSending(true);
     setResult({ state: 'idle' });
-    const { ok, error } = await sendEmail({
-      to:      contactEmail,
-      subject: `Your ChipuRobo dashboard — ${school}`,
-      html,
-      text,
-    });
+    const { ok, error } = await sendEmail({ to: contactEmail, subject, html, text });
     setSending(false);
     if (ok) {
       setResult({ state: 'sent', to: contactEmail });
@@ -1101,12 +1065,4 @@ Please sign in and let us know if anything looks off.
   );
 }
 
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
 
