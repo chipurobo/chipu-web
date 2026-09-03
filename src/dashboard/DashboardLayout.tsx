@@ -7,7 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchPendingBookingCount } from '../lib/gql/queries';
 import {
   LogOut, Home, School, Package, ClipboardList, Users, Boxes, Wrench, Send, Menu, X,
-  Award, Layers, FolderKanban, BookOpen, CalendarDays, ListChecks,
+  Award, Layers, FolderKanban, BookOpen, CalendarDays, ListChecks, ShieldAlert,
   Presentation, Trophy, Medal,
 } from 'lucide-react';
 
@@ -39,6 +39,8 @@ const DASHBOARD_PAGE_TITLES: Record<string, string> = {
   '/dashboard/school/project':      'Project',
   '/dashboard/school/sessions':     'Sessions',
   '/dashboard/school/actions':      'Actions',
+  '/dashboard/school/report-incident': 'Report a concern',
+  '/dashboard/admin/incidents':     'Safeguarding',
 };
 function getDashboardPageTitle(path: string): string {
   if (DASHBOARD_PAGE_TITLES[path]) return DASHBOARD_PAGE_TITLES[path];
@@ -312,6 +314,9 @@ function DashboardShell() {
               <SidebarLink to="/dashboard/admin/schools" icon={School}>
                 Schools
               </SidebarLink>
+              <SidebarLink to="/dashboard/admin/incidents" icon={ShieldAlert}>
+                Safeguarding
+              </SidebarLink>
               <SidebarLink to="/dashboard/admin/projects" icon={FolderKanban}>
                 Projects
               </SidebarLink>
@@ -365,6 +370,9 @@ function DashboardShell() {
               </SidebarLink>
               <SidebarLink to="/dashboard/school/actions" icon={ListChecks}>
                 Actions
+              </SidebarLink>
+              <SidebarLink to="/dashboard/school/report-incident" icon={ShieldAlert}>
+                Report a concern
               </SidebarLink>
 
               {/* ─── Manufacturing group ───

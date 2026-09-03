@@ -1,5 +1,6 @@
 import { supabase } from '../supabase';
 import type {
+  Incident, NewIncident,
   School, Product, Order, ClubMember, ProductUnit,
   CertificateTemplate, CertificateIssuance,
   Lesson, LessonCompletion, Project, ProjectTeamMember,
@@ -597,6 +598,44 @@ export async function fetchTeachersAtSchool(schoolId: string): Promise<Profile[]
       .eq('role', 'school_lead')
       .order('full_name'),
   );
+}
+
+// ── Safeguarding incidents ──────────────────────────────────
+// createIncident does NOT ask for the row back. A school lead cannot read
+// incidents, and a RETURNING clause is subject to the select policy, so
+// requesting a representation makes the entire insert fail with what looks
+// like a check violation. Verified against the database, not assumed.
+
+export async function createIncident(input: NewIncident): Promise<void> {
+  const res = await supabase.from('incidents').insert(input);
+  if (res.error) throw new Error(res.error.message);
+}
+
+/** A school lead cannot read their reports back — only count them. */
+export async function fetchMySchoolIncidentCount(): Promise<number> {
+  const res = await supabase.rpc('my_school_incident_count');
+  if (res.error) throw new Error(res.error.message);
+  return Number(res.data ?? 0);
+}
+
+/** Admin only; RLS enforces that, the route guard merely agrees with it. */
+export async function fetchIncidents(
+  opts: { includeClosed?: boolean } = {},
+): Promise<Array<Incident & { school: { name: string } | null }>> {
+  let q = supabase
+    .from('incidents')
+    .select('*, school:schools!incidents_school_id_fkey(name)')
+    .order('occurred_on', { ascending: false });
+  if (!opts.includeClosed) q = q.neq('status', 'closed');
+  return unwrap(await q) as Array<Incident & { school: { name: string } | null }>;
+}
+
+export async function updateIncident(
+  id: string,
+  patch: Partial<Pick<Incident, 'status' | 'admin_notes' | 'closed_at'>>,
+): Promise<void> {
+  const res = await supabase.from('incidents').update(patch).eq('id', id);
+  if (res.error) throw new Error(res.error.message);
 }
 
 // ── Curriculum lessons ──────────────────────────────────────
