@@ -22,12 +22,16 @@ import { generatePassword } from '../../lib/password';
 const COUNTY_LOOKUP = new Map(KENYA_COUNTIES.map((c) => [c.toLowerCase(), c]));
 const SCHOOL_TYPES: SchoolType[] = ['mainstream', 'integrated', 'special'];
 
-interface ParsedRow extends SheetRow {
+// An interface inheriting SheetRow's `[key: string]: string` index signature
+// cannot declare optional non-string members — TS2411, four of the thirteen
+// standing errors, in the one flow where a silent type error costs most. An
+// intersection expresses the same shape without the conflict.
+type ParsedRow = SheetRow & {
   __status?: 'pending' | 'ok' | 'error';
   __message?: string;
   __email?: string;
   __password?: string;
-}
+};
 
 export function SchoolBulkImport({ onClose, onAllDone }: { onClose: () => void; onAllDone: () => void }) {
   const [rows, setRows] = useState<ParsedRow[] | null>(null);
@@ -92,20 +96,24 @@ export function SchoolBulkImport({ onClose, onAllDone }: { onClose: () => void; 
         : 'mainstream';
 
       const password = generatePassword();
-      const username = deriveUsername(fullName);
 
-      if (username.length < 3) {
-        updated[i] = { ...row, __status: 'error', __message: 'Full name too short to derive a username' };
+      // The email column is now the login, so a row without a usable one
+      // cannot be onboarded at all — previously it was optional and the login
+      // was invented from the teacher's name.
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        updated[i] = {
+          ...row, __status: 'error',
+          __message: 'A real email address is required — it is the teacher\u2019s login',
+        };
         setRows([...updated]);
         continue;
       }
 
       const { error } = await supabase.rpc('create_school_with_lead', {
-        p_username:       username,
+        p_login_email:    email,
         p_password:       password,
         p_full_name:      fullName,
         p_phone:          phone,
-        p_contact_email:  email || null,
         p_school_name:    schoolName,
         p_county:         county,
         p_school_type:    type,
@@ -119,7 +127,7 @@ export function SchoolBulkImport({ onClose, onAllDone }: { onClose: () => void; 
         updated[i] = {
           ...row,
           __status: 'ok',
-          __email:  `${username}@chipurobo.local`,
+          __email:  email,
           __password: password,
         };
       }
@@ -284,14 +292,3 @@ export function SchoolBulkImport({ onClose, onAllDone }: { onClose: () => void; 
   );
 }
 
-function deriveUsername(fullName: string): string {
-  return fullName
-    .normalize('NFKD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9\s.-]/g, '')
-    .trim()
-    .replace(/\s+/g, '.')
-    .replace(/\.+/g, '.')
-    .slice(0, 32);
-}
