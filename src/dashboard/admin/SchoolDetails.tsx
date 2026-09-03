@@ -1,7 +1,10 @@
-import { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useMemo, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import { useNotifications } from '../../lib/notifications';
+import { generatePassword } from '../../lib/password';
+import { sendInvite } from '../../lib/inviteEmail';
 import {
   fetchSchoolById,
   fetchEventSchoolsWithEvent,
@@ -204,6 +207,11 @@ export function AdminSchoolDetails() {
         </div>
       </section>
 
+      {/* Teachers — the second one onwards. create_school_with_lead makes a
+          school and its first teacher together, so this is the only way to add
+          another, and SessionRegister has needed it all along. */}
+      <SchoolTeachers schoolId={schoolId!} schoolName={school.name} />
+
       {/* Activities */}
       <section>
         <div className="flex items-center gap-2 mb-3">
@@ -359,4 +367,150 @@ function Row({
       </div>
     </div>
   );
+}
+
+// =============================================================
+// Add a teacher to a school that already exists.
+//
+// The account is created and the welcome email goes out in one action, using
+// the same invite as every other onboarding path. The temporary password is
+// shown once afterwards, because a send can fail and the admin still has to be
+// able to pass it on.
+// =============================================================
+function SchoolTeachers({ schoolId, schoolName }: { schoolId: string; schoolName: string }) {
+  const qc = useQueryClient();
+  const { notify } = useNotifications();
+
+  const [open, setOpen]         = useState(false);
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail]       = useState('');
+  const [phone, setPhone]       = useState('');
+  const [password, setPassword] = useState(() => generatePassword());
+  const [busy, setBusy]         = useState(false);
+  const [err, setErr]           = useState<string | null>(null);
+  const [created, setCreated]   = useState<{ email: string; password: string; emailed: boolean } | null>(null);
+
+  const { data: teachers } = useQuery({
+    queryKey: ['school-teachers', schoolId],
+    queryFn: async () => unwrapProfiles(
+      await supabase.from('profiles')
+        .select('id, full_name, phone, role')
+        .eq('school_id', schoolId)
+        .order('full_name'),
+    ),
+  });
+
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBusy(true); setErr(null);
+    const login = email.trim().toLowerCase();
+    const { error } = await supabase.rpc('add_teacher_to_school', {
+      p_login_email: login,
+      p_password:    password,
+      p_full_name:   fullName.trim(),
+      p_phone:       phone.trim(),
+      p_school_id:   schoolId,
+    });
+    if (error) { setBusy(false); setErr(error.message); return; }
+
+    const invite = await sendInvite(login, {
+      school: schoolName, loginEmail: login, password,
+    });
+    setBusy(false);
+    setCreated({ email: login, password, emailed: invite.ok });
+    setFullName(''); setEmail(''); setPhone(''); setPassword(generatePassword());
+    setOpen(false);
+    void qc.invalidateQueries({ queryKey: ['school-teachers', schoolId] });
+    notify(
+      invite.ok ? 'success' : 'warning',
+      'Teacher added',
+      invite.ok ? `Welcome email sent to ${login}.`
+                : `Account created, but the email did not send: ${invite.error ?? 'send failed'}`,
+    );
+  };
+
+  return (
+    <section>
+      <div className="flex items-center gap-2 mb-3">
+        <User className="h-4 w-4 text-teal-700" aria-hidden="true" />
+        <h2 className="m-0">Teachers</h2>
+        <span className="text-xs text-gray-500">{teachers?.length ?? 0}</span>
+        <button type="button" className="btn-secondary ml-auto text-sm" onClick={() => setOpen((v) => !v)}>
+          {open ? 'Cancel' : 'Add teacher'}
+        </button>
+      </div>
+
+      {created && (
+        <div className="card p-4 mb-3 border-teal-300 bg-teal-50">
+          <p className="text-sm text-gray-900 m-0">
+            <strong>{created.email}</strong> can sign in now.{' '}
+            {created.emailed
+              ? 'Their welcome email has been sent.'
+              : 'The welcome email did not send — pass these on yourself.'}
+          </p>
+          <p className="text-sm font-mono mt-1 mb-0">Temporary password: {created.password}</p>
+        </div>
+      )}
+
+      {open && (
+        <form onSubmit={submit} className="card p-4 mb-3 grid gap-3 sm:grid-cols-2">
+          {err && <p role="alert" className="text-sm text-red-700 sm:col-span-2 m-0">{err}</p>}
+          <div>
+            <label className="field-label" htmlFor="tt-name">Full name</label>
+            <input id="tt-name" className="field-input" required value={fullName}
+                   onChange={(e) => setFullName(e.target.value)} />
+          </div>
+          <div>
+            <label className="field-label" htmlFor="tt-email">Email (their login)</label>
+            <input id="tt-email" type="email" className="field-input" required value={email}
+                   onChange={(e) => setEmail(e.target.value)} placeholder="teacher@school.ac.ke" />
+          </div>
+          <div>
+            <label className="field-label" htmlFor="tt-phone">Phone</label>
+            <input id="tt-phone" className="field-input" value={phone}
+                   onChange={(e) => setPhone(e.target.value)} />
+          </div>
+          <div>
+            <label className="field-label" htmlFor="tt-pw">Temporary password</label>
+            <div className="flex gap-2">
+              <input id="tt-pw" className="field-input font-mono" minLength={8} value={password}
+                     onChange={(e) => setPassword(e.target.value)} />
+              <button type="button" className="btn-secondary !px-2" aria-label="Generate password"
+                      onClick={() => setPassword(generatePassword())}>↻</button>
+            </div>
+          </div>
+          <div className="sm:col-span-2">
+            <button type="submit" className="btn-primary" disabled={busy || !emailOk || !fullName.trim()}>
+              {busy ? 'Adding…' : 'Add teacher and send welcome email'}
+            </button>
+          </div>
+        </form>
+      )}
+
+      <div className="card overflow-x-auto">
+        <table className="data-table" aria-label={`Teachers at ${schoolName}`}>
+          <thead><tr><th>Name</th><th>Phone</th><th>Role</th></tr></thead>
+          <tbody>
+            {(teachers ?? []).length === 0 && (
+              <tr><td colSpan={3} className="text-sm text-gray-500 italic">No teachers yet.</td></tr>
+            )}
+            {(teachers ?? []).map((t) => (
+              <tr key={t.id}>
+                <td className="text-sm">{t.full_name ?? '—'}</td>
+                <td className="text-sm">{t.phone ?? '—'}</td>
+                <td className="text-sm">{t.role}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
+function unwrapProfiles(res: { data: unknown; error: { message: string } | null }) {
+  if (res.error) throw new Error(res.error.message);
+  return (res.data ?? []) as Array<{ id: string; full_name: string | null; phone: string | null; role: string }>;
 }

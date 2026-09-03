@@ -6,6 +6,7 @@ import type { SchoolType } from '../../lib/database.types';
 import { Upload, FileSpreadsheet, Download, X, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useDialog } from '../../lib/useDialog';
 import { generatePassword } from '../../lib/password';
+import { sendInvite } from '../../lib/inviteEmail';
 
 // =============================================================
 // Bulk school import (admin-only)
@@ -31,6 +32,7 @@ type ParsedRow = SheetRow & {
   __message?: string;
   __email?: string;
   __password?: string;
+  __invited?: string;
 };
 
 export function SchoolBulkImport({ onClose, onAllDone }: { onClose: () => void; onAllDone: () => void }) {
@@ -124,11 +126,18 @@ export function SchoolBulkImport({ onClose, onAllDone }: { onClose: () => void; 
       if (error) {
         updated[i] = { ...row, __status: 'error', __message: error.message };
       } else {
+        // Send the same welcome the single-school path sends. The account
+        // exists either way, so a failed send is reported on the row rather
+        // than treated as a failed import — that is what the CSV is now for.
+        const invite = await sendInvite(email, {
+          school: schoolName, loginEmail: email, password,
+        });
         updated[i] = {
           ...row,
           __status: 'ok',
           __email:  email,
           __password: password,
+          __invited: invite.ok ? 'yes' : `no — ${invite.error ?? 'send failed'}`,
         };
       }
       setRows([...updated]);
@@ -143,13 +152,14 @@ export function SchoolBulkImport({ onClose, onAllDone }: { onClose: () => void; 
     if (!rows) return;
     const successful = rows.filter((r) => r.__status === 'ok');
     if (successful.length === 0) return;
-    const lines = ['school,full_name,email,password'];
+    const lines = ['school,full_name,email,password,invited'];
     successful.forEach((r) => {
       lines.push([
         csvCell(r.school_name ?? r.school ?? ''),
         csvCell(r.full_name ?? ''),
         csvCell(r.__email ?? ''),
         csvCell(r.__password ?? ''),
+        csvCell(r.__invited ?? ''),
       ].join(','));
     });
     downloadCsv('chipurobo-school-credentials.csv', lines.join('\n'));
@@ -166,6 +176,8 @@ export function SchoolBulkImport({ onClose, onAllDone }: { onClose: () => void; 
 
   const okCount = rows?.filter((r) => r.__status === 'ok').length ?? 0;
   const errCount = rows?.filter((r) => r.__status === 'error').length ?? 0;
+  // A created account whose welcome did not send still needs the CSV.
+  const notInvited = (rows ?? []).filter((r) => r.__status === 'ok' && r.__invited !== 'yes').length;
 
   return (
     <div ref={dialogRef} role="region" aria-labelledby="school-bulk-import-heading" className="card p-5">
@@ -266,6 +278,11 @@ export function SchoolBulkImport({ onClose, onAllDone }: { onClose: () => void; 
                   {' · '}
                   <span className="text-emerald-700">{okCount} created</span>
                   {errCount > 0 && <> · <span className="text-red-700">{errCount} failed</span></>}
+                  {okCount > 0 && (
+                    <> · <span className={notInvited > 0 ? 'text-amber-700' : 'text-emerald-700'}>
+                      {okCount - notInvited} of {okCount} emailed
+                    </span></>
+                  )}
                 </>
               )}
             </div>
