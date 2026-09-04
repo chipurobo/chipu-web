@@ -56,3 +56,4 @@ supabase/snippets/
 .claude/
 .env.local
 .env.*.local
+docs/guides/*.html
