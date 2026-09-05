@@ -29,9 +29,28 @@ import { SkeletonRows } from '../components/Skeletons';
 export const CHIPUROBO_EMAIL_DOMAIN = 'chipurobo.local';
 
 
+/**
+ * The address a lead actually types to sign in.
+ *
+ * admin_list_school_leads used to return only the local part of the address,
+ * and now returns the whole thing. Both shapes are tolerated so that a
+ * migration and a deploy landing minutes apart cannot blank this screen, and
+ * a missing value degrades to a dash rather than throwing.
+ */
+function leadLoginEmail(lead: SchoolLead): string {
+  const full = lead.login_email?.trim();
+  if (full) return full;
+  const local = lead.username?.trim();
+  if (!local) return '';
+  return local.includes('@') ? local : `${local}@${CHIPUROBO_EMAIL_DOMAIN}`;
+}
+
 interface SchoolLead {
   user_id:     string;
-  login_email: string;
+  // Either name may arrive depending on whether the migration or the deploy
+  // landed first. Never read these directly - use leadLoginEmail().
+  login_email?: string | null;
+  username?:    string | null;
   full_name:   string | null;
   phone:       string | null;
   school_id:   string | null;
@@ -343,7 +362,7 @@ export function AdminSchools() {
                   </td>
                   <td className="text-sm font-mono">
                     {lead
-                      ? lead.login_email
+                      ? (leadLoginEmail(lead) || <span className="text-xs text-gray-400 italic">unknown</span>)
                       : <span className="text-xs text-gray-400 italic">no lead</span>}
                   </td>
                   <td className="text-right whitespace-nowrap">
@@ -865,7 +884,7 @@ function EditCredentialsPanel({
     } else {
       onSaved({
         school:       lead.school_name ?? '—',
-        username:     lead.login_email,
+        username:     leadLoginEmail(lead),
         password,
         contactEmail,
       });
@@ -880,7 +899,7 @@ function EditCredentialsPanel({
           <h2 className="m-0" id="edit-credentials-heading">Credentials — {lead.school_name ?? '—'}</h2>
           <p className="text-sm text-gray-500 mt-0.5">
             Teacher: {lead.full_name ?? '—'} · Email:{' '}
-            <span className="font-mono">{lead.login_email}</span>
+            <span className="font-mono">{leadLoginEmail(lead) || '—'}</span>
           </p>
         </div>
         <button onClick={onClose} className="p-1 text-gray-500 hover:text-gray-900" aria-label="Close credentials panel">
@@ -894,7 +913,7 @@ function EditCredentialsPanel({
         </div>
       )}
 
-      {lead.login_email.endsWith(`@${CHIPUROBO_EMAIL_DOMAIN}`) ? (
+      {leadLoginEmail(lead).endsWith(`@${CHIPUROBO_EMAIL_DOMAIN}`) ? (
         <div className="border border-amber-300 bg-amber-50 rounded-md p-3 mb-3">
           <p className="text-sm text-amber-900 m-0">
             This teacher still signs in with a <span className="font-mono">@{CHIPUROBO_EMAIL_DOMAIN}</span>{' '}
