@@ -3,8 +3,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
 import { fetchProducts } from '../../lib/gql/queries';
 import type { Product } from '../../lib/database.types';
-import { Package, Plus, X, Pencil } from 'lucide-react';
+import { Package, Plus, X, Pencil, Trash2 } from 'lucide-react';
 import { useDialog } from '../../lib/useDialog';
+import { uploadProductImage, removeProductImage } from '../../lib/productImage';
+import { ProductThumb } from '../components/ProductThumb';
 
 type ProductRow = Product;
 
@@ -194,12 +196,22 @@ export function AdminProducts() {
                 <tr key={p.id} className={p.is_active ? '' : 'opacity-60'}>
                   <td className="font-mono text-xs">{p.sku ?? '—'}</td>
                   <td className="whitespace-normal">
-                    <div className="font-medium text-gray-900">{p.name}</div>
-                    {p.description && (
-                      <div className="text-xs text-gray-500 line-clamp-2 max-w-md">
-                        {p.description}
+                    <div className="flex items-start gap-3">
+                      <ProductThumb path={p.image_path} name={p.name} />
+                      <div className="min-w-0">
+                        <div className="font-medium text-gray-900">{p.name}</div>
+                        {p.description && (
+                          <div className="text-xs text-gray-500 line-clamp-2 max-w-md">
+                            {p.description}
+                          </div>
+                        )}
+                        {p.source_credit && (
+                          <div className="text-[0.7rem] text-gray-400 mt-0.5">
+                            design: {p.source_credit}
+                          </div>
+                        )}
                       </div>
-                    )}
+                    </div>
                   </td>
                   <td>
                     {p.is_durable
@@ -270,6 +282,11 @@ function ProductForm({
   const [category,    setCategory]    = useState(initial?.category ?? '');
   const [isDurable,   setIsDurable]   = useState<boolean>(initial?.is_durable ?? true);
   const [isActive,    setIsActive]    = useState<boolean>(initial?.is_active ?? true);
+  const [sourceUrl,    setSourceUrl]    = useState(initial?.source_url ?? '');
+  const [sourceCredit, setSourceCredit] = useState(initial?.source_credit ?? '');
+  const [imagePath,    setImagePath]    = useState<string | null>(initial?.image_path ?? null);
+  const [pendingFile,  setPendingFile]  = useState<File | null>(null);
+  const [preview,      setPreview]      = useState<string | null>(null);
   const [saving,      setSaving]      = useState(false);
   const [err,         setErr]         = useState<string | null>(null);
 
@@ -283,18 +300,44 @@ function ProductForm({
 
     // v1: all products come from ChipuRobo; designed_by_school_id stays null.
     const payload = {
-      name:        name.trim(),
-      description: description.trim() || null,
-      category:    category.trim() || null,
-      is_durable:  isDurable,
-      is_active:   isActive,
+      name:          name.trim(),
+      description:   description.trim() || null,
+      category:      category.trim() || null,
+      is_durable:    isDurable,
+      is_active:     isActive,
+      source_url:    sourceUrl.trim() || null,
+      source_credit: sourceCredit.trim() || null,
+      image_path:    imagePath,
       // sku omitted on insert; trigger fills it. omitted on update so it
       // never changes once generated.
     };
 
-    const { error } = isEdit
-      ? await supabase.from('products').update(payload).eq('id', initial!.id)
-      : await supabase.from('products').insert(payload);
+    // An image is keyed by product id, so a NEW product has to exist before
+    // its photograph can be stored. Insert first, then upload, then point the
+    // row at the file.
+    let productId = initial?.id ?? null;
+    let error;
+    if (isEdit) {
+      ({ error } = await supabase.from('products').update(payload).eq('id', productId!));
+    } else {
+      const res = await supabase.from('products').insert(payload).select('id').single();
+      error = res.error;
+      productId = res.data?.id ?? null;
+    }
+
+    if (!error && pendingFile && productId) {
+      const up = await uploadProductImage(productId, pendingFile);
+      if (up.error) {
+        // The product itself saved. Say so rather than implying it did not.
+        setSaving(false);
+        setErr(`Product saved, but the image did not upload: ${up.error}`);
+        onSaved();
+        return;
+      }
+      const res = await supabase.from('products').update({ image_path: up.path }).eq('id', productId);
+      error = res.error;
+      if (!error && initial?.image_path) await removeProductImage(initial.image_path);
+    }
 
     setSaving(false);
     if (error) setErr(error.message);
@@ -341,6 +384,64 @@ function ProductForm({
               SKU will be generated from the name's initials plus a sequence number when you save.
             </p>
           )}
+        </div>
+
+        {/* Photograph. The bucket is public, so the rule is stated where the
+            person uploading will read it. */}
+        <div className="sm:col-span-2">
+          <label className="field-label" htmlFor="product-image">Photograph</label>
+          <div className="flex items-start gap-4">
+            <ProductThumb path={imagePath} name={name} preview={preview} size={72} />
+            <div className="flex-1">
+              <input
+                id="product-image"
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                className="field-input"
+                onChange={(e) => {
+                  const f = e.target.files?.[0] ?? null;
+                  setPendingFile(f);
+                  setPreview(f ? URL.createObjectURL(f) : null);
+                }}
+              />
+              <p className="field-help">
+                PNG, JPEG or WebP, up to 5&nbsp;MB. <strong>Photograph the object, not the
+                learners using it</strong> &mdash; these images are publicly readable.
+              </p>
+              {imagePath && !pendingFile && (
+                <button
+                  type="button"
+                  className="text-xs text-red-700 hover:underline inline-flex items-center mt-1"
+                  onClick={() => { setImagePath(null); setPreview(null); }}
+                >
+                  <Trash2 className="h-3 w-3 mr-1" aria-hidden="true" />
+                  Remove photograph
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="sm:col-span-2 grid sm:grid-cols-2 gap-4">
+          <div>
+            <label className="field-label" htmlFor="product-source-url">Design source (optional)</label>
+            <input
+              id="product-source-url" type="url" className="field-input"
+              placeholder="https://makerworld.com/en/models/..."
+              value={sourceUrl} onChange={(e) => setSourceUrl(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="field-label" htmlFor="product-source-credit">Designer and licence</label>
+            <input
+              id="product-source-credit" type="text" className="field-input"
+              placeholder="e.g. 3D Printy - CC BY"
+              value={sourceCredit} onChange={(e) => setSourceCredit(e.target.value)}
+            />
+            <p className="field-help">
+              Most designs we print require credit. Record it here, not in someone&rsquo;s memory.
+            </p>
+          </div>
         </div>
 
         <div className="sm:col-span-2">

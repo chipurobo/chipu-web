@@ -15,6 +15,7 @@ import { notifyOrderEvent } from '../../lib/orderEmails';
 import { useDialog } from '../../lib/useDialog';
 import { Pagination, usePaged } from '../components/Pagination';
 import { SkeletonRows } from '../components/Skeletons';
+import { ProductThumb } from '../components/ProductThumb';
 
 // Order rows joined with product info (small subset). The new GraphQL
 // shape uses relation field names `product`, `placed_by_school` and
@@ -200,7 +201,10 @@ function OrdersTable({
           {paged?.map((o) => (
             <tr key={o.id}>
               <td>
-                <div className="font-medium text-gray-900">{o.product?.name ?? '—'}</div>
+                <div className="flex items-center gap-2.5">
+                  <ProductThumb path={o.product?.image_path} name={o.product?.name} />
+                  <div className="font-medium text-gray-900">{o.product?.name ?? '—'}</div>
+                </div>
                 {o.product?.sku && (
                   <div className="text-xs text-gray-500">{o.product.sku}</div>
                 )}

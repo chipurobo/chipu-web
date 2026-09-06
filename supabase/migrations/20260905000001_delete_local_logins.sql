@@ -43,7 +43,25 @@ declare
   v_targets    int;
   r            record;
 begin
-  -- Prefer the named ChipuRobo admin; fall back to any admin.
+  create temporary table _doomed on commit drop as
+    select p.id
+      from public.profiles p
+      join auth.users u on u.id = p.id
+     where p.role <> 'admin';
+
+  select count(*) into v_targets from _doomed;
+
+  -- Nothing to do. A fresh database has no accounts at all, and once this has
+  -- run there are none left to delete either. Returning early rather than
+  -- demanding an admin is what makes `supabase db reset` work on a clean
+  -- checkout -- the first version of this insisted on an admin before checking
+  -- whether there was any work, so it aborted on every fresh environment.
+  if v_targets = 0 then
+    raise notice 'no non-admin accounts present; nothing to do';
+    return;
+  end if;
+
+  -- Only now does an admin matter: someone has to inherit the records.
   select p.id into v_admin
     from public.profiles p join auth.users u on u.id = p.id
    where p.role = 'admin' and lower(u.email) = 'admin@chipurobo.com'
@@ -54,14 +72,6 @@ begin
   if v_admin is null then
     raise exception 'no admin account to inherit these records; aborting';
   end if;
-
-  create temporary table _doomed on commit drop as
-    select p.id
-      from public.profiles p
-      join auth.users u on u.id = p.id
-     where p.role <> 'admin';
-
-  select count(*) into v_targets from _doomed;
 
   select count(*) into v_incidents
     from public.incidents i where i.reported_by in (select id from _doomed);

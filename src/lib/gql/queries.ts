@@ -129,7 +129,7 @@ export async function fetchOrdersFulfilledBy(schoolId: string): Promise<Order[]>
 }
 
 export interface OrderWithJoins extends Order {
-  product:              Pick<Product, 'id' | 'name' | 'sku' | 'is_durable'> | null;
+  product:              Pick<Product, 'id' | 'name' | 'sku' | 'is_durable' | 'image_path'> | null;
   placed_by_school:     Pick<School,  'id' | 'name'> | null;
   fulfilled_by_school:  Pick<School,  'id' | 'name'> | null;
 }
@@ -138,7 +138,7 @@ export async function fetchOrdersWithJoins(): Promise<OrderWithJoins[]> {
   return unwrap(
     await supabase.from('orders').select(`
       *,
-      product:products!orders_product_id_fkey(id, name, sku, is_durable),
+      product:products!orders_product_id_fkey(id, name, sku, is_durable, image_path),
       placed_by_school:schools!orders_placed_by_school_id_fkey(id, name),
       fulfilled_by_school:schools!orders_fulfilled_by_school_id_fkey(id, name)
     `).order('placed_at', { ascending: false }),
@@ -149,7 +149,7 @@ export async function fetchOrdersAdmin(): Promise<OrderWithJoins[]> {
   return unwrap(
     await supabase.from('orders').select(`
       *,
-      product:products!orders_product_id_fkey(id, name, sku, is_durable),
+      product:products!orders_product_id_fkey(id, name, sku, is_durable, image_path),
       placed_by_school:schools!orders_placed_by_school_id_fkey(id, name),
       fulfilled_by_school:schools!orders_fulfilled_by_school_id_fkey(id, name)
     `).order('placed_at', { ascending: false }).limit(200),
@@ -157,7 +157,7 @@ export async function fetchOrdersAdmin(): Promise<OrderWithJoins[]> {
 }
 
 export interface AssignmentRowGql extends Order {
-  product:          Pick<Product, 'id' | 'name' | 'sku' | 'is_durable'> | null;
+  product:          Pick<Product, 'id' | 'name' | 'sku' | 'is_durable' | 'image_path'> | null;
   placed_by_school: Pick<School,  'id' | 'name'> | null;
 }
 
@@ -165,7 +165,7 @@ export async function fetchConsumableAssignments(): Promise<AssignmentRowGql[]> 
   return unwrap(
     await supabase.from('orders').select(`
       *,
-      product:products!orders_product_id_fkey(id, name, sku, is_durable),
+      product:products!orders_product_id_fkey(id, name, sku, is_durable, image_path),
       placed_by_school:schools!orders_placed_by_school_id_fkey(id, name)
     `)
       .is('fulfilled_by_school_id', null)
@@ -175,7 +175,7 @@ export async function fetchConsumableAssignments(): Promise<AssignmentRowGql[]> 
 }
 
 export interface ProdOrderGql extends Order {
-  product: Pick<Product, 'id' | 'name' | 'sku' | 'is_durable'> | null;
+  product: Pick<Product, 'id' | 'name' | 'sku' | 'is_durable' | 'image_path'> | null;
   placed_by_school: { id: string; name: string; contact_email: string | null } | null;
   product_units: Pick<ProductUnit, 'id' | 'serial_number' | 'status'>[];
 }
@@ -184,7 +184,7 @@ export async function fetchOrdersForMakerProduction(schoolId: string): Promise<P
   return unwrap(
     await supabase.from('orders').select(`
       *,
-      product:products!orders_product_id_fkey(id, name, sku, is_durable),
+      product:products!orders_product_id_fkey(id, name, sku, is_durable, image_path),
       placed_by_school:schools!orders_placed_by_school_id_fkey(id, name, contact_email),
       product_units:product_units!product_units_order_id_fkey(id, serial_number, status)
     `)
@@ -227,7 +227,7 @@ export async function fetchUnitsAtSchool(schoolId: string): Promise<ProductUnit[
 }
 
 export interface UnitWithJoins extends ProductUnit {
-  product: Pick<Product, 'id' | 'name' | 'sku'> | null;
+  product: Pick<Product, 'id' | 'name' | 'sku' | 'image_path'> | null;
   current_member: Pick<ClubMember, 'id' | 'full_name' | 'in_club'> | null;
 }
 
@@ -235,7 +235,7 @@ export async function fetchUnitsAtSchoolWithJoins(schoolId: string): Promise<Uni
   return unwrap(
     await supabase.from('product_units').select(`
       *,
-      product:products!product_units_product_id_fkey(id, name, sku),
+      product:products!product_units_product_id_fkey(id, name, sku, image_path),
       current_member:club_members!product_units_current_member_id_fkey(id, full_name, in_club)
     `)
       .eq('current_school_id', schoolId)
@@ -636,6 +636,29 @@ export async function updateIncident(
 ): Promise<void> {
   const res = await supabase.from('incidents').update(patch).eq('id', id);
   if (res.error) throw new Error(res.error.message);
+}
+
+// ── What a lesson needs printed or supplied ─────────────────
+// The join carries the product so the lesson page can show a photograph
+// without a second round trip.
+
+export interface LessonProductRow {
+  product_id: string;
+  note: string | null;
+  product: Pick<Product, 'id' | 'name' | 'sku' | 'image_path' | 'source_credit'> | null;
+}
+
+export async function fetchLessonProducts(lessonId: string): Promise<LessonProductRow[]> {
+  return unwrap(
+    await supabase
+      .from('lesson_products')
+      .select(`
+        product_id,
+        note,
+        product:products!lesson_products_product_id_fkey(id, name, sku, image_path, source_credit)
+      `)
+      .eq('lesson_id', lessonId),
+  ) as unknown as LessonProductRow[];
 }
 
 // ── Curriculum lessons ──────────────────────────────────────
