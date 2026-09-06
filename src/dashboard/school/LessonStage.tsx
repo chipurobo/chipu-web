@@ -6,15 +6,17 @@ import {
   fetchLessonById,
   fetchMembersBySchool,
   fetchCompletionsForLesson,
+  fetchLessonProducts,
 } from '../../lib/gql/queries';
 import { useAuth } from '../../lib/auth';
 import { useNotifications } from '../../lib/notifications';
 import type { LessonCompletion, StageKind } from '../../lib/database.types';
 import {
-  ArrowLeft, Save, Star, BookOpen, Laptop, MonitorPlay, FolderKanban, GraduationCap, Megaphone,
+  ArrowLeft, Save, Star, BookOpen, Laptop, MonitorPlay, FolderKanban, GraduationCap, Megaphone, Package,
   Link as LinkIcon, ExternalLink,
 } from 'lucide-react';
 import { SkeletonRows } from '../components/Skeletons';
+import { ProductThumb } from '../components/ProductThumb';
 import { safeHttpUrl } from '../../lib/safeUrl';
 
 // =============================================================
@@ -82,6 +84,12 @@ export function SchoolLessonStage() {
 
   // Active club members at this school. We include in_club + non-club so
   // a teacher can tick anyone on the roster.
+  const kitQuery = useQuery({
+    queryKey: ['lesson-products', lessonId],
+    queryFn: () => fetchLessonProducts(lessonId!),
+    enabled: !!lessonId,
+  });
+
   const membersQuery = useQuery({
     queryKey: ['members', schoolId],
     queryFn: () => fetchMembersBySchool(schoolId!),
@@ -260,6 +268,31 @@ export function SchoolLessonStage() {
           )}
         </div>
       </div>
+
+      {/* What has to exist before this lesson can run. Empty for most lessons;
+          shown only when someone has attached kit to it. */}
+      {(kitQuery.data?.length ?? 0) > 0 && (
+        <section className="card p-4">
+          <h2 className="m-0 mb-3 text-sm flex items-center">
+            <Package className="h-4 w-4 mr-1.5 text-teal-700" aria-hidden="true" />
+            What you need for this lesson
+          </h2>
+          <ul className="grid gap-3 sm:grid-cols-2 list-none p-0 m-0">
+            {kitQuery.data!.map((k) => (
+              <li key={k.product_id} className="flex items-start gap-3">
+                <ProductThumb path={k.product?.image_path} name={k.product?.name} size={48} />
+                <div className="min-w-0">
+                  <div className="text-sm font-medium text-gray-900">{k.product?.name ?? 'Unknown item'}</div>
+                  {k.note && <div className="text-xs text-gray-600">{k.note}</div>}
+                  {k.product?.source_credit && (
+                    <div className="text-[0.7rem] text-gray-400">design: {k.product.source_credit}</div>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {err && (
         <div role="alert" className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">

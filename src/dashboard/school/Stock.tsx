@@ -13,6 +13,7 @@ import type { Product, ClubMember, UnitStatus } from '../../lib/database.types';
 import { Package, Wrench, UserPlus, X } from 'lucide-react';
 import { Pagination, usePaged } from '../components/Pagination';
 import { SkeletonRows } from '../components/Skeletons';
+import { ProductThumb } from '../components/ProductThumb';
 
 // product_units joined with product + assigned member. The new
 // fetchUnitsAtSchoolWithJoins helper returns this shape directly under
@@ -143,7 +144,10 @@ export function SchoolStock() {
                 <tr key={u.id}>
                   <td className="font-mono text-xs">{u.serial_number}</td>
                   <td>
-                    <div className="font-medium text-gray-900">{u.product?.name ?? '—'}</div>
+                    <div className="flex items-center gap-2.5">
+                      <ProductThumb path={u.product?.image_path} name={u.product?.name} />
+                      <div className="font-medium text-gray-900">{u.product?.name ?? '—'}</div>
+                    </div>
                     {u.product?.sku && (
                       <div className="text-xs text-gray-500">{u.product.sku}</div>
                     )}
@@ -207,7 +211,12 @@ export function SchoolStock() {
               )}
               {stock?.map((s) => (
                 <tr key={s.product.id}>
-                  <td className="font-medium text-gray-900">{s.product.name}</td>
+                  <td className="font-medium text-gray-900">
+                    <div className="flex items-center gap-2.5">
+                      <ProductThumb path={s.product.image_path} name={s.product.name} />
+                      <span>{s.product.name}</span>
+                    </div>
+                  </td>
                   <td className="text-xs text-gray-500 font-mono">{s.product.sku ?? '—'}</td>
                   <td className="text-sm text-gray-700">{s.product.category ?? '—'}</td>
                   <td className="text-right font-medium text-gray-900">{s.on_hand}</td>

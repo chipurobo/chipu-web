@@ -280,6 +280,21 @@ export interface Product {
   sku: string | null;
   designed_by_school_id: string | null;
   is_active: boolean;
+  // Object key in the public product-images bucket. The object, never the
+  // learners using it.
+  image_path: string | null;
+  // Where a printable design came from, and who to credit. Most of what we
+  // print is under a licence that requires attribution.
+  source_url: string | null;
+  source_credit: string | null;
+  created_at: string;
+}
+
+/** A product a lesson needs printed or supplied. */
+export interface LessonProduct {
+  lesson_id: string;
+  product_id: string;
+  note: string | null;
   created_at: string;
 }
 
