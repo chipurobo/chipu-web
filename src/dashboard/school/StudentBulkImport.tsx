@@ -96,10 +96,14 @@ export function StudentBulkImport({
 
   const downloadTemplate = () => {
     downloadXlsx('chipurobo-students-template.xlsx', [
+      // The examples are the instruction. These used to read "Visual
+      // impairment" and "Hearing impairment", which taught every teacher
+      // filling this in to record a diagnosis. What we do for the learner is
+      // the useful fact, and the one we are allowed to keep.
       ['full_name',    'grade',   'in_club', 'has_disability', 'disability_notes'],
       ['Mary Wanjiku', 'Grade 7', 'yes',     'no',             ''],
-      ['Peter Kamau',  'Grade 6', 'yes',     'yes',            'Visual impairment'],
-      ['Jane Achieng', 'Grade 8', 'no',      'yes',            'Hearing impairment'],
+      ['Peter Kamau',  'Grade 6', 'yes',     'yes',            'braille worksheets'],
+      ['Jane Achieng', 'Grade 8', 'no',      'yes',            'KSL interpretation'],
     ], 'Students');
   };
 
@@ -122,7 +126,12 @@ export function StudentBulkImport({
           <code className="text-xs bg-warm-100 px-1 rounded">grade</code>,{' '}
           <code className="text-xs bg-warm-100 px-1 rounded">in_club</code> (yes/no — defaults to yes),{' '}
           <code className="text-xs bg-warm-100 px-1 rounded">has_disability</code> (yes/no),{' '}
-          <code className="text-xs bg-warm-100 px-1 rounded">disability_notes</code> (free text).
+          <code className="text-xs bg-warm-100 px-1 rounded">disability_notes</code>.
+        </p>
+        <p className="text-xs text-gray-600 mt-1">
+          In that last column write <strong>the adaptation, not the condition</strong> &mdash;
+          &ldquo;braille worksheets&rdquo;, not &ldquo;blind&rdquo;. We record what we do for a
+          learner, never a diagnosis.
         </p>
         <button onClick={downloadTemplate} type="button" className="btn-secondary !text-xs whitespace-nowrap">
           <Download className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />
