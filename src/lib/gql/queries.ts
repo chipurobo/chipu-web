@@ -262,7 +262,10 @@ export async function fetchPassedCompletionsWithStudent(): Promise<PassedComplet
     await supabase.from('lesson_completions')
       .select('lesson_id, student_id, passed, student:club_members!lesson_completions_student_id_fkey(school_id)')
       .eq('passed', true),
-  ) as PassedCompletionWithStudent[];
+  // The generated row type widens a to-one embed to an array, so the two
+  // shapes do not overlap enough for a direct assertion. The runtime shape is
+  // the declared one; go through unknown rather than loosening the interface.
+  ) as unknown as PassedCompletionWithStudent[];
 }
 
 // ── Stock on hand ───────────────────────────────────────────

@@ -53,7 +53,10 @@ export function useOrderRealtime(): OrderCounts {
 
   const refresh = async () => {
     if (!profile) return;
-    const tasks: Promise<number>[] = [];
+    // Supabase query builders are PromiseLike, not Promise. Declaring this as
+    // Promise<number>[] made every push a type error; Promise.all accepts
+    // PromiseLike perfectly well.
+    const tasks: PromiseLike<number>[] = [];
 
     if (school?.id) {
       tasks.push(
