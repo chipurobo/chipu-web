@@ -1,13 +1,16 @@
 import { useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { fetchAllLessonsAdmin, createLesson, updateLesson } from '../../lib/gql/queries';
+import {
+  fetchAllLessonsAdmin, createLesson, updateLesson, fetchLessonProductCounts,
+} from '../../lib/gql/queries';
 import { useNotifications } from '../../lib/notifications';
 import type { StageKind, LessonLevel } from '../../lib/database.types';
-import { BookOpen, Plus, GraduationCap, EyeOff, Eye, ExternalLink } from 'lucide-react';
+import { BookOpen, Plus, GraduationCap, EyeOff, Eye, ExternalLink, Package } from 'lucide-react';
 import { SkeletonRows } from '../components/Skeletons';
 import { safeHttpUrl } from '../../lib/safeUrl';
 import { LevelFilter } from '../components/LevelFilter';
 import { matchesLevel, LEVEL_LABEL, type LevelChoice } from '../components/levels';
+import { LessonKitPanel } from './LessonKit';
 
 // =============================================================
 // /dashboard/admin/lessons
@@ -34,6 +37,7 @@ export function AdminLessons() {
   const { notify } = useNotifications();
   const qc = useQueryClient();
   const [creating, setCreating] = useState(false);
+  const [kitFor, setKitFor] = useState<{ id: string; title: string } | null>(null);
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -43,6 +47,13 @@ export function AdminLessons() {
   const [filterLevel, setFilterLevel] = useState<LevelChoice>('all');
   const [points, setPoints] = useState(1);
   const [required, setRequired] = useState(false);
+
+  // One query for every lesson's count; a query per row would be a hundred
+  // round trips on a curriculum this size.
+  const kitCounts = useQuery({
+    queryKey: ['lesson-product-counts'],
+    queryFn: fetchLessonProductCounts,
+  });
 
   const lessonsQuery = useQuery({
     queryKey: ['lessons', 'admin'],
@@ -106,6 +117,14 @@ export function AdminLessons() {
           {creating ? 'Cancel' : 'New lesson'}
         </button>
       </div>
+
+      {kitFor && (
+        <LessonKitPanel
+          lessonId={kitFor.id}
+          lessonTitle={kitFor.title}
+          onClose={() => setKitFor(null)}
+        />
+      )}
 
       {creating && (
         <form onSubmit={onSubmit} className="card p-4" aria-label="New lesson">
@@ -190,15 +209,16 @@ export function AdminLessons() {
               <th>Resource</th>
               <th>Points</th>
               <th>Status</th>
+              <th>Kit</th>
               <th />
             </tr>
           </thead>
           <tbody>
             {lessonsQuery.isPending ? (
-              <SkeletonRows rows={4} cols={8} label="Loading lessons" />
+              <SkeletonRows rows={4} cols={9} label="Loading lessons" />
             ) : lessons.length === 0 ? (
               <tr>
-                <td colSpan={8} className="text-sm text-gray-500 py-6 text-center">
+                <td colSpan={9} className="text-sm text-gray-500 py-6 text-center">
                   No lessons yet. Add the first one above.
                 </td>
               </tr>
@@ -231,6 +251,18 @@ export function AdminLessons() {
                     <span className={l.is_active ? 'badge-teal' : 'badge-gray'}>
                       {l.is_active ? 'active' : 'retired'}
                     </span>
+                  </td>
+                  <td>
+                    <button
+                      type="button"
+                      className="text-xs text-teal-700 hover:underline inline-flex items-center"
+                      onClick={() => setKitFor({ id: l.id, title: l.title })}
+                    >
+                      <Package className="h-3 w-3 mr-1" aria-hidden="true" />
+                      {kitCounts.data?.[l.id]
+                        ? `${kitCounts.data[l.id]} item${kitCounts.data[l.id] === 1 ? '' : 's'}`
+                        : 'Add kit'}
+                    </button>
                   </td>
                   <td className="text-right">
                     <button
