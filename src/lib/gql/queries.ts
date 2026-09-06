@@ -661,6 +661,35 @@ export async function fetchLessonProducts(lessonId: string): Promise<LessonProdu
   ) as unknown as LessonProductRow[];
 }
 
+export async function attachLessonProduct(
+  lessonId: string, productId: string, note: string | null,
+): Promise<void> {
+  const res = await supabase
+    .from('lesson_products')
+    .upsert({ lesson_id: lessonId, product_id: productId, note }, { onConflict: 'lesson_id,product_id' });
+  if (res.error) throw new Error(res.error.message);
+}
+
+export async function detachLessonProduct(lessonId: string, productId: string): Promise<void> {
+  const res = await supabase
+    .from('lesson_products')
+    .delete()
+    .eq('lesson_id', lessonId)
+    .eq('product_id', productId);
+  if (res.error) throw new Error(res.error.message);
+}
+
+/** How many products each lesson needs, so the list can show a count without
+ *  a query per row. */
+export async function fetchLessonProductCounts(): Promise<Record<string, number>> {
+  const rows = unwrap(
+    await supabase.from('lesson_products').select('lesson_id'),
+  ) as Array<{ lesson_id: string }>;
+  const out: Record<string, number> = {};
+  for (const r of rows) out[r.lesson_id] = (out[r.lesson_id] ?? 0) + 1;
+  return out;
+}
+
 // ── Curriculum lessons ──────────────────────────────────────
 // Lessons stand alone now: they are the curriculum, not the contents of a
 // workshop. Every signed-in user can read the active set, which is what makes
