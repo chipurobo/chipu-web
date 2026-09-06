@@ -38,6 +38,11 @@ export function SchoolProduction() {
   });
   const orders = ordersQuery.data ?? null;
 
+  // The field is placed_by_school - that is the alias the query uses. It was
+  // read as `placer` for a long time, which is not a field on the row, so
+  // placerId was always null and the branch below never ran: a school that
+  // placed an order never saw the status change in an open tab. Plain `tsc`
+  // checks zero files here, so nothing caught it.
   const invalidateOrderQueries = (placerId?: string | null) => {
     void qc.invalidateQueries({ queryKey: ['orders', 'maker', schoolId] });
     void qc.invalidateQueries({ queryKey: ['orders', 'admin'] });
@@ -81,7 +86,7 @@ export function SchoolProduction() {
       fireEmail(vars.status, orders?.find((o) => o.id === vars.id));
     },
     onSettled: (_d, _e, vars) => {
-      const placerId = orders?.find((o) => o.id === vars.id)?.placer?.id ?? null;
+      const placerId = orders?.find((o) => o.id === vars.id)?.placed_by_school?.id ?? null;
       invalidateOrderQueries(placerId);
     },
   });
@@ -95,7 +100,7 @@ export function SchoolProduction() {
       fireEmail('shipped', orders?.find((o) => o.id === id));
     },
     onSettled: (_d, _e, id) => {
-      const placerId = orders?.find((o) => o.id === id)?.placer?.id ?? null;
+      const placerId = orders?.find((o) => o.id === id)?.placed_by_school?.id ?? null;
       invalidateOrderQueries(placerId);
     },
   });
@@ -106,7 +111,7 @@ export function SchoolProduction() {
       if (error) throw new Error(error.message);
     },
     onSettled: (_d, _e, id) => {
-      const placerId = orders?.find((o) => o.id === id)?.placer?.id ?? null;
+      const placerId = orders?.find((o) => o.id === id)?.placed_by_school?.id ?? null;
       invalidateOrderQueries(placerId);
     },
   });
