@@ -51,7 +51,8 @@ const TYPE_LABEL: Record<EventType, string> = {
  * Admin-only deep-dive on a single school. Three sections:
  *   • Overview  — type, location, contact, lead teacher
  *   • Events    — every event the school is attached to + per-school attendance count
- *   • Students  — full active roster, disability flag highlighted
+ *   • Students  — full active roster. Whether support is recorded is shown;
+ *                 the note describing it is deliberately never displayed.
  */
 export function AdminSchoolDetails() {
   const { schoolId } = useParams<{ schoolId: string }>();
@@ -178,7 +179,7 @@ export function AdminSchoolDetails() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <StatCard label="Students"  value={stats.students}  color="bg-teal-500" />
         <StatCard label="In club"   value={stats.inClub}    color="bg-indigo-500" />
-        <StatCard label="Disability flagged" value={stats.disabilities} color="bg-terracotta-500" />
+        <StatCard label="Support recorded" value={stats.disabilities} color="bg-teal-600" />
         <StatCard label="Activities attended" value={`${stats.attended} / ${stats.invited}`} color="bg-amber-500" />
       </div>
 
@@ -303,10 +304,14 @@ export function AdminSchoolDetails() {
                       : <span className="badge-gray">student</span>}
                   </td>
                   <td>
+                    {/* The note itself is never rendered and never fetched. A
+                        free-text note beside a named child is a diagnosis on
+                        screen, which is exactly what the MERL plan says we do
+                        not record. That support exists is the useful fact. */}
                     {s.has_disability ? (
-                      <span className="badge-terra inline-flex items-center" title={s.disability_notes ?? ''}>
+                      <span className="badge-teal inline-flex items-center">
                         <Accessibility className="h-3 w-3 mr-1" aria-hidden="true" />
-                        {s.disability_notes ? s.disability_notes.slice(0, 24) : 'disability'}
+                        support recorded
                       </span>
                     ) : (
                       <span className="text-xs text-gray-400">—</span>
