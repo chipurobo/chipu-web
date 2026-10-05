@@ -1,0 +1,108 @@
+# ChipuRobo dashboard — Supabase local CLI config.
+# Most defaults are fine for `supabase start`. After `supabase link` to a
+# hosted Cloud project the project_id below becomes irrelevant.
+
+project_id = "chipurobo-dashboard"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[studio]
+enabled = true
+port = 54323
+api_url = "http://localhost"
+
+[inbucket]
+enabled = true
+port = 54324
+
+[storage]
+enabled = true
+file_size_limit = "10MiB"
+
+[auth]
+enabled = true
+site_url = "http://localhost:5173"
+additional_redirect_urls = [
+  "http://localhost:5173/dashboard",
+  "https://chipurobo.com/dashboard",
+  # Where a password-reset link lands. GoTrue refuses any redirect target not
+  # listed here, so the mail would arrive and the link would then fail.
+  "http://localhost:5173/dashboard/reset-password",
+  "https://chipurobo.com/dashboard/reset-password"
+]
+jwt_expiry = 3600
+
+# === Signup is CLOSED. ===
+# 20260601000009 moved account creation to admins (create_school_with_lead)
+# and removed the self-signup RPC — but GoTrue's /auth/v1/signup endpoint is
+# governed by this config, not by that RPC. While it was true, anyone with
+# the publishable key could POST to it and receive a live `authenticated`
+# JWT, which re-scoped every `to authenticated` policy in the schema from
+# "onboarded school staff" to "the public internet".
+#
+# NOTE: this file configures the LOCAL stack only. The hosted project must
+# be changed too — Dashboard → Authentication → Providers → Email → disable
+# "Enable email signup" — or via `supabase config push`.
+enable_signup = false
+
+[auth.email]
+# Keep the email/password provider enabled so admin-created users can sign in.
+# Public signup remains closed by the top-level [auth].enable_signup = false.
+enable_signup = true
+double_confirm_changes = false
+enable_confirmations = false
+secure_password_change = false
+
+# === Outbound mail: SendKit over SMTP ===
+#
+# Without this, GoTrue falls back to Supabase's built-in sender, which is rate
+# limited to a handful of messages an hour and documented as test-only. That is
+# why "forgot password" could not exist: the reset mail would silently not
+# arrive for most people.
+#
+# The password is the SendKit API key. It is NOT written here — `env()` reads it
+# at startup, and the value stays in .env.local locally and in the project's
+# secrets in the hosted environment. The same key already backs the send-email
+# edge function.
+#
+# Port 465 is implicit TLS, which is what SendKit lists first. 587 or 2587 are
+# available for STARTTLS if a host blocks 465.
+#
+# NOTE: like enable_signup above, this file configures the LOCAL stack only.
+# The hosted project must be set separately — Dashboard → Authentication →
+# Emails → SMTP Settings — using the same four values.
+# enabled = false ON PURPOSE. This file configures the LOCAL stack, where mail
+# should land in Mailpit (http://127.0.0.1:54324) and not be sent to a real
+# teacher from someone's laptop. Turning this on locally also needs
+# SENDKIT_API_KEY in .env.local, which developers do not have and should not
+# need. Flip it only to debug the real sender deliberately.
+[auth.email.smtp]
+enabled     = false
+host        = "smtp.sendkit.dev"
+port        = 465
+user        = "sendkit"
+pass        = "env(SENDKIT_API_KEY)"
+admin_email = "chipurobo@gmail.com"
+sender_name = "ChipuRobo"
+
+# Edge functions
+#
+# verify_jwt = true: the platform validates the JWT before the handler runs.
+# This previously read `false` on the rationale that the OPTIONS preflight
+# needed to reach the handler for CORS — but Supabase answers preflight
+# ahead of JWT verification, so nothing was gained, and the handler's own
+# check only tested that the Authorization header was PRESENT. Any string
+# passed it, making send-email an open relay on a domain with our SPF/DKIM.
+# The handler now verifies the token as well; this is belt and braces.
+[functions.send-email]
+verify_jwt = true

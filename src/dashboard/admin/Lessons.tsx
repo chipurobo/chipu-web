@@ -1,0 +1,286 @@
+import { useState, type FormEvent } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  fetchAllLessonsAdmin, createLesson, updateLesson, fetchLessonProductCounts,
+} from '../../lib/gql/queries';
+import { useNotifications } from '../../lib/notifications';
+import type { StageKind, LessonLevel } from '../../lib/database.types';
+import { BookOpen, Plus, GraduationCap, EyeOff, Eye, ExternalLink, Package } from 'lucide-react';
+import { SkeletonRows } from '../components/Skeletons';
+import { safeHttpUrl } from '../../lib/safeUrl';
+import { LevelFilter } from '../components/LevelFilter';
+import { matchesLevel, LEVEL_LABEL, type LevelChoice } from '../components/levels';
+import { LessonKitPanel } from './LessonKit';
+
+// =============================================================
+// /dashboard/admin/lessons
+//
+// The curriculum. Lessons are authored here once and stand on their own —
+// until 20260810000003 a lesson could not exist without belonging to an
+// "event", which is what made workshops look like containers of lessons
+// rather than training requested against one.
+//
+// Schools browse this list and request a workshop on a lesson; ChipuRobo
+// schedules it from /dashboard/admin/workshops.
+// =============================================================
+
+const KIND_LABEL: Record<StageKind, string> = {
+  outreach:          'Outreach',
+  bootcamp_physical: 'Bootcamp (physical)',
+  bootcamp_virtual:  'Bootcamp (virtual)',
+  lesson:            'Lesson',
+  async_track:       'Self-paced track',
+  project:           'Project',
+};
+
+export function AdminLessons() {
+  const { notify } = useNotifications();
+  const qc = useQueryClient();
+  const [creating, setCreating] = useState(false);
+  const [kitFor, setKitFor] = useState<{ id: string; title: string } | null>(null);
+
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [kind, setKind] = useState<StageKind>('lesson');
+  const [resourceUrl, setResourceUrl] = useState('');
+  const [newLevel, setNewLevel] = useState<LessonLevel>('both');
+  const [filterLevel, setFilterLevel] = useState<LevelChoice>('all');
+  const [points, setPoints] = useState(1);
+  const [required, setRequired] = useState(false);
+
+  // One query for every lesson's count; a query per row would be a hundred
+  // round trips on a curriculum this size.
+  const kitCounts = useQuery({
+    queryKey: ['lesson-product-counts'],
+    queryFn: fetchLessonProductCounts,
+  });
+
+  const lessonsQuery = useQuery({
+    queryKey: ['lessons', 'admin'],
+    queryFn: fetchAllLessonsAdmin,
+  });
+
+  const createMutation = useMutation({
+    mutationFn: () => createLesson({
+      title: title.trim(),
+      description: description.trim() || null,
+      kind,
+      // Empty string would fail the http(s) check constraint; null means
+      // "this lesson has no online resource", which is true of taught ones.
+      resource_url: resourceUrl.trim() || null,
+      level: newLevel,
+      points,
+      required_for_certificate: required,
+      // Appended to the end of the curriculum. event_id is deliberately
+      // omitted — a lesson is no longer owned by an event.
+      position: (lessonsQuery.data?.length ?? 0) + 1,
+      is_active: true,
+    }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['lessons'] });
+      notify('success', 'Lesson added', 'Schools can now request a workshop on it.');
+      setTitle(''); setDescription(''); setKind('lesson'); setPoints(1);
+      setRequired(false); setResourceUrl(''); setNewLevel('both');
+      setCreating(false);
+    },
+    onError: (err: Error) => notify('warning', 'Could not add lesson', err.message),
+  });
+
+  const toggleActive = useMutation({
+    mutationFn: ({ id, is_active }: { id: string; is_active: boolean }) =>
+      updateLesson(id, { is_active }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['lessons'] }),
+    onError: (err: Error) => notify('warning', 'Could not update lesson', err.message),
+  });
+
+  const onSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    if (title.trim()) createMutation.mutate();
+  };
+
+  const all = lessonsQuery.data ?? [];
+  const lessons = all.filter((l) => matchesLevel(l.level, filterLevel));
+
+  return (
+    <div className="px-4 sm:px-6 lg:px-10 py-8 space-y-6">
+      <div className="flex items-end justify-between gap-4 flex-wrap">
+        <div>
+          <p className="text-xs uppercase tracking-wider text-gray-500 mb-1">Admin</p>
+          <h1>Lessons</h1>
+          <p className="text-sm text-gray-600 mt-1 max-w-2xl">
+            The curriculum. Every lesson here can have a workshop requested against it by a
+            school or teacher, delivered in person or online.
+          </p>
+        </div>
+        <button className="btn-primary" onClick={() => setCreating((v) => !v)}>
+          <Plus className="h-4 w-4 mr-1.5" aria-hidden="true" />
+          {creating ? 'Cancel' : 'New lesson'}
+        </button>
+      </div>
+
+      {kitFor && (
+        <LessonKitPanel
+          lessonId={kitFor.id}
+          lessonTitle={kitFor.title}
+          onClose={() => setKitFor(null)}
+        />
+      )}
+
+      {creating && (
+        <form onSubmit={onSubmit} className="card p-4" aria-label="New lesson">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="sm:col-span-2">
+              <label className="field-label" htmlFor="l-title">Title</label>
+              <input id="l-title" className="field-input" value={title}
+                onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Intro to Python" />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="field-label" htmlFor="l-desc">Description</label>
+              <textarea id="l-desc" className="field-input" rows={2} value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="What this lesson covers, or a link for a self-paced track" />
+            </div>
+            <div>
+              <label className="field-label" htmlFor="l-kind">Kind</label>
+              <select id="l-kind" className="field-input" value={kind}
+                onChange={(e) => setKind(e.target.value as StageKind)}>
+                {(Object.keys(KIND_LABEL) as StageKind[]).map((k) => (
+                  <option key={k} value={k}>{KIND_LABEL[k]}</option>
+                ))}
+              </select>
+            </div>
+            <div className="sm:col-span-2">
+              <label className="field-label" htmlFor="l-url">
+                Resource link <span className="text-gray-400">(where the teacher goes)</span>
+              </label>
+              <input id="l-url" type="url" className="field-input" value={resourceUrl}
+                onChange={(e) => setResourceUrl(e.target.value)}
+                placeholder="https://projects.raspberrypi.org/en/projects/…" />
+            </div>
+            <div>
+              <label className="field-label" htmlFor="l-level">Delivery track</label>
+              <select id="l-level" className="field-input" value={newLevel}
+                onChange={(e) => setNewLevel(e.target.value as LessonLevel)}>
+                <option value="both">Both tracks</option>
+                <option value="primary">Primary track</option>
+                <option value="secondary">Secondary track</option>
+              </select>
+            </div>
+            <div>
+              <label className="field-label" htmlFor="l-points">Points</label>
+              <input id="l-points" type="number" min={0} className="field-input" value={points}
+                onChange={(e) => setPoints(Number(e.target.value))} />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="inline-flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={required}
+                  onChange={(e) => setRequired(e.target.checked)} />
+                <span className="text-sm text-gray-700">Required for certificate</span>
+              </label>
+            </div>
+          </div>
+          <div className="mt-4">
+            <button className="btn-primary" type="submit"
+              disabled={!title.trim() || createMutation.isPending}>
+              {createMutation.isPending ? 'Adding…' : 'Add lesson'}
+            </button>
+          </div>
+        </form>
+      )}
+
+      <LevelFilter
+        value={filterLevel}
+        onChange={setFilterLevel}
+        counts={{
+          all: all.length,
+          primary: all.filter((l) => matchesLevel(l.level, 'primary')).length,
+          secondary: all.filter((l) => matchesLevel(l.level, 'secondary')).length,
+        }}
+      />
+
+      <div className="card overflow-x-auto">
+        <table className="data-table" aria-label="Curriculum lessons">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Lesson</th>
+              <th>Kind</th>
+              <th>Track</th>
+              <th>Resource</th>
+              <th>Points</th>
+              <th>Status</th>
+              <th>Kit</th>
+              <th />
+            </tr>
+          </thead>
+          <tbody>
+            {lessonsQuery.isPending ? (
+              <SkeletonRows rows={4} cols={9} label="Loading lessons" />
+            ) : lessons.length === 0 ? (
+              <tr>
+                <td colSpan={9} className="text-sm text-gray-500 py-6 text-center">
+                  No lessons yet. Add the first one above.
+                </td>
+              </tr>
+            ) : (
+              lessons.map((l) => (
+                <tr key={l.id}>
+                  <td className="text-gray-400 text-sm">{l.position}</td>
+                  <td className="font-medium text-gray-900">
+                    <span className="inline-flex items-center gap-1.5">
+                      <BookOpen className="h-3.5 w-3.5 text-teal-600" aria-hidden="true" />
+                      {l.title}
+                    </span>
+                    {l.required_for_certificate && (
+                      <GraduationCap className="h-3.5 w-3.5 text-amber-500 inline ml-1.5"
+                        aria-label="Required for certificate" />
+                    )}
+                  </td>
+                  <td className="text-sm text-gray-600">{KIND_LABEL[l.kind]}</td>
+                  <td><span className="badge-gray">{LEVEL_LABEL[l.level]}</span></td>
+                  <td className="text-sm">
+                    {safeHttpUrl(l.resource_url) ? (
+                      <a href={safeHttpUrl(l.resource_url)!} target="_blank" rel="noopener noreferrer"
+                         className="text-teal-700 hover:underline inline-flex items-center gap-1">
+                        <ExternalLink className="h-3 w-3" aria-hidden="true" />Open
+                      </a>
+                    ) : <span className="text-gray-400">—</span>}
+                  </td>
+                  <td className="text-sm">{l.points}</td>
+                  <td>
+                    <span className={l.is_active ? 'badge-teal' : 'badge-gray'}>
+                      {l.is_active ? 'active' : 'retired'}
+                    </span>
+                  </td>
+                  <td>
+                    <button
+                      type="button"
+                      className="text-xs text-teal-700 hover:underline inline-flex items-center"
+                      onClick={() => setKitFor({ id: l.id, title: l.title })}
+                    >
+                      <Package className="h-3 w-3 mr-1" aria-hidden="true" />
+                      {kitCounts.data?.[l.id]
+                        ? `${kitCounts.data[l.id]} item${kitCounts.data[l.id] === 1 ? '' : 's'}`
+                        : 'Add kit'}
+                    </button>
+                  </td>
+                  <td className="text-right">
+                    <button
+                      className="btn-secondary !py-1 !text-xs"
+                      disabled={toggleActive.isPending}
+                      onClick={() => toggleActive.mutate({ id: l.id, is_active: !l.is_active })}
+                    >
+                      {l.is_active
+                        ? <><EyeOff className="h-3 w-3 mr-1" aria-hidden="true" />Retire</>
+                        : <><Eye className="h-3 w-3 mr-1" aria-hidden="true" />Restore</>}
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}

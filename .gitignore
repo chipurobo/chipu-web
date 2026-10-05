@@ -10,7 +10,32 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+# Local build-verification scratch dirs (dist-check, dist-final, dist-verify, …)
+dist-*/
 *.local
+
+# Vite drops these next to vite.config.ts whenever it loads the TS config —
+# transient build artefacts, never commit them.
+vite.config.ts.timestamp-*
+vite.config.js.timestamp-*
+
+# TypeScript incremental-build state — machine-local, never commit.
+*.tsbuildinfo
+
+# Tooling / vendor folders that don't belong in the repo
+.bolt/
+.husky/
+.vercel/
+
+# Supabase backend — migrations, edge functions, config and seed ARE
+# tracked (they're the schema's source of truth). What stays out of the
+# public repo: CLI scratch dirs, function secrets, and ad-hoc SQL
+# snippets (which may contain credentials — one historically did).
+supabase/.branches/
+supabase/.temp/
+supabase/functions/.env
+supabase/functions/.env.local
+supabase/snippets/
 
 # Editor directories and files
 .vscode/*
@@ -26,3 +51,8 @@ dist-ssr
 .DS_Store
 **/.DS_Store
 .env
+
+# Claude Desktop worktrees
+.claude/
+.env.local
+.env.*.local

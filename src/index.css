@@ -1,263 +1,898 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-@import url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/open-dyslexic-regular.css');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --primary-50: #ecfdf5;
-    --primary-100: #d1fae5;
-    --primary-200: #a7f3d0;
-    --primary-300: #6ee7b7;
-    --primary-400: #34d399;
-    --primary-500: #10b981;
-    --primary-600: #059669;
-    --primary-700: #047857;
-    --primary-800: #065f46;
-    --primary-900: #064e3b;
-  }
+ :root {
+ --primary-50: #ecfdf5;
+ --primary-100: #d1fae5;
+ --primary-200: #a7f3d0;
+ --primary-300: #6ee7b7;
+ --primary-400: #34d399;
+ --primary-500: #10b981;
+ --primary-600: #059669;
+ --primary-700: #047857;
+ --primary-800: #065f46;
+ --primary-900: #064e3b;
+ --warm-bg: #f5f0e8;
+ --warm-bg-alt: #ede5d8;
+ --cream: #faf8f5;
+ --footer-bg: #111827; /* gray-900, matches Footer */
+ }
 
-  html {
-    scroll-behavior: smooth;
-  }
+ /* === Bulletproof footer overscroll fix ===
+    `html` has `overflow: hidden; height: 100%` so it does NOT scroll —
+    it's a fixed-size box. `body` becomes the dedicated scroll container
+    (rule further down) with `overflow-y: auto; height: 100%`. This
+    sandwich means:
+      • The body scrolls inside the html viewport.
+      • The body cannot bounce past its own content (no rubber-band).
+      • There's literally nothing past the footer to scroll into.
+    Works in every browser including older Safari/iOS where the
+    `overscroll-behavior` property is ignored. */
+ html {
+ scroll-behavior: smooth;
+ background-color: var(--footer-bg);
+ overflow: hidden;
+ height: 100%;
+ }
 
-  * {
-    font-family: 'Inter', system-ui, sans-serif;
-  }
+ /* === Default body type: OpenDyslexic ===
+ Headings stay pixel (Press Start 2P) for the robotic feel; the
+ rest of the site uses OpenDyslexic, which is easier to read for
+ dyslexic users and gives the page a distinctive character to
+ contrast the 8-bit headings. The .font-mono utility still
+ resolves to VT323 for explicitly terminal-style elements. */
+ * {
+ font-family: 'OpenDyslexic', 'Comic Sans MS', system-ui, sans-serif;
+ }
 
-  /* Dyslexic-friendly opt-in */
-  .dyslexic-mode * {
-    font-family: 'OpenDyslexic', 'Comic Sans MS', 'Arial', sans-serif;
-    letter-spacing: 0.05em;
-    line-height: 1.6;
-  }
+ body {
+ letter-spacing: 0.01em;
+ line-height: 1.55;
+ }
 
-  /* Screen reader only class */
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-  }
+ /* Legacy alias — `.dyslexic-mode` is now redundant since the whole
+ site is OpenDyslexic by default, but we keep the class around so
+ existing markup doesn't break. */
+ .dyslexic-mode * {
+ font-family: 'OpenDyslexic', 'Comic Sans MS', 'Arial', sans-serif !important;
+ letter-spacing: 0.05em;
+ line-height: 1.6;
+ }
 
-  /* Focus styles for keyboard navigation */
-  *:focus-visible {
-    outline: 3px solid #10b981;
-    outline-offset: 2px;
-    border-radius: 4px;
-  }
+ /* Screen reader only class */
+ .sr-only {
+ position: absolute;
+ width: 1px;
+ height: 1px;
+ padding: 0;
+ margin: -1px;
+ overflow: hidden;
+ clip: rect(0, 0, 0, 0);
+ white-space: nowrap;
+ border: 0;
+ }
 
-  /* Enhanced readability */
-  .dyslexic-text {
-    font-family: 'OpenDyslexic', 'Comic Sans MS', 'Arial', sans-serif;
-    letter-spacing: 0.05em;
-    line-height: 1.6;
-  }
+ /* Focus styles for keyboard navigation */
+ *:focus-visible {
+ outline: 3px solid #10b981;
+ outline-offset: 2px;
+ border-radius: 4px;
+ }
 
-  /* High contrast mode support */
-  @media (prefers-contrast: high) {
-    :root {
-      --primary-600: #000080;
-    }
-  }
+ /* Enhanced readability */
+ .dyslexic-text {
+ font-family: 'OpenDyslexic', 'Comic Sans MS', 'Arial', sans-serif;
+ letter-spacing: 0.05em;
+ line-height: 1.6;
+ }
 
-  /* Reduced motion support */
-  @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-    }
-    html {
-      scroll-behavior: auto;
-    }
-  }
+ /* High contrast mode support */
+ @media (prefers-contrast: high) {
+ :root {
+ --primary-600: #000080;
+ }
+ }
 
-  body {
-    @apply bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white;
-  }
+ /* Reduced motion support */
+ @media (prefers-reduced-motion: reduce) {
+ *,
+ *::before,
+ *::after {
+ animation-duration: 0.01ms !important;
+ animation-iteration-count: 1 !important;
+ transition-duration: 0.01ms !important;
+ }
+ html {
+ scroll-behavior: auto;
+ }
+ /* Stop the blinking terminal cursor & status dots */
+ .terminal-cursor::after,
+ .term-chip::before {
+ animation: none !important;
+ opacity: 1 !important;
+ }
+ }
 
-  h1, h2, h3, h4, h5, h6 {
-    @apply text-gray-900 dark:text-white tracking-tight;
-  }
+ /* Body is the page scroll container. `height: 100%` of html (which is
+    100% of viewport), `overflow-y: auto` for vertical scroll, and
+    `overflow-x: hidden` to never produce a horizontal scrollbar from
+    stray absolutely-positioned children. The body bg is set to the
+    footer color too as a final safety net so any 1-2px paint glitch
+    at the bottom edge stays dark instead of leaking cream. */
+ body {
+ @apply text-gray-900;
+ background-color: var(--footer-bg);
+ height: 100%;
+ overflow-y: auto;
+ overflow-x: hidden;
+ overscroll-behavior: none;
+ -webkit-overflow-scrolling: touch;
+ }
 
-  p {
-    @apply text-gray-600 dark:text-gray-300 leading-relaxed;
-  }
+ /* Headings → 8-bit pixel font.
+ Press Start 2P has very wide metrics; we counter that with
+ reduced letter-spacing and tighter line-height. */
+ h1, h2, h3, h4, h5, h6 {
+ @apply text-gray-900;
+ font-family: 'Press Start 2P', monospace;
+ letter-spacing: -0.02em;
+ line-height: 1.25;
+ word-spacing: -0.1em;
+ }
+
+ /* Smaller headings stay in OpenDyslexic — Press Start 2P at <1rem
+ is unreadable, and OpenDyslexic gives them a clear, accessible
+ read while staying distinct from the body text via weight. */
+ h4, h5, h6 {
+ font-family: 'OpenDyslexic', 'Comic Sans MS', system-ui, sans-serif;
+ letter-spacing: 0.01em;
+ font-weight: 700;
+ }
+
+ p {
+ @apply text-gray-700 leading-relaxed;
+ }
+
+ /* Make the cream body text a touch deeper for legibility against
+ the cream background, since VT323 is a thin pixel font. */
+ .text-gray-600 { color: #374151; }
+ }
+
+/* ============================================================================
+   Admin/school dashboard theme
+   ----------------------------------------------------------------------------
+   Scoped under `.admin-zone` (applied by DashboardLayout) so it doesn't bleed
+   into the public marketing site. The public site keeps OpenDyslexic body +
+   pixel headings. The dashboard switches to Inter for legibility during long
+   admin sessions.
+
+   The pixel font still appears for the ChipuRobo wordmark in the sidebar +
+   small section eyebrows, so the brand still feels present.
+   ============================================================================ */
+.admin-zone,
+.admin-zone * {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.admin-zone .font-pixel,
+.admin-zone .heading-display {
+  /* Only the explicit `font-pixel` / `heading-display` opt-ins use pixel font
+     inside the admin zone (wordmark, ADMIN tag, etc.). Override the
+     site-wide clamp() so wordmarks stay their natural small size. */
+  font-family: 'Press Start 2P', monospace;
+}
+.admin-zone h1,
+.admin-zone h2,
+.admin-zone h3,
+.admin-zone h4,
+.admin-zone h5,
+.admin-zone h6 {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  letter-spacing: -0.01em;
+  text-transform: none;
+  font-weight: 600;
+}
+.admin-zone h1 { font-size: clamp(1.25rem, 4vw, 1.625rem) !important; line-height: 1.25 !important; }
+.admin-zone h2 { font-size: clamp(1rem, 3vw, 1.25rem) !important; line-height: 1.3 !important; }
+.admin-zone h3 { font-size: clamp(0.95rem, 2.5vw, 1.125rem) !important; line-height: 1.4 !important; }
+
+/* Stat-strip number sizing scales — 2xl is too aggressive on a 360px phone */
+.admin-zone .stat-num { font-size: clamp(1.25rem, 5vw, 1.5rem); line-height: 1; font-weight: 600; }
+
+/* Compact form controls — Inter ~14px, generous focus rings */
+.admin-zone .field-label {
+  @apply block text-xs font-medium text-gray-700 mb-1.5;
+}
+.admin-zone .field-input,
+.admin-zone .field-select {
+  @apply w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-md
+         placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500/40
+         focus:border-teal-500 transition-colors;
+}
+.admin-zone .field-select { @apply pr-8 cursor-pointer; }
+.admin-zone .field-help   { @apply text-xs text-gray-500 mt-1; }
+.admin-zone .field-error  { @apply text-xs text-red-600 mt-1; }
+
+/* Buttons */
+.admin-zone .btn-primary {
+  @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium
+         bg-teal-600 text-white rounded-md hover:bg-teal-700 focus:outline-none
+         focus:ring-2 focus:ring-teal-500/40 transition-colors disabled:opacity-50
+         disabled:cursor-not-allowed;
+}
+.admin-zone .btn-secondary {
+  @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium
+         bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50
+         focus:outline-none focus:ring-2 focus:ring-teal-500/40 transition-colors
+         disabled:opacity-50 disabled:cursor-not-allowed;
+}
+.admin-zone .btn-danger {
+  @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium
+         bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none
+         focus:ring-2 focus:ring-red-500/40 transition-colors;
+}
+
+/* Tables */
+.admin-zone .data-table {
+  @apply w-full text-sm border-separate border-spacing-0;
+}
+.admin-zone .data-table thead th {
+  @apply text-xs font-semibold uppercase tracking-wider text-gray-500
+         px-4 py-2 text-left border-b border-warm-200 bg-warm-100/40;
+}
+.admin-zone .data-table tbody td {
+  @apply px-4 py-3 border-b border-warm-200 text-gray-800 align-middle;
+}
+.admin-zone .data-table tbody tr:hover {
+  @apply bg-warm-100/30;
+}
+
+/* Card wrapper */
+.admin-zone .card {
+  @apply bg-white rounded-xl border border-warm-200 shadow-sm;
+}
+
+/* Status / type badges */
+.admin-zone .badge,
+.admin-zone .badge-gray,
+.admin-zone .badge-teal,
+.admin-zone .badge-terra,
+.admin-zone .badge-amber,
+.admin-zone .badge-green,
+.admin-zone .badge-red {
+  @apply inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full;
+}
+.admin-zone .badge-gray  { @apply bg-gray-100 text-gray-700; }
+.admin-zone .badge-teal  { @apply bg-teal-50 text-teal-700; }
+.admin-zone .badge-terra { @apply bg-terracotta-50 text-terracotta-700; }
+.admin-zone .badge-amber { @apply bg-amber-50 text-amber-700; }
+.admin-zone .badge-green { @apply bg-emerald-50 text-emerald-700; }
+.admin-zone .badge-red   { @apply bg-red-50 text-red-700; }
+
+/* === Display headings: 8-bit pixel ===
+ Press Start 2P characters are much wider/taller than typical fonts,
+ so existing Tailwind size classes (text-5xl, text-6xl, ...) blow out
+ layouts. We cap apparent size with a clamp() that respects viewport
+ width while staying readable. Per-element overrides still win. */
+.heading-display {
+ font-family: 'Press Start 2P', monospace;
+ font-weight: 400;
+ letter-spacing: -0.04em;
+ line-height: 1.25;
+ word-spacing: -0.15em;
+ text-transform: uppercase;
+}
+
+h1.heading-display { font-size: clamp(1.5rem, 4.5vw, 3rem) !important; line-height: 1.2 !important; }
+h2.heading-display { font-size: clamp(1.125rem, 3vw, 2rem) !important; line-height: 1.25 !important; }
+h3.heading-display { font-size: clamp(1rem, 2vw, 1.5rem) !important; line-height: 1.3 !important; }
+
+/* Corner bracket frame — tnkr.ai style */
+.bracket-frame {
+ position: relative;
+ padding: 1.5rem;
+}
+
+.bracket-frame::before,
+.bracket-frame::after {
+ content: '';
+ position: absolute;
+ width: 2rem;
+ height: 2rem;
+ border-color: #374151;
+ pointer-events: none;
+}
+
+.bracket-frame::before {
+ top: 0;
+ left: 0;
+ border-top: 2px solid;
+ border-left: 2px solid;
+ border-color: inherit;
+}
+
+.bracket-frame::after {
+ bottom: 0;
+ right: 0;
+ border-bottom: 2px solid;
+ border-right: 2px solid;
+ border-color: inherit;
+}
+
+/* Extended bracket with all four corners */
+.bracket-frame-full {
+ position: relative;
+}
+
+.bracket-frame-full::before,
+.bracket-frame-full::after {
+ content: '';
+ position: absolute;
+ width: 2.5rem;
+ height: 2.5rem;
+ pointer-events: none;
+}
+
+.bracket-frame-full::before {
+ top: -0.5rem;
+ left: -0.5rem;
+ border-top: 2px solid #9ca3af;
+ border-left: 2px solid #9ca3af;
+}
+
+.bracket-frame-full::after {
+ top: -0.5rem;
+ right: -0.5rem;
+ border-top: 2px solid #9ca3af;
+ border-right: 2px solid #9ca3af;
+}
+
+.bracket-corners-bottom::before,
+.bracket-corners-bottom::after {
+ content: '';
+ position: absolute;
+ width: 2.5rem;
+ height: 2.5rem;
+ pointer-events: none;
+}
+
+.bracket-corners-bottom::before {
+ bottom: -0.5rem;
+ left: -0.5rem;
+ border-bottom: 2px solid #9ca3af;
+ border-left: 2px solid #9ca3af;
+}
+
+.bracket-corners-bottom::after {
+ bottom: -0.5rem;
+ right: -0.5rem;
+ border-bottom: 2px solid #9ca3af;
+ border-right: 2px solid #9ca3af;
+}
+
+/* Dashed border frame — tnkr style */
+.dashed-frame {
+ border: 2px dashed #d1d5db;
+ border-radius: 0;
+}
+
+/* Faded code background */
+.code-bg {
+ position: relative;
+ overflow: hidden;
+}
+
+.code-bg::before {
+ content: 'import { Robot } from "chipurobo"\nconst learners = await train(800)\nfunction buildFuture(youth) {\n return empower(youth, AI)\n}\n// 66 Code Clubs active\n// 13 PET machines deployed';
+ position: absolute;
+ top: 0;
+ left: 0;
+ right: 0;
+ font-family: 'Courier New', monospace;
+ font-size: 0.875rem;
+ line-height: 2;
+ color: rgba(0, 0, 0, 0.06);
+ white-space: pre;
+ pointer-events: none;
+ padding: 2rem;
+}
+
+/* Collaborative cursor badge */
+.cursor-badge {
+ display: inline-flex;
+ align-items: center;
+ padding: 0.375rem 0.875rem;
+ border-radius: 0.375rem;
+ font-size: 0.75rem;
+ font-weight: 700;
+ letter-spacing: 0.05em;
+ text-transform: uppercase;
+ color: white;
+ position: absolute;
+ white-space: nowrap;
+}
+
+.cursor-badge::before {
+ content: '';
+ position: absolute;
+ top: -6px;
+ left: -6px;
+ width: 0;
+ height: 0;
+ border-left: 8px solid transparent;
+ border-bottom: 8px solid currentColor;
+ transform: rotate(-15deg);
+}
+
+.cursor-badge-teal {
+ background-color: #0d9488;
+}
+
+.cursor-badge-teal::before {
+ border-bottom-color: #0d9488;
+}
+
+.cursor-badge-terracotta {
+ background-color: #d44820;
+}
+
+.cursor-badge-terracotta::before {
+ border-bottom-color: #d44820;
+}
+
+.cursor-badge-amber {
+ background-color: #d97706;
+}
+
+.cursor-badge-amber::before {
+ border-bottom-color: #d97706;
 }
 
 /* Custom animations */
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+ 0%, 100% { transform: translateY(0); }
+ 50% { transform: translateY(-10px); }
 }
 
 @keyframes pulse-slow {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+ 0%, 100% { opacity: 1; }
+ 50% { opacity: 0.7; }
 }
 
 @keyframes spin-slow {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+ from { transform: rotate(0deg); }
+ to { transform: rotate(360deg); }
 }
 
 @keyframes scroll {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+ 0% { transform: translateX(0); }
+ 100% { transform: translateX(-50%); }
+}
+
+@keyframes float-gentle {
+ 0%, 100% { transform: translateY(0) rotate(0deg); }
+ 50% { transform: translateY(-6px) rotate(1deg); }
 }
 
 .animate-float {
-  animation: float 3s ease-in-out infinite;
+ animation: float 3s ease-in-out infinite;
+}
+
+.animate-float-gentle {
+ animation: float-gentle 4s ease-in-out infinite;
 }
 
 .animate-pulse-slow {
-  animation: pulse-slow 3s ease-in-out infinite;
+ animation: pulse-slow 3s ease-in-out infinite;
 }
 
 .animate-spin-slow {
-  animation: spin-slow 10s linear infinite;
+ animation: spin-slow 10s linear infinite;
 }
 
 .animate-scroll {
-  animation: scroll 20s linear infinite;
+ animation: scroll 25s linear infinite;
 }
 
 /* Hero section styles */
 .hero-gradient {
-  @apply bg-gradient-to-r from-gray-900 to-primary-900 dark:from-black dark:to-primary-950;
-  position: relative;
-  overflow: hidden;
+ @apply bg-gradient-to-r from-gray-900 to-primary-900;
+ position: relative;
+ overflow: hidden;
 }
 
 .circuit-background {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  opacity: 0.1;
-  background-image:
-    linear-gradient(to right, rgba(255,255,255,0.1) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255,255,255,0.1) 1px, transparent 1px);
-  background-size: 30px 30px;
+ position: absolute;
+ top: 0;
+ left: 0;
+ right: 0;
+ bottom: 0;
+ opacity: 0.1;
+ background-image:
+ linear-gradient(to right, rgba(255,255,255,0.1) 1px, transparent 1px),
+ linear-gradient(to bottom, rgba(255,255,255,0.1) 1px, transparent 1px);
+ background-size: 30px 30px;
 }
 
 .tech-ring {
-  position: absolute;
-  border: 2px solid rgba(255,255,255,0.1);
-  border-radius: 50%;
+ position: absolute;
+ border: 2px solid rgba(255,255,255,0.1);
+ border-radius: 50%;
 }
 
 .tech-ring:nth-child(1) {
-  width: 300px;
-  height: 300px;
-  top: -150px;
-  right: -150px;
+ width: 300px;
+ height: 300px;
+ top: -150px;
+ right: -150px;
 }
 
 .tech-ring:nth-child(2) {
-  width: 200px;
-  height: 200px;
-  bottom: -100px;
-  left: -100px;
+ width: 200px;
+ height: 200px;
+ bottom: -100px;
+ left: -100px;
 }
 
 .tech-ring:nth-child(3) {
-  width: 150px;
-  height: 150px;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+ width: 150px;
+ height: 150px;
+ top: 50%;
+ left: 50%;
+ transform: translate(-50%, -50%);
 }
 
 @layer utilities {
-  .animate-fadeIn {
-    animation: fadeIn 1s ease-in-out;
-  }
+ .animate-fadeIn {
+ animation: fadeIn 1s ease-in-out;
+ }
 
-  .glass {
-    @apply bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-white/20 dark:border-gray-700/30;
-  }
+ .glass {
+ @apply bg-white/80 backdrop-blur-xl border-b border-white/20;
+ }
+
+ /* === Robotic / CRT utilities === */
+
+ /* Sharp pixel rendering — keeps text edges blocky, no smoothing */
+ .pixel-crisp {
+ image-rendering: pixelated;
+ -webkit-font-smoothing: none;
+ -moz-osx-font-smoothing: none;
+ text-rendering: geometricPrecision;
+ }
+
+ /* Teal CRT glow on text — subtle in light mode, brighter in dark */
+ .glow-teal {
+ color: #14b8a6;
+ text-shadow:
+ 0 0 6px rgba(20, 184, 166, 0.55),
+ 0 0 14px rgba(20, 184, 166, 0.25);
+ }
+
+ .glow-yellow {
+ /* used sparingly for important alerts/markers */
+ color: #fbbf24;
+ text-shadow:
+ 0 0 6px rgba(251, 191, 36, 0.55),
+ 0 0 14px rgba(251, 191, 36, 0.25);
+ }
+
+ /* Hard pixel-style drop shadow */
+ .shadow-pixel {
+ box-shadow: 4px 4px 0 0 rgba(17, 24, 39, 1);
+ }
+
+ .shadow-pixel-teal {
+ box-shadow: 4px 4px 0 0 #0f766e;
+ }
+
+ /* Scanline overlay — apply to dark sections */
+ .scanlines {
+ position: relative;
+ isolation: isolate;
+ }
+ .scanlines::after {
+ content: '';
+ position: absolute;
+ inset: 0;
+ pointer-events: none;
+ background-image: repeating-linear-gradient(
+ to bottom,
+ rgba(255, 255, 255, 0.03) 0,
+ rgba(255, 255, 255, 0.03) 1px,
+ transparent 1px,
+ transparent 3px
+ );
+ mix-blend-mode: overlay;
+ z-index: 1;
+ }
+
+ /* Circuit-board grid background — works on dark sections */
+ .circuit-grid {
+ background-image:
+ linear-gradient(rgba(20, 184, 166, 0.07) 1px, transparent 1px),
+ linear-gradient(90deg, rgba(20, 184, 166, 0.07) 1px, transparent 1px);
+ background-size: 24px 24px;
+ }
+
+ .circuit-grid-light {
+ background-image:
+ linear-gradient(rgba(15, 118, 110, 0.06) 1px, transparent 1px),
+ linear-gradient(90deg, rgba(15, 118, 110, 0.06) 1px, transparent 1px);
+ background-size: 24px 24px;
+ }
+
+ /* Blinking terminal cursor */
+ .terminal-cursor::after {
+ content: '_';
+ display: inline-block;
+ margin-left: 0.15em;
+ color: #14b8a6;
+ animation: blink 1s steps(1) infinite;
+ }
+}
+
+@keyframes blink {
+ 0%, 49% { opacity: 1; }
+ 50%, 100% { opacity: 0; }
+}
+
+@keyframes scanline-sweep {
+ 0% { transform: translateY(-100%); }
+ 100% { transform: translateY(100vh); }
 }
 
 @layer components {
-  .card {
-    @apply bg-white dark:bg-gray-800 rounded-xl shadow-soft-md border border-gray-100 dark:border-gray-700/50 overflow-hidden transform transition-all duration-300 hover:-translate-y-1.5 hover:shadow-soft-lg;
-  }
+ /* === Robotic terminal/status pill === */
+ .term-chip {
+ display: inline-flex;
+ align-items: center;
+ gap: 0.5rem;
+ padding: 0.4rem 0.75rem;
+ font-family: 'Press Start 2P', monospace;
+ font-size: 0.625rem;
+ letter-spacing: 0.08em;
+ text-transform: uppercase;
+ border: 2px solid currentColor;
+ border-radius: 2px;
+ background: rgba(15, 23, 42, 0.85);
+ color: #14b8a6;
+ }
 
-  .card-header {
-    @apply bg-gradient-to-r from-green-500 to-green-700 text-white p-4 rounded-t-xl;
-  }
+ .term-chip::before {
+ content: '';
+ display: inline-block;
+ width: 0.5rem;
+ height: 0.5rem;
+ background: currentColor;
+ border-radius: 50%;
+ box-shadow: 0 0 6px currentColor;
+ animation: blink 1.5s ease-in-out infinite;
+ }
 
-  .card-body {
-    @apply p-6;
-  }
+ /* Pixel-style card with hard shadow */
+ .pixel-card {
+ @apply bg-white transition-all duration-150;
+ border: 2px solid #0f172a;
+ border-radius: 2px;
+ box-shadow: 6px 6px 0 0 #0f172a;
+ }
+ .pixel-card:hover {
+ transform: translate(-2px, -2px);
+ box-shadow: 8px 8px 0 0 #0f172a;
+ }
+ 
+ .card {
+ @apply bg-white rounded-xl shadow-soft-md border border-gray-100 overflow-hidden transform transition-all duration-300 hover:-translate-y-1.5 hover:shadow-soft-lg;
+ }
 
-  .card-footer {
-    @apply bg-gray-50 dark:bg-gray-700/50 p-4 rounded-b-xl text-center;
-  }
+ .card-header {
+ @apply bg-gradient-to-r from-green-500 to-green-700 text-white p-4 rounded-t-xl;
+ }
 
-  .card:hover .card-header {
-    @apply from-green-600 to-green-800;
-  }
+ .card-body {
+ @apply p-6;
+ }
 
-  .section {
-    @apply py-20 sm:py-28 lg:py-32;
-  }
+ .card-footer {
+ @apply bg-gray-50 p-4 rounded-b-xl text-center;
+ }
 
-  .section-alt {
-    @apply bg-gray-50 dark:bg-gray-800/50 py-20 sm:py-28 lg:py-32;
-  }
+ .card:hover .card-header {
+ @apply from-green-600 to-green-800;
+ }
 
-  .container {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
-  }
+ .section {
+ @apply py-8 sm:py-12 lg:py-16;
+ }
 
-  .card h1, .card h2, .card h3, .card h4, .card h5, .card h6 {
-    @apply text-gray-900 dark:text-white;
-  }
+ .section-alt {
+ @apply bg-warm-100 py-8 sm:py-12 lg:py-16;
+ }
 
-  .card p {
-    @apply text-gray-600 dark:text-gray-300;
-  }
+ .container {
+ @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+ }
 
-  .card a {
-    @apply text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300;
-  }
+ /* === Robotic CTA buttons ===
+ Square corners, pixel font, hard pixel shadow that "presses" on
+ hover. Terracotta primary, teal-bordered outline. */
+ .btn-cta {
+ @apply bg-terracotta-500 text-white px-6 py-3 inline-flex items-center justify-center transition-all duration-150;
+ font-family: 'Press Start 2P', monospace;
+ font-size: 0.75rem;
+ letter-spacing: 0.04em;
+ text-transform: uppercase;
+ border-radius: 2px;
+ border: 2px solid #0f172a;
+ box-shadow: 4px 4px 0 0 #0f172a;
+ }
 
-  /* Form styles */
-  .form-input {
-    @apply bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 rounded-lg;
-  }
+ .btn-cta:hover {
+ @apply bg-terracotta-600;
+ transform: translate(2px, 2px);
+ box-shadow: 2px 2px 0 0 #0f172a;
+ }
 
-  .form-label {
-    @apply text-gray-700 dark:text-gray-200 font-medium;
-  }
+ .btn-cta:active {
+ transform: translate(4px, 4px);
+ box-shadow: 0 0 0 0 #0f172a;
+ }
 
-  .btn-primary {
-    @apply bg-green-500 text-white hover:bg-green-600 dark:bg-green-400 dark:hover:bg-green-500 rounded-lg font-semibold transition-all duration-200;
-  }
+ .btn-outline {
+ @apply text-gray-900 px-6 py-3 inline-flex items-center justify-center transition-all duration-150;
+ font-family: 'Press Start 2P', monospace;
+ font-size: 0.75rem;
+ letter-spacing: 0.04em;
+ text-transform: uppercase;
+ border-radius: 2px;
+ border: 2px solid #0d9488;
+ background: transparent;
+ box-shadow: 4px 4px 0 0 #0d9488;
+ }
 
-  .btn-secondary {
-    @apply bg-gray-200 text-gray-900 hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 rounded-lg font-medium transition-all duration-200;
-  }
+ .btn-outline:hover {
+ @apply bg-teal-600 text-white border-teal-600;
+ transform: translate(2px, 2px);
+ box-shadow: 2px 2px 0 0 #0f766e;
+ }
+
+ .btn-outline:active {
+ transform: translate(4px, 4px);
+ box-shadow: 0 0 0 0 #0d9488;
+ }
+
+ /* Modifier for when .btn-outline lives on a dark background section
+    (e.g. the "2026 Programmes" CTA). The base class uses text-gray-900
+    for the cream hero; on bg-gray-900 that text disappears. This swaps
+    in a light teal that has enough contrast on the dark grid and still
+    pairs with the teal border + shadow. */
+ .btn-outline-on-dark {
+   color: #5eead4; /* teal-300 — AA contrast on bg-gray-900 */
+ }
+ .btn-outline-on-dark:hover {
+   color: #ffffff;
+ }
+
+ .card h1, .card h2, .card h3, .card h4, .card h5, .card h6 {
+ @apply text-gray-900;
+ }
+
+ .card p {
+ @apply text-gray-600;
+ }
+
+ .card a {
+ @apply text-primary-600 hover:text-primary-700;
+ }
+
+ /* Form styles */
+ .form-input {
+ @apply bg-white text-gray-900 border-gray-300 rounded-lg;
+ }
+
+ .form-label {
+ @apply text-gray-700 font-medium;
+ }
+
+ .btn-primary {
+ @apply bg-green-500 text-white hover:bg-green-600 rounded-lg font-semibold transition-all duration-200;
+ }
+
+ .btn-secondary {
+ @apply bg-gray-200 text-gray-900 hover:bg-gray-300 rounded-lg font-medium transition-all duration-200;
+ }
 }
 
 @layer utilities {
-  .to-primary-900 {
-    --tw-gradient-to: #14532d;
+ .to-primary-900 {
+ --tw-gradient-to: #14532d;
+ }
+ .to-primary-950 {
+ --tw-gradient-to: #052e16;
+ }
+}
+
+/* =============================================================
+ * Print rules — used by the Certificate page so the printout
+ * is JUST the certificate artwork, no dashboard chrome.
+ * ============================================================= */
+@media print {
+  /* Hide everything that isn't the cert print area */
+  body * { visibility: hidden; }
+  #cert-print-area, #cert-print-area * { visibility: visible; }
+  #cert-print-area {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    box-shadow: none !important;
   }
-  .to-primary-950 {
-    --tw-gradient-to: #052e16;
+
+  /* Force A4 landscape, kill any default margins */
+  @page { size: A4 landscape; margin: 0; }
+}
+
+/* =============================================================
+ * Mobile responsiveness overrides — appended at the bottom so
+ * they reliably win the cascade against Tailwind @apply rules.
+ * ============================================================= */
+@media (max-width: 639px) {
+  /* Tables: cap cell padding so wide tables don't blow up the layout */
+  .admin-zone .data-table thead th,
+  .admin-zone .data-table tbody td {
+    padding: 0.5rem 0.625rem !important;
+    font-size: 0.8125rem !important;
   }
+
+  /* On phones, every data-table cell stays on a single line by default.
+     Tables that live inside an `.overflow-x-auto` wrapper (every one of
+     them does — see Schools, Orders, Stock, Distribute, Events cards,
+     etc.) will now scroll horizontally instead of crushing columns into
+     a clipped mess. Long-form copy (descriptions, inline forms) should
+     opt back into wrapping with `whitespace-normal` on the td.        */
+  .admin-zone .data-table thead th,
+  .admin-zone .data-table tbody td {
+    white-space: nowrap;
+  }
+  .admin-zone .data-table td.whitespace-normal,
+  .admin-zone .data-table th.whitespace-normal {
+    white-space: normal !important;
+  }
+
+  /* Buttons: slightly smaller padding, no font shrink */
+  .admin-zone .btn-primary,
+  .admin-zone .btn-secondary,
+  .admin-zone .btn-danger {
+    padding: 0.5rem 0.75rem !important;
+  }
+
+  /* Cards inside dashboard pages have a bit less padding by default */
+  .admin-zone .card {
+    border-radius: 0.625rem;
+  }
+
+  /* Form fields */
+  .admin-zone .field-input,
+  .admin-zone .field-select {
+    font-size: 0.95rem !important;  /* avoids iOS zoom-on-focus when ≥16px */
+  }
+
+  /* Prose / descriptive paragraphs under page headers */
+  .admin-zone main p {
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+  }
+}
+
+/* Universal table overflow safety — any table inside a `.card.overflow-x-auto`
+   container should never grow taller than the viewport */
+.admin-zone .card.overflow-x-auto { max-width: 100%; }
+
+/* Any descendant element of a card that has been opted into horizontal
+   scrolling (the wrapper carries `.overflow-x-auto`) gets a touch-friendly
+   inertia scroll on iOS. */
+.admin-zone .overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
 }

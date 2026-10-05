@@ -1,337 +1,360 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { Users, Recycle, Code, GraduationCap, Eye, Brain, MapPin, Calendar, Download, ExternalLink } from 'lucide-react';
+import {
+  Megaphone, Laptop, Trophy, Users, GraduationCap, Accessibility,
+  Globe, MapPin, Calendar, Download, ExternalLink,
+} from 'lucide-react';
+
+// =============================================================
+// /impact
+//
+// Numbers come from the 2023–2025 baseline data sheet. Inclusive
+// Robotics is treated as ONE Pan-African programme with three
+// activities: YSK Outreach, Microsoft Bootcamps, Nationals (KSEF).
+// Edit the constants below as new data lands.
+// =============================================================
+
+const PROGRAM_TOTALS = {
+  schools:        550,
+  students:       29022,
+  teachers:       291,
+  inclusive:      20,
+  yearsCovered:  '2023 – 2025',
+};
+
+// === The three stages of the Inclusive Robotics competition ===
+
+const ACTIVITIES = [
+  {
+    icon: Megaphone,
+    title: 'YSK Outreach',
+    tagline: 'Beginner robotics workshops in schools across Kenya.',
+    schools: 341,
+    students: 17780,
+    teachers: 74,
+    rangeLabel: '2023 – 2024',
+    regions: 'Nairobi · Machakos · Kiambu',
+    accent: 'bg-teal-500',
+  },
+  {
+    icon: Laptop,
+    title: 'Microsoft Bootcamps',
+    tagline: 'Three-day intermediate AI + robotics bootcamps with Microsoft ADC.',
+    schools: 150,
+    students: 948,
+    teachers: 127,
+    rangeLabel: '2025 – 2026',
+    regions: 'Nairobi · Machakos · Kiambu · Kajiado',
+    accent: 'bg-indigo-500',
+  },
+  {
+    icon: Trophy,
+    title: 'National Showcase',
+    tagline: 'ChipuRobo-led showcase and competition at CEMASTEA. School heats, virtual regional judging, in-person finale. KSEF Track 14 submission is optional.',
+    schools: 36,
+    students: 180,
+    teachers: 54,
+    rangeLabel: '2025',
+    regions: 'All 47 counties',
+    accent: 'bg-amber-500',
+  },
+];
+
+// === Partners ===
+//
+// Roles are taken verbatim from the partner table in README.md. Reach figures
+// are only given where the repo already carried them — no narrative has been
+// written around a partner that the repo does not state.
+
+const PARTNERSHIPS = [
+  {
+    name: 'Raspberry Pi Foundation',
+    role: 'Code Clubs, hardware support, computing education framework',
+    detail: '100 schools across all 47 counties \u00b7 10,000 students \u00b7 200 teachers \u00b7 15 inclusive schools',
+  },
+  {
+    name: 'Microsoft ADC',
+    role: 'Technical enablement, AI learning resources, mentorship',
+    detail: null,
+  },
+  {
+    name: 'CEMASTEA',
+    role: 'KSEF alignment, teacher training, curriculum validation',
+    detail: null,
+  },
+  {
+    name: 'eKitabu',
+    role: 'LMS platform integration, inclusive learning content distribution',
+    detail: null,
+  },
+  {
+    name: 'Young Scientists Kenya (YSK)',
+    role: 'Outreach network',
+    detail: null,
+  },
+  {
+    name: 'NIBF \u2014 Nairobi International Book Fair',
+    role: 'Public demonstration',
+    detail: '6 schools \u00b7 54 students reached via STEM and Raspberry Pi demonstrations.',
+  },
+  {
+    name: 'ZeeTech Foundation \u2014 Nigeria',
+    role: 'Pan-African expansion',
+    detail: 'Machines and kits shipped to Nigeria.',
+  },
+];
+
+const TESTIMONIALS = [
+  {
+    quote: "ChipuRobo's inclusive approach opened my eyes to how technology can truly serve everyone. The Braille robotics challenge was groundbreaking.",
+    author: 'Sarah Wanjiku',
+    role: 'Special Education Teacher, Thika',
+  },
+  {
+    quote: 'From plastic waste to functional robot parts — this programme shows our students that innovation starts with what we have around us.',
+    author: 'David Kimani',
+    role: 'Physics Teacher, Nakuru County',
+  },
+  {
+    quote: "The Code Clubs have transformed our school's approach to technology. Our students are now confident programmers and problem-solvers.",
+    author: 'Grace Achieng',
+    role: 'Head Teacher, Kisumu',
+  },
+];
 
 const Impact = () => {
   const navigate = useNavigate();
 
   const downloadImpactData = () => {
-    const rows: string[][] = [
-      ['ChipuRobo Impact Report'],
-      ['Microsoft ADC Partnership — National AI & Robotics Program'],
+    const rows: (string | number)[][] = [
+      ['ChipuRobo Impact — Inclusive Robotics Programme'],
+      ['Years covered', PROGRAM_TOTALS.yearsCovered],
       [],
-      ['=== KEY ACHIEVEMENTS ==='],
-      ['Metric', 'Description', 'Details'],
-      ['3 National Bootcamps', 'April, August, and November-December AI & Robotics bootcamps across Kenya', '800+ students, 50+ teachers trained'],
-      ['13 PET Recycling Machines', 'Deployed across Kenya converting plastic waste to 3D printing filament', 'Sustainable innovation in action'],
-      ['66 Code Clubs Launched', 'In partnership with Raspberry Pi Foundation across secondary schools', 'Growing computing education network'],
-      ['Inclusive Education Pioneer', 'Braille challenges, KSL integration, and low-vision LMS development', 'No learner left behind'],
+      ['Metric',            'Value'],
+      ['Schools',           PROGRAM_TOTALS.schools],
+      ['Students reached',  PROGRAM_TOTALS.students],
+      ['Teachers trained',  PROGRAM_TOTALS.teachers],
+      ['Inclusive schools', PROGRAM_TOTALS.inclusive],
       [],
-      ['=== BOOTCAMP SERIES ==='],
-      ['Month', 'Title', 'Location', 'Participants', 'Focus'],
-      ['April 2025', 'Foundation Bootcamp', 'Nairobi', '250+ learners', 'AI fundamentals and robotics introduction'],
-      ['August 2025', 'Advanced AI & Robotics', 'Multi-county reach', '350+ learners', 'Computer vision and automation'],
-      ['Nov-Dec 2025', 'Inclusive Technology Summit', 'National program', '200+ learners, 50+ teachers', 'Accessibility and inclusive design'],
-      [],
-      ['=== INCLUSIVE EDUCATION INITIATIVES ==='],
-      ['Initiative', 'Description'],
-      ['Braille Robotics', 'Tactile robotics challenges and Braille programming interfaces for visually impaired students'],
-      ['KSL Integration', 'Kenyan Sign Language integrated into curriculum materials for deaf and hard-of-hearing learners'],
-      ['Low-Vision LMS', 'Specialized Learning Management System with high contrast, screen reader compatibility, and adaptive interfaces'],
-      [],
-      ['=== TESTIMONIALS ==='],
-      ['Quote', 'Author', 'Role'],
+      ['Report generated', new Date().toLocaleDateString()],
     ];
-
-    testimonials.forEach(t => {
-      rows.push([t.quote, t.author, t.role]);
-    });
-
-    rows.push([], ['Report generated on', new Date().toLocaleDateString()]);
-
-    const csvContent = rows
-      .map(row => row.map(cell => `"${(cell ?? '').replace(/"/g, '""')}"`).join(','))
+    const csv = rows
+      .map((r) => r.map((c) => `"${String(c ?? '').replace(/"/g, '""')}"`).join(','))
       .join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'ChipuRobo_Impact_Report.csv';
-    link.click();
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'ChipuRobo_Impact.csv';
+    a.click();
     URL.revokeObjectURL(url);
   };
 
-  const achievements = [
-    {
-      icon: GraduationCap,
-      title: "3 National Bootcamps",
-      description: "April, August, and November-December AI & Robotics bootcamps across Kenya",
-      stats: "800+ students, 50+ teachers trained"
-    },
-    {
-      icon: Recycle,
-      title: "♻️ Sustainable Innovation & Manufacturing",
-      description: "KSEF science projects developed PET recycling machines converting plastic waste into 3D printing filament for ADC Bootcamp prototyping sessions",
-      stats: "13 machines deployed + youth entrepreneurship programs launched"
-    },
-    {
-      icon: Eye,
-      title: "🎓 Inclusive & Accessible AI Education",
-      description: "Hackathon teams created robotics kits with Braille labels, JSS program videos with KSL integration, and AI programs specifically designed for deaf, blind, and neurodiverse learners",
-      stats: "Ensuring no learner is left behind in AI education"
-    },
-    {
-      icon: Brain,
-      title: "🤖 Real-World Automation Applications",
-      description: "KSEF research projects developed student-built robots that identify and sort classroom materials using computer vision through ADC Bootcamp community initiatives",
-      stats: "From classroom learning to practical automation"
-    }
-  ];
-
-  const bootcampHighlights = [
-    {
-      month: "April 2025",
-      title: "Foundation Bootcamp",
-      location: "Nairobi",
-      participants: "250+ learners",
-      focus: "AI fundamentals and robotics introduction"
-    },
-    {
-      month: "August 2025",
-      title: "Advanced AI & Robotics",
-      location: "Multi-county reach",
-      participants: "350+ learners",
-      focus: "Computer vision and automation"
-    },
-    {
-      month: "Nov-Dec 2025",
-      title: "Inclusive Technology Summit",
-      location: "National program",
-      participants: "200+ learners, 50+ teachers",
-      focus: "Accessibility and inclusive design"
-    }
-  ];
-
-  const testimonials = [
-    {
-      quote: "ChipuRobo's inclusive approach opened my eyes to how technology can truly serve everyone. The Braille robotics challenge was groundbreaking.",
-      author: "Sarah Wanjiku",
-      role: "Special Education Teacher, Thika"
-    },
-    {
-      quote: "From plastic waste to functional robot parts - this program shows our students that innovation starts with what we have around us.",
-      author: "David Kimani",
-      role: "Physics Teacher, Nakuru County"
-    },
-    {
-      quote: "The Code Clubs have transformed our school's approach to technology. Our students are now confident programmers and problem-solvers.",
-      author: "Grace Achieng",
-      role: "Head Teacher, Kisumu"
-    }
-  ];
-
   return (
-    <div className="bg-white dark:bg-gray-900">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-900 to-emerald-900/80 dark:from-black dark:to-primary-950">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(16,185,129,0.1),transparent_70%)]" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-28 lg:py-32">
+    <div className="bg-warm-50">
+      {/* === Hero === */}
+      <section className="relative overflow-hidden bg-warm-50 border-b border-warm-200">
+        <div className="code-bg absolute inset-0 opacity-30" aria-hidden="true" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
           <div className="text-center">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white mb-6">
-              Impact Report
+            <p className="font-pixel text-teal-600 text-[0.65rem] tracking-widest mb-3 uppercase">
+              // Impact · {PROGRAM_TOTALS.yearsCovered}
+            </p>
+            <h1 className="heading-display text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 mb-4">
+              Inclusive Robotics
             </h1>
-            <p className="text-lg text-gray-300 mb-4 max-w-4xl mx-auto">
-              Microsoft ADC Partnership • National AI & Robotics Program
+            <p className="text-lg text-gray-700 mb-3 max-w-2xl mx-auto">
+              Our schools competition, run in year-long cycles across the continent — and the
+              partner work that carries it.
             </p>
-            <p className="text-lg text-gray-300 mb-8 max-w-3xl mx-auto">
-              A year of transformation: From 3 national bootcamps to 66 Code Clubs,
-              13 PET recycling machines, and pioneering inclusive education across Kenya.
+            <p className="inline-flex items-center gap-1.5 text-sm text-gray-500 mb-8">
+              <Globe className="h-4 w-4" aria-hidden="true" />
+              Anchored in Kenya · scaling Pan-Africa
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <button
+                type="button"
                 onClick={downloadImpactData}
-                className="bg-white text-primary-900 px-8 py-4 rounded-xl hover:bg-gray-100 transition-all duration-200 text-lg font-semibold flex items-center justify-center hover:shadow-soft-xl"
+                className="bg-terracotta-500 hover:bg-terracotta-600 text-white px-6 py-3 rounded-xl transition-colors text-base font-semibold inline-flex items-center justify-center"
               >
-                <Download className="mr-2 h-5 w-5" />
-                Download Impact Data (CSV)
+                <Download className="mr-2 h-5 w-5" aria-hidden="true" />
+                Download impact CSV
               </button>
               <Link
-                to="/microsoft"
-                className="bg-white/5 border border-white/10 backdrop-blur-lg text-white px-8 py-4 rounded-xl hover:bg-white/10 transition-all duration-200 text-lg font-semibold flex items-center justify-center"
+                to="/competition"
+                className="bg-white border border-gray-300 text-gray-800 px-6 py-3 rounded-xl hover:bg-warm-100 transition-colors text-base font-semibold inline-flex items-center justify-center"
               >
-                <ExternalLink className="mr-2 h-5 w-5" />
-                View Full Report
+                <ExternalLink className="mr-2 h-5 w-5" aria-hidden="true" />
+                See the programme
               </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Impact Statistics */}
-      <section className="py-20 sm:py-28 lg:py-32">
+      {/* === Totals strip === */}
+      <section className="py-10 sm:py-14 border-b border-warm-200" aria-label="Programme totals">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white mb-4">Program by the Numbers</h2>
-            <p className="text-lg text-gray-600 dark:text-gray-400">Measurable impact across Kenya</p>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            <StatCard icon={GraduationCap} label="Schools touched" value={PROGRAM_TOTALS.schools.toLocaleString()} />
+            <StatCard icon={Users}         label="Students reached" value={PROGRAM_TOTALS.students.toLocaleString()} />
+            <StatCard icon={Megaphone}     label="Teachers trained" value={PROGRAM_TOTALS.teachers.toLocaleString()} />
+            <StatCard icon={Accessibility} label="Inclusive schools" value={PROGRAM_TOTALS.inclusive.toLocaleString()} />
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {achievements.map((achievement, index) => (
-              <div key={index} className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-soft-md border border-gray-100 dark:border-gray-700/50 text-center transition-all duration-300 hover:shadow-soft-lg hover:-translate-y-1.5">
-                <achievement.icon className="h-12 w-12 text-primary-600 dark:text-primary-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{achievement.title}</h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-3">{achievement.description}</p>
-                <p className="text-primary-600 dark:text-primary-400 font-semibold">{achievement.stats}</p>
-              </div>
-            ))}
-          </div>
+          <p className="text-xs text-gray-500 text-center mt-4">
+            Across {PROGRAM_TOTALS.yearsCovered}. Some schools appear in more than one activity.
+          </p>
         </div>
       </section>
 
-      {/* Bootcamp Timeline */}
-      <section className="section-alt">
+      {/* === The competition's three stages === */}
+      <section className="py-12 sm:py-16" aria-labelledby="activities-heading">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white mb-4">National Bootcamp Series</h2>
-            <p className="text-lg text-gray-600 dark:text-gray-400">Transformative programs delivering impact nationwide</p>
+          <div className="text-center mb-10">
+            <h2 id="activities-heading" className="heading-display text-3xl font-bold tracking-tight text-gray-900 mb-2">
+              Stages of the competition
+            </h2>
+            <p className="text-base text-gray-600">YSK Outreach · Microsoft Bootcamps · National showcase (KSEF)</p>
           </div>
 
-          <div className="space-y-8">
-            {bootcampHighlights.map((bootcamp, index) => (
-              <div key={index} className="bg-white dark:bg-gray-800 rounded-xl shadow-soft-md border border-gray-100 dark:border-gray-700/50 p-8 transition-all duration-300 hover:shadow-soft-lg hover:-translate-y-1.5">
-                <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center mb-4">
-                      <Calendar className="h-6 w-6 text-primary-600 dark:text-primary-400 mr-3" />
-                      <span className="text-primary-600 dark:text-primary-400 font-semibold">{bootcamp.month}</span>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {ACTIVITIES.map((a) => (
+              <article key={a.title} className="bg-white rounded-xl border border-warm-200 overflow-hidden shadow-soft-md hover:shadow-soft-lg transition-shadow flex flex-col">
+                <div className={`h-1 ${a.accent}`} aria-hidden="true" />
+                <div className="p-6 flex-1 flex flex-col">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="p-2 rounded-md bg-warm-100">
+                      <a.icon className="h-5 w-5 text-gray-700" aria-hidden="true" />
                     </div>
-                    <h3 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white mb-2">{bootcamp.title}</h3>
-                    <div className="flex items-center text-gray-600 dark:text-gray-400 mb-2">
-                      <MapPin className="h-4 w-4 mr-2" />
-                      {bootcamp.location}
-                    </div>
-                    <div className="flex items-center text-gray-600 dark:text-gray-400 mb-3">
-                      <Users className="h-4 w-4 mr-2" />
-                      {bootcamp.participants}
-                    </div>
-                    <p className="text-gray-600 dark:text-gray-400">{bootcamp.focus}</p>
+                    <h3 className="text-lg font-semibold text-gray-900 m-0">{a.title}</h3>
                   </div>
-                  <div className="mt-4 md:mt-0">
-                    <div className="bg-gradient-to-r from-primary-500 to-blue-500 text-white px-6 py-2 rounded-full font-semibold">
-                      Completed ✓
-                    </div>
+                  <p className="text-sm text-gray-600 mb-5">{a.tagline}</p>
+
+                  <dl className="grid grid-cols-3 gap-2 mb-5">
+                    <Stat label="Schools"  value={a.schools.toLocaleString()} />
+                    <Stat label="Students" value={a.students.toLocaleString()} />
+                    <Stat label="Teachers" value={a.teachers.toLocaleString()} />
+                  </dl>
+
+                  <div className="text-xs text-gray-500 flex items-center gap-1.5 mb-3">
+                    <Calendar className="h-3.5 w-3.5" aria-hidden="true" />
+                    {a.rangeLabel}
+                  </div>
+                  <div className="text-xs text-gray-500 flex items-start gap-1.5 mt-auto">
+                    <MapPin className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" aria-hidden="true" />
+                    {a.regions}
                   </div>
                 </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* === Inclusion focus ===
+          Names of partner schools are deliberately not shown for the
+          protection of learners and educators at those schools. */}
+      <section className="section-alt py-12 sm:py-16" aria-labelledby="inclusive-heading">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <Accessibility className="h-8 w-8 text-teal-600 mx-auto mb-3" aria-hidden="true" />
+          <h2 id="inclusive-heading" className="heading-display text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 mb-3">
+            Built inclusive by design
+          </h2>
+          <p className="text-base text-gray-700">
+            {PROGRAM_TOTALS.inclusive} partner schools serving visually impaired
+            and other neurodiverse learners. Sustained engagement, not one-offs.
+          </p>
+        </div>
+      </section>
+
+      {/* === Partners + amplifiers === */}
+      <section className="py-12 sm:py-16" aria-labelledby="partners-heading">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8">
+            <h2 id="partners-heading" className="heading-display text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 mb-2">
+              The work behind the competition
+            </h2>
+            <p className="text-base text-gray-600">
+              What each partner contributes, and what it has reached.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-4xl mx-auto">
+            {PARTNERSHIPS.map((p) => (
+              <div key={p.name} className="card p-5">
+                <h3 className="text-base font-semibold text-gray-900 m-0 mb-1">{p.name}</h3>
+                <p className="text-xs font-medium text-teal-700 m-0">{p.role}</p>
+                {p.detail && <p className="text-sm text-gray-600 m-0 mt-2">{p.detail}</p>}
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Inclusive Education Focus */}
-      <section className="py-20 sm:py-28 lg:py-32">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white mb-4">Pioneering Inclusive Education</h2>
-            <p className="text-lg text-gray-600 dark:text-gray-400">Breaking barriers, building accessibility</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-8 rounded-xl border border-gray-100 dark:border-gray-700/50">
-              <Eye className="h-12 w-12 text-green-600 mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">Braille Robotics</h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                Developed tactile robotics challenges and Braille programming interfaces,
-                ensuring students with visual impairments can fully participate in AI education.
-              </p>
-            </div>
-
-            <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-8 rounded-xl border border-gray-100 dark:border-gray-700/50">
-              <Users className="h-12 w-12 text-green-600 mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">KSL Integration</h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                Integrated Kenyan Sign Language (KSL) into our curriculum materials and training,
-                making robotics education accessible to deaf and hard-of-hearing learners.
-              </p>
-            </div>
-
-            <div className="bg-gradient-to-br from-green-50 to-lime-50 dark:from-green-900/20 dark:to-lime-900/20 p-8 rounded-xl border border-gray-100 dark:border-gray-700/50">
-              <Brain className="h-12 w-12 text-green-600 mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">Low-Vision LMS</h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                Developed specialized Learning Management System features with high contrast,
-                screen reader compatibility, and adaptive interfaces for low-vision learners.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-900 to-emerald-900/80 dark:from-black dark:to-primary-950 py-20 sm:py-28 lg:py-32">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(16,185,129,0.1),transparent_70%)]" />
+      {/* === Voices === */}
+      <section className="relative overflow-hidden bg-gray-900 py-12 sm:py-16" aria-labelledby="voices-heading">
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold tracking-tight text-white mb-4">Voices from the Field</h2>
-            <p className="text-lg text-gray-300">Impact stories from educators and communities</p>
+          <div className="text-center mb-10">
+            <h2 id="voices-heading" className="heading-display text-2xl sm:text-3xl font-bold tracking-tight text-white mb-2">
+              Voices from the field
+            </h2>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <div key={index} className="bg-white/5 border border-white/10 backdrop-blur-lg rounded-xl p-8 hover:bg-white/10 transition-all duration-300">
-                <p className="text-gray-200 text-lg italic mb-6">"{testimonial.quote}"</p>
-                <div>
-                  <p className="text-white font-semibold">{testimonial.author}</p>
-                  <p className="text-gray-300">{testimonial.role}</p>
-                </div>
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {TESTIMONIALS.map((t) => (
+              <figure key={t.author} className="bg-white/5 border border-white/10 backdrop-blur-lg rounded-xl p-6">
+                <blockquote className="text-gray-200 italic mb-4 text-sm leading-relaxed">"{t.quote}"</blockquote>
+                <figcaption>
+                  <div className="text-white font-semibold text-sm">{t.author}</div>
+                  <div className="text-gray-400 text-xs">{t.role}</div>
+                </figcaption>
+              </figure>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Microsoft Partnership Highlight */}
-      <section className="py-20 sm:py-28 lg:py-32">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-gradient-to-br from-gray-900 via-gray-900 to-emerald-900/80 rounded-xl p-12 text-center relative overflow-hidden">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(16,185,129,0.1),transparent_70%)]" />
-            <div className="relative">
-              <h2 className="text-3xl font-bold tracking-tight text-white mb-4">Microsoft ADC Partnership</h2>
-              <p className="text-lg text-gray-300 mb-8 max-w-3xl mx-auto">
-                Our strategic partnership with Microsoft ADC provided technical enablement,
-                AI learning resources, and mentorship that made this transformative year possible.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <a
-                  href="https://www.microsoft.com/en-us/madc"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-white text-green-700 px-8 py-3 rounded-xl hover:bg-gray-100 transition-all duration-200 font-semibold flex items-center justify-center hover:shadow-soft-xl"
-                >
-                  <ExternalLink className="mr-2 h-5 w-5" />
-                  Learn About Microsoft ADC
-                </a>
-                <Link
-                  to="/microsoft"
-                  className="bg-white/5 border border-white/10 backdrop-blur-lg text-white px-8 py-3 rounded-xl hover:bg-white/10 transition-all duration-200 font-semibold flex items-center justify-center"
-                >
-                  <Download className="mr-2 h-5 w-5" />
-                  Partnership Impact Report
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Call to Action */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-900 to-emerald-900/80 dark:from-black dark:to-primary-950 py-20 sm:py-28">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(16,185,129,0.1),transparent_70%)]" />
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-white mb-4">Ready for 2026?</h2>
-          <p className="text-lg text-gray-300 mb-8">
-            Join us as we expand to reach 4 million youth across Africa by 2030
+      {/* === 2026 CTA === */}
+      <section className="relative overflow-hidden bg-gray-900 border-t border-white/5 py-12 sm:py-16">
+        <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="heading-display text-2xl sm:text-3xl font-bold tracking-tight text-white mb-3">
+            Ready for 2026?
+          </h2>
+          <p className="text-base text-gray-300 mb-7">
+            Mission target: 4 million youth across Africa by 2030.
           </p>
           <button
-            onClick={() => navigate('/register-2026')}
-            className="bg-white text-emerald-600 px-8 py-4 rounded-xl hover:bg-gray-100 transition-all duration-200 text-lg font-semibold hover:shadow-soft-xl"
+            type="button"
+            onClick={() => navigate('/competition#register')}
+            className="bg-terracotta-500 hover:bg-terracotta-600 text-white px-6 py-3 rounded-xl transition-colors text-base font-semibold"
           >
-            Register for 2026 Programme
+            Join the 2026 Waitlist
           </button>
         </div>
       </section>
     </div>
   );
 };
+
+// === Reusable bits ===
+
+function StatCard({
+  icon: Icon, label, value,
+}: { icon: typeof Users; label: string; value: string }) {
+  return (
+    <div className="bg-white rounded-xl border border-warm-200 p-5 sm:p-6 text-center">
+      <Icon className="h-6 w-6 text-teal-600 mx-auto mb-2" aria-hidden="true" />
+      <div className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 leading-none mb-1">{value}</div>
+      <div className="text-xs text-gray-600 uppercase tracking-wider">{label}</div>
+    </div>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <dt className="text-[0.65rem] uppercase tracking-wider text-gray-500 mb-0.5">{label}</dt>
+      <dd className="text-base font-semibold text-gray-900 m-0">{value}</dd>
+    </div>
+  );
+}
 
 export default Impact;

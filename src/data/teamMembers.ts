@@ -4,9 +4,7 @@ export interface TeamMember {
   bio: string;
   photo?: string;
   social: {
-    linkedin: string;
-    github: string;
-    email: string;
+    linkedin?: string;
   };
 }
 
@@ -18,9 +16,7 @@ export const teamMembers: TeamMember[] = [
     bio: "Co-founder leading outreach and school partnerships, blending USIU business training with grassroots execution.",
     social: {
       linkedin: '#',
-      github: '#',
-      email: 'jeffery@chipurobo.com'
-    }
+    },
   },
   {
     name: 'Cindy Gachuhi',
@@ -29,9 +25,7 @@ export const teamMembers: TeamMember[] = [
     bio: "Co-founder aligning emerging tech with student needs and translating Strathmore research into practical tools.",
     social: {
       linkedin: 'https://www.linkedin.com/in/jeffery-ngui-36969b168/',
-      github: '#',
-      email: 'cindy@chipurobo.com'
-    }
+    },
   },
   {
     name: 'David Muguchia',
@@ -40,9 +34,7 @@ export const teamMembers: TeamMember[] = [
     bio: "Finance lead who keeps programs sustainable and scales outreach through disciplined planning.",
     social: {
       linkedin: 'https://www.linkedin.com/in/david-muguchia-082072224/',
-      github: '#',
-      email: 'dwightndungu@gmail.com'
-    }
+    },
   },
   {
     name: 'Anthony Mwangi',
@@ -50,9 +42,29 @@ export const teamMembers: TeamMember[] = [
     bio: 'Advisor with two decades in policy, regulation, and business development who guides our governance and partnerships.',
     social: {
       linkedin: 'https://www.linkedin.com/in/anthony-mwangi1/',
-      github: '#',
-      email: 'anthony@chipurobo.com'
-    }
+    },
+  },
+  {
+    name: 'Mwihaki Maina',
+    role: 'Board Director & Business Development',
+    bio: 'Ecosystem builder driving sustainable entrepreneurship and social impact across Africa — research, learning design, capacity building, and storytelling that bridges knowledge, practice, and context.',
+    social: {
+      linkedin: 'https://www.linkedin.com/in/susan-mwihaki-maina/',
+    },
+  },
+  {
+    name: 'Deborah Masubo',
+    role: 'Program Lead',
+    bio: 'Program lead directing strategy, program evaluation and partnerships — an economics and statistics background applied to evidence-based design, and to turning local plastic waste into filament for STEM kits.',
+    social: {
+      linkedin: 'https://www.linkedin.com/in/deborah-masubo-12307a1b6/',
+    },
+  },
+  {
+    name: 'Shekinah Muthoni',
+    role: 'Safeguarding Lead & Community',
+    bio: 'Safeguarding lead, responsible for how the programme keeps learners safe, and for the relationships with the schools and communities it runs in.',
+    social: {},
   },
   {
     name: 'Ryan Muuo',
@@ -60,9 +72,7 @@ export const teamMembers: TeamMember[] = [
     bio: 'Workshop lead keeping labs running, mentoring students, and building hands-on curriculum.',
     social: {
       linkedin: 'https://www.linkedin.com/in/ryan-muuo-1a889817a/',
-      github: '#',
-      email: 'ryanmuuo91@chipurobo.com'
-    }
+    },
   },
   {
     name: 'Allan Kamau',
@@ -70,9 +80,7 @@ export const teamMembers: TeamMember[] = [
     bio: "Training lead and full-stack developer who designs AI curriculum and mentors cohorts.",
     social: {
       linkedin: 'https://www.linkedin.com/in/allan-kamau-b47880308/',
-      github: '#',
-      email: 'allan@chipurobo.com'
-    }
+    },
   },
   {
     name: 'Kevin Irungu',
@@ -81,9 +89,7 @@ export const teamMembers: TeamMember[] = [
     bio: 'Co-founder and STEM trainer designing programs that deliver practical AI and coding skills.',
     social: {
       linkedin: 'https://www.linkedin.com/in/kevin-irungu-b63a6a97/',
-      github: '#',
-      email: 'kevin@chipurobo.com'
-    }
+    },
   },
   {
     name: 'Davies Maina',
@@ -91,8 +97,6 @@ export const teamMembers: TeamMember[] = [
     bio: "Digital marketer shaping ChipuRobo's online story through social content and campaigns.",
     social: {
       linkedin: 'https://www.linkedin.com/in/davies-maina-3620b213b/',
-      github: '#',
-      email: 'davies@chipurobo.com'
-    }
-  }
+    },
+  },
 ];
