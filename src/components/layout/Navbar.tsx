@@ -6,6 +6,7 @@ const navigationLinks = [
   { to: '/', label: 'Home' },
   { to: '/about', label: 'About' },
   { to: '/competition', label: 'Competition' },
+  { to: '/learning', label: 'Learning' },
   { to: '/maker-spaces', label: 'Maker spaces' },
   { to: '/impact', label: 'Impact' },
   { to: '/podcast', label: 'Podcast' },
@@ -85,6 +86,7 @@ const Navbar = () => {
       {/* Mobile menu */}
       <div
         id="mobile-menu"
+        hidden={!isMenuOpen}
         className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
           isMenuOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
         }`}

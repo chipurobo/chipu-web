@@ -198,6 +198,22 @@
 .admin-zone h2 { font-size: clamp(1rem, 3vw, 1.25rem) !important; line-height: 1.3 !important; }
 .admin-zone h3 { font-size: clamp(0.95rem, 2.5vw, 1.125rem) !important; line-height: 1.4 !important; }
 
+/* Shared learning tasks use the same reading typography in both layouts. */
+.learning-zone,
+.learning-zone * {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+.learning-zone h1,
+.learning-zone h2,
+.learning-zone h3 {
+  letter-spacing: normal;
+  word-spacing: normal;
+}
+.learning-zone h1 {
+  font-size: clamp(1.75rem, 4vw, 2.5rem) !important;
+  line-height: 1.2 !important;
+}
+
 /* Stat-strip number sizing scales — 2xl is too aggressive on a 360px phone */
 .admin-zone .stat-num { font-size: clamp(1.25rem, 5vw, 1.5rem); line-height: 1; font-weight: 600; }
 

@@ -27,6 +27,8 @@ export function DashboardHome() {
       </p>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <Tile to="/dashboard/pathways?view=teacher" icon={BookOpen}
+              title="Learning pathways" body="Prepare coding and robotics activities and explore the learner view." />
         {isAdmin && (
           <>
             <Tile to="/dashboard/admin/schools" icon={School}

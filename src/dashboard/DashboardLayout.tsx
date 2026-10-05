@@ -19,6 +19,7 @@ import {
 const DASHBOARD_PAGE_TITLES: Record<string, string> = {
   '/dashboard':                     'Overview',
   '/dashboard/leaderboard':         'Leaderboard',
+  '/dashboard/pathways':            'Learning pathways',
   '/dashboard/admin/schools':       'Schools',
   '/dashboard/admin/products':      'Products',
   '/dashboard/admin/orders':        'All orders',
@@ -48,6 +49,7 @@ function getDashboardPageTitle(path: string): string {
   if (path.startsWith('/dashboard/certificate/'))   return 'Certificate';
   if (path.startsWith('/dashboard/school/lessons/')) return 'Lesson roster';
   if (path.startsWith('/dashboard/school/sessions/')) return 'Attendance register';
+  if (path.startsWith('/dashboard/pathways/activities/')) return 'Learning activity';
   return 'Dashboard';
 }
 
@@ -287,6 +289,9 @@ function DashboardShell() {
         <nav aria-label="Primary" className="flex-1 py-4 px-3 space-y-0.5 text-sm overflow-y-auto">
           <SidebarLink to="/dashboard" end icon={Home}>
             Overview
+          </SidebarLink>
+          <SidebarLink to="/dashboard/pathways?view=teacher" icon={BookOpen}>
+            Learning pathways
           </SidebarLink>
 
           {isAdmin ? (
