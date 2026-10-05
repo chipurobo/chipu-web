@@ -16,6 +16,7 @@ import {
   Link as LinkIcon, ExternalLink,
 } from 'lucide-react';
 import { SkeletonRows } from '../components/Skeletons';
+import { LessonAssignments } from '../learning/AssignLessonForm';
 import { ProductThumb } from '../components/ProductThumb';
 import { safeHttpUrl } from '../../lib/safeUrl';
 
@@ -268,6 +269,8 @@ export function SchoolLessonStage() {
           )}
         </div>
       </div>
+
+      {stage && <LessonAssignments lesson={stage} />}
 
       {/* What has to exist before this lesson can run. Empty for most lessons;
           shown only when someone has attached kit to it. */}

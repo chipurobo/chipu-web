@@ -27,10 +27,10 @@ export function DashboardHome() {
       </p>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Tile to="/dashboard/pathways?view=teacher" icon={BookOpen}
-              title="Learning pathways" body="Prepare coding and robotics activities and explore the learner view." />
         {isAdmin && (
           <>
+            <Tile to="/dashboard/admin/lessons" icon={BookOpen}
+                  title="Plan lessons" body="Create activities and set pathways, levels and competency outcomes." />
             <Tile to="/dashboard/admin/schools" icon={School}
                   title="Schools" body="Review every onboarded code club." />
             <Tile to="/dashboard/admin/products" icon={Package}
@@ -47,7 +47,9 @@ export function DashboardHome() {
             <Tile to="/dashboard/school/members" icon={Users}
                   title="Students" body="Roster + students who hold equipment." />
             <Tile to="/dashboard/school/lessons" icon={BookOpen}
-                  title="Lessons" body="Track progress through the competition curriculum." />
+                  title="Lessons" body="Assign learning activities and review student evidence." />
+            <Tile to="/dashboard/school/progress" icon={BookOpen}
+                  title="Learner progress" body="Review evidence across Beginner, Intermediate and Expert." />
             <Tile to="/dashboard/school/orders" icon={ClipboardList}
                   title={isMakerSpace ? 'Orders to fulfil' : 'My orders'}
                   body={isMakerSpace

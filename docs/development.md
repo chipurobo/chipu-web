@@ -11,9 +11,10 @@ Two products share this codebase:
    kit fabrication and serialized unit tracking, orders and stock ledgers,
    lessons, projects, judging, certificates, and a school leaderboard.
 
-The shared learning library at `/learning` and `/dashboard/pathways` is the
-first stage of the teacher/learner learning product. Its curriculum source
-status, account/assignment roadmap and accessibility validation plan are in
+Learning features live in the authenticated dashboard. Lesson planning,
+student assignments, individual evidence reviews and progress are the first
+implementation stage. Curriculum source status, the remaining account and
+learner workflows, and accessibility validation are documented in
 [`learning-platform.md`](./learning-platform.md).
 
 ## Stack

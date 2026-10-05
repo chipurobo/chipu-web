@@ -1,3 +1,5 @@
+import type { LessonLearningPlan } from './learningRecords';
+
 // Hand-written types that mirror supabase/migrations/20260601000000_init.sql.
 //
 // When the schema changes meaningfully, regenerate properly with:
@@ -150,6 +152,7 @@ export type ProjectStatus = 'draft' | 'submitted' | 'judged';
 export type LessonLevel = 'primary' | 'secondary' | 'both';
 
 export interface Lesson {
+  learning_plan: LessonLearningPlan | null;
   id: string;
   /** The workshop (events row) this lesson belongs to. */
   event_id: string;

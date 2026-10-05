@@ -19,7 +19,7 @@ import {
 const DASHBOARD_PAGE_TITLES: Record<string, string> = {
   '/dashboard':                     'Overview',
   '/dashboard/leaderboard':         'Leaderboard',
-  '/dashboard/pathways':            'Learning pathways',
+  '/dashboard/school/progress':     'Learner progress',
   '/dashboard/admin/schools':       'Schools',
   '/dashboard/admin/products':      'Products',
   '/dashboard/admin/orders':        'All orders',
@@ -49,7 +49,7 @@ function getDashboardPageTitle(path: string): string {
   if (path.startsWith('/dashboard/certificate/'))   return 'Certificate';
   if (path.startsWith('/dashboard/school/lessons/')) return 'Lesson roster';
   if (path.startsWith('/dashboard/school/sessions/')) return 'Attendance register';
-  if (path.startsWith('/dashboard/pathways/activities/')) return 'Learning activity';
+  if (path.startsWith('/dashboard/assignments/')) return 'Learning assignment';
   return 'Dashboard';
 }
 
@@ -109,9 +109,9 @@ function DashboardShell() {
     isMakerSpace  ? 'MAKER SPACE'    :
                     'SCHOOL LEAD';
   const roleColor: string =
-    isAdmin       ? 'text-terracotta-600' :
+    isAdmin       ? 'text-terracotta-700' :
     isMakerSpace  ? 'text-indigo-600'     :
-                    'text-teal-600';
+                    'text-teal-700';
 
   // Auto-close the drawer on route change.
   useEffect(() => { setMobileOpen(false); }, [location.pathname]);
@@ -260,7 +260,7 @@ function DashboardShell() {
           fixed md:sticky top-0 left-0 z-50 md:z-10 h-screen md:h-screen
           w-64 md:w-60 shrink-0 border-r border-warm-200 bg-white
           flex flex-col transform transition-transform md:transform-none
-          ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+          ${mobileOpen ? 'translate-x-0 visible' : '-translate-x-full invisible md:visible md:translate-x-0'}
         `}
       >
         <div className="flex items-center px-5 py-5 border-b border-warm-200">
@@ -289,9 +289,6 @@ function DashboardShell() {
         <nav aria-label="Primary" className="flex-1 py-4 px-3 space-y-0.5 text-sm overflow-y-auto">
           <SidebarLink to="/dashboard" end icon={Home}>
             Overview
-          </SidebarLink>
-          <SidebarLink to="/dashboard/pathways?view=teacher" icon={BookOpen}>
-            Learning pathways
           </SidebarLink>
 
           {isAdmin ? (
@@ -352,6 +349,9 @@ function DashboardShell() {
               </SidebarLink>
               <SidebarLink to="/dashboard/school/lessons" icon={BookOpen}>
                 Lessons
+              </SidebarLink>
+              <SidebarLink to="/dashboard/school/progress" icon={BookOpen}>
+                Learner progress
               </SidebarLink>
               <SidebarLink to="/dashboard/school/workshops" icon={Presentation} badge={pendingWorkshops}>
                 Workshops

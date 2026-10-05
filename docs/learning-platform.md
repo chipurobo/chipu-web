@@ -1,8 +1,8 @@
 # ChipuRobo learning platform implementation
 
 The product specification calls for a platform used directly by teachers and
-learners. The first implementation provides a shared learning library with
-separate learner instructions and teacher preparation guidance. Its competency
+learners. Learning actions belong in the authenticated dashboard, alongside
+the existing lesson planning and student workflows. Its competency
 catalogue is a versioned draft, ready to be reconciled with the full current
 KICD Grade 10 design before it is used to award levels.
 
@@ -39,25 +39,41 @@ developing, demonstrated and extending. These are not the official KICD rubric.
 Replace or reconcile them after reading the current rubric. No scores or
 competency decisions are stored by this implementation.
 
-## Implemented journeys
+## Implemented dashboard actions
 
-- `/learning`: a public library shared by teachers and learners. A learner
-  chooses a learning level, opens an activity, reads its outcomes, follows the
-  task and sees what evidence to retain with their teacher.
-- The teacher view uses the same activities and outcomes, adding preparation,
-  inclusive delivery notes and evidence review prompts.
-- `/dashboard/pathways?view=teacher`: the same library inside the existing
-  authenticated dashboard, linked from the sidebar and home screen.
-- View and level selections are URL parameters and survive activity
-  navigation, refresh and return to the library. A view selector changes
-  public guidance; it never changes the authenticated role or permissions.
-- Raspberry Pi Foundation resources open externally with explicit provider
-  attribution. Opening them does not create a ChipuRobo completion record.
+- Admin → Lessons → New lesson: use an activity template or write a lesson;
+  select a pathway, Beginner/Intermediate/Expert learning level, competency
+  outcomes, activity steps and expected evidence. Delivery tracks remain separate.
+- Admin → Lessons → Set learning outcomes / Edit learning plan: save the same
+  plan on an existing lesson. Changing a plan does not rewrite prior assignments.
+- School → Lessons → Assign lesson: select active roster students, add class
+  instructions and an optional due date, then save a real assignment.
+- Open lesson → Review assignment: see the assigned task and record each
+  student's evidence, competency review and feedback. Reviews are append-only;
+  previous observations remain in Review history. Teachers currently record
+  evidence on behalf of students, who do not yet have login accounts.
+- School → Learner progress: see the latest observed rating for each competency
+  at each level, with links to its evidence. A newer developing observation
+  replaces an older demonstrated observation in the display, without deleting
+  history. Unobserved outcomes stay unassessed. No overall level is awarded.
 
-The library has three pathways, ten practical activity briefs and six skill
-areas with descriptions at each of the three levels. Stable activity and
-competency IDs plus framework version `0.1` are the references future
-assignments, evidence and progression records should use.
+There is no public `/learning` page or standalone `/dashboard/pathways` library.
+The ten activity briefs are templates used in the lesson-creation action. There
+is no persona switch that grants learner permissions.
+
+Apply `supabase/migrations/20261005000000_dashboard_learning_actions.sql` to the
+intended database before using saved learning plans, assignments or reviews.
+On 2026-10-05 this migration was applied to local Supabase and the linked
+hosted development project, after the user confirmed that the hosted project
+is development. The preview on port 55000 uses local Supabase. Reads and writes
+report backend errors; they never fall back to fabricated/local records.
+
+The assignment RPC validates school access, active distinct recipients and a
+saved plan, then creates assignment and recipients in one transaction. Evidence
+review requires an assigned individual, described evidence, feedback and valid
+competencies from the assignment snapshot. Anonymous access and direct writes
+to assignment/evidence tables are denied. Current authenticated staff roles
+are still `admin` and `school_lead`; learner/teacher identity is the next stage.
 
 ## Next implementation stages
 
@@ -67,10 +83,10 @@ assignments, evidence and progression records should use.
 2. Add learner and teacher identity. Keep `school_lead` for school operations,
    add distinct teacher and learner roles, and link learner profiles to roster
    records. Define teacher-to-class membership and shared-device onboarding.
-3. Add assignments referencing framework version, activity and expected level.
-   Each assignment needs a school, assigning teacher, learner/group recipients,
-   due date and status. A group submission must identify individual
-   contributions; group membership alone must not award a competency.
+3. Extend the current individual lesson assignments with teacher-to-class
+   membership, learner access, submission statuses and group work. Every group
+   submission must identify individual contributions; group membership alone
+   must not award a competency.
 4. Add accessible quizzes with versioned questions, attempts and results,
    followed by learner evidence submissions and teacher review. Keep formal
    programme baseline/midline/endline instruments in the wider M&E system.
@@ -85,23 +101,30 @@ Before connecting these models, establish database policies for each role:
 learners see their own assigned work and evidence; teachers see learners in
 their assigned classes; school leads administer their own school; admins have
 the explicitly required network access. Test cross-school and within-school
-isolation at the database boundary. Public pathway content must never contain
-learner identities, records or evidence.
+isolation at the database boundary. Learner identities, records and evidence
+remain within the authenticated dashboard.
 
 ## Accessibility acceptance and validation
 
-Native radios, selects, links, lists and disclosures support keyboard use.
-Navigating between library and activity places focus on the new task heading;
-changing a filter retains control focus and announces the resulting count.
-The closed mobile menu is hidden from both visual and keyboard navigation.
-Alternative evidence formats and the distinction between access support and
-learning-task prompting are included in every activity.
+Native selects, checkboxes, links and disclosures support keyboard use. The
+closed mobile dashboard drawer is hidden from keyboard and screen-reader
+navigation; Escape restores focus to its trigger. Activity instructions include
+alternative evidence formats and distinguish access accommodations from help
+with the learning task.
 
-Run `npm run test:learning` for catalogue integrity and coverage checks. Run
-`npx playwright install chromium`, then `npm run test:learning-ui` for desktop
-and mobile journey, keyboard, focus, malformed-link, responsive and automated
-WCAG AA checks. The test server uses dummy Supabase settings and never talks to
-the developer's hosted database. CI runs these checks for main, dev and PRs.
+Run `npm run test:learning` for framework integrity and real PostgreSQL execution
+of the new migration, including RPC validation and cross-school RLS tests.
+PGlite tests use minimal existing-table fixtures; they do not validate the full
+historical Supabase migration chain. Run `npx playwright install chromium`,
+then `npm run test:learning-ui` for authenticated desktop/mobile journeys,
+keyboard, failed saves, persistence and automated WCAG AA checks. Browser tests
+use isolated dummy Supabase settings and mock staff sessions/API responses.
+Automated tests do not connect to the hosted database. CI runs these for
+main, dev and PRs. The migration was additionally applied against the full
+local Supabase schema, and a rolled-back integration transaction verified
+assignment creation, evidence saving and cross-school read/write denial.
+Local Supabase integration requires Docker; local startup excluded Storage
+and the optional services because the Storage health check timed out.
 
 Automated checks do not establish the pilot's independent-task-completion
 target. Validate these tasks with participating VI and HI learners and
@@ -109,10 +132,10 @@ teachers before rollout:
 
 | Task | Evidence to record |
 | --- | --- |
-| Find a Beginner activity and explain its outcome | Completion, time, prompting, assistive setup and any navigation barrier |
+| Open an assigned Beginner task and explain its outcome | Completion, time, prompting, assistive setup and any navigation barrier |
 | Follow the activity instructions and identify what evidence to keep | Comprehension, independent completion and content barriers |
 | Teacher prepares an activity and identifies evidence to review | Completion, time, preparation barriers and support needed |
-| Return to the library and find the next activity | Focus/navigation barriers and retained view/filter state |
+| Return to the dashboard lessons and open another assignment | Focus/navigation barriers and preserved assignment context |
 
 Use participant codes and record access accommodations without diagnoses.
 For each barrier, record the task, severity, observed behaviour, fix, owner and

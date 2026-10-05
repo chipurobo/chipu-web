@@ -25,8 +25,6 @@ const Impact                = lazy(() => import('./pages/Impact'));
 const MakerSpaces           = lazy(() => import('./pages/MakerSpaces'));
 const NotFound              = lazy(() => import('./pages/NotFound'));
 const Podcast               = lazy(() => import('./pages/Podcast'));
-const LearningPathways      = lazy(() => import('./learning/LearningPages').then((m) => ({ default: m.LearningPathways })));
-const LearningActivity      = lazy(() => import('./learning/LearningPages').then((m) => ({ default: m.LearningActivityPage })));
 
 // === Dashboard (Supabase-backed) — auth + layout eager so the gate is fast,
 // every screen inside the gate lazy. ===
@@ -66,6 +64,8 @@ const SchoolActions         = lazy(() => import('./dashboard/school/Actions').th
 const ReportIncident        = lazy(() => import('./dashboard/school/ReportIncident').then((m) => ({ default: m.ReportIncident })));
 const AdminIncidents        = lazy(() => import('./dashboard/admin/Incidents').then((m) => ({ default: m.AdminIncidents })));
 const SchoolWorkshops       = lazy(() => import('./dashboard/school/Workshops').then((m) => ({ default: m.SchoolWorkshops })));
+const AssignmentWorkspace   = lazy(() => import('./dashboard/learning/AssignmentWorkspace').then((m) => ({ default: m.AssignmentWorkspace })));
+const LearnerProgress       = lazy(() => import('./dashboard/learning/LearnerProgress').then((m) => ({ default: m.LearnerProgress })));
 const Leaderboard           = lazy(() => import('./dashboard/Leaderboard').then((m) => ({ default: m.Leaderboard })));
 
 // === Accessible Suspense fallback ===
@@ -138,8 +138,6 @@ function App() {
               <Route index element={<DashboardHome />} />
               {/* Both roles: standings are cross-school by design. */}
               <Route path="leaderboard" element={<Leaderboard />} />
-              <Route path="pathways" element={<LearningPathways />} />
-              <Route path="pathways/activities/:activityId" element={<LearningActivity />} />
               <Route
                 path="admin/schools"
                 element={<RequireAuth role="admin"><AdminSchools /></RequireAuth>}
@@ -195,6 +193,8 @@ function App() {
               <Route path="school/orders" element={<SchoolOrders />} />
               <Route path="school/stock" element={<SchoolStock />} />
               <Route path="school/production" element={<SchoolProduction />} />
+              <Route path="assignments/:assignmentId" element={<AssignmentWorkspace />} />
+              <Route path="school/progress" element={<LearnerProgress />} />
               <Route path="school/lessons" element={<SchoolLessons />} />
               <Route path="school/workshops" element={<SchoolWorkshops />} />
               <Route path="school/lessons/:lessonId" element={<SchoolLessonStage />} />
@@ -212,8 +212,6 @@ function App() {
             <Route element={<PublicLayout />}>
               <Route path="/" element={<Home />} />
               <Route path="/about" element={<About />} />
-              <Route path="/learning" element={<LearningPathways />} />
-              <Route path="/learning/activities/:activityId" element={<LearningActivity />} />
 
               {/* One competition, one page. /competition is the canonical URL;
                   /programs, /inclusive-robotics and /register-2026 are older
@@ -301,11 +299,9 @@ function PublicLayout() {
 }
 
 function getPageTitle(path: string): string {
-  if (path.startsWith('/learning/activities/')) return 'Learning activity';
   switch (path) {
     case '/': return 'Home';
     case '/about': return 'About ChipuRobo';
-    case '/learning': return 'Learning pathways';
     case '/competition': return 'Competition';
     case '/inclusive-robotics': return 'Programs';
     case '/microsoft-bootcamps': return 'Microsoft Bootcamps';

@@ -6,7 +6,6 @@ const navigationLinks = [
   { to: '/', label: 'Home' },
   { to: '/about', label: 'About' },
   { to: '/competition', label: 'Competition' },
-  { to: '/learning', label: 'Learning' },
   { to: '/maker-spaces', label: 'Maker spaces' },
   { to: '/impact', label: 'Impact' },
   { to: '/podcast', label: 'Podcast' },
