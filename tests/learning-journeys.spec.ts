@@ -28,6 +28,7 @@ async function mockDashboard(page: Page, role: 'admin' | 'school_lead' | 'teache
   const state = {
     lessons: [lesson], assignments: [assignment], recipients: [{ assignment_id: assignmentId, student_id: studentId }],
     evidence: [] as Record<string, unknown>[], submissions: [] as Record<string, unknown>[], accounts: [] as Record<string, unknown>[], writes: [] as { path: string; body: Record<string, unknown> }[], failReviews: false,
+    draft: null as null | { workspace: unknown; code: unknown; output: unknown }, failPrograms: false,
   };
   await page.route('http://127.0.0.1:54321/**', async (route) => {
     const request = route.request();
@@ -40,6 +41,18 @@ async function mockDashboard(page: Page, role: 'admin' | 'school_lead' | 'teache
     if (path === 'token') { await route.fulfill({ json: session }); return; }
     if (path === 'logout') { await route.fulfill({ status: 204, body: '' }); return; }
     if (request.method() === 'POST' || request.method() === 'PATCH') state.writes.push({ path, body: body ?? {} });
+    if (path === 'learning_program_drafts') { await route.fulfill({ json: state.draft ? [state.draft] : [] }); return; }
+    if (path === 'save_learning_program') {
+      if (state.failPrograms) { await route.fulfill({ status: 400, json: { message: 'Program could not be saved. Try again.' } }); return; }
+      state.draft = { workspace: body!.p_workspace, code: body!.p_code, output: body!.p_output };
+      await route.fulfill({ json: new Date().toISOString() }); return;
+    }
+    if (path === 'start_blockly_lesson') {
+      const selected = state.lessons.find((item) => item.id === body!.p_lesson_id)!;
+      const started = { ...assignment, id: `started-${selected.id}`, lesson_id: selected.id, title: selected.title, learning_plan: selected.learning_plan };
+      state.assignments.unshift(started); state.recipients.push({ assignment_id: started.id, student_id: studentId });
+      await route.fulfill({ json: started.id }); return;
+    }
     if (path === 'assign_learning_lesson') {
       assignment.instructions = String(body!.p_instructions);
       assignment.due_date = body!.p_due_date as string | null;
@@ -48,6 +61,7 @@ async function mockDashboard(page: Page, role: 'admin' | 'school_lead' | 'teache
     }
     if (path === 'submit_learning_work') {
       state.submissions.unshift({ id: 'submission-one', assignment_id: body!.p_assignment_id, student_id: studentId,
+        blockly_workspace: body!.p_blockly_workspace, generated_code: body!.p_generated_code, run_output: body!.p_run_output,
         evidence_text: body!.p_evidence_text, evidence_url: body!.p_evidence_url, reflection: body!.p_reflection, submitted_at: new Date().toISOString() });
       await route.fulfill({ json: 'submission-one' }); return;
     }
@@ -78,7 +92,12 @@ async function mockDashboard(page: Page, role: 'admin' | 'school_lead' | 'teache
     if (path === 'get_my_learning_students') { await route.fulfill({ json: [{ id: studentId, school_id: schoolId, full_name: 'Test Learner', is_active: true, in_club: true }] }); return; }
     if (path === 'schools') rows = [{ id: schoolId, name: 'Test School', is_maker_space: false }];
     if (path === 'club_members') rows = [{ id: studentId, school_id: schoolId, full_name: 'Test Learner', learner_code: 'L-001', is_active: true, in_club: true }];
-    if (path === 'lessons') rows = state.lessons;
+    if (path === 'lessons') rows = state.lessons.filter((row) => {
+      const metadata = row.learning_plan as { delivery?: string; activityKind?: string };
+      return (!url.searchParams.has('kind') || url.searchParams.get('kind') === `eq.${row.kind}`)
+        && (!url.searchParams.has('learning_plan->>delivery') || metadata.delivery === 'blockly')
+        && (!url.searchParams.has('learning_plan->>activityKind') || metadata.activityKind === 'capstone');
+    });
     if (path === 'learning_assignments') rows = state.assignments.filter((row) => !url.searchParams.has('id') || url.searchParams.get('id') === `eq.${row.id}`);
     if (path === 'learning_assignment_recipients') rows = state.recipients;
     if (path === 'competency_evidence') rows = state.evidence;
@@ -290,9 +309,10 @@ test('a learner submits their own work and reopens the saved submission', async 
   await page.getByLabel('What did you learn or find difficult? (optional)').fill('Testing found a misplaced step.');
   await page.getByRole('button', { name: 'Submit my work', exact: true }).click();
   await expect(page.getByRole('status').filter({ hasText: 'Your work was submitted.' })).toBeVisible();
-  expect(state.writes.find((write) => write.path === 'submit_learning_work')!.body).toEqual({
+  expect(state.writes.find((write) => write.path === 'submit_learning_work')!.body).toMatchObject({
     p_assignment_id: assignmentId, p_evidence_text: 'My tested sequence.', p_evidence_url: null, p_reflection: 'Testing found a misplaced step.',
   });
+  expect(state.submissions[0].blockly_workspace).toBeTruthy();
   await page.reload();
   await expect(page.getByRole('region', { name: 'My submissions', exact: true }).getByText('My tested sequence.', { exact: true })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Review student work', exact: true })).toHaveCount(0);
@@ -310,6 +330,115 @@ test('a teacher reviews submitted work and saves feedback linked to that submiss
   await expect(page.getByRole('status').filter({ hasText: 'Evidence review saved.' })).toBeVisible();
   expect(state.evidence[0].submission_id).toBe('submission-one');
   expect(state.evidence[0].evidence_text).toBe('Learner sequence and test results.');
+});
+
+test('a learner runs Blockly, saves blocks and resumes their program after reload', async ({ page }) => {
+  const state = await mockDashboard(page, 'learner');
+  await page.goto(`/dashboard/assignments/${assignmentId}`);
+  await page.getByRole('button', { name: 'Run program', exact: true }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Hello, ChipuRobo!' })).toBeVisible();
+  await page.getByRole('button', { name: 'Save program', exact: true }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Your blocks are saved.' })).toBeVisible();
+  expect(state.draft!.code).toContain('Hello, ChipuRobo!');
+  await page.reload();
+  await expect(page.getByRole('status').filter({ hasText: 'Hello, ChipuRobo!' })).toBeVisible();
+  await page.getByRole('button', { name: 'Edit text: Hello, ChipuRobo!', exact: true }).dblclick();
+  await page.locator('.blocklyHtmlInput').fill('My changed program');
+  await page.locator('.blocklyHtmlInput').press('Enter');
+  await page.getByRole('button', { name: 'Run program', exact: true }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'My changed program' })).toBeVisible();
+  await page.getByLabel('Describe your work or paste your code').fill('I changed the output and tested it.');
+  await page.getByRole('button', { name: 'Submit my work', exact: true }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Your work was submitted.' })).toBeVisible();
+  expect(state.submissions[0].generated_code).toContain('My changed program');
+  expect(state.submissions[0].run_output).toBe('My changed program');
+});
+
+test('a failed Blockly save keeps the workspace and does not claim success', async ({ page }) => {
+  const state = await mockDashboard(page, 'learner'); state.failPrograms = true;
+  await page.goto(`/dashboard/assignments/${assignmentId}`);
+  await page.getByRole('button', { name: 'Save program', exact: true }).click();
+  await expect(page.getByRole('alert')).toHaveText('Program could not be saved. Try again.');
+  await expect(page.getByRole('status').filter({ hasText: 'Your blocks are saved.' })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Run program', exact: true }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Hello, ChipuRobo!' })).toBeVisible();
+});
+
+test('Blockly stops an infinite loop and keeps the dashboard responsive', async ({ page }) => {
+  const state = await mockDashboard(page, 'learner');
+  state.draft = { workspace: { blocks: { languageVersion: 0, blocks: [{ type: 'controls_whileUntil', fields: { MODE: 'WHILE' },
+    inputs: { BOOL: { block: { type: 'logic_boolean', fields: { BOOL: 'TRUE' } } } } }] } }, code: 'while(true){}', output: '' };
+  await page.goto(`/dashboard/assignments/${assignmentId}`);
+  await page.getByRole('button', { name: 'Run program', exact: true }).click();
+  await expect(page.getByRole('alert')).toContainText(/Program stopped/);
+  await expect(page.getByRole('button', { name: 'Run program', exact: true })).toBeEnabled();
+  await page.getByLabel('Describe your work or paste your code').fill('I need to fix my loop.');
+});
+
+test('teachers open the submitted Blockly blocks and output for review', async ({ page }) => {
+  const state = await mockDashboard(page, 'teacher');
+  state.submissions.push({ id: 'submission-blocks', assignment_id: assignmentId, student_id: studentId,
+    evidence_text: 'My Blockly sequence.', submitted_at: '2026-10-05T09:00:00Z',
+    blockly_workspace: { blocks: { languageVersion: 0, blocks: [{ type: 'text_print', inputs: { TEXT: { block: { type: 'text', fields: { TEXT: 'Saved output' } } } } }] } },
+    generated_code: 'window.alert("Saved output");', run_output: 'Saved output' });
+  await page.goto(`/dashboard/assignments/${assignmentId}`);
+  await page.getByText('View submitted Blockly program', { exact: true }).click();
+  await expect(page.getByRole('region', { name: 'Submitted Blockly program', exact: true }).locator('.blocklyText').filter({ hasText: 'Saved output' })).toBeVisible();
+  await expect(page.getByRole('status').filter({ hasText: 'Saved output' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Run program', exact: true })).toHaveCount(0);
+});
+
+test('learners edit Blockly using the keyboard and can leave the workspace', async ({ page }) => {
+  await mockDashboard(page, 'learner');
+  await page.goto(`/dashboard/assignments/${assignmentId}`);
+  await expect(page.getByRole('button', { name: 'Run program', exact: true })).toBeEnabled();
+  await page.getByRole('region', { name: 'Blocks workspace.', exact: true }).focus();
+  await page.keyboard.press('t');
+  await expect(page.getByRole('treeitem', { name: 'Output and text', exact: true })).toBeFocused();
+  await page.keyboard.press('Enter');
+  await page.keyboard.press('Enter');
+  await page.keyboard.press('Escape');
+  const run = page.getByRole('button', { name: 'Run program', exact: true });
+  for (let index = 0; index < 8 && !await run.evaluate((element) => element === document.activeElement); index++) await page.keyboard.press('Tab');
+  await expect(page.getByRole('button', { name: 'Run program', exact: true })).toBeFocused();
+});
+
+test('a learner chooses one of twenty lessons and starts its Blockly workspace', async ({ page }) => {
+  const state = await mockDashboard(page, 'learner');
+  for (let index = 0; index < 20; index++) state.lessons.push({ ...state.lessons[0], id: `course-${index}`, title: `Blockly exercise ${index + 1}`,
+    learning_plan: { ...plan, delivery: 'blockly', level: index < 8 ? 'beginner' : index < 15 ? 'intermediate' : 'expert' } });
+  await page.goto('/dashboard');
+  const catalog = page.getByRole('region', { name: 'Blockly lessons', exact: true });
+  await expect(catalog.getByRole('article')).toHaveCount(20);
+  await page.getByLabel('Learning level', { exact: true }).selectOption('expert');
+  await expect(catalog.getByRole('article')).toHaveCount(5);
+  await catalog.getByRole('article', { name: 'Blockly lesson: Blockly exercise 16', exact: true }).getByRole('button', { name: 'Start lesson', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Blockly exercise 16', exact: true, level: 1 })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Run program', exact: true })).toBeEnabled();
+  expect(state.writes.find((write) => write.path === 'start_blockly_lesson')!.body).toEqual({ p_lesson_id: 'course-15' });
+});
+
+test('a learner starts a capstone project and submits its Blockly program for review', async ({ page }) => {
+  const state = await mockDashboard(page, 'learner');
+  const capstone = { ...state.lessons[0], id: 'capstone-one', title: 'Capstone: routine guide', kind: 'project',
+    learning_plan: { ...plan, delivery: 'blockly', activityKind: 'capstone', requirements: ['Print four clear steps.'] } };
+  state.lessons.push(capstone);
+  await page.goto('/dashboard/my-projects');
+  await expect(page.getByRole('heading', { name: 'Capstone projects', exact: true, level: 1 })).toBeVisible();
+  const results = await new AxeBuilder({ page }).include('.learning-zone').withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
+  expect(results.violations).toEqual([]);
+  await page.getByRole('button', { name: 'Start project in Blockly', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Project brief', exact: true })).toBeVisible();
+  await expect(page.getByText('Print four clear steps.', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Run program', exact: true }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Hello, ChipuRobo!' })).toBeVisible();
+  await page.getByLabel('Describe your work or paste your code').fill('My project program and test record.');
+  await page.getByRole('button', { name: 'Submit my work', exact: true }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Your work was submitted.' })).toBeVisible();
+  expect(state.submissions[0].assignment_id).toBe('started-capstone-one');
+  expect(state.submissions[0].blockly_workspace).toBeTruthy();
+  await page.getByRole('link', { name: 'Back to capstone projects', exact: true }).click();
+  await expect(page.getByRole('link', { name: 'Continue project', exact: true })).toBeVisible();
 });
 
 test('admin creates a learner login linked to the selected roster student', async ({ page }) => {
@@ -347,6 +476,7 @@ for (const journey of ['login', 'learner-home', 'learner-submission', 'learning-
         await page.getByLabel('Account type').selectOption('learner');
       } else if (journey === 'learner-submission') {
         await expect(page.getByRole('form', { name: 'My submission', exact: true })).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Run program', exact: true })).toBeEnabled();
       } else await expect(page.getByRole('link', { name: 'Start activity', exact: true })).toBeVisible();
     }
     const results = await new AxeBuilder({ page }).include(journey === 'login' ? 'form' : '.learning-zone').withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();

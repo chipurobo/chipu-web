@@ -28,7 +28,8 @@ before(async () => {
     create table auth.users(id uuid primary key,email text unique);
     create table public.profiles(id uuid primary key,role public.user_role default 'school_lead',school_id uuid references public.schools,full_name text);
     create table public.club_members(id uuid primary key,school_id uuid references public.schools,full_name text,grade text,learner_code text,is_active boolean default true,in_club boolean default true);
-    create table public.lessons(id uuid primary key,title text,is_active boolean);
+    create table public.lessons(id uuid primary key,title text,is_active boolean,position integer,description text,kind text,points integer,level text,required_for_certificate boolean);
+    grant select on public.lessons to authenticated;
     create table public.orders(id uuid primary key,school_id uuid);
     create function public.me_is_admin() returns boolean language sql stable security definer as $$ select exists(select 1 from public.profiles where id=auth.uid() and role='admin') $$;
     create function public.me_school_id() returns uuid language sql stable security definer as $$ select school_id from public.profiles where id=auth.uid() $$;
@@ -41,7 +42,7 @@ before(async () => {
     insert into public.schools values('${id(101)}','School One','mainstream'),('${id(102)}','School Two','mainstream');
     insert into public.profiles values('${id(1)}','admin',null,'Admin'),('${id(2)}','school_lead','${id(101)}','Lead');
     insert into public.club_members(id,school_id,full_name) values('${id(201)}','${id(101)}','Learner One'),('${id(202)}','${id(101)}','Learner Two'),('${id(203)}','${id(101)}','Learner Three'),('${id(204)}','${id(102)}','Other School Learner');
-    insert into public.lessons values('${id(301)}','Test learning task',true);
+    insert into public.lessons(id,title,is_active) values('${id(301)}','Test learning task',true);
     insert into public.orders values('${id(401)}','${id(101)}');
     alter table public.club_members enable row level security;
     create policy club_members_all on public.club_members to authenticated using(public.me_is_admin() or school_id=public.me_school_id()) with check(public.me_is_admin() or school_id=public.me_school_id());
@@ -49,10 +50,10 @@ before(async () => {
     create policy orders_all on public.orders to authenticated using(public.me_is_admin() or school_id=public.me_school_id()) with check(public.me_is_admin() or school_id=public.me_school_id());
     grant select,insert,update,delete on public.club_members,public.orders to authenticated;
   `);
-  for (const name of ['20261005000000_dashboard_learning_actions.sql','20261005000001_learning_account_roles.sql','20261005000002_learning_accounts_and_submissions.sql']) {
+  for (const name of ['20261005000000_dashboard_learning_actions.sql','20261005000001_learning_account_roles.sql','20261005000002_learning_accounts_and_submissions.sql','20261005000003_blockly_learning_programs.sql','20261005000004_blockly_lesson_course.sql','20261005000005_blockly_capstone_projects.sql','20261005000006_require_blockly_submissions.sql']) {
     await db.exec(await readFile(new URL(`../supabase/migrations/${name}`, import.meta.url), 'utf8'));
   }
-  await db.query('update public.lessons set learning_plan=$1', [JSON.stringify(plan)]);
+  await db.query('update public.lessons set learning_plan=$1 where id=$2', [JSON.stringify(plan),id(301)]);
 });
 after(async () => { await db.close(); });
 
@@ -113,6 +114,71 @@ test('teacher reviews retain submitted evidence and feedback is private to its l
   const review=(await db.query('select * from public.competency_evidence')).rows[0];
   assert.equal(review.submission_id,submission); assert.equal(review.evidence_text,'My sequence and a correction.');
   await asUser(peer); assert.deepEqual((await db.query('select * from public.competency_evidence')).rows,[]);
+});
+
+test('Blockly drafts are private and submitted program snapshots survive later edits', async () => {
+  const workspace = { blocks: { languageVersion: 0, blocks: [{ type: 'text_print', inputs: { TEXT: { block: { type: 'text', fields: { TEXT: 'Hello' } } } } }] } };
+  const save = (value = workspace) => db.query('select public.save_learning_program($1,$2,$3,$4)', [assignment, JSON.stringify(value), 'window.alert("Hello");', 'Hello']);
+  await asUser(learner); await save();
+  assert.deepEqual((await db.query('select workspace from public.learning_program_drafts')).rows[0].workspace,workspace);
+  await assert.rejects(save({ blocks: { blocks: [] } }),/Add blocks/);
+  await assert.rejects(db.query('update public.learning_program_drafts set code=$1',['tampered']),/permission denied/);
+  const snapshot = (await db.query('select public.submit_learning_work($1,$2,$3,$4,$5,$6,$7) as id',
+    [assignment,'My Blockly lesson',null,'I tested it.',JSON.stringify(workspace),'window.alert("Hello");','Hello'])).rows[0].id;
+  const changed = structuredClone(workspace); changed.blocks.blocks[0].inputs.TEXT.block.fields.TEXT='Updated';
+  await save(changed);
+  assert.deepEqual((await db.query('select blockly_workspace from public.learning_submissions where id=$1',[snapshot])).rows[0].blockly_workspace,workspace);
+  await asUser(peer); assert.deepEqual((await db.query('select * from public.learning_program_drafts')).rows,[]);
+  await asUser(otherTeacher); await assert.rejects(save(),/own assigned program/);
+  await asUser(teacher); assert.deepEqual((await db.query('select * from public.learning_program_drafts')).rows,[]);
+  const submitted=(await db.query('select * from public.learning_submissions where id=$1',[snapshot])).rows[0];
+  assert.deepEqual(submitted.blockly_workspace,workspace); assert.equal(submitted.run_output,'Hello');
+  await assert.rejects(save(),/own assigned program/);
+  await db.query('select public.review_learning_submission($1,$2,$3)',[snapshot,'Good Blockly sequence.','{"algorithms":"demonstrated"}']);
+});
+
+test('twenty Blockly lessons can be started privately and reviewed by allocated teachers', async () => {
+  await asUser(learner);
+  const catalog=(await db.query("select * from public.lessons where kind='lesson' and learning_plan->>'delivery'='blockly' order by position")).rows;
+  assert.equal(catalog.length,20);
+  const source=JSON.parse(await readFile(new URL('../supabase/learning/blockly-lessons.json',import.meta.url),'utf8'));
+  assert.deepEqual(catalog.map((lesson)=>lesson.learning_plan.blocklyLessonId),source.map((lesson)=>lesson.slug));
+  for (const [index, lesson] of catalog.entries()) {
+    assert.deepEqual(lesson.learning_plan.steps,source[index].steps);
+    assert.equal(lesson.learning_plan.expectedResult,source[index].expectedResult);
+  }
+  assert.deepEqual(catalog.reduce((counts,lesson)=>({ ...counts,[lesson.learning_plan.level]:(counts[lesson.learning_plan.level]??0)+1 }),{}),{ beginner:8, intermediate:7, expert:5 });
+  const start=(lessonId)=>db.query('select public.start_blockly_lesson($1) as id',[lessonId]);
+  const started=[];
+  for (const lesson of catalog) { const first=(await start(lesson.id)).rows[0].id; assert.equal((await start(lesson.id)).rows[0].id,first); started.push(first); }
+  assert.equal((await db.query('select * from public.learning_assignments where self_started')).rows.length,20);
+  await assert.rejects(start(id(301)),/not available/);
+  await asUser(null,'anon'); await assert.rejects(start(catalog[0].id),/permission denied/);
+  await asUser(teacher); await assert.rejects(start(catalog[0].id),/active learner/);
+  assert.equal((await db.query('select * from public.learning_assignments where self_started')).rows.length,20);
+  await asUser(otherTeacher); assert.deepEqual((await db.query('select * from public.learning_assignments where self_started')).rows,[]);
+  await asUser(peer); assert.deepEqual((await db.query('select * from public.learning_assignments where self_started')).rows,[]);
+  const peerId=(await start(catalog[0].id)).rows[0].id; assert.notEqual(peerId,started[0]);
+  await asUser(learner); assert.deepEqual((await db.query('select * from public.learning_assignments where id=$1',[peerId])).rows,[]);
+});
+
+test('capstone projects have criteria and persist Blockly work for teacher review', async () => {
+  await asUser(learner);
+  const capstones=(await db.query("select * from public.lessons where learning_plan->>'activityKind'='capstone' order by position")).rows;
+  assert.equal(capstones.length,3);
+  assert.ok(capstones.every((project)=>project.kind==='project' && project.learning_plan.requirements.length>=5));
+  const project=(await db.query('select public.start_blockly_lesson($1) as id',[capstones[0].id])).rows[0].id;
+  await assert.rejects(db.query('select public.submit_learning_work($1,$2,$3,$4)',[project,'Text only',null,'No program']),/requires a Blockly program/);
+  const workspace={ blocks: { languageVersion: 0, blocks: [{ type: 'text_print', inputs: { TEXT: { block: { type: 'text', fields: { TEXT: 'Project output' } } } } }] } };
+  const work=(await db.query('select public.submit_learning_work($1,$2,$3,$4,$5,$6,$7) as id',
+    [project,'My project explanation and test results.',null,'I revised a step.',JSON.stringify(workspace),'window.alert("Project output");','Project output'])).rows[0].id;
+  await asUser(peer); assert.deepEqual((await db.query('select * from public.learning_submissions where id=$1',[work])).rows,[]);
+  await asUser(teacher);
+  assert.deepEqual((await db.query('select blockly_workspace from public.learning_submissions where id=$1',[work])).rows[0].blockly_workspace,workspace);
+  await db.query('select public.review_learning_submission($1,$2,$3)',[work,'Add the remaining steps to meet the project brief.','{"algorithms":"developing"}']);
+  await asUser(learner);
+  const feedback=(await db.query('select * from public.competency_evidence where submission_id=$1',[work])).rows[0];
+  assert.equal(feedback.feedback,'Add the remaining steps to meet the project brief.');
 });
 
 test('inactive learners lose assignment access and revoked teachers lose individual work access', async () => {

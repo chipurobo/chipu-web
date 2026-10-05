@@ -15,6 +15,7 @@ export function AssignmentWorkspace() {
   const assignmentQuery = useQuery({ queryKey: ['learning-assignment', assignmentId],
     queryFn: () => fetchAssignment(assignmentId!), enabled: !!assignmentId });
   const assignment = assignmentQuery.data;
+  const isCapstone = assignment?.learning_plan.activityKind === 'capstone';
   const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => { heading.current?.focus(); }, [assignment?.id]);
   const recipients = useQuery({ queryKey: ['learning-recipients', assignmentId],
@@ -28,8 +29,8 @@ export function AssignmentWorkspace() {
   const assigned = (members.data ?? []).filter((member) => recipients.data?.some((row) => row.student_id === member.id));
   return (
     <div className="learning-zone px-4 sm:px-6 lg:px-10 py-8 space-y-6 max-w-6xl">
-      <Link to={isLearner ? '/dashboard/my-learning' : assignment ? `/dashboard/school/lessons/${assignment.lesson_id}` : '/dashboard/school/lessons'}
-        className="text-sm text-teal-700 underline">{isLearner ? 'Back to my learning' : 'Back to lessons'}</Link>
+      <Link to={isLearner ? isCapstone ? '/dashboard/my-projects' : '/dashboard/my-learning' : assignment ? `/dashboard/school/lessons/${assignment.lesson_id}` : '/dashboard/school/lessons'}
+        className="text-sm text-teal-700 underline">{isLearner ? isCapstone ? 'Back to capstone projects' : 'Back to my learning' : 'Back to lessons'}</Link>
       {error && <p role="alert" className="text-sm text-red-700">{error.message}</p>}
       {assignmentQuery.isPending && <p role="status">Loading assignment…</p>}
       {!assignmentQuery.isPending && !error && !assignment && <h1>Assignment not found</h1>}
@@ -44,7 +45,7 @@ export function AssignmentWorkspace() {
           </div>
         </div>
         <section className="card p-5 space-y-4" aria-label="Assigned learning task">
-          <h2 className="text-lg">Activity</h2>
+          <h2 className="text-lg">{isCapstone ? 'Project brief' : 'Activity'}</h2>
           {assignment.instructions && <p className="text-sm text-gray-700 whitespace-pre-wrap">{assignment.instructions}</p>}
           <ol className="list-decimal pl-5 space-y-2 text-sm text-gray-800">
             {assignment.learning_plan.steps.map((step, index) => <li key={index}>{step}</li>)}
@@ -58,8 +59,12 @@ export function AssignmentWorkspace() {
             </ul>
             <p className="mt-3">Use readable text, captions, tactile materials or an oral explanation as needed. Access accommodations do not reduce competency. Record any help with the learning task separately.</p>
           </details>
+          {assignment.learning_plan.expectedResult && <div className="mt-4"><h3 className="text-base">Check your result</h3><p className="text-sm mt-1">{assignment.learning_plan.expectedResult}</p></div>}
+          {isCapstone && <div><h3 className="text-base">Project completion criteria</h3><ul className="list-disc pl-5 text-sm space-y-2 mt-2">
+            {assignment.learning_plan.requirements?.map((requirement) => <li key={requirement}>{requirement}</li>)}
+          </ul></div>}
         </section>
-        {isLearner ? <LearnerSubmission assignmentId={assignment.id} submissions={submissions.data ?? []} reviews={evidence.data ?? []} /> : <section aria-label="Review student work" className="space-y-4">
+        {isLearner ? <LearnerSubmission key={assignment.id} assignmentId={assignment.id} level={assignment.learning_plan.level} submissions={submissions.data ?? []} reviews={evidence.data ?? []} /> : <section aria-label="Review student work" className="space-y-4">
           <h2 className="text-lg">Review student work</h2>
           <p className="text-sm text-gray-600">Record each student's work and your feedback. These reviews do not award an overall level or change lesson completion.</p>
           {(recipients.isPending || members.isPending || evidence.isPending) && <p role="status">Loading student work…</p>}

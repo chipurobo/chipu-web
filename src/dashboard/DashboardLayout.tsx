@@ -20,6 +20,7 @@ const DASHBOARD_PAGE_TITLES: Record<string, string> = {
   '/dashboard':                     'Overview',
   '/dashboard/leaderboard':         'Leaderboard',
   '/dashboard/my-learning':         'My learning',
+  '/dashboard/my-projects':         'Capstone projects',
   '/dashboard/my-progress':         'My progress',
   '/dashboard/admin/learning-accounts': 'Learning accounts',
   '/dashboard/school/progress':     'Learner progress',
@@ -304,6 +305,7 @@ function DashboardShell() {
           {isLearner ? (
             <>
               <SidebarLink to="/dashboard/my-learning" icon={BookOpen}>My learning</SidebarLink>
+              <SidebarLink to="/dashboard/my-projects" icon={Award}>Capstone projects</SidebarLink>
               <SidebarLink to="/dashboard/my-progress" icon={Award}>My progress</SidebarLink>
             </>
           ) : isTeacher ? (

@@ -66,6 +66,7 @@ const AdminIncidents        = lazy(() => import('./dashboard/admin/Incidents').t
 const SchoolWorkshops       = lazy(() => import('./dashboard/school/Workshops').then((m) => ({ default: m.SchoolWorkshops })));
 const LearningAccounts      = lazy(() => import('./dashboard/learning/LearningAccounts').then((m) => ({ default: m.LearningAccounts })));
 const MyLearning            = lazy(() => import('./dashboard/learning/MyLearning').then((m) => ({ default: m.MyLearning })));
+const BlocklyProjects       = lazy(() => import('./dashboard/learning/BlocklyProjects').then((m) => ({ default: m.BlocklyProjects })));
 const AssignmentWorkspace   = lazy(() => import('./dashboard/learning/AssignmentWorkspace').then((m) => ({ default: m.AssignmentWorkspace })));
 const LearnerProgress       = lazy(() => import('./dashboard/learning/LearnerProgress').then((m) => ({ default: m.LearnerProgress })));
 const Leaderboard           = lazy(() => import('./dashboard/Leaderboard').then((m) => ({ default: m.Leaderboard })));
@@ -191,6 +192,7 @@ function App() {
               />
               <Route path="admin/learning-accounts" element={<RequireAuth role="admin"><LearningAccounts /></RequireAuth>} />
               <Route path="my-learning" element={<RequireAuth roles={['learner']}><MyLearning /></RequireAuth>} />
+              <Route path="my-projects" element={<RequireAuth roles={['learner']}><BlocklyProjects /></RequireAuth>} />
               <Route path="my-progress" element={<RequireAuth roles={['learner']}><LearnerProgress /></RequireAuth>} />
               <Route path="school/members" element={<RequireAuth roles={['admin', 'school_lead']}><SchoolMembers /></RequireAuth>} />
               <Route path="school/certificates" element={<RequireAuth roles={['admin', 'school_lead']}><SchoolCertificates /></RequireAuth>} />

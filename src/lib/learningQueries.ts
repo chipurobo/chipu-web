@@ -1,7 +1,8 @@
 import { supabase } from './supabase';
 import type { AssignmentRecipient, CompetencyEvidence, LearningAssignment, LearningAccount, LearningSubmission, ReviewBand } from './learningRecords';
-import type { ClubMember } from './database.types';
+import type { ClubMember, Lesson } from './database.types';
 import type { CompetencyId } from './learningFramework';
+import type { BlocklyProgram } from './blocklyProgram';
 
 function unwrap<T>({ data, error }: { data: T | null; error: { message: string } | null }): T {
   if (error) throw new Error(error.message);
@@ -61,10 +62,36 @@ export async function fetchSubmissions(assignmentId?: string): Promise<LearningS
   return unwrap(await query);
 }
 
-export async function submitLearningWork(input: { assignmentId: string; text: string; url: string; reflection: string }): Promise<string> {
+export async function fetchLearningProgram(assignmentId: string): Promise<BlocklyProgram | null> {
+  const row = unwrap(await supabase.from('learning_program_drafts').select('workspace,code,output').eq('assignment_id', assignmentId).maybeSingle());
+  return row as BlocklyProgram | null;
+}
+
+export async function fetchBlocklyLessons(): Promise<Lesson[]> {
+  return unwrap(await supabase.from('lessons').select('*').eq('is_active', true)
+    .eq('kind', 'lesson').eq('learning_plan->>delivery', 'blockly').order('position'));
+}
+
+export async function fetchBlocklyProjects(): Promise<Lesson[]> {
+  return unwrap(await supabase.from('lessons').select('*').eq('is_active', true)
+    .eq('kind', 'project').eq('learning_plan->>activityKind', 'capstone').eq('learning_plan->>delivery', 'blockly').order('position'));
+}
+
+export async function startBlocklyLesson(lessonId: string): Promise<string> {
+  return unwrap(await supabase.rpc('start_blockly_lesson', { p_lesson_id: lessonId }));
+}
+
+export async function saveLearningProgram(assignmentId: string, program: BlocklyProgram): Promise<string> {
+  return unwrap(await supabase.rpc('save_learning_program', { p_assignment_id: assignmentId,
+    p_workspace: program.workspace, p_code: program.code, p_output: program.output }));
+}
+
+export async function submitLearningWork(input: { assignmentId: string; text: string; url: string; reflection: string; program?: BlocklyProgram | null }): Promise<string> {
   return unwrap(await supabase.rpc('submit_learning_work', {
     p_assignment_id: input.assignmentId, p_evidence_text: input.text.trim(),
     p_evidence_url: input.url.trim() || null, p_reflection: input.reflection.trim(),
+    p_blockly_workspace: input.program?.workspace ?? null, p_generated_code: input.program?.code ?? null,
+    p_run_output: input.program?.output ?? null,
   }));
 }
 

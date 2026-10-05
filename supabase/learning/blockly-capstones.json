@@ -1,0 +1,29 @@
+[
+  {
+    "slug": "routine-guide", "title": "Capstone: build a routine guide", "level": "beginner",
+    "description": "Create a clear, repeatable guide that prints the steps of an everyday task.",
+    "competencyIds": ["algorithms", "programming", "debugging", "design", "communication"],
+    "steps": ["Choose a safe everyday task and describe who your guide is for.", "Build a Blockly sequence that prints at least four clear instructions. Use a variable for the user's name and a loop for a repeated step.", "Run your guide, ask someone to follow its printed steps, and identify an unclear instruction.", "Improve the program, retest and submit your blocks with the original issue, your change and the result."],
+    "expectedResult": "The guide prints a named greeting and usable steps in order, with the intended repeated step.",
+    "requirements": ["At least four ordered instructions", "A named value stored in a variable", "A repeat loop used for a meaningful step", "A recorded fault, correction and retest", "An explanation of how the guide helps its intended user"],
+    "evidenceBrief": "Submit the Blockly program, run output, user brief and your fault-and-retest record."
+  },
+  {
+    "slug": "supplies-planner", "title": "Capstone: plan classroom supplies", "level": "intermediate",
+    "description": "Build a supplies calculator that checks inputs and reports a shortage or surplus.",
+    "competencyIds": ["algorithms", "programming", "debugging", "design", "communication"],
+    "steps": ["Plan inputs for learnerCount, kitsAvailable and learnersPerKit. Explain the intended calculation.", "Use variables and arithmetic to calculate required kits, rounding up if learners do not divide evenly. Reject negative counts and a learnersPerKit value of zero with an Invalid input message.", "Use decisions to report Enough kits or a shortage. Use a counting loop to print the planned kit numbers.", "Test 10 learners with 2 per kit and 5 available, 11 learners with the same settings, and an invalid input. Correct a fault and retest before submitting."],
+    "expectedResult": "10 learners need 5 kits; 11 need 6. The report distinguishes enough kits, a shortage, and invalid inputs.",
+    "requirements": ["Named inputs stored in variables", "Correct rounding up of required kits", "A shortage/surplus decision", "A loop showing planned kit numbers", "Normal, boundary and invalid-input tests", "An explanation of one design choice"],
+    "evidenceBrief": "Submit your calculator, run output, three test cases and a short design explanation."
+  },
+  {
+    "slug": "obstacle-controller", "title": "Capstone: simulate an obstacle controller", "level": "expert",
+    "description": "Design a reusable Blockly controller that decides how a simulated robot should respond to readings.",
+    "competencyIds": ["algorithms", "programming", "debugging", "robotics", "design", "communication"],
+    "steps": ["State your simulated robot's rule: Stop below 10 centimetres, Move at or above 10, and Invalid reading for negative values.", "Build a reusable function that takes a distance and returns the appropriate command using branches.", "Store readings -1, 5, 10 and 20 in a list. Loop through them, call the function and print each command.", "Predict and test every case, change the threshold to a named variable, fix a fault and retest. Submit your simulation and describe what a real hardware connection would still need."],
+    "expectedResult": "The four readings produce Invalid reading, Stop, Move and Move, in that order. No physical robot is controlled.",
+    "requirements": ["A function with a distance input and a returned command", "Branches for invalid, close and clear readings", "A configurable threshold variable", "A list and loop processing all four cases", "A boundary test at exactly the threshold", "A clear statement that this is a simulation"],
+    "evidenceBrief": "Submit your Blockly controller, output for all four readings, a correction and retest, and your explanation of the simulation boundary."
+  }
+]

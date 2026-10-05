@@ -250,20 +250,20 @@ export const learningActivities: LearningActivity[] = [
     pathwayId: 'creative-coding',
     level: 'beginner',
     title: 'Give clear instructions',
-    summary: 'Create and test a sequence that another person can follow.',
+    summary: 'Build a Blockly program that prints an ordered sequence, then test and improve it.',
     competencyIds: ['algorithms', 'debugging', 'communication'],
     materials: [
-      'Paper, a text editor or another accessible way to record instructions',
+      'The Blockly workspace in your dashboard lesson',
       'A partner to test the sequence',
     ],
     steps: [
       'Choose a familiar task with a clear start and finish.',
-      'Write or dictate the instructions in order. Say what you expect to happen.',
-      'Ask a partner to follow the instructions exactly. Record what happened.',
-      'Change an unclear instruction, test again and explain your change.',
+      'Connect print blocks in Blockly to show each instruction in order. Predict the output.',
+      'Run the program. Ask a partner to follow its output and compare the results with your prediction.',
+      'Improve an unclear instruction in its text block, run again, and submit your program with an explanation.',
     ],
     artifact:
-      'Your original and revised instructions, expected and actual results, and a short explanation.',
+      'Your saved Blockly program, its run output, expected and actual results, and a short explanation.',
     reviewPrompt: 'Which instruction changed, and what did the second test show?',
     teacherNotes: [
       'Model a short sequence without giving the learner their solution.',
@@ -279,19 +279,19 @@ export const learningActivities: LearningActivity[] = [
     summary: 'Use events, repetition and a decision to change what happens in a story.',
     competencyIds: ['algorithms', 'programming', 'debugging'],
     materials: [
-      'An accessible coding tool chosen with your teacher',
+      'The Blockly workspace in your dashboard lesson',
       'A text description of your story and its choices',
     ],
     steps: [
       'Describe two possible paths through your story.',
       'Plan the event that starts it, a repeated action and a decision.',
-      'Build the program in a tool you can use accessibly.',
+      'Build the story in Blockly with print, loop and if blocks. Use a variable for the choice.',
       'Test both paths. Record a fault, your correction and the retest.',
     ],
     artifact: 'A readable code listing, your story plan and results for both test paths.',
     reviewPrompt: 'How do the event, repeated action and decision change the program?',
     teacherNotes: [
-      'Check that the chosen external editor is accessible for the learner before using it.',
+      'Check Blockly keyboard and screen-reader controls with the learner before starting.',
       'Provide text equivalents for visual or audio story elements.',
       'Review the learner’s control flow and test results rather than the visual polish.',
     ],
@@ -308,7 +308,7 @@ export const learningActivities: LearningActivity[] = [
     title: 'Build a reusable program',
     summary: 'Organise an interactive program into reusable parts and test its limits.',
     competencyIds: ['algorithms', 'programming', 'debugging', 'communication'],
-    materials: ['An accessible coding tool', 'A brief stating the intended behaviour'],
+    materials: ['The Blockly workspace in your dashboard lesson', 'A brief stating the intended behaviour'],
     steps: [
       'Define the behaviour your program must provide and compare two possible approaches.',
       'Separate repeated behaviour into reusable parts and explain their inputs and outputs.',

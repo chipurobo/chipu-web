@@ -8,6 +8,12 @@ export interface LessonLearningPlan {
   competencyIds: CompetencyId[];
   steps: string[];
   evidenceBrief: string;
+  delivery?: 'blockly';
+  blocklyLessonId?: string;
+  expectedResult?: string;
+  contentVersion?: string;
+  activityKind?: 'capstone';
+  requirements?: string[];
 }
 
 export function newLearningPlan(): LessonLearningPlan {
@@ -62,6 +68,9 @@ export interface LearningSubmission {
   evidence_url: string | null;
   reflection: string;
   submitted_at: string;
+  blockly_workspace?: Record<string, unknown> | null;
+  generated_code?: string | null;
+  run_output?: string | null;
 }
 
 export interface LearningAccount {

@@ -52,9 +52,23 @@ are stored against individual evidence; they do not award an overall level.
   student's evidence, competency review and feedback. Reviews are append-only;
   previous observations remain in Review history. Teachers can review actual
   learner submissions or record evidence observed during an activity.
-- Learner → My learning: open assigned activities, submit described work or code,
+- Learner → My learning: open assigned lessons in the embedded Blockly workspace,
+  build and run programs, save blocks to resume later, and submit the program with
+  described work or code,
   an optional evidence link and reflection, then return to see teacher feedback.
   Resubmissions preserve earlier work. Learners cannot rate their own competence.
+- Learner → My learning → Blockly lessons: start any of the 20 published exercises
+  (8 Beginner, 7 Intermediate, 5 Expert), or continue work already started.
+  Starting a lesson creates a private individual assignment atomically; repeated
+  starts return the existing assignment. Teachers can also assign the lessons.
+- Learner → Capstone projects: choose a routine guide, classroom supplies planner
+  or simulated obstacle controller. Each has a project brief, expected behaviour
+  and completion criteria, and uses the same Blockly workspace and submission
+  pipeline. Teacher review decides whether the evidence meets the brief; clicking
+  Submit does not certify completion or award a competency.
+- Teacher → Review assignment → View submitted Blockly program: open the exact
+  submitted blocks, generated JavaScript and last output alongside the learner's
+  explanation. Later draft edits cannot rewrite the submitted program.
 - Teacher / School → Learner progress; Learner → My progress: see the latest observed rating for each competency
   at each level, with links to its evidence. A newer developing observation
   replaces an older demonstrated observation in the display, without deleting
@@ -62,6 +76,22 @@ are stored against individual evidence; they do not award an overall level.
 - Admin → Learning accounts: create teacher email logins and learner username
   logins linked to active school roster records. Allocate each teacher's learners
   and update teaching groups. A learner does not need a personal email address.
+
+Blockly 13 provides the embedded block editor and keyboard navigation. Beginner
+toolboxes include output, text, numbers, decisions, repetition and variables;
+Intermediate adds more loops and lists; Expert adds functions. Instructions and
+feedback stay in the dashboard. JSON workspace serialization preserves editable
+blocks. Run executes generated JavaScript in a dedicated JS-Interpreter worker
+without browser, network, storage or authentication APIs, with step, output and
+wall-time limits. The output is learner-supplied evidence, not proof of competency.
+The current runner supports browser exercises; Raspberry Pi and physical robot
+deployment remain a separate integration.
+
+See [Blockly serialization](https://docs.blockly.com/guides/configure/serialization/),
+[JavaScript execution](https://docs.blockly.com/guides/app-integration/running-javascript/)
+and [keyboard navigation](https://docs.blockly.com/guides/configure/keyboard-nav/).
+Bundled media in `public/blockly-media/` is copied from Blockly 13.3.0, with its
+license; update it when upgrading the package.
 
 The login form offers Teacher, Learner and Admin. These choices validate the
 actual account role; they do not change permissions. Existing school leads sign
@@ -73,13 +103,17 @@ There is no public `/learning` page or standalone `/dashboard/pathways` library.
 The ten activity briefs are templates used in the lesson-creation action. There
 is no persona switch that grants learner permissions.
 
-Apply the three migrations `20261005000000_dashboard_learning_actions.sql`,
+Apply the seven migrations `20261005000000_dashboard_learning_actions.sql`,
 `20261005000001_learning_account_roles.sql` and
-`20261005000002_learning_accounts_and_submissions.sql` before using these actions.
+`20261005000002_learning_accounts_and_submissions.sql` and
+`20261005000003_blockly_learning_programs.sql`,
+`20261005000004_blockly_lesson_course.sql` and
+`20261005000005_blockly_capstone_projects.sql` and
+`20261005000006_require_blockly_submissions.sql` before using these actions.
 The enum extension is a separate migration so its new values are committed before
 the policies and RPCs use them. The preview on port 55000 uses local Supabase. Reads and writes
 report backend errors; they never fall back to fabricated/local records.
-All three migrations were applied to local Supabase and the linked hosted
+All seven migrations were applied to local Supabase and the linked hosted
 development project on 2026-10-05. Preview accounts and example learner work
 were created only in the local database; hosted account creation remains an
 explicit action in Admin → Learning accounts.
@@ -94,6 +128,14 @@ identity; the client cannot choose another student. Reviews retain a link to
 the submission they evaluated. New roles cannot inherit school-wide operations
 through the legacy `me_school_id()` policies. Safe learning RPCs expose only
 school labels and the permitted learner roster fields.
+The published lesson and capstone content is also kept in
+`supabase/learning/blockly-lessons.json` and `blockly-capstones.json`. Tests compare
+published lesson content with that source. These are original ChipuRobo exercises
+using the draft competency mapping, not approved KICD lesson content. Do not edit
+applied migrations to update content; create a new migration and retain snapshots.
+Teachers can read and review self-started work only for their allocated learners.
+The database requires a Blockly program on submission for the published lessons
+and capstones; a direct RPC call containing only text cannot bypass that requirement.
 
 ## Next implementation stages
 
@@ -144,7 +186,9 @@ local Supabase schema, and a rolled-back integration transaction verified
 assignment creation, evidence saving and cross-school read/write denial. A real
 local-browser integration also verified teacher and learner authentication,
 submission, teacher review, feedback, progress and denial of a peer's assignment.
-Local preview accounts and credentials are kept only in gitignored `.context/`.
+Blockly journeys additionally test running, saved-work restoration, changed
+program submission, failed saves, runaway loops and teacher access to submitted
+blocks. Local preview accounts and credentials are kept only in gitignored `.context/`.
 Local Supabase integration requires Docker; local startup excluded Storage
 and the optional services because the Storage health check timed out.
 
