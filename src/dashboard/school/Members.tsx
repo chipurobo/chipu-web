@@ -265,14 +265,14 @@ export function SchoolMembers() {
                 onChange={(e) => setAddHasDisability(e.target.checked)}
               />
               <Accessibility className="h-3.5 w-3.5 text-teal-700" aria-hidden="true" />
-              Has a disability
+              Needs an adaptation
             </label>
             {addHasDisability && (
               <input
                 type="text"
-                aria-label="Disability notes"
+                aria-label="What adaptation this learner needs"
                 className="field-input flex-1 min-w-[200px] !py-1 !text-xs"
-                placeholder="Notes (e.g. Visual impairment, Hearing impairment, Wheelchair)"
+                placeholder="What we do, not a diagnosis (e.g. braille worksheets, KSL interpretation, front seat)"
                 value={addDisabilityNotes}
                 onChange={(e) => setAddDisabilityNotes(e.target.value)}
               />
@@ -335,12 +335,9 @@ export function SchoolMembers() {
                     </td>
                     <td>
                       {m.has_disability ? (
-                        <span
-                          className="badge-terra inline-flex items-center"
-                          title={m.disability_notes ?? ''}
-                        >
+                        <span className="badge-teal inline-flex items-center">
                           <Accessibility className="h-3 w-3 mr-1" aria-hidden="true" />
-                          disability
+                          support recorded
                         </span>
                       ) : (
                         <span className="text-xs text-gray-400">—</span>
@@ -378,16 +375,12 @@ export function SchoolMembers() {
                         ? <span className="badge-teal">code club</span>
                         : <span className="badge-gray">student</span>}
                     </td>
+                    {/* Never the note itself. See admin/SchoolDetails for why. */}
                     <td>
                       {m.has_disability ? (
-                        <span
-                          className="badge-terra inline-flex items-center"
-                          title={m.disability_notes ?? ''}
-                        >
+                        <span className="badge-teal inline-flex items-center">
                           <Accessibility className="h-3 w-3 mr-1" aria-hidden="true" />
-                          {m.disability_notes
-                            ? m.disability_notes.slice(0, 24)
-                            : 'disability'}
+                          support recorded
                         </span>
                       ) : (
                         <span className="text-xs text-gray-400">—</span>
