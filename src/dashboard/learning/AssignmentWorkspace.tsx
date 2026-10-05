@@ -1,14 +1,17 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { fetchMembersBySchool } from '../../lib/gql/queries';
-import { fetchAssignment, fetchEvidence, fetchRecipients, recordCompetencyEvidence } from '../../lib/learningQueries';
+import { fetchLearningStudents, fetchAssignment, fetchEvidence, fetchRecipients, fetchSubmissions, recordCompetencyEvidence, reviewLearningSubmission } from '../../lib/learningQueries';
 import { competencies, evidenceRubric, learningLevels, learningPathways, type CompetencyId } from '../../lib/learningFramework';
-import type { CompetencyEvidence, LearningAssignment, ReviewBand } from '../../lib/learningRecords';
+import { useAuth } from '../../lib/auth';
+import { LearnerSubmission, SubmissionDetails } from './LearnerSubmission';
+import type { CompetencyEvidence, LearningAssignment, LearningSubmission, ReviewBand } from '../../lib/learningRecords';
 import { safeHttpUrl } from '../../lib/safeUrl';
 
 export function AssignmentWorkspace() {
   const { assignmentId } = useParams();
+  const { profile } = useAuth();
+  const isLearner = profile?.role === 'learner';
   const assignmentQuery = useQuery({ queryKey: ['learning-assignment', assignmentId],
     queryFn: () => fetchAssignment(assignmentId!), enabled: !!assignmentId });
   const assignment = assignmentQuery.data;
@@ -16,16 +19,17 @@ export function AssignmentWorkspace() {
   useEffect(() => { heading.current?.focus(); }, [assignment?.id]);
   const recipients = useQuery({ queryKey: ['learning-recipients', assignmentId],
     queryFn: () => fetchRecipients(assignmentId!), enabled: !!assignment });
-  const members = useQuery({ queryKey: ['members', assignment?.school_id],
-    queryFn: () => fetchMembersBySchool(assignment!.school_id), enabled: !!assignment });
+  const members = useQuery({ queryKey: ['learning-students', assignment?.school_id],
+    queryFn: () => fetchLearningStudents(assignment!.school_id), enabled: !!assignment });
   const evidence = useQuery({ queryKey: ['competency-evidence', assignmentId],
     queryFn: () => fetchEvidence(assignmentId!), enabled: !!assignment });
-  const error = assignmentQuery.error ?? recipients.error ?? members.error ?? evidence.error;
+  const submissions = useQuery({ queryKey: ['learning-submissions', assignmentId], queryFn: () => fetchSubmissions(assignmentId!), enabled: !!assignment });
+  const error = submissions.error ?? assignmentQuery.error ?? recipients.error ?? members.error ?? evidence.error;
   const assigned = (members.data ?? []).filter((member) => recipients.data?.some((row) => row.student_id === member.id));
   return (
     <div className="learning-zone px-4 sm:px-6 lg:px-10 py-8 space-y-6 max-w-6xl">
-      <Link to={assignment ? `/dashboard/school/lessons/${assignment.lesson_id}` : '/dashboard/school/lessons'}
-        className="text-sm text-teal-700 underline">Back to lessons</Link>
+      <Link to={isLearner ? '/dashboard/my-learning' : assignment ? `/dashboard/school/lessons/${assignment.lesson_id}` : '/dashboard/school/lessons'}
+        className="text-sm text-teal-700 underline">{isLearner ? 'Back to my learning' : 'Back to lessons'}</Link>
       {error && <p role="alert" className="text-sm text-red-700">{error.message}</p>}
       {assignmentQuery.isPending && <p role="status">Loading assignment…</p>}
       {!assignmentQuery.isPending && !error && !assignment && <h1>Assignment not found</h1>}
@@ -55,30 +59,35 @@ export function AssignmentWorkspace() {
             <p className="mt-3">Use readable text, captions, tactile materials or an oral explanation as needed. Access accommodations do not reduce competency. Record any help with the learning task separately.</p>
           </details>
         </section>
-        <section aria-label="Review student work" className="space-y-4">
+        {isLearner ? <LearnerSubmission assignmentId={assignment.id} submissions={submissions.data ?? []} reviews={evidence.data ?? []} /> : <section aria-label="Review student work" className="space-y-4">
           <h2 className="text-lg">Review student work</h2>
           <p className="text-sm text-gray-600">Record each student's work and your feedback. These reviews do not award an overall level or change lesson completion.</p>
           {(recipients.isPending || members.isPending || evidence.isPending) && <p role="status">Loading student work…</p>}
           {assigned.map((student) => <StudentEvidence key={student.id} name={student.full_name} studentId={student.id}
-            assignment={assignment} evidence={(evidence.data ?? []).filter((item) => item.student_id === student.id)} />)}
-        </section>
+            assignment={assignment} submissions={(submissions.data ?? []).filter((item) => item.student_id === student.id)} evidence={(evidence.data ?? []).filter((item) => item.student_id === student.id)} />)}
+        </section>}
       </>}
     </div>
   );
 }
 
-function StudentEvidence({ name, studentId, assignment, evidence }: {
-  name: string; studentId: string; assignment: LearningAssignment; evidence: CompetencyEvidence[];
+function StudentEvidence({ name, studentId, assignment, submissions, evidence }: {
+  name: string; studentId: string; assignment: LearningAssignment; evidence: CompetencyEvidence[]; submissions: LearningSubmission[];
 }) {
   const [open, setOpen] = useState(false);
+  const [selectedSubmission, setSelectedSubmission] = useState<LearningSubmission | null>(null);
   return (
     <article className="card p-4 space-y-3" aria-label={`Work from ${name}`}>
       <div className="flex justify-between items-center gap-3 flex-wrap">
         <div><h3 className="text-base">{name}</h3><p className="text-sm text-gray-600">{evidence.length ? `${evidence.length} evidence review${evidence.length === 1 ? '' : 's'}` : 'Awaiting evidence review'}</p></div>
         <button type="button" className="btn-secondary" aria-expanded={open} aria-controls={`review-${studentId}`}
-          onClick={() => setOpen(!open)}>{open ? 'Close review' : 'Record evidence and review'}</button>
+          onClick={() => { setSelectedSubmission(null); setOpen(!open); }}>{open ? 'Close review' : 'Record evidence and review'}</button>
       </div>
-      {open && <div id={`review-${studentId}`}><EvidenceReviewForm assignment={assignment} studentId={studentId} name={name} /></div>}
+      {submissions.map((submission) => <div key={submission.id} className="space-y-3">
+        <SubmissionDetails submission={submission} />
+        <button type="button" className="btn-primary" onClick={() => { setSelectedSubmission(submission); setOpen(true); }}>Review submitted work</button>
+      </div>)}
+      {open && <div id={`review-${studentId}`}><EvidenceReviewForm key={selectedSubmission?.id ?? 'manual'} assignment={assignment} studentId={studentId} name={name} submission={selectedSubmission} /></div>}
       {evidence.length > 0 && <details className="text-sm">
         <summary className="cursor-pointer text-teal-700">Review history</summary>
         <ol className="list-none p-0 mt-3 space-y-4">
@@ -97,14 +106,14 @@ function StudentEvidence({ name, studentId, assignment, evidence }: {
   );
 }
 
-function EvidenceReviewForm({ assignment, studentId, name }: { assignment: LearningAssignment; studentId: string; name: string }) {
+function EvidenceReviewForm({ assignment, studentId, name, submission }: { assignment: LearningAssignment; studentId: string; name: string; submission: LearningSubmission | null }) {
   const qc = useQueryClient();
   const [text, setText] = useState('');
   const [url, setUrl] = useState('');
   const [feedback, setFeedback] = useState('');
   const [reviews, setReviews] = useState<Partial<Record<CompetencyId, ReviewBand>>>({});
   const mutation = useMutation({
-    mutationFn: () => recordCompetencyEvidence({ assignmentId: assignment.id, studentId,
+    mutationFn: () => submission ? reviewLearningSubmission(submission.id, feedback, reviews) : recordCompetencyEvidence({ assignmentId: assignment.id, studentId,
       evidenceText: text, evidenceUrl: url, feedback, reviews }),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ['competency-evidence'] });
@@ -115,6 +124,7 @@ function EvidenceReviewForm({ assignment, studentId, name }: { assignment: Learn
   const plan = assignment.learning_plan;
   return (
     <form onSubmit={submit} aria-label={`Evidence review for ${name}`} className="space-y-4 border-t border-warm-200 pt-4">
+      {submission ? <div><p className="text-sm font-semibold">Reviewing submitted work</p><SubmissionDetails submission={submission} /></div> : <>
       <div>
         <label htmlFor={`evidence-text-${studentId}`} className="field-label">Describe the learner's evidence</label>
         <textarea id={`evidence-text-${studentId}`} required maxLength={10000} rows={3} className="field-input"
@@ -125,6 +135,7 @@ function EvidenceReviewForm({ assignment, studentId, name }: { assignment: Learn
         <input id={`evidence-url-${studentId}`} type="url" maxLength={2000} className="field-input" value={url}
           onChange={(event) => setUrl(event.target.value)} aria-invalid={!!url && !safeHttpUrl(url) || undefined} />
       </div>
+      </>}
       <fieldset className="space-y-4">
         <legend className="field-label">Review competencies at {learningLevels.find((item) => item.id === plan.level)?.title}</legend>
         {competencies.filter((item) => plan.competencyIds.includes(item.id)).map((item) => <div key={item.id}>
@@ -149,8 +160,8 @@ function EvidenceReviewForm({ assignment, studentId, name }: { assignment: Learn
       </div>
       {mutation.error && <p role="alert" className="text-sm text-red-700">{mutation.error.message}</p>}
       {mutation.isSuccess && <p role="status" className="text-sm text-teal-800">Evidence review saved.</p>}
-      <button type="submit" className="btn-primary" disabled={mutation.isPending || !text.trim() || !feedback.trim() || !Object.keys(reviews).length || (!!url && !safeHttpUrl(url))}>
-        {mutation.isPending ? 'Saving…' : 'Save evidence review'}
+      <button type="submit" className="btn-primary" disabled={mutation.isPending || (!submission && !text.trim()) || !feedback.trim() || !Object.keys(reviews).length || (!!url && !safeHttpUrl(url))}>
+        {mutation.isPending ? 'Saving…' : submission ? 'Save submission review' : 'Save evidence review'}
       </button>
     </form>
   );

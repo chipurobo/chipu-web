@@ -7,7 +7,7 @@ import type { LessonLearningPlan } from './learningRecords';
 // (you'll lose the human-friendly comments, but it'll always be in sync).
 
 export type SchoolType = 'special' | 'integrated' | 'mainstream';
-export type UserRole = 'admin' | 'school_lead';
+export type UserRole = 'admin' | 'school_lead' | 'teacher' | 'learner';
 export type OrderStatus =
   | 'placed'
   | 'accepted'

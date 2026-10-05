@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { MyLearning } from './learning/MyLearning';
 import { useAuth } from '../lib/auth';
 import { School, Package, ClipboardList, Users, Boxes, Wrench, Send, BookOpen } from 'lucide-react';
 
@@ -9,6 +10,8 @@ import { School, Package, ClipboardList, Users, Boxes, Wrench, Send, BookOpen } 
  */
 export function DashboardHome() {
   const { profile, school } = useAuth();
+  if (profile?.role === 'learner') return <MyLearning />;
+  const isTeacher = profile?.role === 'teacher';
   const isAdmin = profile?.role === 'admin';
   const isMakerSpace = !!school?.is_maker_space;
 
@@ -19,7 +22,9 @@ export function DashboardHome() {
       </p>
       <h1 className="mb-2">Welcome back, {profile?.full_name?.split(' ')[0] ?? 'there'}.</h1>
       <p className="text-sm text-gray-600 mb-8 max-w-2xl">
-        {isAdmin
+        {isTeacher
+          ? 'Plan learning activities, assign them to your learners and review their submissions.'
+          : isAdmin
           ? 'Manage code clubs, the product catalogue, and orders across the network.'
           : isMakerSpace
             ? 'See incoming orders to fulfil, fabricate units, ship them, and manage your club members.'
@@ -31,6 +36,7 @@ export function DashboardHome() {
           <>
             <Tile to="/dashboard/admin/lessons" icon={BookOpen}
                   title="Plan lessons" body="Create activities and set pathways, levels and competency outcomes." />
+            <Tile to="/dashboard/admin/learning-accounts" icon={Users} title="Learning accounts" body="Create teacher and learner logins and assign teaching groups." />
             <Tile to="/dashboard/admin/schools" icon={School}
                   title="Schools" body="Review every onboarded code club." />
             <Tile to="/dashboard/admin/products" icon={Package}
@@ -42,7 +48,11 @@ export function DashboardHome() {
           </>
         )}
 
-        {!isAdmin && (
+        {isTeacher && <>
+          <Tile to="/dashboard/school/lessons" icon={BookOpen} title="Lessons and assignments" body="Assign coding and robotics activities to your learners." />
+          <Tile to="/dashboard/school/progress" icon={Users} title="Learner progress" body="Review individual evidence and feedback." />
+        </>}
+        {!isAdmin && !isTeacher && (
           <>
             <Tile to="/dashboard/school/members" icon={Users}
                   title="Students" body="Roster + students who hold equipment." />

@@ -598,7 +598,7 @@ export async function fetchTeachersAtSchool(schoolId: string): Promise<Profile[]
   return unwrap(
     await supabase.from('profiles').select('*')
       .eq('school_id', schoolId)
-      .eq('role', 'school_lead')
+      .in('role', ['school_lead', 'teacher'])
       .order('full_name'),
   );
 }

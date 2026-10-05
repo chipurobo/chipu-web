@@ -64,6 +64,8 @@ const SchoolActions         = lazy(() => import('./dashboard/school/Actions').th
 const ReportIncident        = lazy(() => import('./dashboard/school/ReportIncident').then((m) => ({ default: m.ReportIncident })));
 const AdminIncidents        = lazy(() => import('./dashboard/admin/Incidents').then((m) => ({ default: m.AdminIncidents })));
 const SchoolWorkshops       = lazy(() => import('./dashboard/school/Workshops').then((m) => ({ default: m.SchoolWorkshops })));
+const LearningAccounts      = lazy(() => import('./dashboard/learning/LearningAccounts').then((m) => ({ default: m.LearningAccounts })));
+const MyLearning            = lazy(() => import('./dashboard/learning/MyLearning').then((m) => ({ default: m.MyLearning })));
 const AssignmentWorkspace   = lazy(() => import('./dashboard/learning/AssignmentWorkspace').then((m) => ({ default: m.AssignmentWorkspace })));
 const LearnerProgress       = lazy(() => import('./dashboard/learning/LearnerProgress').then((m) => ({ default: m.LearnerProgress })));
 const Leaderboard           = lazy(() => import('./dashboard/Leaderboard').then((m) => ({ default: m.Leaderboard })));
@@ -137,7 +139,7 @@ function App() {
             >
               <Route index element={<DashboardHome />} />
               {/* Both roles: standings are cross-school by design. */}
-              <Route path="leaderboard" element={<Leaderboard />} />
+              <Route path="leaderboard" element={<RequireAuth roles={['admin', 'school_lead']}><Leaderboard /></RequireAuth>} />
               <Route
                 path="admin/schools"
                 element={<RequireAuth role="admin"><AdminSchools /></RequireAuth>}
@@ -187,23 +189,26 @@ function App() {
                 path="admin/projects"
                 element={<RequireAuth role="admin"><AdminProjects /></RequireAuth>}
               />
-              <Route path="school/members" element={<SchoolMembers />} />
-              <Route path="school/certificates" element={<SchoolCertificates />} />
-              <Route path="certificate/:issuanceId" element={<Certificate />} />
-              <Route path="school/orders" element={<SchoolOrders />} />
-              <Route path="school/stock" element={<SchoolStock />} />
-              <Route path="school/production" element={<SchoolProduction />} />
+              <Route path="admin/learning-accounts" element={<RequireAuth role="admin"><LearningAccounts /></RequireAuth>} />
+              <Route path="my-learning" element={<RequireAuth roles={['learner']}><MyLearning /></RequireAuth>} />
+              <Route path="my-progress" element={<RequireAuth roles={['learner']}><LearnerProgress /></RequireAuth>} />
+              <Route path="school/members" element={<RequireAuth roles={['admin', 'school_lead']}><SchoolMembers /></RequireAuth>} />
+              <Route path="school/certificates" element={<RequireAuth roles={['admin', 'school_lead']}><SchoolCertificates /></RequireAuth>} />
+              <Route path="certificate/:issuanceId" element={<RequireAuth roles={['admin', 'school_lead']}><Certificate /></RequireAuth>} />
+              <Route path="school/orders" element={<RequireAuth roles={['admin', 'school_lead']}><SchoolOrders /></RequireAuth>} />
+              <Route path="school/stock" element={<RequireAuth roles={['admin', 'school_lead']}><SchoolStock /></RequireAuth>} />
+              <Route path="school/production" element={<RequireAuth roles={['admin', 'school_lead']}><SchoolProduction /></RequireAuth>} />
               <Route path="assignments/:assignmentId" element={<AssignmentWorkspace />} />
-              <Route path="school/progress" element={<LearnerProgress />} />
-              <Route path="school/lessons" element={<SchoolLessons />} />
-              <Route path="school/workshops" element={<SchoolWorkshops />} />
-              <Route path="school/lessons/:lessonId" element={<SchoolLessonStage />} />
-              <Route path="school/project" element={<SchoolProject />} />
+              <Route path="school/progress" element={<RequireAuth roles={['admin', 'school_lead', 'teacher']}><LearnerProgress /></RequireAuth>} />
+              <Route path="school/lessons" element={<RequireAuth roles={['admin', 'school_lead', 'teacher']}><SchoolLessons /></RequireAuth>} />
+              <Route path="school/workshops" element={<RequireAuth roles={['admin', 'school_lead']}><SchoolWorkshops /></RequireAuth>} />
+              <Route path="school/lessons/:lessonId" element={<RequireAuth roles={['admin', 'school_lead', 'teacher']}><SchoolLessonStage /></RequireAuth>} />
+              <Route path="school/project" element={<RequireAuth roles={['admin', 'school_lead']}><SchoolProject /></RequireAuth>} />
               {/* MERL — sessions, registers and actions */}
-              <Route path="school/sessions" element={<SchoolSessions />} />
-              <Route path="school/sessions/:sessionId" element={<SessionRegister />} />
-              <Route path="school/actions" element={<SchoolActions />} />
-              <Route path="school/report-incident" element={<ReportIncident />} />
+              <Route path="school/sessions" element={<RequireAuth roles={['admin', 'school_lead']}><SchoolSessions /></RequireAuth>} />
+              <Route path="school/sessions/:sessionId" element={<RequireAuth roles={['admin', 'school_lead']}><SessionRegister /></RequireAuth>} />
+              <Route path="school/actions" element={<RequireAuth roles={['admin', 'school_lead']}><SchoolActions /></RequireAuth>} />
+              <Route path="school/report-incident" element={<RequireAuth roles={['admin', 'school_lead']}><ReportIncident /></RequireAuth>} />
             </Route>
 
             {/* === Public marketing site ===

@@ -64,6 +64,22 @@ interface RowState {
 }
 
 export function SchoolLessonStage() {
+  const { profile } = useAuth();
+  return profile?.role === 'teacher' ? <TeacherLessonStage /> : <SchoolLessonRoster />;
+}
+
+function TeacherLessonStage() {
+  const { lessonId } = useParams();
+  const lesson = useQuery({ queryKey: ['lesson', lessonId], queryFn: () => fetchLessonById(lessonId!), enabled: !!lessonId });
+  return <div className="learning-zone px-4 sm:px-6 lg:px-10 py-8 space-y-6">
+    <Link to="/dashboard/school/lessons" className="text-sm text-teal-700 underline">Back to lessons</Link>
+    {lesson.isPending && <p role="status">Loading lesson…</p>}
+    {lesson.error && <p role="alert" className="text-red-700">{lesson.error.message}</p>}
+    {lesson.data && <><h1>{lesson.data.title}</h1><p className="text-sm text-gray-600">{lesson.data.description}</p><LessonAssignments lesson={lesson.data} /></>}
+  </div>;
+}
+
+function SchoolLessonRoster() {
   const { lessonId } = useParams<{ lessonId: string }>();
   const { school, profile } = useAuth();
   const qc = useQueryClient();

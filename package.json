@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint . --max-warnings 0",
-    "test:learning": "node --test tests/learning-framework.test.mjs tests/learning-database.test.mjs",
+    "test:learning": "node --test tests/learning-framework.test.mjs tests/learning-database.test.mjs tests/learning-accounts.test.mjs",
     "test:learning-ui": "playwright test",
     "preview": "vite preview",
     "start": "node server.js"

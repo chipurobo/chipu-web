@@ -52,7 +52,7 @@ export function useOrderRealtime(): OrderCounts {
   });
 
   const refresh = async () => {
-    if (!profile) return;
+    if (!profile || !['admin', 'school_lead'].includes(profile.role)) return;
     // Supabase query builders are PromiseLike, not Promise. Declaring this as
     // Promise<number>[] made every push a type error; Promise.all accepts
     // PromiseLike perfectly well.
@@ -105,7 +105,7 @@ export function useOrderRealtime(): OrderCounts {
 
   // Realtime subscription
   useEffect(() => {
-    if (!profile) return;
+    if (!profile || !['admin', 'school_lead'].includes(profile.role)) return;
     const channelName = `orders-${profile.id}`;
     const channel = supabase
       .channel(channelName)

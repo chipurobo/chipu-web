@@ -11,23 +11,23 @@ const plan = { frameworkVersion: '0.1', pathwayId: 'creative-coding', level: 'be
   competencyIds: ['algorithms', 'debugging'], steps: ['Write an ordered sequence.', 'Test it with a partner.'],
   evidenceBrief: 'Explain your sequence and one correction.' };
 
-async function mockDashboard(page: Page, role: 'admin' | 'school_lead' = 'school_lead') {
+async function mockDashboard(page: Page, role: 'admin' | 'school_lead' | 'teacher' | 'learner' = 'school_lead', authenticated = true) {
   const encode = (value: unknown) => Buffer.from(JSON.stringify(value)).toString('base64url');
   const user = { id: userId, aud: 'authenticated', role: 'authenticated', email: 'teacher@example.test',
     app_metadata: {}, user_metadata: {}, created_at: '2026-10-01T00:00:00Z' };
   const session = { access_token: `${encode({ alg: 'HS256', typ: 'JWT' })}.${encode({ sub: userId, exp: 4102444800, role: 'authenticated' })}.test-signature`,
     refresh_token: 'test-refresh-token', expires_at: 4102444800, expires_in: 86400, token_type: 'bearer', user };
-  await page.addInitScript(({ session }) => {
-    localStorage.setItem('sb-127-auth-token', JSON.stringify(session));
+  await page.addInitScript(({ session, authenticated }) => {
+    if (authenticated) localStorage.setItem('sb-127-auth-token', JSON.stringify(session));
     localStorage.setItem('chipurobo:onboarding-seen', '1');
-  }, { session });
+  }, { session, authenticated });
   const lesson = { id: lessonId, title: 'Give clear instructions', description: 'Plan and test a sequence.',
     kind: 'lesson', level: 'both', points: 1, position: 1, is_active: true, learning_plan: structuredClone(plan), resource_url: null };
   const assignment = { id: assignmentId, school_id: schoolId, lesson_id: lessonId, title: lesson.title,
     instructions: 'Work in pairs, then explain your own solution.', due_date: null as string | null, learning_plan: structuredClone(plan), assigned_by: userId, created_at: '2026-10-05T09:00:00Z' };
   const state = {
     lessons: [lesson], assignments: [assignment], recipients: [{ assignment_id: assignmentId, student_id: studentId }],
-    evidence: [] as Record<string, unknown>[], writes: [] as { path: string; body: Record<string, unknown> }[], failReviews: false,
+    evidence: [] as Record<string, unknown>[], submissions: [] as Record<string, unknown>[], accounts: [] as Record<string, unknown>[], writes: [] as { path: string; body: Record<string, unknown> }[], failReviews: false,
   };
   await page.route('http://127.0.0.1:54321/**', async (route) => {
     const request = route.request();
@@ -37,12 +37,31 @@ async function mockDashboard(page: Page, role: 'admin' | 'school_lead' = 'school
     if (request.method() === 'HEAD') {
       await route.fulfill({ status: 200, headers: { 'content-range': '*/0' }, body: '' }); return;
     }
+    if (path === 'token') { await route.fulfill({ json: session }); return; }
+    if (path === 'logout') { await route.fulfill({ status: 204, body: '' }); return; }
     if (request.method() === 'POST' || request.method() === 'PATCH') state.writes.push({ path, body: body ?? {} });
     if (path === 'assign_learning_lesson') {
       assignment.instructions = String(body!.p_instructions);
       assignment.due_date = body!.p_due_date as string | null;
       state.recipients = (body!.p_student_ids as string[]).map((id) => ({ assignment_id: assignmentId, student_id: id }));
       await route.fulfill({ json: assignmentId }); return;
+    }
+    if (path === 'submit_learning_work') {
+      state.submissions.unshift({ id: 'submission-one', assignment_id: body!.p_assignment_id, student_id: studentId,
+        evidence_text: body!.p_evidence_text, evidence_url: body!.p_evidence_url, reflection: body!.p_reflection, submitted_at: new Date().toISOString() });
+      await route.fulfill({ json: 'submission-one' }); return;
+    }
+    if (path === 'review_learning_submission') {
+      const submission = state.submissions.find((item) => item.id === body!.p_submission_id)!;
+      state.evidence.unshift({ id: 'review-one', assignment_id: assignmentId, student_id: studentId, evidence_text: submission.evidence_text,
+        evidence_url: submission.evidence_url, reviews: body!.p_reviews, feedback: body!.p_feedback, submission_id: submission.id, recorded_at: new Date().toISOString() });
+      await route.fulfill({ json: 'review-one' }); return;
+    }
+    if (path === 'admin_list_learning_accounts') { await route.fulfill({ json: state.accounts }); return; }
+    if (path === 'admin_create_learning_account') {
+      state.accounts.push({ id: 'new-account', role: body!.p_role, full_name: body!.p_role === 'learner' ? 'Test Learner' : body!.p_full_name,
+        login: body!.p_login, student_id: body!.p_student_id });
+      await route.fulfill({ json: { user_id: 'new-account', login: body!.p_login, role: body!.p_role } }); return;
     }
     if (path === 'record_competency_evidence') {
       if (state.failReviews) { await route.fulfill({ status: 400, json: { message: 'Review could not be saved. Try again.' } }); return; }
@@ -55,12 +74,15 @@ async function mockDashboard(page: Page, role: 'admin' | 'school_lead' = 'school
     if (path === 'lessons' && request.method() === 'POST') state.lessons.push({ ...lesson, ...body, id: 'new-lesson' });
     let rows: unknown[] = [];
     if (path === 'profiles') rows = [{ id: userId, role, full_name: 'Test Teacher', school_id: role === 'admin' ? null : schoolId }];
+    if (path === 'get_my_learning_school') { await route.fulfill({ json: { id: schoolId, name: 'Test School', is_maker_space: false } }); return; }
+    if (path === 'get_my_learning_students') { await route.fulfill({ json: [{ id: studentId, school_id: schoolId, full_name: 'Test Learner', is_active: true, in_club: true }] }); return; }
     if (path === 'schools') rows = [{ id: schoolId, name: 'Test School', is_maker_space: false }];
     if (path === 'club_members') rows = [{ id: studentId, school_id: schoolId, full_name: 'Test Learner', learner_code: 'L-001', is_active: true, in_club: true }];
     if (path === 'lessons') rows = state.lessons;
     if (path === 'learning_assignments') rows = state.assignments.filter((row) => !url.searchParams.has('id') || url.searchParams.get('id') === `eq.${row.id}`);
     if (path === 'learning_assignment_recipients') rows = state.recipients;
     if (path === 'competency_evidence') rows = state.evidence;
+    if (path === 'learning_submissions') rows = state.submissions;
     if (path === 'user') { await route.fulfill({ json: user }); return; }
     await route.fulfill({ json: request.headers().accept?.includes('vnd.pgrst.object') ? rows[0] ?? null : rows });
   });
@@ -112,7 +134,7 @@ test('admin updates an existing lesson with saved learning outcomes', async ({ p
 });
 
 test('teacher assigns a lesson to selected students and reopens the saved task', async ({ page }, testInfo) => {
-  const state = await mockDashboard(page);
+  const state = await mockDashboard(page, 'teacher');
   await page.goto('/dashboard/school/lessons');
   await page.getByRole('button', { name: 'Assign lesson', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Assign to selected students' })).toBeDisabled();
@@ -234,3 +256,101 @@ test('mobile dashboard navigation hides closed links and restores focus on Escap
   await sidebar.getByRole('link', { name: 'Learner progress', exact: true }).click();
   await expect(page).toHaveURL('/dashboard/school/progress'); await expect(sidebar).toBeHidden();
 });
+
+for (const kind of ['Teacher', 'Learner'] as const) {
+  test(`${kind} can sign in and land on their own dashboard after account hydration`, async ({ page }) => {
+    await mockDashboard(page, kind === 'Teacher' ? 'teacher' : 'learner', false);
+    await page.goto('/dashboard/login');
+    await page.getByRole('radio', { name: kind, exact: true }).check();
+    await page.getByLabel(kind === 'Teacher' ? 'Email' : 'Learner username', { exact: true }).fill(kind === 'Teacher' ? 'teacher@example.test' : 'learner.one');
+    await page.getByLabel('Password', { exact: true }).fill('TestPassword123');
+    await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+    await expect(page).toHaveURL('/dashboard');
+    await expect(page.getByRole('heading', { name: kind === 'Teacher' ? 'Welcome back, Test.' : 'My learning', exact: true, level: 1 })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Stock & units', exact: true })).toHaveCount(0);
+  });
+}
+
+test('selecting learner sign-in cannot turn teacher credentials into a learner account', async ({ page }) => {
+  await mockDashboard(page, 'teacher', false);
+  await page.goto('/dashboard/login');
+  await page.getByRole('radio', { name: 'Learner', exact: true }).check();
+  await page.getByLabel('Learner username').fill('teacher@example.test');
+  await page.getByLabel('Password', { exact: true }).fill('TestPassword123');
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+  await expect(page.getByRole('alert')).toHaveText('These credentials do not match the selected account type. Choose the correct sign-in option.');
+  await expect(page).toHaveURL('/dashboard/login');
+});
+
+test('a learner submits their own work and reopens the saved submission', async ({ page }) => {
+  const state = await mockDashboard(page, 'learner');
+  await page.goto('/dashboard');
+  await page.getByRole('link', { name: 'Start activity', exact: true }).click();
+  await page.getByLabel('Describe your work or paste your code').fill('My tested sequence.');
+  await page.getByLabel('What did you learn or find difficult? (optional)').fill('Testing found a misplaced step.');
+  await page.getByRole('button', { name: 'Submit my work', exact: true }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Your work was submitted.' })).toBeVisible();
+  expect(state.writes.find((write) => write.path === 'submit_learning_work')!.body).toEqual({
+    p_assignment_id: assignmentId, p_evidence_text: 'My tested sequence.', p_evidence_url: null, p_reflection: 'Testing found a misplaced step.',
+  });
+  await page.reload();
+  await expect(page.getByRole('region', { name: 'My submissions', exact: true }).getByText('My tested sequence.', { exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Review student work', exact: true })).toHaveCount(0);
+});
+
+test('a teacher reviews submitted work and saves feedback linked to that submission', async ({ page }) => {
+  const state = await mockDashboard(page, 'teacher');
+  state.submissions.push({ id: 'submission-one', assignment_id: assignmentId, student_id: studentId,
+    evidence_text: 'Learner sequence and test results.', reflection: 'I changed one step.', submitted_at: '2026-10-05T09:00:00Z' });
+  await page.goto(`/dashboard/assignments/${assignmentId}`);
+  await page.getByRole('button', { name: 'Review submitted work', exact: true }).click();
+  await page.getByLabel('Plan a solution', { exact: true }).selectOption('demonstrated');
+  await page.getByLabel('Feedback and next step').fill('Try a different input next.');
+  await page.getByRole('button', { name: 'Save submission review', exact: true }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Evidence review saved.' })).toBeVisible();
+  expect(state.evidence[0].submission_id).toBe('submission-one');
+  expect(state.evidence[0].evidence_text).toBe('Learner sequence and test results.');
+});
+
+test('admin creates a learner login linked to the selected roster student', async ({ page }) => {
+  const state = await mockDashboard(page, 'admin');
+  await page.goto('/dashboard/admin/learning-accounts');
+  await page.getByLabel('School', { exact: true }).selectOption(schoolId);
+  await page.getByLabel('Account type').selectOption('learner');
+  await page.getByLabel('Learner on the roster').selectOption(studentId);
+  await page.getByLabel('Learner username', { exact: true }).fill('test.learner');
+  await page.getByLabel('Initial password').fill('TestPassword123');
+  await page.getByRole('button', { name: 'Create login', exact: true }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Learner login created: test.learner.' })).toBeVisible();
+  expect(state.writes.find((write) => write.path === 'admin_create_learning_account')!.body).toMatchObject({ p_role: 'learner', p_student_id: studentId });
+});
+
+for (const role of ['teacher', 'learner'] as const) {
+  test(`${role} cannot navigate into school operations`, async ({ page }) => {
+    await mockDashboard(page, role);
+    await page.goto('/dashboard/school/orders');
+    await expect(page).toHaveURL('/dashboard');
+    await expect(page.getByRole('heading', { name: 'My orders', exact: true })).toHaveCount(0);
+  });
+}
+
+for (const journey of ['login', 'learner-home', 'learner-submission', 'learning-account']) {
+  test(`${journey} controls have no automated WCAG AA violations`, async ({ page }) => {
+    if (journey === 'login') {
+      await page.goto('/dashboard/login');
+      await page.getByRole('radio', { name: 'Learner', exact: true }).check();
+    } else {
+      await mockDashboard(page, journey === 'learning-account' ? 'admin' : 'learner');
+      await page.goto(journey === 'learning-account' ? '/dashboard/admin/learning-accounts' : journey === 'learner-submission' ? `/dashboard/assignments/${assignmentId}` : '/dashboard');
+      if (journey === 'learning-account') {
+        await page.getByLabel('School', { exact: true }).selectOption(schoolId);
+        await page.getByLabel('Account type').selectOption('learner');
+      } else if (journey === 'learner-submission') {
+        await expect(page.getByRole('form', { name: 'My submission', exact: true })).toBeVisible();
+      } else await expect(page.getByRole('link', { name: 'Start activity', exact: true })).toBeVisible();
+    }
+    const results = await new AxeBuilder({ page }).include(journey === 'login' ? 'form' : '.learning-zone').withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
+    expect(results.violations).toEqual([]);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  });
+}

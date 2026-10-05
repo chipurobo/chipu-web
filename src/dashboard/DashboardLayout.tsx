@@ -19,6 +19,9 @@ import {
 const DASHBOARD_PAGE_TITLES: Record<string, string> = {
   '/dashboard':                     'Overview',
   '/dashboard/leaderboard':         'Leaderboard',
+  '/dashboard/my-learning':         'My learning',
+  '/dashboard/my-progress':         'My progress',
+  '/dashboard/admin/learning-accounts': 'Learning accounts',
   '/dashboard/school/progress':     'Learner progress',
   '/dashboard/admin/schools':       'Schools',
   '/dashboard/admin/products':      'Products',
@@ -80,6 +83,8 @@ function DashboardShell() {
   const navigate = useNavigate();
   const location = useLocation();
   const isAdmin = profile?.role === 'admin';
+  const isTeacher = profile?.role === 'teacher';
+  const isLearner = profile?.role === 'learner';
   const isMakerSpace = !!school?.is_maker_space;
   const counts: OrderCounts = useOrderRealtime();
 
@@ -90,6 +95,7 @@ function DashboardShell() {
   const { data: pendingWorkshops = 0 } = useQuery({
     queryKey: ['bookings', 'pending-count'],
     queryFn: fetchPendingBookingCount,
+    enabled: !!profile && !isTeacher && !isLearner,
     refetchInterval: 60_000,
   });
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -101,10 +107,14 @@ function DashboardShell() {
   //   • shortLabel — pixel chip in the brand corner; must fit a 60px column
   //   • roleLabel  — full description in the sidebar footer pill
   const shortLabel: string =
+    isLearner     ? 'LEARNER' :
+    isTeacher     ? 'TEACHER' :
     isAdmin       ? 'ADMIN'  :
     isMakerSpace  ? 'MAKER'  :
                     'SCHOOL';
   const roleLabel: string =
+    isLearner     ? 'LEARNER' :
+    isTeacher     ? 'TEACHER' :
     isAdmin       ? 'CHIPUROBO ADMIN' :
     isMakerSpace  ? 'MAKER SPACE'    :
                     'SCHOOL LEAD';
@@ -291,7 +301,17 @@ function DashboardShell() {
             Overview
           </SidebarLink>
 
-          {isAdmin ? (
+          {isLearner ? (
+            <>
+              <SidebarLink to="/dashboard/my-learning" icon={BookOpen}>My learning</SidebarLink>
+              <SidebarLink to="/dashboard/my-progress" icon={Award}>My progress</SidebarLink>
+            </>
+          ) : isTeacher ? (
+            <>
+              <SidebarLink to="/dashboard/school/lessons" icon={BookOpen}>Lessons and assignments</SidebarLink>
+              <SidebarLink to="/dashboard/school/progress" icon={Users}>Learner progress</SidebarLink>
+            </>
+          ) : isAdmin ? (
             <>
               {/* ─── Learning group ───
                   Lessons are the curriculum and stand alone. A workshop is
@@ -313,6 +333,7 @@ function DashboardShell() {
               <SidebarLink to="/dashboard/leaderboard" icon={Medal}>
                 Leaderboard
               </SidebarLink>
+              <SidebarLink to="/dashboard/admin/learning-accounts" icon={Users}>Learning accounts</SidebarLink>
               <SidebarLink to="/dashboard/admin/schools" icon={School}>
                 Schools
               </SidebarLink>

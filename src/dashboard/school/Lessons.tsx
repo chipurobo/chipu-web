@@ -3,12 +3,12 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import {
   fetchCurriculumLessons,
-  fetchMembersBySchoolUnordered,
   fetchPassedCompletionsWithStudent,
 } from '../../lib/gql/queries';
 import { useAuth } from '../../lib/auth';
 import type { StageKind } from '../../lib/database.types';
 import { BookOpen, Laptop, MonitorPlay, FolderKanban, ArrowRight, GraduationCap, Megaphone, Link as LinkIcon, ExternalLink } from 'lucide-react';
+import { fetchLearningStudents } from '../../lib/learningQueries';
 import { AssignLessonForm } from '../learning/AssignLessonForm';
 import { learningLevels, learningPathways } from '../../lib/learningFramework';
 import { hasUsableLearningPlan } from '../../lib/learningRecords';
@@ -61,7 +61,7 @@ interface CompletionCountRow {
 export function SchoolLessons() {
   const [assignFor, setAssignFor] = useState<Lesson | null>(null);
   const [level, setLevel] = useState<LevelChoice>('all');
-  const { school } = useAuth();
+  const { school, profile } = useAuth();
   const schoolId = school?.id ?? null;
 
   // The whole active curriculum. Request training on any of it via Workshops.
@@ -75,8 +75,8 @@ export function SchoolLessons() {
   // because RLS will hand us back rows from any school we can read, and
   // we always want the count to be of THIS school's students.
   const studentsQuery = useQuery({
-    queryKey: ['members', schoolId],
-    queryFn: () => fetchMembersBySchoolUnordered(schoolId!),
+    queryKey: ['learning-students', schoolId],
+    queryFn: () => fetchLearningStudents(schoolId!),
     enabled: !!schoolId,
   });
 
@@ -214,12 +214,12 @@ export function SchoolLessons() {
                 )}
 
                 <div className="mt-auto pt-3 border-t border-warm-200 flex items-center justify-between gap-3">
-                  <div className="text-xs text-gray-600">
+                  {profile?.role !== 'teacher' && <div className="text-xs text-gray-600">
                     <span className="font-medium text-gray-900">{passed}</span> passed
                     {s.points > 0 && (
                       <> · <span className="font-medium text-gray-900">{contribution}</span> pt{contribution === 1 ? '' : 's'} earned</>
                     )}
-                  </div>
+                  </div>}
                   <div className="flex gap-3 items-center flex-wrap">
                   <button type="button" className="btn-secondary !text-xs" disabled={!hasUsableLearningPlan(s.learning_plan)}
                     onClick={() => setAssignFor(s)} title={!s.learning_plan ? 'Learning outcomes must be set first' : undefined}>Assign lesson</button>

@@ -51,4 +51,23 @@ export interface CompetencyEvidence {
   recorded_at: string;
   reviews: Partial<Record<CompetencyId, ReviewBand>>;
   feedback: string;
+  submission_id?: string | null;
+}
+
+export interface LearningSubmission {
+  id: string;
+  assignment_id: string;
+  student_id: string;
+  evidence_text: string;
+  evidence_url: string | null;
+  reflection: string;
+  submitted_at: string;
+}
+
+export interface LearningAccount {
+  id: string;
+  role: 'teacher' | 'learner';
+  full_name: string;
+  login: string;
+  student_id: string | null;
 }

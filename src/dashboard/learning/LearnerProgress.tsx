@@ -1,13 +1,13 @@
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../../lib/auth';
-import { fetchMembersBySchool } from '../../lib/gql/queries';
-import { fetchAssignments, fetchEvidence, fetchRecipients } from '../../lib/learningQueries';
+import { fetchLearningStudents, fetchAssignments, fetchEvidence, fetchRecipients } from '../../lib/learningQueries';
 import { competencies, evidenceRubric, learningLevels } from '../../lib/learningFramework';
 
 export function LearnerProgress() {
-  const { school } = useAuth();
-  const students = useQuery({ queryKey: ['members', school?.id], queryFn: () => fetchMembersBySchool(school!.id), enabled: !!school });
+  const { school, profile } = useAuth();
+  const isLearner = profile?.role === 'learner';
+  const students = useQuery({ queryKey: ['learning-students', school?.id], queryFn: () => fetchLearningStudents(school!.id), enabled: !!school });
   const assignments = useQuery({ queryKey: ['learning-assignments'], queryFn: () => fetchAssignments(), enabled: !!school });
   const recipients = useQuery({ queryKey: ['learning-recipients'], queryFn: () => fetchRecipients(), enabled: !!school });
   const evidence = useQuery({ queryKey: ['competency-evidence'], queryFn: () => fetchEvidence(), enabled: !!school });
@@ -15,7 +15,7 @@ export function LearnerProgress() {
   const loading = !!school && [students, assignments, recipients, evidence].some((query) => query.isPending);
   return (
     <div className="learning-zone px-4 sm:px-6 lg:px-10 py-8 space-y-6 max-w-6xl">
-      <div><h1>Learner progress</h1><p className="text-sm text-gray-600 mt-2">Review individual evidence at each learning level. Unreviewed outcomes remain unassessed.</p></div>
+      <div><h1>{isLearner ? 'My progress' : 'Learner progress'}</h1><p className="text-sm text-gray-600 mt-2">{isLearner ? 'See your teacher’s feedback and the skills you have shown.' : 'Review individual evidence at each learning level. Unreviewed outcomes remain unassessed.'}</p></div>
       {!school && <p className="text-sm">Open a school account to review its learners.</p>}
       {error && <p role="alert" className="text-sm text-red-700">{error.message}</p>}
       {loading && <p role="status">Loading learner progress…</p>}

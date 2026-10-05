@@ -2,8 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../lib/auth';
-import { fetchMembersBySchool } from '../../lib/gql/queries';
-import { assignLesson, fetchAssignments } from '../../lib/learningQueries';
+import { fetchLearningStudents, assignLesson, fetchAssignments } from '../../lib/learningQueries';
 import type { Lesson } from '../../lib/database.types';
 import { hasUsableLearningPlan } from '../../lib/learningRecords';
 
@@ -14,8 +13,8 @@ export function AssignLessonForm({ lesson, onClose }: { lesson: Lesson; onClose:
   const [selected, setSelected] = useState<string[]>([]);
   const [instructions, setInstructions] = useState('');
   const [dueDate, setDueDate] = useState('');
-  const members = useQuery({ queryKey: ['members', school?.id],
-    queryFn: () => fetchMembersBySchool(school!.id), enabled: !!school });
+  const members = useQuery({ queryKey: ['learning-students', school?.id],
+    queryFn: () => fetchLearningStudents(school!.id), enabled: !!school });
   const active = members.data?.filter((member) => member.is_active) ?? [];
   const mutation = useMutation({
     mutationFn: () => assignLesson({ lessonId: lesson.id, schoolId: school!.id,
