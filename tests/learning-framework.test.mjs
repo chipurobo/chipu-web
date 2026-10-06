@@ -82,7 +82,7 @@ test('unknown activity links return no content rather than another learner task'
 test('external resource boundaries and unapproved source scope stay explicit', () => {
   assert.equal(learningFramework.status, 'draft');
   assert.equal(learningFramework.referenceGrade, 10);
-  assert.match(learningFramework.source.verification, /pending/);
+  assert.match(learningFramework.source.verification, /ChipuRobo adaptations/);
   for (const activity of learningActivities)
     if (activity.resource) {
       assert.equal(activity.resource.provider, 'Raspberry Pi Foundation');

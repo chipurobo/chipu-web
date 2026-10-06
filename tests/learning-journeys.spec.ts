@@ -30,7 +30,7 @@ async function mockDashboard(page: Page, role: 'admin' | 'school_lead' | 'teache
     evidence: [] as Record<string, unknown>[], submissions: [] as Record<string, unknown>[], accounts: [] as Record<string, unknown>[], writes: [] as { path: string; body: Record<string, unknown> }[], failReviews: false,
     quizzes: [{id:'quiz-one',slug:'beginner-check',title:'Beginner knowledge check',level:'beginner',version:1,pass_percent:80,lesson_id:lessonId,questions:[{id:'q1',prompt:'What describes ordered steps?',choices:['An algorithm','A random click']}]}],
     attempts: [] as Record<string,unknown>[],portfolio: [] as Record<string,unknown>[],decisions: [] as Record<string,unknown>[],
-    readiness:{ready:false,policy_approved:false,missing_competencies:['algorithms'],quiz_attempt_id:null as string|null,capstone_review_id:null as string|null,previous_level_awarded:true},
+    readiness:{ready:false,missing_competencies:['algorithms'],quiz_attempt_id:null as string|null,capstone_review_id:null as string|null,previous_level_awarded:true},
     draft: null as null | { workspace: unknown; code: unknown; output: unknown }, failPrograms: false,
   };
   await page.route('http://127.0.0.1:54321/**', async (route) => {
@@ -543,7 +543,7 @@ test('learner curates and exports an accessible private portfolio without deleti
 });
 
 test('teacher records an explicit evidence-backed progression decision',async({page})=>{
- const state=await mockDashboard(page,'teacher');Object.assign(state.readiness,{ready:true,policy_approved:true,missing_competencies:[],quiz_attempt_id:'attempt-one',capstone_review_id:'review-one'});
+ const state=await mockDashboard(page,'teacher');Object.assign(state.readiness,{ready:true,missing_competencies:[],quiz_attempt_id:'attempt-one',capstone_review_id:'review-one'});
  await page.goto('/dashboard/school/progress');await page.getByRole('combobox',{name:'Progression decision',exact:true}).selectOption('awarded');await page.getByLabel('Decision reason and next steps').fill('Reviewed the quiz, practical work and capstone. Practise intermediate loops next.');await page.getByRole('button',{name:'Save progression decision'}).click();
  await expect(page.getByText('Beginner: awarded',{exact:true})).toBeVisible();expect(state.decisions[0]).toMatchObject({student_id:studentId,level:'beginner',outcome:'awarded'});
 });

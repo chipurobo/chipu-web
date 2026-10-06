@@ -54,7 +54,7 @@ export const learningFramework = {
     currentUrl: 'https://drive.google.com/file/d/1e5lBROYbbw6JeVCduFMCkWh1MbluV5M8/view',
     listingUrl: 'https://kicd.ac.ke/cbc-materials/curriculum-designs/grade-ten/',
     verification:
-      'Relevant software-development outcomes have been checked against the current July 2025 design. The Beginner, Intermediate and Expert descriptors and review bands are ChipuRobo adaptations; Learning Science approval remains pending. Robotics requires separate physical-computing evidence. This is not full syllabus coverage or an official KICD assessment rubric.',
+      'Relevant software-development outcomes have been checked against the current July 2025 design. The Beginner, Intermediate and Expert descriptors and review bands are ChipuRobo adaptations for teaching and assessing the programme. Robotics requires separate physical-computing evidence. This is not full syllabus coverage or an official KICD assessment rubric.',
   },
 } as const;
 

@@ -3,8 +3,8 @@
 The product specification calls for a platform used directly by teachers and
 learners. Learning actions belong in the authenticated dashboard, alongside
 the existing lesson planning and student workflows. Its competency
-catalogue is a versioned draft, ready to be reconciled with the full current
-KICD Grade 10 design before it is used to award levels.
+catalogue uses a versioned ChipuRobo adaptation of selected KICD Grade 10
+outcomes. Curriculum maps are a Desktop reference for curriculum staff.
 
 ## Curriculum basis and review status
 
@@ -28,7 +28,7 @@ program-development cycle. The appendix includes projects, portfolios and
 observations among suggested assessment methods. This verifies selected
 references, not full syllabus coverage or an official Beginner/Intermediate/Expert
 rubric. These stages, their descriptors and review bands remain ChipuRobo
-adaptations requiring Learning Science review. Historical assignments retain
+adaptations for teaching and assessing the programme. Historical assignments retain
 framework version 0.1; this source verification does not rewrite their outcomes.
 Physical robotics, project design and communication remain ChipuRobo extensions.
 A browser simulation alone does not demonstrate an Expert physical-computing
@@ -36,7 +36,7 @@ outcome.
 
 The review conversation uses four proposed descriptions: not yet observed,
 developing, demonstrated and extending. These are not the official KICD rubric.
-Replace or reconcile them after reading the current rubric. Teacher observations
+Teacher observations
 are stored against individual evidence; a separate reviewed progression decision
 is required to award a level.
 
@@ -141,7 +141,8 @@ and capstones; a direct RPC call containing only text cannot bypass that require
 
 Apply migrations `20261006000000_quizzes_and_portfolios.sql`,
 `20261006000001_progression_and_reporting.sql` and
-`20261006000002_knowledge_check_content.sql` for these additional journeys.
+`20261006000002_knowledge_check_content.sql` and
+`20261006000003_evidence_based_progression.sql` for these additional journeys.
 
 - Dashboard → Knowledge checks: three original ChipuRobo level checks (five
   questions each), attached to lesson/module references. The assignment brief
@@ -159,12 +160,10 @@ Apply migrations `20261006000000_quizzes_and_portfolios.sql`,
 - Progress → Level progression: see strengths in observed competency bands,
   missing evidence and next steps. Teachers record an award, defer for further
   practice, or revoke a prior decision, with a reason. Each decision records
-  its policy and exact evidence IDs. The current draft policy cannot award
-  levels. Curriculum sign-off is recorded outside the dashboard in the Desktop
-  curriculum and technical review document. After sign-off, an authorised
-  maintainer records a new versioned policy in the existing database. This
-  approval does not assert official KICD validation. An award requires the latest
-  observations to demonstrate all
+  its criteria version and exact evidence IDs. There is no curriculum approval
+  or sign-off requirement. The Desktop `curriculum maps.docx` is a reference
+  for curriculum staff, without administrative or dependency-advisory content.
+  An award requires the latest observations to demonstrate all
   required competencies, a passed level quiz, a demonstrated submitted Blockly
   capstone and any previous level. A score/submission never awards a level
   automatically; later observations never overwrite decision history.
@@ -203,9 +202,8 @@ assessment items. Formal baseline/midline/endline assessments stay in wider M&E.
 3. Extend the current individual lesson assignments with group work. Every group
    submission must identify individual contributions; group membership alone
    must not award a competency.
-4. Complete curriculum and progression-policy review with the Learning Science
-   team before awarding pilot levels; retain separate competency, completion,
-   confidence and independence evidence.
+4. Keep curriculum maps useful to curriculum staff as teaching content evolves;
+   retain separate competency, completion, confidence and independence evidence.
 5. Reconcile the reporting cohort with programme enrolment/training dates and
    M&E definitions before claiming activation, VI/HI attainment or programme
    retention targets.

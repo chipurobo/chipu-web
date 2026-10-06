@@ -64,11 +64,6 @@ export function ProgressionReview({ studentId }: { studentId: string }) {
               ? 'Evidence requirements met. A teacher still needs to review and decide.'
               : 'Complete the activities and reviews below to prepare for this level.'}
           </p>
-          {!r.policy_approved && (
-            <p className="text-sm">
-              Level awards are not available yet. Continue learning and collecting feedback.
-            </p>
-          )}
           <ul className="list-disc pl-5 space-y-1 text-sm">
             <li>
               {r.quiz_attempt_id
