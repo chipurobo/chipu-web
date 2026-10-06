@@ -1,13 +1,10 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '../../lib/auth';
 import { learningLevels, competencies, type LearningLevel } from '../../lib/learningFramework';
 import { fetchReadiness, fetchDecisions, decideProgression } from '../../lib/learningOutcomes';
 
 export function ProgressionReview({ studentId }: { studentId: string }) {
-  const { profile } = useAuth();
-  const learner = profile?.role === 'learner';
   const qc = useQueryClient();
   const [level, setLevel] = useState<LearningLevel>('beginner');
   const [outcome, setOutcome] = useState('deferred');
@@ -88,61 +85,59 @@ export function ProgressionReview({ studentId }: { studentId: string }) {
             </Link>
             <Link
               className="underline"
-              to={learner ? '/dashboard/my-projects' : '/dashboard/school/lessons'}
+              to="/dashboard/school/lessons"
             >
               Open practical activities
             </Link>
           </div>
         </>
       )}
-      {!learner && (
-        <form
-          aria-label="Record progression decision"
-          className="space-y-3"
-          onSubmit={(e) => {
-            e.preventDefault();
-            save.mutate();
-          }}
-        >
-          <label className="field-label">
-            Progression decision
-            <select
-              className="field-select"
-              value={outcome}
-              onChange={(e) => setOutcome(e.target.value)}
-            >
-              <option value="deferred">Continue practising</option>
-              <option value="awarded" disabled={!r?.ready}>
-                Award level
-              </option>
-              <option value="revoked">Revoke a prior award</option>
-            </select>
-          </label>
-          <label className="field-label">
-            Decision reason and next steps
-            <textarea
-              required
-              maxLength={5000}
-              className="field-input"
-              rows={3}
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-            />
-          </label>
-          {save.error && (
-            <p role="alert" className="text-red-700">
-              {save.error.message}
-            </p>
-          )}
-          {save.isSuccess && <p role="status">Progression decision saved.</p>}
-          <button
-            className="btn-primary"
-            disabled={save.isPending || readiness.isPending || !!readiness.error}
+      <form
+        aria-label="Record progression decision"
+        className="space-y-3"
+        onSubmit={(e) => {
+          e.preventDefault();
+          save.mutate();
+        }}
+      >
+        <label className="field-label">
+          Progression decision
+          <select
+            className="field-select"
+            value={outcome}
+            onChange={(e) => setOutcome(e.target.value)}
           >
-            {save.isPending ? 'Saving…' : 'Save progression decision'}
-          </button>
-        </form>
-      )}
+            <option value="deferred">Continue practising</option>
+            <option value="awarded" disabled={!r?.ready}>
+              Award level
+            </option>
+            <option value="revoked">Revoke a prior award</option>
+          </select>
+        </label>
+        <label className="field-label">
+          Decision reason and next steps
+          <textarea
+            required
+            maxLength={5000}
+            className="field-input"
+            rows={3}
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+          />
+        </label>
+        {save.error && (
+          <p role="alert" className="text-red-700">
+            {save.error.message}
+          </p>
+        )}
+        {save.isSuccess && <p role="status">Progression decision saved.</p>}
+        <button
+          className="btn-primary"
+          disabled={save.isPending || readiness.isPending || !!readiness.error}
+        >
+          {save.isPending ? 'Saving…' : 'Save progression decision'}
+        </button>
+      </form>
       {history.length > 0 && (
         <details>
           <summary className="cursor-pointer text-sm">Decision history</summary>

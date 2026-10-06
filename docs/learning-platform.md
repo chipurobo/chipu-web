@@ -70,10 +70,14 @@ is required to award a level.
 - Teacher → Review assignment → View submitted Blockly program: open the exact
   submitted blocks, generated JavaScript and last output alongside the learner's
   explanation. Later draft edits cannot rewrite the submitted program.
-- Teacher / School → Learner progress; Learner → My progress: see the latest observed rating for each competency
+- Teacher / School → Learner progress: see the latest observed rating for each competency
   at each level, with links to its evidence. A newer developing observation
   replaces an older demonstrated observation in the display, without deleting
   history. Unobserved outcomes stay unassessed. Level decisions are recorded separately.
+- Learner → My progress: see activity/submission counts, latest teacher feedback
+  and links to continue Blockly work. A newer submission is shown as awaiting
+  feedback while earlier feedback remains available. The competency matrix,
+  level-review controls and decision history belong to the teacher workflow.
 - Admin → Learning accounts: create teacher email logins and learner username
   logins linked to active school roster records. Allocate each teacher's learners
   and update teaching groups. A learner does not need a personal email address.
@@ -157,7 +161,7 @@ Apply migrations `20261006000000_quizzes_and_portfolios.sql`,
   contains curated artifacts, assignment competency mappings, reviews, quiz
   evidence and progression decisions. It is a private evidence bundle; there
   is no anonymous public portfolio URL.
-- Progress → Level progression: see strengths in observed competency bands,
+- Teacher / School → Learner progress → Level progression: see strengths in observed competency bands,
   missing evidence and next steps. Teachers record an award, defer for further
   practice, or revoke a prior decision, with a reason. Each decision records
   its criteria version and exact evidence IDs. There is no curriculum approval
@@ -195,8 +199,8 @@ assessment items. Formal baseline/midline/endline assessments stay in wider M&E.
 
 
 1. Finalise the source mapping. Read the full current KICD design, reconcile
-   every selected outcome and rubric, and agree progression rules. Approve a
-   new immutable framework version; retain historical versions for evidence.
+   every selected outcome and rubric, and maintain progression rules in a
+   versioned framework; retain historical versions for evidence.
 2. Extend account administration with password recovery for learners without
    email, shared-device onboarding and account lifecycle controls.
 3. Extend the current individual lesson assignments with group work. Every group
