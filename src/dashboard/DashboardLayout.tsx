@@ -1,3 +1,4 @@
+import { trackLearningActivity } from '../lib/learningOutcomes';
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
@@ -17,6 +18,9 @@ import {
 // aria-live region whenever the route changes. JAWS/NVDA users hear
 // "Navigated to <page name>" the same way they would on a full page load.
 const DASHBOARD_PAGE_TITLES: Record<string, string> = {
+  '/dashboard/quizzes': 'Knowledge checks',
+  '/dashboard/portfolio': 'Portfolio',
+  '/dashboard/learning-reports': 'Learning reports',
   '/dashboard':                     'Overview',
   '/dashboard/leaderboard':         'Leaderboard',
   '/dashboard/my-learning':         'My learning',
@@ -83,6 +87,7 @@ function DashboardShell() {
   const { profile, school, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  useEffect(() => { if (profile) trackLearningActivity('dashboard_open'); }, [profile]);
   const isAdmin = profile?.role === 'admin';
   const isTeacher = profile?.role === 'teacher';
   const isLearner = profile?.role === 'learner';
@@ -302,6 +307,9 @@ function DashboardShell() {
             Overview
           </SidebarLink>
 
+          <SidebarLink to="/dashboard/quizzes" icon={ListChecks}>Knowledge checks</SidebarLink>
+          <SidebarLink to="/dashboard/portfolio" icon={FolderKanban}>{isLearner ? 'My portfolio' : 'Learner portfolios'}</SidebarLink>
+          {!isLearner && <SidebarLink to="/dashboard/learning-reports" icon={ClipboardList}>Learning reports</SidebarLink>}
           {isLearner ? (
             <>
               <SidebarLink to="/dashboard/my-learning" icon={BookOpen}>My learning</SidebarLink>

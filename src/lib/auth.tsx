@@ -1,3 +1,4 @@
+import { trackLearningActivity } from './learningOutcomes';
 import {
   createContext,
   useCallback,
@@ -253,6 +254,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // only for the auth event races the role/school fetch and redirects a valid
     // new session straight back to the login screen.
     const { profile, school } = await loadProfileAndSchool(data.session.user.id);
+    trackLearningActivity('login');
     if (!profile) {
       await supabase.auth.signOut();
       return { error: 'Your account could not be loaded. Please try again.' };

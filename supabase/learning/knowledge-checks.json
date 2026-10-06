@@ -1,0 +1,230 @@
+[
+  {
+    "slug": "beginner-coding-check",
+    "version": 1,
+    "title": "Beginner coding knowledge check",
+    "level": "beginner",
+    "pass_percent": 80,
+    "questions": [
+      {
+        "id": "q1",
+        "prompt": "What does an algorithm describe?",
+        "choices": [
+          "An ordered way to solve a task",
+          "Only a computer screen colour",
+          "A random set of clicks"
+        ]
+      },
+      {
+        "id": "q2",
+        "prompt": "Which block stores a named value?",
+        "choices": [
+          "A comment block",
+          "A variable block",
+          "A delete action"
+        ]
+      },
+      {
+        "id": "q3",
+        "prompt": "What is the purpose of a repeat loop?",
+        "choices": [
+          "To repeat selected actions",
+          "To remove all output",
+          "To rename the learner"
+        ]
+      },
+      {
+        "id": "q4",
+        "prompt": "Your program prints steps in the wrong order. What should you do?",
+        "choices": [
+          "Submit without testing",
+          "Change the order and retest",
+          "Remove your explanation"
+        ]
+      },
+      {
+        "id": "q5",
+        "prompt": "What helps someone understand your program?",
+        "choices": [
+          "A clear explanation and output",
+          "Only your quiz score",
+          "Hiding the task instructions"
+        ]
+      }
+    ],
+    "solutions": {
+      "q1": {
+        "correct": 0,
+        "explanation": "An algorithm describes ordered steps for a task."
+      },
+      "q2": {
+        "correct": 1,
+        "explanation": "A variable stores a value under a name."
+      },
+      "q3": {
+        "correct": 0,
+        "explanation": "A repeat loop carries out its body multiple times."
+      },
+      "q4": {
+        "correct": 1,
+        "explanation": "Identify the fault, correct it, then test the result."
+      },
+      "q5": {
+        "correct": 0,
+        "explanation": "An explanation and output show what the program does."
+      }
+    }
+  },
+  {
+    "slug": "intermediate-coding-check",
+    "version": 1,
+    "title": "Intermediate coding knowledge check",
+    "level": "intermediate",
+    "pass_percent": 80,
+    "questions": [
+      {
+        "id": "q1",
+        "prompt": "11 learners need 1 kit per 2 learners. How many kits are required?",
+        "choices": [
+          "5",
+          "6",
+          "11"
+        ]
+      },
+      {
+        "id": "q2",
+        "prompt": "Which test checks the edge of a decision rule?",
+        "choices": [
+          "A boundary test",
+          "No test",
+          "Only a spelling check"
+        ]
+      },
+      {
+        "id": "q3",
+        "prompt": "What should a calculator do if learnersPerKit is zero?",
+        "choices": [
+          "Divide by zero",
+          "Report invalid input",
+          "Always report enough kits"
+        ]
+      },
+      {
+        "id": "q4",
+        "prompt": "Which structure keeps several readings together?",
+        "choices": [
+          "A list",
+          "A single comment",
+          "The delete button"
+        ]
+      },
+      {
+        "id": "q5",
+        "prompt": "Why use meaningful variable names?",
+        "choices": [
+          "They document what values represent",
+          "They guarantee correct output",
+          "They replace all testing"
+        ]
+      }
+    ],
+    "solutions": {
+      "q1": {
+        "correct": 1,
+        "explanation": "Round up 11 divided by 2, so all learners have a kit."
+      },
+      "q2": {
+        "correct": 0,
+        "explanation": "A boundary test checks values at the threshold."
+      },
+      "q3": {
+        "correct": 1,
+        "explanation": "Reject the invalid input before dividing."
+      },
+      "q4": {
+        "correct": 0,
+        "explanation": "A list stores a sequence of values."
+      },
+      "q5": {
+        "correct": 0,
+        "explanation": "Clear names help people understand and maintain the program."
+      }
+    }
+  },
+  {
+    "slug": "expert-coding-check",
+    "version": 1,
+    "title": "Expert coding knowledge check",
+    "level": "expert",
+    "pass_percent": 80,
+    "questions": [
+      {
+        "id": "q1",
+        "prompt": "Why use a function for the obstacle rule?",
+        "choices": [
+          "To reuse a defined decision",
+          "To avoid every test",
+          "To hide all feedback"
+        ]
+      },
+      {
+        "id": "q2",
+        "prompt": "Stop below 10 cm; move at or above 10 cm. What happens at 10 cm?",
+        "choices": [
+          "Stop",
+          "Move",
+          "Invalid reading"
+        ]
+      },
+      {
+        "id": "q3",
+        "prompt": "What should the simulated controller do with a negative distance?",
+        "choices": [
+          "Move",
+          "Treat it as an invalid reading",
+          "Ignore every later reading"
+        ]
+      },
+      {
+        "id": "q4",
+        "prompt": "What does a Blockly browser simulation demonstrate?",
+        "choices": [
+          "Real hardware wiring is complete",
+          "Decision logic can be tested",
+          "A physical robot moved"
+        ]
+      },
+      {
+        "id": "q5",
+        "prompt": "Why retest after changing the threshold?",
+        "choices": [
+          "The expected behaviour may change",
+          "Previous output guarantees correctness",
+          "Testing is no longer needed"
+        ]
+      }
+    ],
+    "solutions": {
+      "q1": {
+        "correct": 0,
+        "explanation": "A function makes the decision reusable and testable."
+      },
+      "q2": {
+        "correct": 1,
+        "explanation": "Exactly 10 meets the at-or-above condition."
+      },
+      "q3": {
+        "correct": 1,
+        "explanation": "A negative distance is invalid for this rule."
+      },
+      "q4": {
+        "correct": 1,
+        "explanation": "A simulation tests logic; hardware still needs its own integration and validation."
+      },
+      "q5": {
+        "correct": 0,
+        "explanation": "A threshold change affects decisions, so normal and boundary cases need retesting."
+      }
+    }
+  }
+]

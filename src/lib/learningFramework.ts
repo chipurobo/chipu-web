@@ -46,15 +46,15 @@ export const learningFramework = {
   application:
     'Grade 10 is the common reference, including for younger learners. Teachers adapt task complexity and delivery to each learner.',
   source: {
-    title: 'KICD Grade 10 Computer Science — June 2024 reference',
-    url: 'https://kicd.ac.ke/wp-content/uploads/2024/07/Computer-Science-Grade-10-June-2024.pdf',
+    title: 'KICD Grade 10 Computer Studies — July 2025',
+    url: 'https://drive.google.com/file/d/1e5lBROYbbw6JeVCduFMCkWh1MbluV5M8/view',
     verifiedScope:
-      'Indexed strand outline; program development (3.2), printed page 32; identifiers and operators (3.3), printed page 34.',
+      'Current strand outline (printed page xii); program development (3.2, page 32), identifiers and operators (3.3, page 34), control structures (3.4, page 36), functions (3.6, page 40) and assessment-method examples (page 58), read in the official viewer on 6 October 2026.',
     currentTitle: 'KICD Grade 10 Computer Studies — July 2025',
     currentUrl: 'https://drive.google.com/file/d/1e5lBROYbbw6JeVCduFMCkWh1MbluV5M8/view',
     listingUrl: 'https://kicd.ac.ke/cbc-materials/curriculum-designs/grade-ten/',
     verification:
-      'The current design is listed by KICD. Full text verification against July 2025 and its rubric is pending because the hosted file restricts downloads.',
+      'Relevant software-development outcomes have been checked against the current July 2025 design. The Beginner, Intermediate and Expert descriptors and review bands are ChipuRobo adaptations; Learning Science approval remains pending. Robotics requires separate physical-computing evidence. This is not full syllabus coverage or an official KICD assessment rubric.',
   },
 } as const;
 

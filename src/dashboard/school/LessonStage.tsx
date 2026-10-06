@@ -1,3 +1,4 @@
+import { trackLearningActivity } from '../../lib/learningOutcomes';
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
@@ -70,6 +71,7 @@ export function SchoolLessonStage() {
 
 function TeacherLessonStage() {
   const { lessonId } = useParams();
+  useEffect(() => { if (lessonId) trackLearningActivity('resource_open', lessonId); }, [lessonId]);
   const lesson = useQuery({ queryKey: ['lesson', lessonId], queryFn: () => fetchLessonById(lessonId!), enabled: !!lessonId });
   return <div className="learning-zone px-4 sm:px-6 lg:px-10 py-8 space-y-6">
     <Link to="/dashboard/school/lessons" className="text-sm text-teal-700 underline">Back to lessons</Link>

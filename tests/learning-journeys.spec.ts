@@ -28,6 +28,9 @@ async function mockDashboard(page: Page, role: 'admin' | 'school_lead' | 'teache
   const state = {
     lessons: [lesson], assignments: [assignment], recipients: [{ assignment_id: assignmentId, student_id: studentId }],
     evidence: [] as Record<string, unknown>[], submissions: [] as Record<string, unknown>[], accounts: [] as Record<string, unknown>[], writes: [] as { path: string; body: Record<string, unknown> }[], failReviews: false,
+    quizzes: [{id:'quiz-one',slug:'beginner-check',title:'Beginner knowledge check',level:'beginner',version:1,pass_percent:80,lesson_id:lessonId,questions:[{id:'q1',prompt:'What describes ordered steps?',choices:['An algorithm','A random click']}]}],
+    attempts: [] as Record<string,unknown>[],portfolio: [] as Record<string,unknown>[],decisions: [] as Record<string,unknown>[],
+    readiness:{ready:false,policy_approved:false,missing_competencies:['algorithms'],quiz_attempt_id:null as string|null,capstone_review_id:null as string|null,previous_level_awarded:true},
     draft: null as null | { workspace: unknown; code: unknown; output: unknown }, failPrograms: false,
   };
   await page.route('http://127.0.0.1:54321/**', async (route) => {
@@ -38,6 +41,15 @@ async function mockDashboard(page: Page, role: 'admin' | 'school_lead' | 'teache
     if (request.method() === 'HEAD') {
       await route.fulfill({ status: 200, headers: { 'content-range': '*/0' }, body: '' }); return;
     }
+    if (path === 'list_learning_quizzes') { await route.fulfill({json:state.quizzes});return; }
+    if (path === 'learning_progression_readiness') { await route.fulfill({json:state.readiness});return; }
+    if (path === 'learning_pilot_report') { await route.fulfill({json:{from:body!.p_from,to:body!.p_to,timezone:'UTC',cohort:'Current active accessible roster',enrolled_learners:1,learners_with_accounts:1,active_learners:1,observed_tasks:0,independent_tasks:0}});return; }
+    if (path === 'record_learning_activity') { await route.fulfill({json:null});return; }
+    if (path === 'submit_learning_quiz') {state.attempts.unshift({id:'attempt-one',quiz_id:'quiz-one',student_id:studentId,question_snapshot:state.quizzes[0],score:100,passed:true,submitted_at:new Date().toISOString(),feedback:[{id:'q1',correct:true,explanation:'An algorithm describes ordered steps.'}]});await route.fulfill({json:'attempt-one'});return;}
+    if (path === 'save_learning_portfolio_item') {state.portfolio.push({id:'portfolio-one',student_id:studentId,submission_id:body!.p_submission_id,title:body!.p_title,reflection:body!.p_reflection,created_at:new Date().toISOString()});await route.fulfill({json:'portfolio-one'});return;}
+    if (path === 'remove_learning_portfolio_item') {state.portfolio=state.portfolio.filter(i=>i.id!==body!.p_item_id);await route.fulfill({json:null});return;}
+    if (path === 'record_learning_progression') {state.decisions.unshift({id:'decision-one',student_id:body!.p_student_id,level:body!.p_level,outcome:body!.p_outcome,reason:body!.p_reason,decided_at:new Date().toISOString(),policy_id:'policy-one'});await route.fulfill({json:'decision-one'});return;}
+    if (path === 'record_learning_task_observation' || path === 'record_learning_attendance') {state.writes.push({path,body:body!});await route.fulfill({json:null});return;}
     if (path === 'token') { await route.fulfill({ json: session }); return; }
     if (path === 'logout') { await route.fulfill({ status: 204, body: '' }); return; }
     if (request.method() === 'POST' || request.method() === 'PATCH') state.writes.push({ path, body: body ?? {} });
@@ -87,6 +99,10 @@ async function mockDashboard(page: Page, role: 'admin' | 'school_lead' | 'teache
     if (path === 'lessons' && request.method() === 'PATCH') Object.assign(lesson, body);
     if (path === 'lessons' && request.method() === 'POST') state.lessons.push({ ...lesson, ...body, id: 'new-lesson' });
     let rows: unknown[] = [];
+    if (path === 'learning_quiz_attempts') rows=state.attempts;
+    if (path === 'learning_portfolio_items') rows=state.portfolio;
+    if (path === 'learning_progression_decisions') rows=state.decisions;
+    if (path === 'learning_progression_policies') rows=[{id:'policy-one',version:1,name:'ChipuRobo pilot progression — draft',framework_version:'0.1',approved:false,review_notes:'Awaiting curriculum review.'}];
     if (path === 'profiles') rows = [{ id: userId, role, full_name: 'Test Teacher', school_id: role === 'admin' ? null : schoolId }];
     if (path === 'get_my_learning_school') { await route.fulfill({ json: { id: schoolId, name: 'Test School', is_maker_space: false } }); return; }
     if (path === 'get_my_learning_students') { await route.fulfill({ json: [{ id: studentId, school_id: schoolId, full_name: 'Test Learner', is_active: true, in_club: true }] }); return; }
@@ -484,3 +500,59 @@ for (const journey of ['login', 'learner-home', 'learner-submission', 'learning-
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   });
 }
+
+
+for (const role of ['learner','teacher'] as const) {
+ test(`populated ${role} progress has readable evidence links and no automated accessibility violations`,async({page})=>{
+  const state=await mockDashboard(page,role);
+  state.evidence=[{id:'review',assignment_id:assignmentId,student_id:studentId,reviews:{algorithms:'demonstrated'},recorded_at:'2026-10-05T12:00:00Z'}];
+  await page.goto(role==='learner'?'/dashboard/my-progress':'/dashboard/school/progress');
+  await expect(page.getByRole('link',{name:'Demonstrated',exact:true})).toBeVisible();
+  expect((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze()).violations).toEqual([]);
+ });
+}
+
+test('teacher home provides real inline assignment and lesson actions',async({page})=>{
+ const state=await mockDashboard(page,'teacher');await page.goto('/dashboard');
+ const section=page.getByRole('region',{name:'Quick lesson actions'});
+ await expect(section.getByRole('link',{name:'Open lesson',exact:true})).toHaveAttribute('href',`/dashboard/school/lessons/${lessonId}`);
+ await section.getByRole('button',{name:'Assign lesson',exact:true}).click();
+ const form=page.getByRole('form',{name:'Assign Give clear instructions'});
+ await form.getByLabel('Test Learner',{exact:true}).check();await form.getByRole('button',{name:'Assign to selected students'}).click();
+ await expect(page).toHaveURL(new RegExp(`/dashboard/assignments/${assignmentId}$`));expect(state.writes.some(w=>w.path==='assign_learning_lesson')).toBeTruthy();
+});
+
+test('learner completes an accessible knowledge check and sees versioned feedback',async({page})=>{
+ const state=await mockDashboard(page,'learner');await page.goto('/dashboard/quizzes');
+ await page.getByRole('button',{name:'Start knowledge check'}).click();
+ const form=page.getByRole('form',{name:'Answer Beginner knowledge check'});
+ expect((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze()).violations).toEqual([]);
+ await form.getByRole('radio',{name:'An algorithm',exact:true}).check();await form.getByRole('button',{name:'Submit answers'}).click();
+ await expect(page.getByText(/100%.*Pass mark met/)).toBeVisible();expect(state.attempts).toHaveLength(1);
+ await page.getByText('Question feedback',{exact:true}).click();await expect(page.getByText('Correct. An algorithm describes ordered steps.')).toBeVisible();
+});
+
+test('learner curates and exports an accessible private portfolio without deleting submissions',async({page})=>{
+ const state=await mockDashboard(page,'learner');state.submissions=[{id:'submission-one',assignment_id:assignmentId,student_id:studentId,evidence_text:'My sequence and retest.',reflection:'I revised the order.',submitted_at:'2026-10-05T12:00:00Z'}];
+ await page.goto('/dashboard/portfolio');await page.getByRole('combobox',{name:'Submitted work',exact:true}).selectOption('submission-one');
+ await page.getByLabel('Portfolio title',{exact:true}).fill('My tested sequence');await page.getByLabel('Portfolio reflection',{exact:true}).fill('I explained the correction.');
+ await page.getByRole('button',{name:'Save portfolio evidence'}).click();await expect(page.getByRole('heading',{name:'My tested sequence'})).toBeVisible();
+ expect((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze()).violations).toEqual([]);
+ const download=page.waitForEvent('download');await page.getByRole('button',{name:'Export portfolio evidence'}).click();expect((await download).suggestedFilename()).toBe('chipurobo-portfolio.json');
+ await page.getByRole('button',{name:'Remove from portfolio'}).click();await expect(page.getByRole('heading',{name:'My tested sequence'})).toHaveCount(0);expect(state.submissions).toHaveLength(1);
+});
+
+test('teacher records an explicit evidence-backed progression decision',async({page})=>{
+ const state=await mockDashboard(page,'teacher');Object.assign(state.readiness,{ready:true,policy_approved:true,missing_competencies:[],quiz_attempt_id:'attempt-one',capstone_review_id:'review-one'});
+ await page.goto('/dashboard/school/progress');await page.getByRole('combobox',{name:'Progression decision',exact:true}).selectOption('awarded');await page.getByLabel('Decision reason and next steps').fill('Reviewed the quiz, practical work and capstone. Practise intermediate loops next.');await page.getByRole('button',{name:'Save progression decision'}).click();
+ await expect(page.getByText('Beginner: awarded',{exact:true})).toBeVisible();expect(state.decisions[0]).toMatchObject({student_id:studentId,level:'beginner',outcome:'awarded'});
+});
+
+test('reporting provides scoped counts, attendance, task observations and a CSV export',async({page})=>{
+ const state=await mockDashboard(page,'teacher');await page.goto('/dashboard/learning-reports');
+ await expect(page.getByText(/Dates are inclusive in UTC/)).toBeVisible();
+ expect((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze()).violations).toEqual([]);
+ const download=page.waitForEvent('download');await page.getByRole('button',{name:'Export report CSV'}).click();expect((await download).suggestedFilename()).toBe('chipurobo-learning-report.csv');
+ const attendance=page.getByRole('form',{name:'Learning attendance'});await attendance.getByRole('combobox',{name:'Test Learner',exact:true}).selectOption('true');await attendance.getByRole('button',{name:'Save learning attendance'}).click();await expect(page.getByText('Learning attendance saved.')).toBeVisible();
+ const observation=page.getByRole('form',{name:'Core task observation'});await observation.getByRole('combobox',{name:'Observed learner',exact:true}).selectOption(studentId);await observation.getByRole('button',{name:'Save task observation'}).click();await expect(page.getByText('Task observation saved.')).toBeVisible();expect(state.writes.some(w=>w.path==='record_learning_task_observation')).toBeTruthy();
+});

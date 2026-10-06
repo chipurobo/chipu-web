@@ -71,6 +71,10 @@ const AssignmentWorkspace   = lazy(() => import('./dashboard/learning/Assignment
 const LearnerProgress       = lazy(() => import('./dashboard/learning/LearnerProgress').then((m) => ({ default: m.LearnerProgress })));
 const Leaderboard           = lazy(() => import('./dashboard/Leaderboard').then((m) => ({ default: m.Leaderboard })));
 
+const LearningQuizzes = lazy(() => import('./dashboard/learning/LearningQuizzes').then(m => ({ default: m.LearningQuizzes })));
+const LearningPortfolio = lazy(() => import('./dashboard/learning/LearningPortfolio').then(m => ({ default: m.LearningPortfolio })));
+const LearningReporting = lazy(() => import('./dashboard/learning/LearningReporting').then(m => ({ default: m.LearningReporting })));
+
 // === Accessible Suspense fallback ===
 // Renders an aria-live "Loading" message so screen-reader users hear
 // that the page is loading rather than encountering silent dead air.
@@ -191,6 +195,9 @@ function App() {
                 element={<RequireAuth role="admin"><AdminProjects /></RequireAuth>}
               />
               <Route path="admin/learning-accounts" element={<RequireAuth role="admin"><LearningAccounts /></RequireAuth>} />
+              <Route path="quizzes" element={<LearningQuizzes />} />
+              <Route path="portfolio" element={<LearningPortfolio />} />
+              <Route path="learning-reports" element={<RequireAuth roles={['admin', 'school_lead', 'teacher']}><LearningReporting /></RequireAuth>} />
               <Route path="my-learning" element={<RequireAuth roles={['learner']}><MyLearning /></RequireAuth>} />
               <Route path="my-projects" element={<RequireAuth roles={['learner']}><BlocklyProjects /></RequireAuth>} />
               <Route path="my-progress" element={<RequireAuth roles={['learner']}><LearnerProgress /></RequireAuth>} />

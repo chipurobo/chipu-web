@@ -804,6 +804,13 @@ h3.heading-display { font-size: clamp(1rem, 2vw, 1.5rem) !important; line-height
  @apply text-primary-600 hover:text-primary-700;
  }
 
+ /* Keep dashboard evidence links readable and preserve button foregrounds. */
+ .admin-zone .card a:not(.btn-primary):not(.btn-secondary) {
+ @apply text-teal-700 hover:text-teal-800;
+ }
+ .admin-zone .card a.btn-primary { @apply text-white; }
+ .admin-zone .card a.btn-secondary { @apply text-gray-700; }
+
  /* Form styles */
  .form-input {
  @apply bg-white text-gray-900 border-gray-300 rounded-lg;

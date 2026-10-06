@@ -16,28 +16,29 @@ separate from these stages.
 
 KICD's [official Grade 10 listing](https://kicd.ac.ke/cbc-materials/curriculum-designs/grade-ten/)
 links to [Computer Studies Grade 10 July 2025](https://drive.google.com/file/d/1e5lBROYbbw6JeVCduFMCkWh1MbluV5M8/view).
-The hosted file restricts downloading. Its full outcomes and assessment rubric
-could not be verified in this session. Do not describe the current mapping as
-an approved KICD rubric or as coverage of the full syllabus.
+The software-development references were verified in its public viewer on
+6 October 2026: strand summary (printed page xii), program development
+(3.2, page 32), identifiers and operators (3.3, page 34), control structures
+(3.4, page 36), functions (3.6, page 40) and assessment-method examples
+(page 58). The download restriction does not prevent reading these pages.
 
-The accessible indexed material for the earlier official
-[Computer Science Grade 10 June 2024 reference](https://kicd.ac.ke/wp-content/uploads/2024/07/Computer-Science-Grade-10-June-2024.pdf)
-supports the strand outline and selected outcomes from program development
-(3.2, printed page 32) and identifiers and operators (3.3, printed page 34).
-The original PDF URL currently does not return a PDF. Source scope and the
-verification limitation are retained in the catalogue and visible in the UI.
-
-The draft adapts algorithm planning, input/output programming and testing into
-practical activities. References to control structures and functions currently
-come from the indexed outline; verify their detailed outcomes in the current
-design before finalising the corresponding level descriptors. Physical
-computing, project design and communication activities are labelled ChipuRobo
-extensions, not additional official KICD outcomes.
+The current design supports algorithm design, input/output and operators,
+sequence/iteration/selection, modular programming and testing during the
+program-development cycle. The appendix includes projects, portfolios and
+observations among suggested assessment methods. This verifies selected
+references, not full syllabus coverage or an official Beginner/Intermediate/Expert
+rubric. These stages, their descriptors and review bands remain ChipuRobo
+adaptations requiring Learning Science review. Historical assignments retain
+framework version 0.1; this source verification does not rewrite their outcomes.
+Physical robotics, project design and communication remain ChipuRobo extensions.
+A browser simulation alone does not demonstrate an Expert physical-computing
+outcome.
 
 The review conversation uses four proposed descriptions: not yet observed,
 developing, demonstrated and extending. These are not the official KICD rubric.
 Replace or reconcile them after reading the current rubric. Teacher observations
-are stored against individual evidence; they do not award an overall level.
+are stored against individual evidence; a separate reviewed progression decision
+is required to award a level.
 
 ## Implemented dashboard actions
 
@@ -72,7 +73,7 @@ are stored against individual evidence; they do not award an overall level.
 - Teacher / School → Learner progress; Learner → My progress: see the latest observed rating for each competency
   at each level, with links to its evidence. A newer developing observation
   replaces an older demonstrated observation in the display, without deleting
-  history. Unobserved outcomes stay unassessed. No overall level is awarded.
+  history. Unobserved outcomes stay unassessed. Level decisions are recorded separately.
 - Admin → Learning accounts: create teacher email logins and learner username
   logins linked to active school roster records. Allocate each teacher's learners
   and update teaching groups. A learner does not need a personal email address.
@@ -113,8 +114,7 @@ Apply the seven migrations `20261005000000_dashboard_learning_actions.sql`,
 The enum extension is a separate migration so its new values are committed before
 the policies and RPCs use them. The preview on port 55000 uses local Supabase. Reads and writes
 report backend errors; they never fall back to fabricated/local records.
-All seven migrations were applied to local Supabase and the linked hosted
-development project on 2026-10-05. Preview accounts and example learner work
+All seven migrations were applied to local Supabase and the existing hosted `chipurobo` project on 2026-10-05. Preview accounts and example learner work
 were created only in the local database; hosted account creation remains an
 explicit action in Admin → Learning accounts.
 
@@ -137,7 +137,61 @@ Teachers can read and review self-started work only for their allocated learners
 The database requires a Blockly program on submission for the published lessons
 and capstones; a direct RPC call containing only text cannot bypass that requirement.
 
-## Next implementation stages
+## Quizzes, portfolios, progression and reporting
+
+Apply migrations `20261006000000_quizzes_and_portfolios.sql`,
+`20261006000001_progression_and_reporting.sql` and
+`20261006000002_knowledge_check_content.sql` for these additional journeys.
+
+- Dashboard → Knowledge checks: three original ChipuRobo level checks (five
+  questions each), attached to lesson/module references. The assignment brief
+  links to its level's checks. Learners answer labelled radio groups without a
+  timer; all answers are required. The server grades private answer keys and
+  stores immutable question/version/answer/feedback snapshots per attempt.
+  Admins publish replacements with the quiz builder; old attempts remain intact.
+- Dashboard → My portfolio: learners curate their own immutable submissions,
+  edit portfolio titles/reflections, reopen submitted Blockly code and view
+  teacher feedback. Removing a portfolio entry preserves the submitted work.
+  Teachers see allocated learners, admins select a school. The JSON export
+  contains curated artifacts, assignment competency mappings, reviews, quiz
+  evidence and progression decisions. It is a private evidence bundle; there
+  is no anonymous public portfolio URL.
+- Progress → Level progression: see strengths in observed competency bands,
+  missing evidence and next steps. Teachers record an award, defer for further
+  practice, or revoke a prior decision, with a reason. Each decision records
+  its policy and exact evidence IDs. The current draft policy cannot award
+  levels. Admins must explicitly review and approve a new ChipuRobo policy
+  version in Learning reports. This approval does not assert official KICD
+  validation. An award requires the latest observations to demonstrate all
+  required competencies, a passed level quiz, a demonstrated submitted Blockly
+  capstone and any previous level. A score/submission never awards a level
+  automatically; later observations never overwrite decision history.
+- Dashboard → Learning reports: school/cohort and inclusive UTC date filters,
+  account coverage, dashboard activity, resource opens, quiz attempts/passes,
+  submissions, capstone artifacts, evidence reviews, award events, attendance,
+  retained activity and observed independent task completion, with CSV export.
+  Teachers see only their allocated cohort; school leads/admins see the
+  selected school's roster. Denominators and event semantics are shown in the
+  UI. Current roster, login availability, repeated events and evidence are
+  separate facts. Historical logins cannot be reconstructed; telemetry begins
+  with deployment. Retention means activity in both halves of the selected
+  window, not programme retention or access-group attainment.
+- Learning reports → Record lesson attendance / Core task observation: teachers
+  record allocated learners' attendance on delivered session dates and observed
+  task independence/barriers without diagnoses. Attendance uses the existing
+  sessions/register tables; new roles do not receive direct school-wide writes.
+
+Teacher home now offers inline Assign/Open lesson actions, a learning-level
+filter and recent assignment review links. The approved role separation,
+Blockly and capstone flows remain intact. Progress links use dashboard teal-700;
+notification announcements have an accessible log role.
+
+The full current KICD mapping and target-user validation remain outstanding.
+The delivered criteria and checks are ChipuRobo content, not official KICD
+assessment items. Formal baseline/midline/endline assessments stay in wider M&E.
+
+## Remaining implementation and validation
+
 
 1. Finalise the source mapping. Read the full current KICD design, reconcile
    every selected outcome and rubric, and agree progression rules. Approve a
@@ -147,16 +201,13 @@ and capstones; a direct RPC call containing only text cannot bypass that require
 3. Extend the current individual lesson assignments with group work. Every group
    submission must identify individual contributions; group membership alone
    must not award a competency.
-4. Add accessible quizzes with versioned questions, attempts and results.
-   Keep formal
-   programme baseline/midline/endline instruments in the wider M&E system.
-5. Add agreed progression decisions backed by reviewed evidence and learner
-   portfolios. The current progress view shows observations. Completion,
-   confidence, independence and competency are
-   separate facts. A level filter or leaderboard score cannot award a level.
-6. Add pilot reporting with defined cohorts, denominators and time windows.
-   Capture activation, resource use, learning activity, reviewed artifacts,
-   progression and retention as first-party product events.
+4. Complete curriculum and progression-policy review with the Learning Science
+   team before awarding pilot levels; retain separate competency, completion,
+   confidence and independence evidence.
+5. Reconcile the reporting cohort with programme enrolment/training dates and
+   M&E definitions before claiming activation, VI/HI attainment or programme
+   retention targets.
+6. Validate all usable journeys with participating learners and teachers.
 
 The current database policies enforce learning access for each role:
 learners see their own assigned work and evidence; teachers see learners in
@@ -212,3 +263,13 @@ participating cohort has been tested and the denominator documented.
 Login, accounts, assignments, submissions and feedback have automated desktop
 and mobile accessibility checks. Quizzes and portfolios must add their own
 journeys, and every usable journey still needs target-user testing.
+
+### Hosting and data preservation
+
+The release uses the existing Supabase `chipurobo` project
+(`csckuplkouwopgsucldb`). Vercel's existing Supabase environment variables are
+unchanged. No replacement database is required. The three October 6 migrations
+were applied there after taking schema and data backups; comparison of all 68
+original backed-up table sections found no changed records. The added tables
+store quiz versions/attempts, portfolio entries, progression policies/decisions,
+activity and observed tasks.

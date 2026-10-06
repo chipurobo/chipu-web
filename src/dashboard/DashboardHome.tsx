@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { TeacherHomeActions } from './learning/TeacherHomeActions';
 import { MyLearning } from './learning/MyLearning';
 import { useAuth } from '../lib/auth';
 import { School, Package, ClipboardList, Users, Boxes, Wrench, Send, BookOpen } from 'lucide-react';
@@ -74,6 +75,7 @@ export function DashboardHome() {
           </>
         )}
       </div>
+      {isTeacher && <TeacherHomeActions />}
     </div>
   );
 }

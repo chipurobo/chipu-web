@@ -1,3 +1,4 @@
+import { trackLearningActivity } from '../../lib/learningOutcomes';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -15,6 +16,7 @@ export function AssignmentWorkspace() {
   const assignmentQuery = useQuery({ queryKey: ['learning-assignment', assignmentId],
     queryFn: () => fetchAssignment(assignmentId!), enabled: !!assignmentId });
   const assignment = assignmentQuery.data;
+  useEffect(() => { if (assignment) trackLearningActivity('resource_open', assignment.lesson_id); }, [assignment]);
   const isCapstone = assignment?.learning_plan.activityKind === 'capstone';
   const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => { heading.current?.focus(); }, [assignment?.id]);
@@ -64,6 +66,7 @@ export function AssignmentWorkspace() {
             {assignment.learning_plan.requirements?.map((requirement) => <li key={requirement}>{requirement}</li>)}
           </ul></div>}
         </section>
+        <Link className="btn-secondary" to={`/dashboard/quizzes?level=${assignment.learning_plan.level}`}>Open a knowledge check for this level</Link>
         {isLearner ? <LearnerSubmission key={assignment.id} assignmentId={assignment.id} level={assignment.learning_plan.level} submissions={submissions.data ?? []} reviews={evidence.data ?? []} /> : <section aria-label="Review student work" className="space-y-4">
           <h2 className="text-lg">Review student work</h2>
           <p className="text-sm text-gray-600">Record each student's work and your feedback. These reviews do not award an overall level or change lesson completion.</p>

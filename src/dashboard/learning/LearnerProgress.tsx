@@ -1,3 +1,4 @@
+import { ProgressionReview } from './ProgressionReview';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../../lib/auth';
@@ -42,6 +43,7 @@ export function LearnerProgress() {
               </ul>
             </section>)}
           </div>
+          <ProgressionReview studentId={student.id} />
           {work.length > 0 && <details className="text-sm"><summary className="cursor-pointer text-teal-700">Assigned work</summary>
             <ul className="list-disc pl-5 mt-3 space-y-2">{work.map((assignment) => <li key={assignment.id}>
               <Link className="text-teal-700 underline" to={`/dashboard/assignments/${assignment.id}`}>{assignment.title}</Link>

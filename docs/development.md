@@ -12,8 +12,8 @@ Two products share this codebase:
    lessons, projects, judging, certificates, and a school leaderboard.
 
 Learning features live in the authenticated dashboard. Lesson planning,
-student assignments, individual evidence reviews and progress are the first
-implementation stage. Curriculum source status, the remaining account and
+student assignments, Blockly lessons and capstones, quizzes, portfolios,
+individual evidence reviews, progression decisions and reporting are implemented. Curriculum source status, account and
 learner workflows, and accessibility validation are documented in
 [`learning-platform.md`](./learning-platform.md).
 
@@ -75,9 +75,10 @@ gaining any security. Function secrets (`supabase/functions/.env`) and ad-hoc
 SQL snippets are gitignored; copy `supabase/functions/.env.example` to get
 started locally.
 
-Two auth roles: `admin` (ChipuRobo staff, sees everything) and `school_lead`
-(one lead teacher per school, sees only their school's rows). Students don't
-sign in — they're roster rows owned by a school.
+Four auth roles: `admin`, `school_lead`, `teacher` and `learner`. School leads
+retain school operations. Teachers work with allocated learners; learners
+sign in individually and access their own work. Admin → Learning accounts
+provisions teacher and learner identities.
 
 ### Security notes
 

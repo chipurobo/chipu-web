@@ -30,6 +30,8 @@ before(async () => {
     create table public.club_members(id uuid primary key,school_id uuid references public.schools,full_name text,grade text,learner_code text,is_active boolean default true,in_club boolean default true);
     create table public.lessons(id uuid primary key,title text,is_active boolean,position integer,description text,kind text,points integer,level text,required_for_certificate boolean);
     grant select on public.lessons to authenticated;
+    create table public.sessions(id uuid primary key default gen_random_uuid(),school_id uuid,activity_type text,session_date date,lesson_id uuid,delivered text,focus text,recorded_by uuid);
+    create table public.session_attendance(id uuid primary key default gen_random_uuid(),session_id uuid,learner_id uuid,present boolean);
     create table public.orders(id uuid primary key,school_id uuid);
     create function public.me_is_admin() returns boolean language sql stable security definer as $$ select exists(select 1 from public.profiles where id=auth.uid() and role='admin') $$;
     create function public.me_school_id() returns uuid language sql stable security definer as $$ select school_id from public.profiles where id=auth.uid() $$;
@@ -50,7 +52,7 @@ before(async () => {
     create policy orders_all on public.orders to authenticated using(public.me_is_admin() or school_id=public.me_school_id()) with check(public.me_is_admin() or school_id=public.me_school_id());
     grant select,insert,update,delete on public.club_members,public.orders to authenticated;
   `);
-  for (const name of ['20261005000000_dashboard_learning_actions.sql','20261005000001_learning_account_roles.sql','20261005000002_learning_accounts_and_submissions.sql','20261005000003_blockly_learning_programs.sql','20261005000004_blockly_lesson_course.sql','20261005000005_blockly_capstone_projects.sql','20261005000006_require_blockly_submissions.sql']) {
+  for (const name of ['20261005000000_dashboard_learning_actions.sql','20261005000001_learning_account_roles.sql','20261005000002_learning_accounts_and_submissions.sql','20261005000003_blockly_learning_programs.sql','20261005000004_blockly_lesson_course.sql','20261005000005_blockly_capstone_projects.sql','20261005000006_require_blockly_submissions.sql','20261006000000_quizzes_and_portfolios.sql','20261006000001_progression_and_reporting.sql','20261006000002_knowledge_check_content.sql']) {
     await db.exec(await readFile(new URL(`../supabase/migrations/${name}`, import.meta.url), 'utf8'));
   }
   await db.query('update public.lessons set learning_plan=$1 where id=$2', [JSON.stringify(plan),id(301)]);
@@ -188,4 +190,86 @@ test('inactive learners lose assignment access and revoked teachers lose individ
   await asUser(id(1)); await db.query('update public.club_members set is_active=false where id=$1',[id(201)]);
   await asUser(learner); assert.deepEqual((await db.query('select * from public.learning_assignments')).rows,[]);
   await assert.rejects(submit(),/own assigned work/);
+});
+
+
+test('quiz grading is private, complete, immutable and bound to the signed-in learner', async () => {
+  await asUser(id(1));await db.query('update public.club_members set is_active=true where id=$1',[id(201)]);await db.query('select public.admin_set_teacher_students($1,$2)',[teacher,[id(201),id(202)]]);
+  await asUser(learner);
+  await assert.rejects(db.query('select solutions from public.learning_quizzes'),/permission denied/);
+  const quizzes=(await db.query('select public.list_learning_quizzes() as list')).rows[0].list;
+  assert.equal(quizzes.length,3); assert.equal(quizzes[0].solutions,undefined);
+  const quiz=quizzes.find(q=>q.level==='beginner');
+  await assert.rejects(db.query('select public.submit_learning_quiz($1,$2)',[quiz.id,{}]),/every question/);
+  await assert.rejects(db.query('select public.submit_learning_quiz($1,$2)',[quiz.id,{q1:null,q2:1,q3:0,q4:1,q5:0}]),/every question/);
+  const attempt=(await db.query('select public.submit_learning_quiz($1,$2) as id',[quiz.id,{q1:0,q2:1,q3:0,q4:1,q5:0}])).rows[0].id;
+  const result=(await db.query('select * from public.learning_quiz_attempts where id=$1',[attempt])).rows[0];
+  assert.equal(result.score,100);assert.equal(result.passed,true);assert.equal(result.student_id,id(201));
+  await assert.rejects(db.query('update public.learning_quiz_attempts set score=100 where id=$1',[attempt]),/permission denied/);
+  await asUser(peer);assert.equal((await db.query('select * from public.learning_quiz_attempts where id=$1',[attempt])).rows.length,0);
+  await asUser(teacher);assert.equal((await db.query('select * from public.learning_quiz_attempts where id=$1',[attempt])).rows.length,1);
+  await assert.rejects(db.query('select public.submit_learning_quiz($1,$2)',[quiz.id,{}]),/Learner access/);
+  await assert.rejects(db.query('select public.publish_learning_quiz($1,$2,$3,$4,$5,$6,$7)',['test-quiz','Title','beginner',null,80,[],{}]),/Admin access/);
+  await asUser(id(1));
+  await db.query('select public.publish_learning_quiz($1,$2,$3,$4,$5,$6,$7)',[quiz.slug,quiz.title,quiz.level,quiz.lesson_id,quiz.pass_percent,quiz.questions,{q1:{correct:0,explanation:'Steps'},q2:{correct:1,explanation:'Values'},q3:{correct:0,explanation:'Repeat'},q4:{correct:1,explanation:'Retest'},q5:{correct:0,explanation:'Explain'}}]);
+  await asUser(learner);await assert.rejects(db.query('select public.submit_learning_quiz($1,$2)',[quiz.id,{q1:0,q2:1,q3:0,q4:1,q5:0}]),/no longer available/);
+  assert.equal((await db.query('select question_snapshot from public.learning_quiz_attempts where id=$1',[attempt])).rows[0].question_snapshot.version,1);
+});
+
+test('portfolios link only owned immutable submissions and preserve work when an item is removed', async () => {
+ await asUser(learner);
+ const own=(await db.query('select id from public.learning_submissions where student_id=$1 order by submitted_at desc limit 1',[id(201)])).rows[0].id;
+ const item=(await db.query('select public.save_learning_portfolio_item($1,$2,$3) as id',[own,'My code project','I tested the boundary.'])).rows[0].id;
+ await asUser(peer);assert.equal((await db.query('select * from public.learning_portfolio_items where id=$1',[item])).rows.length,0);
+ await assert.rejects(db.query('select public.save_learning_portfolio_item($1,$2,$3)',[own,'Other work','']),/own submitted/);
+ await assert.rejects(db.query('select public.remove_learning_portfolio_item($1)',[item]),/not found/);
+ await asUser(otherTeacher);assert.equal((await db.query('select * from public.learning_portfolio_items where id=$1',[item])).rows.length,0);
+ await asUser(teacher);assert.equal((await db.query('select * from public.learning_portfolio_items where id=$1',[item])).rows.length,1);
+ await asUser(learner);await db.query('select public.remove_learning_portfolio_item($1)',[item]);assert.equal((await db.query('select id from public.learning_submissions where id=$1',[own])).rows.length,1);
+});
+
+test('progression decisions enforce review, evidence, prior levels and role boundaries', async () => {
+ await asUser(learner); await assert.rejects(db.query('select public.record_learning_progression($1,$2,$3,$4)',[id(201),'beginner','awarded','Ready']),/Teacher access/);
+ await assert.rejects(db.query('select public.learning_progression_readiness($1,$2)',[id(202),'beginner']),/access denied/);
+ await asUser(teacher);let r=(await db.query('select public.learning_progression_readiness($1,$2) as r',[id(201),'beginner'])).rows[0].r;
+ assert.equal(r.policy_approved,false);assert.equal(r.ready,false);
+ await assert.rejects(db.query('select public.record_learning_progression($1,$2,$3,$4)',[id(201),'beginner','awarded','Ready']),/approved policy/);
+ await db.query('select public.record_learning_progression($1,$2,$3,$4)',[id(201),'beginner','deferred','Practise the missing outcomes and submit the capstone.']);
+ await assert.rejects(db.query('select public.approve_learning_progression_policy($1)',['Approved after review of source mapping and pilot criteria.']),/Admin access/);
+ await asUser(id(1));await db.query('select public.approve_learning_progression_policy($1)',['Approved after review of source mapping and pilot criteria.']);
+ await asUser(teacher);r=(await db.query('select public.learning_progression_readiness($1,$2) as r',[id(201),'beginner'])).rows[0].r;
+ assert.equal(r.policy_approved,true);assert.equal(r.ready,false);
+ await assert.rejects(db.query('select public.record_learning_progression($1,$2,$3,$4)',[id(201),'beginner','awarded','Still missing evidence']),/approved policy/);
+ await asUser(otherTeacher);await assert.rejects(db.query('select public.record_learning_progression($1,$2,$3,$4)',[id(201),'beginner','deferred','No access']),/Teacher access/);
+});
+
+test('a level award retains its evidence and cannot reuse a superseded developing capstone review', async () => {
+ await asUser(teacher);
+ const work=(await db.query("select s.id from public.learning_submissions s join public.learning_assignments a on a.id=s.assignment_id where s.student_id=$1 and a.learning_plan->>'activityKind'='capstone' and a.learning_plan->>'level'='beginner' order by s.submitted_at desc limit 1",[id(201)])).rows[0].id;
+ const bands={algorithms:'demonstrated',programming:'demonstrated',debugging:'demonstrated',design:'demonstrated',communication:'demonstrated'};
+ await db.query('select public.review_learning_submission($1,$2,$3)',[work,'Observed all project criteria, tested the program and discussed the explanation.',bands]);
+ const r=(await db.query('select public.learning_progression_readiness($1,$2) as r',[id(201),'beginner'])).rows[0].r;assert.equal(r.ready,true);
+ const decision=(await db.query('select public.record_learning_progression($1,$2,$3,$4) as id',[id(201),'beginner','awarded','Reviewed the quiz, practical evidence and capstone. Practise intermediate tasks next.'])).rows[0].id;
+ const saved=(await db.query('select * from public.learning_progression_decisions where id=$1',[decision])).rows[0];assert.equal(saved.evidence_snapshot.quiz_attempt_id,r.quiz_attempt_id);assert.equal(saved.evidence_snapshot.capstone_review_id,r.capstone_review_id);
+ await db.query('select public.review_learning_submission($1,$2,$3)',[work,'A later observation needs more testing.',{...bands,debugging:'developing'}]);
+ assert.equal((await db.query('select public.learning_progression_readiness($1,$2) as r',[id(201),'beginner'])).rows[0].r.ready,false);
+ await assert.rejects(db.query('select public.record_learning_progression($1,$2,$3,$4)',[id(201),'beginner','awarded','Use old best score']),/approved policy/);
+ assert.equal((await db.query('select * from public.learning_progression_decisions where id=$1',[decision])).rows[0].outcome,'awarded');
+ await asUser(learner);assert.equal((await db.query('select * from public.learning_progression_decisions where id=$1',[decision])).rows.length,1);
+ await asUser(peer);assert.equal((await db.query('select * from public.learning_progression_decisions where id=$1',[decision])).rows.length,0);
+});
+
+test('pilot reporting and attendance expose only an authorised cohort and explicit date window', async () => {
+ await asUser(learner);await db.query('select public.record_learning_activity($1,$2)',['login',null]);
+ await assert.rejects(db.query('select public.learning_pilot_report($1,$2,$3)',[id(101),'2026-10-01','2026-10-31']),/reporting access/);
+ await asUser(teacher);await db.query('select public.record_learning_task_observation($1,$2,$3,$4)',[id(201),'Submit Blockly work',true,'']);
+ await db.query('select public.record_learning_attendance($1,$2,$3,$4)',[id(101),new Date().toISOString().slice(0,10),null,{[id(201)]:true,[id(202)]:false}]);
+ await assert.rejects(db.query('select public.record_learning_attendance($1,$2,$3,$4)',[id(101),new Date().toISOString().slice(0,10),null,{[id(203)]:true}]),/allocated learners/);
+ const date=new Date().toISOString().slice(0,10);
+ const r=(await db.query('select public.learning_pilot_report($1,$2,$3) as r',[id(101),date,date])).rows[0].r;
+ assert.equal(r.enrolled_learners,2);assert.equal(r.learners_with_accounts,2);assert.equal(r.active_learners,1);assert.equal(r.attendance_present,1);assert.equal(r.attendance_recorded,2);assert.equal(r.observed_tasks,1);assert.equal(r.independent_tasks,1);
+ await assert.rejects(db.query('select public.learning_pilot_report($1,$2,$3)',[id(102),date,date]),/reporting access/);
+ await assert.rejects(db.query('select public.learning_pilot_report($1,$2,$3)',[id(101),'2026-10-31','2026-10-01']),/date range/);
+ await asUser(otherTeacher);const other=(await db.query('select public.learning_pilot_report($1,$2,$3) as r',[id(101),date,date])).rows[0].r;assert.equal(other.enrolled_learners,1);assert.equal(other.active_learners,0);
+ await asUser(null,'anon');await assert.rejects(db.query('select public.list_learning_quizzes()'),/permission denied/);
 });

@@ -22,7 +22,7 @@ export function MyLearning() {
     <div className="learning-zone px-4 sm:px-6 lg:px-10 py-8 space-y-6 max-w-6xl">
       <div><p className="text-sm text-gray-600">{school?.name ?? 'Your learning dashboard'}</p>
         <h1>My learning</h1><p className="text-sm text-gray-600 mt-2">Hello, {profile?.full_name?.split(' ')[0] ?? 'there'}. Start a Blockly lesson, build your program and read your teacher's feedback.</p></div>
-      <div className="flex gap-3 flex-wrap"><Link className="btn-secondary" to="/dashboard/my-progress">View my progress</Link>
+      <div className="flex gap-3 flex-wrap"><Link className="btn-secondary" to="/dashboard/quizzes">Open knowledge checks</Link><Link className="btn-secondary" to="/dashboard/portfolio">Open my portfolio</Link><Link className="btn-secondary" to="/dashboard/my-progress">View my progress</Link>
         <Link className="btn-primary" to="/dashboard/my-projects">Open capstone projects</Link></div>
       {error && <p role="alert" className="text-red-700 text-sm">{error.message}</p>}
       {(assignments.isPending || submissions.isPending || reviews.isPending) && <p role="status">Loading your learning…</p>}
