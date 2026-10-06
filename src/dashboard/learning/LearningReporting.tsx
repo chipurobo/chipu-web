@@ -6,8 +6,6 @@ import { fetchLearningStudents } from '../../lib/learningQueries';
 import {
   saveAttendance,
   fetchPilotReport,
-  fetchPolicies,
-  approveProgressionPolicy,
   observeTask,
   downloadArtifact,
 } from '../../lib/learningOutcomes';
@@ -53,22 +51,6 @@ export function LearningReporting() {
     queryFn: () => fetchLearningStudents(schoolId),
     enabled: !!schoolId,
   });
-  const policies = useQuery({
-    queryKey: ['progression-policies'],
-    queryFn: fetchPolicies,
-    enabled: admin,
-  });
-  const [notes, setNotes] = useState('');
-  const [confirm, setConfirm] = useState(false);
-  const approve = useMutation({
-    mutationFn: () => approveProgressionPolicy(notes),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ['progression-policies'] });
-      void qc.invalidateQueries({ queryKey: ['progression-readiness'] });
-      setConfirm(false);
-      setNotes('');
-    },
-  });
   const [attendanceDate, setAttendanceDate] = useState(today());
   const [attendance, setAttendance] = useState<Record<string, boolean>>({});
   const attendanceSave = useMutation({
@@ -89,7 +71,7 @@ export function LearningReporting() {
       setBarrier('');
     },
   });
-  const error = report.error ?? students.error ?? schools.error ?? policies.error;
+  const error = report.error ?? students.error ?? schools.error;
   const r = report.data;
   return (
     <div className="learning-zone px-4 sm:px-6 lg:px-10 py-8 max-w-6xl space-y-6">
@@ -324,59 +306,6 @@ export function LearningReporting() {
             Save task observation
           </button>
         </form>
-      )}
-      {admin && (
-        <section className="card p-5 space-y-4" aria-label="Progression criteria review">
-          <h2>Progression criteria review</h2>
-          <p className="text-sm">
-            Current policy: {policies.data?.[0]?.name} ·{' '}
-            {policies.data?.[0]?.approved ? 'Approved for ChipuRobo decisions' : 'Awaiting review'}
-          </p>
-          <p className="text-sm">{policies.data?.[0]?.review_notes}</p>
-          <p className="text-sm">
-            The proposed criteria require demonstrated competency evidence, a passed knowledge
-            check, a demonstrated Blockly capstone and any previous level. Approving these criteria
-            creates a versioned ChipuRobo policy; it does not certify official KICD alignment.
-          </p>
-          <form
-            aria-label="Approve progression criteria"
-            className="space-y-3"
-            onSubmit={(e) => {
-              e.preventDefault();
-              approve.mutate();
-            }}
-          >
-            <label className="field-label">
-              Curriculum review and approval notes
-              <textarea
-                required
-                minLength={20}
-                maxLength={5000}
-                className="field-input"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-              />
-            </label>
-            <label className="flex gap-3 text-sm">
-              <input
-                required
-                type="checkbox"
-                checked={confirm}
-                onChange={(e) => setConfirm(e.target.checked)}
-              />
-              I have reviewed and approve these criteria for ChipuRobo progression decisions.
-            </label>
-            {approve.error && (
-              <p role="alert" className="text-red-700">
-                {approve.error.message}
-              </p>
-            )}
-            {approve.isSuccess && <p role="status">New progression policy approved.</p>}
-            <button className="btn-primary" disabled={approve.isPending || !confirm}>
-              Approve a new policy version
-            </button>
-          </form>
-        </section>
       )}
     </div>
   );

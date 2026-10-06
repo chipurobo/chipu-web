@@ -114,8 +114,6 @@ export const removePortfolio = (item: string) =>
   rpc<void>('remove_learning_portfolio_item', { p_item_id: item });
 export const fetchDecisions = () =>
   rows<ProgressionDecision>('learning_progression_decisions', 'decided_at');
-export const fetchPolicies = () =>
-  rows<ProgressionPolicy>('learning_progression_policies', 'version');
 export const fetchReadiness = (student: string, level: LearningLevel) =>
   rpc<ProgressionReadiness>('learning_progression_readiness', {
     p_student_id: student,
@@ -133,8 +131,6 @@ export const decideProgression = (
     p_outcome: outcome,
     p_reason: reason,
   });
-export const approveProgressionPolicy = (notes: string) =>
-  rpc<string>('approve_learning_progression_policy', { p_notes: notes });
 export const fetchPilotReport = (school: string, from: string, to: string) =>
   rpc<PilotReport>('learning_pilot_report', { p_school_id: school, p_from: from, p_to: to });
 export const observeTask = (student: string, task: string, independent: boolean, barrier: string) =>
