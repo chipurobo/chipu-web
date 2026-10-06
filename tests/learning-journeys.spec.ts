@@ -502,15 +502,51 @@ for (const journey of ['login', 'learner-home', 'learner-submission', 'learning-
 }
 
 
-for (const role of ['learner','teacher'] as const) {
- test(`populated ${role} progress has readable evidence links and no automated accessibility violations`,async({page})=>{
-  const state=await mockDashboard(page,role);
-  state.evidence=[{id:'review',assignment_id:assignmentId,student_id:studentId,reviews:{algorithms:'demonstrated'},recorded_at:'2026-10-05T12:00:00Z'}];
-  await page.goto(role==='learner'?'/dashboard/my-progress':'/dashboard/school/progress');
-  await expect(page.getByRole('link',{name:'Demonstrated',exact:true})).toBeVisible();
-  expect((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze()).violations).toEqual([]);
- });
-}
+test('teacher progress retains the competency matrix, evidence links and level review',async({page})=>{
+ const state=await mockDashboard(page,'teacher');
+ state.evidence=[{id:'review',assignment_id:assignmentId,student_id:studentId,reviews:{algorithms:'demonstrated'},recorded_at:'2026-10-05T12:00:00Z'}];
+ await page.goto('/dashboard/school/progress');
+ await expect(page.getByRole('link',{name:'Demonstrated',exact:true})).toBeVisible();
+ await expect(page.getByRole('region',{name:'Beginner',exact:true})).toBeVisible();
+ await expect(page.getByRole('combobox',{name:'Review learning level',exact:true})).toBeVisible();
+ await expect(page.getByRole('form',{name:'Record progression decision',exact:true})).toBeVisible();
+ expect((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze()).violations).toEqual([]);
+});
+
+test('learner progress shows submitted activities and teacher feedback without the teacher review workflow',async({page})=>{
+ const state=await mockDashboard(page,'learner');const requests:string[]=[];
+ page.on('request',request=>requests.push(new URL(request.url()).pathname));
+ state.submissions=[{id:'submission-one',assignment_id:assignmentId,student_id:studentId,submitted_at:'2026-10-05T10:00:00Z'}];
+ state.evidence=[{id:'review',assignment_id:assignmentId,student_id:studentId,reviews:{algorithms:'demonstrated'},feedback:'Try a different sequence and explain what changed.',recorded_at:'2026-10-05T12:00:00Z'}];
+ await page.goto('/dashboard/my-progress');
+ const activity=page.getByRole('article',{name:'Activity progress: Give clear instructions',exact:true});
+ await expect(activity.getByText('Feedback available',{exact:true})).toBeVisible();
+ await expect(activity.getByText('Try a different sequence and explain what changed.',{exact:true})).toBeVisible();
+ await expect(activity.getByRole('link',{name:'Open activity and feedback',exact:true})).toHaveAttribute('href',`/dashboard/assignments/${assignmentId}`);
+ await expect(page.getByRole('heading',{name:'Level progression',exact:true})).toHaveCount(0);
+ await expect(page.getByRole('combobox',{name:'Review learning level',exact:true})).toHaveCount(0);
+ await expect(page.getByRole('region',{name:'Beginner',exact:true})).toHaveCount(0);
+ await expect(page.getByRole('form',{name:'Record progression decision',exact:true})).toHaveCount(0);
+ expect(requests.some(path=>/learning_progression_readiness|learning_progression_decisions/.test(path))).toBe(false);
+ expect((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze()).violations).toEqual([]);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
+ await activity.getByRole('link',{name:'Open activity and feedback',exact:true}).click();
+ await expect(page).toHaveURL(new RegExp(`/dashboard/assignments/${assignmentId}$`));
+ await page.goto('/dashboard/school/progress');
+ await expect(page).toHaveURL('/dashboard');
+ await expect(page.getByRole('heading',{name:'My learning',exact:true})).toBeVisible();
+});
+
+test('a learner resubmission awaits feedback while preserving earlier teacher feedback',async({page})=>{
+ const state=await mockDashboard(page,'learner');
+ state.submissions=[{id:'submission-two',assignment_id:assignmentId,student_id:studentId,submitted_at:'2026-10-06T10:00:00Z'}];
+ state.evidence=[{id:'review',assignment_id:assignmentId,student_id:studentId,feedback:'Please test a second case.',recorded_at:'2026-10-05T12:00:00Z',reviews:{debugging:'developing'}}];
+ await page.goto('/dashboard/my-progress');
+ const activity=page.getByRole('article',{name:'Activity progress: Give clear instructions',exact:true});
+ await expect(activity.getByText('Awaiting teacher feedback',{exact:true})).toBeVisible();
+ await expect(activity.getByText('Please test a second case.',{exact:true})).toBeVisible();
+ await expect(activity.getByText('Feedback available',{exact:true})).toHaveCount(0);
+});
 
 test('teacher home provides real inline assignment and lesson actions',async({page})=>{
  const state=await mockDashboard(page,'teacher');await page.goto('/dashboard');
