@@ -38,7 +38,7 @@ When it finishes you'll see something like:
     DB URL: postgresql://postgres:postgres@localhost:54322/postgres
 Studio URL: http://localhost:54323
   Inbucket: http://localhost:54324      ← (unused — email confirmation is OFF)
-   anon key: eyJ...                     ← put in .env.local as VITE_SUPABASE_ANON_KEY
+   anon key: eyJ...                     ← put in .env.local as VITE_SUPABASE_PUBLISHABLE_KEY
 service_role: eyJ...                    ← server-side only; do NOT ship in the frontend
 ```
 
@@ -46,7 +46,7 @@ Copy the `API URL` and `anon key` into a `.env.local` at the project root:
 
 ```
 VITE_SUPABASE_URL=http://localhost:54321
-VITE_SUPABASE_ANON_KEY=eyJ...
+VITE_SUPABASE_PUBLISHABLE_KEY=eyJ...
 ```
 
 ## Day-to-day commands
@@ -94,8 +94,9 @@ frontend env (Vercel/Netlify/wherever). The local keys stay in
 - **No email verification, no admin approval queue.** Signup via the URL
   immediately creates a live session and a school-scoped account.
 - **Postgres enforces who sees what.** Every table has Row-Level Security.
-  Two roles: `admin` (ChipuRobo team, sees everything) and `school_lead`
-  (everything scoped to their school). What the school *does* on the
+  Four roles: `admin`, `school_lead`, `teacher` and `learner`. School leads
+  retain operations; teachers access allocated learners; learners access their
+  own assignments, programs, quizzes, portfolios and evidence. What the school *does* on the
   dashboard (place orders vs. fulfil orders) is driven by the
   `schools.is_maker_space` boolean, not by the role.
 - **Only school leaders self-register; admins are SQL-only.** The
@@ -111,6 +112,10 @@ The full schema, RLS policies, the signup RPC (`register_school_with_club`),
 and the roster Storage bucket are all in
 `migrations/20260601000000_init.sql`. Read the comments at the top of that
 file for the entity overview.
+
+Teacher/learner provisioning is available to existing admins through
+Admin → Learning accounts. See [learning-platform.md](../docs/learning-platform.md)
+for learning migrations and progression policy review.
 
 ## Creating / promoting an admin (SQL only — by design)
 

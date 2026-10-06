@@ -1,3 +1,4 @@
+import { trackLearningActivity } from './learningOutcomes';
 import {
   createContext,
   useCallback,
@@ -93,6 +94,10 @@ async function loadProfileAndSchool(userId: string) {
     // run register-school-with-club yet.
     return { profile: profile as Profile, school: null };
   }
+  if (profile.role === 'teacher' || profile.role === 'learner') {
+    const { data: school } = await supabase.rpc('get_my_learning_school');
+    return { profile: profile as Profile, school: (school as School) ?? null };
+  }
   const { data: school } = await supabase
     .from('schools')
     .select('*')
@@ -148,7 +153,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     })();
 
-    const { data: sub } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       // Track auth lifecycle so we can react meaningfully:
       //   SIGNED_IN          — user just signed in (this tab or another)
       //   SIGNED_OUT         — explicit sign-out OR refresh failure
@@ -182,11 +187,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (prevUserId && prevUserId !== session.user.id) {
         qc.clear();
       }
-      const { profile, school } = await loadProfileAndSchool(session.user.id);
-      setState({
-        loading: false, user: session.user, session,
-        profile, school, sessionExpired: false,
-      });
+      // Defer SDK calls until the auth callback releases its internal lock.
+      setTimeout(() => {
+        void loadProfileAndSchool(session.user.id).then(({ profile, school }) => {
+          if (alive && lastUserIdRef.current === session.user.id) setState({
+            loading: false, user: session.user, session,
+            profile, school, sessionExpired: false,
+          });
+        });
+      }, 0);
     });
 
     return () => {
@@ -238,8 +247,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Wipe any sessionExpired flag from a previous failed session so the
     // user doesn't see the toast after a fresh login.
     setState((s) => ({ ...s, sessionExpired: false }));
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error: error?.message ?? null };
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) return { error: error.message };
+    if (!data.session) return { error: 'Sign-in did not create a session. Please try again.' };
+    // Finish account hydration before Login navigates into RequireAuth. Waiting
+    // only for the auth event races the role/school fetch and redirects a valid
+    // new session straight back to the login screen.
+    const { profile, school } = await loadProfileAndSchool(data.session.user.id);
+    trackLearningActivity('login');
+    if (!profile) {
+      await supabase.auth.signOut();
+      return { error: 'Your account could not be loaded. Please try again.' };
+    }
+    lastUserIdRef.current = data.session.user.id;
+    setState({ loading: false, user: data.session.user, session: data.session,
+      profile, school, sessionExpired: false });
+    return { error: null };
   }, []);
 
   const signOut = useCallback(async () => {
@@ -247,6 +270,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setState((s) => ({ ...s, sessionExpired: false }));
     await supabase.auth.signOut();
     qc.clear();
+    setState((s) => ({ ...s, sessionExpired: false }));
   }, [qc]);
 
   return (

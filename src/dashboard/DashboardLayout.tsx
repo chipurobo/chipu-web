@@ -1,3 +1,4 @@
+import { trackLearningActivity } from '../lib/learningOutcomes';
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
@@ -17,8 +18,16 @@ import {
 // aria-live region whenever the route changes. JAWS/NVDA users hear
 // "Navigated to <page name>" the same way they would on a full page load.
 const DASHBOARD_PAGE_TITLES: Record<string, string> = {
+  '/dashboard/quizzes': 'Knowledge checks',
+  '/dashboard/portfolio': 'Portfolio',
+  '/dashboard/learning-reports': 'Learning reports',
   '/dashboard':                     'Overview',
   '/dashboard/leaderboard':         'Leaderboard',
+  '/dashboard/my-learning':         'My learning',
+  '/dashboard/my-projects':         'Capstone projects',
+  '/dashboard/my-progress':         'My progress',
+  '/dashboard/admin/learning-accounts': 'Learning accounts',
+  '/dashboard/school/progress':     'Learner progress',
   '/dashboard/admin/schools':       'Schools',
   '/dashboard/admin/products':      'Products',
   '/dashboard/admin/orders':        'All orders',
@@ -48,6 +57,7 @@ function getDashboardPageTitle(path: string): string {
   if (path.startsWith('/dashboard/certificate/'))   return 'Certificate';
   if (path.startsWith('/dashboard/school/lessons/')) return 'Lesson roster';
   if (path.startsWith('/dashboard/school/sessions/')) return 'Attendance register';
+  if (path.startsWith('/dashboard/assignments/')) return 'Learning assignment';
   return 'Dashboard';
 }
 
@@ -77,7 +87,10 @@ function DashboardShell() {
   const { profile, school, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  useEffect(() => { if (profile) trackLearningActivity('dashboard_open'); }, [profile]);
   const isAdmin = profile?.role === 'admin';
+  const isTeacher = profile?.role === 'teacher';
+  const isLearner = profile?.role === 'learner';
   const isMakerSpace = !!school?.is_maker_space;
   const counts: OrderCounts = useOrderRealtime();
 
@@ -88,6 +101,7 @@ function DashboardShell() {
   const { data: pendingWorkshops = 0 } = useQuery({
     queryKey: ['bookings', 'pending-count'],
     queryFn: fetchPendingBookingCount,
+    enabled: !!profile && !isTeacher && !isLearner,
     refetchInterval: 60_000,
   });
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -99,17 +113,21 @@ function DashboardShell() {
   //   • shortLabel — pixel chip in the brand corner; must fit a 60px column
   //   • roleLabel  — full description in the sidebar footer pill
   const shortLabel: string =
+    isLearner     ? 'LEARNER' :
+    isTeacher     ? 'TEACHER' :
     isAdmin       ? 'ADMIN'  :
     isMakerSpace  ? 'MAKER'  :
                     'SCHOOL';
   const roleLabel: string =
+    isLearner     ? 'LEARNER' :
+    isTeacher     ? 'TEACHER' :
     isAdmin       ? 'CHIPUROBO ADMIN' :
     isMakerSpace  ? 'MAKER SPACE'    :
                     'SCHOOL LEAD';
   const roleColor: string =
-    isAdmin       ? 'text-terracotta-600' :
+    isAdmin       ? 'text-terracotta-700' :
     isMakerSpace  ? 'text-indigo-600'     :
-                    'text-teal-600';
+                    'text-teal-700';
 
   // Auto-close the drawer on route change.
   useEffect(() => { setMobileOpen(false); }, [location.pathname]);
@@ -258,7 +276,7 @@ function DashboardShell() {
           fixed md:sticky top-0 left-0 z-50 md:z-10 h-screen md:h-screen
           w-64 md:w-60 shrink-0 border-r border-warm-200 bg-white
           flex flex-col transform transition-transform md:transform-none
-          ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+          ${mobileOpen ? 'translate-x-0 visible' : '-translate-x-full invisible md:visible md:translate-x-0'}
         `}
       >
         <div className="flex items-center px-5 py-5 border-b border-warm-200">
@@ -289,7 +307,21 @@ function DashboardShell() {
             Overview
           </SidebarLink>
 
-          {isAdmin ? (
+          <SidebarLink to="/dashboard/quizzes" icon={ListChecks}>Knowledge checks</SidebarLink>
+          <SidebarLink to="/dashboard/portfolio" icon={FolderKanban}>{isLearner ? 'My portfolio' : 'Learner portfolios'}</SidebarLink>
+          {!isLearner && <SidebarLink to="/dashboard/learning-reports" icon={ClipboardList}>Learning reports</SidebarLink>}
+          {isLearner ? (
+            <>
+              <SidebarLink to="/dashboard/my-learning" icon={BookOpen}>My learning</SidebarLink>
+              <SidebarLink to="/dashboard/my-projects" icon={Award}>Capstone projects</SidebarLink>
+              <SidebarLink to="/dashboard/my-progress" icon={Award}>My progress</SidebarLink>
+            </>
+          ) : isTeacher ? (
+            <>
+              <SidebarLink to="/dashboard/school/lessons" icon={BookOpen}>Lessons and assignments</SidebarLink>
+              <SidebarLink to="/dashboard/school/progress" icon={Users}>Learner progress</SidebarLink>
+            </>
+          ) : isAdmin ? (
             <>
               {/* ─── Learning group ───
                   Lessons are the curriculum and stand alone. A workshop is
@@ -311,6 +343,7 @@ function DashboardShell() {
               <SidebarLink to="/dashboard/leaderboard" icon={Medal}>
                 Leaderboard
               </SidebarLink>
+              <SidebarLink to="/dashboard/admin/learning-accounts" icon={Users}>Learning accounts</SidebarLink>
               <SidebarLink to="/dashboard/admin/schools" icon={School}>
                 Schools
               </SidebarLink>
@@ -347,6 +380,9 @@ function DashboardShell() {
               </SidebarLink>
               <SidebarLink to="/dashboard/school/lessons" icon={BookOpen}>
                 Lessons
+              </SidebarLink>
+              <SidebarLink to="/dashboard/school/progress" icon={BookOpen}>
+                Learner progress
               </SidebarLink>
               <SidebarLink to="/dashboard/school/workshops" icon={Presentation} badge={pendingWorkshops}>
                 Workshops

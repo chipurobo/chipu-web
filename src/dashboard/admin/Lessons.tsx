@@ -10,6 +10,10 @@ import { SkeletonRows } from '../components/Skeletons';
 import { safeHttpUrl } from '../../lib/safeUrl';
 import { LevelFilter } from '../components/LevelFilter';
 import { matchesLevel, LEVEL_LABEL, type LevelChoice } from '../components/levels';
+import { LessonPlanFields, LessonPlanEditor } from '../learning/LessonPlanFields';
+import { learningActivities } from '../../lib/learningFramework';
+import { cleanLearningPlan, hasUsableLearningPlan, type LessonLearningPlan } from '../../lib/learningRecords';
+import type { Lesson } from '../../lib/database.types';
 import { LessonKitPanel } from './LessonKit';
 
 // =============================================================
@@ -36,6 +40,8 @@ const KIND_LABEL: Record<StageKind, string> = {
 export function AdminLessons() {
   const { notify } = useNotifications();
   const qc = useQueryClient();
+  const [planFor, setPlanFor] = useState<Lesson | null>(null);
+  const [learningPlan, setLearningPlan] = useState<LessonLearningPlan | null>(null);
   const [creating, setCreating] = useState(false);
   const [kitFor, setKitFor] = useState<{ id: string; title: string } | null>(null);
 
@@ -62,6 +68,7 @@ export function AdminLessons() {
 
   const createMutation = useMutation({
     mutationFn: () => createLesson({
+      learning_plan: learningPlan ? cleanLearningPlan(learningPlan) : null,
       title: title.trim(),
       description: description.trim() || null,
       kind,
@@ -81,6 +88,7 @@ export function AdminLessons() {
       notify('success', 'Lesson added', 'Schools can now request a workshop on it.');
       setTitle(''); setDescription(''); setKind('lesson'); setPoints(1);
       setRequired(false); setResourceUrl(''); setNewLevel('both');
+      setLearningPlan(null);
       setCreating(false);
     },
     onError: (err: Error) => notify('warning', 'Could not add lesson', err.message),
@@ -118,6 +126,8 @@ export function AdminLessons() {
         </button>
       </div>
 
+      {planFor && <LessonPlanEditor key={planFor.id} lesson={planFor} onClose={() => setPlanFor(null)} />}
+
       {kitFor && (
         <LessonKitPanel
           lessonId={kitFor.id}
@@ -128,6 +138,23 @@ export function AdminLessons() {
 
       {creating && (
         <form onSubmit={onSubmit} className="card p-4" aria-label="New lesson">
+          <div className="mb-4">
+            <label className="field-label" htmlFor="activity-template">Start from an activity template</label>
+            <select id="activity-template" className="field-input" defaultValue="" onChange={(e) => {
+              const activity = learningActivities.find((item) => item.id === e.target.value);
+              if (!activity) return;
+              setTitle(activity.title); setDescription(activity.summary); setKind('lesson');
+              setResourceUrl(activity.resource?.url ?? '');
+              setLearningPlan({ frameworkVersion: '0.1', pathwayId: activity.pathwayId,
+                level: activity.level, competencyIds: activity.competencyIds,
+                steps: activity.steps, evidenceBrief: activity.artifact });
+            }}>
+              <option value="">Write your own lesson</option>
+              {learningActivities.map((activity) => <option key={activity.id} value={activity.id}>
+                {activity.title} ({activity.level})
+              </option>)}
+            </select>
+          </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2">
               <label className="field-label" htmlFor="l-title">Title</label>
@@ -179,9 +206,10 @@ export function AdminLessons() {
               </label>
             </div>
           </div>
+          <div className="mt-4"><LessonPlanFields id="new-lesson" value={learningPlan} onChange={setLearningPlan} /></div>
           <div className="mt-4">
             <button className="btn-primary" type="submit"
-              disabled={!title.trim() || createMutation.isPending}>
+              disabled={!title.trim() || createMutation.isPending || (!!learningPlan && !hasUsableLearningPlan(learningPlan))}>
               {createMutation.isPending ? 'Adding…' : 'Add lesson'}
             </button>
           </div>
@@ -264,7 +292,10 @@ export function AdminLessons() {
                         : 'Add kit'}
                     </button>
                   </td>
-                  <td className="text-right">
+                  <td className="text-right space-x-2">
+                    <button type="button" className="btn-secondary !py-1 !text-xs" onClick={() => setPlanFor(l)}>
+                      {l.learning_plan ? 'Edit learning plan' : 'Set learning outcomes'}
+                    </button>
                     <button
                       className="btn-secondary !py-1 !text-xs"
                       disabled={toggleActive.isPending}

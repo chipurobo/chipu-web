@@ -89,6 +89,7 @@ export function NotificationToaster() {
     // interrupt politely-queued info/success toasts.
     <>
       <div
+        role="log"
         aria-live="polite"
         aria-atomic="false"
         aria-label="Notifications"

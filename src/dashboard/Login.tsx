@@ -1,47 +1,44 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/auth';
 import { Sparkles } from 'lucide-react';
 
-const ONBOARDING_KEY = 'chipurobo:onboarding-seen';
-
-// Self-signup is intentionally absent. Schools (and their lead-teacher
-// logins) are created by ChipuRobo admins on /dashboard/admin/schools, and the
-// teacher is emailed their login automatically on creation.
-//
-// Login is EMAIL + password. The field is forgiving — if the user pastes
-// only the "username" half of their school-lead login (e.g. "mary.wanjiku"),
-// we transparently append "@chipurobo.local" before calling Supabase.
-function normaliseEmail(input: string): string {
-  const v = input.trim().toLowerCase();
-  return v.includes('@') ? v : `${v}@chipurobo.local`;
+function normaliseLogin(input: string, kind: 'teacher' | 'learner' | 'admin'): string {
+  const value = input.trim().toLowerCase();
+  return value.includes('@') ? value : `${value}@${kind === 'learner' ? 'learners.chipurobo.local' : 'chipurobo.local'}`;
 }
 
 export function Login() {
   const navigate = useNavigate();
-  const { signIn, sessionExpired } = useAuth();
+  const { signIn, signOut, sessionExpired } = useAuth();
+  const [kind, setKind] = useState<'teacher' | 'learner' | 'admin'>('teacher');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // First-time visitors land on the welcome carousel.
-  useEffect(() => {
-    let seen = false;
-    try { seen = localStorage.getItem(ONBOARDING_KEY) === '1'; } catch { /* ignore */ }
-    if (!seen) navigate('/dashboard/welcome', { replace: true });
-  }, [navigate]);
-
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
     setSubmitting(true);
-    const { error: err } = await signIn(normaliseEmail(email), password);
-    setSubmitting(false);
+    const { error: err } = await signIn(normaliseLogin(email, kind), password);
     if (err) {
       setError(err);
+      setSubmitting(false);
       return;
     }
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) { setSubmitting(false); setError('Your session ended. Please sign in again.'); return; }
+    const { data: account, error: accountError } = await supabase.from('profiles').select('role').eq('id', sessionData.session.user.id).single();
+    const accepted = kind === 'teacher' ? ['teacher', 'school_lead'] : [kind];
+    if (accountError || !account || !accepted.includes(account.role)) {
+      await signOut();
+      setSubmitting(false);
+      setError('These credentials do not match the selected account type. Choose the correct sign-in option.');
+      return;
+    }
+    setSubmitting(false);
     navigate('/dashboard', { replace: true });
   };
 
@@ -61,8 +58,7 @@ export function Login() {
         <div className="card p-6 sm:p-8">
           <h1 className="mb-1">Sign in to ChipuRobo</h1>
           <p className="text-sm text-gray-600 mb-6">
-            Use the email + password ChipuRobo sent you. Don't have credentials yet?
-            Get in touch with the ChipuRobo team.
+            Sign in with the account your school or ChipuRobo gave you.
           </p>
 
           {/* Surfaced if the session ended unexpectedly — token refresh
@@ -77,18 +73,26 @@ export function Login() {
           )}
 
           <form onSubmit={onSubmit} className="space-y-4">
+            <fieldset className="flex gap-3 flex-wrap">
+              <legend className="field-label">Sign in as</legend>
+              {(['teacher', 'learner', 'admin'] as const).map((option) => <label key={option} className="inline-flex items-center gap-2 text-sm cursor-pointer">
+                <input type="radio" name="login-kind" value={option} checked={kind === option}
+                  onChange={() => { setKind(option); setError(null); }} />
+                {option === 'teacher' ? 'Teacher' : option === 'learner' ? 'Learner' : 'Admin'}
+              </label>)}
+            </fieldset>
             <div>
-              <label className="field-label" htmlFor="email">Email</label>
+              <label className="field-label" htmlFor="email">{kind === 'learner' ? 'Learner username' : 'Email'}</label>
               <input
                 id="email"
                 type="text"
                 required
                 aria-required="true"
-                autoComplete="email"
+                autoComplete="username"
                 autoCapitalize="off"
                 spellCheck={false}
                 className="field-input"
-                placeholder="you@example.com"
+                placeholder={kind === 'learner' ? 'your.username' : 'you@example.com'}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -118,7 +122,7 @@ export function Login() {
             </button>
 
             <p className="text-sm text-center mt-3 mb-0">
-              <Link to="/dashboard/forgot-password" className="text-teal-700 hover:underline">
+              <Link to="/dashboard/forgot-password" className="!text-teal-800 hover:underline">
                 Forgot your password?
               </Link>
             </p>
@@ -127,7 +131,7 @@ export function Login() {
           <div className="text-xs text-gray-500 mt-6 text-center flex flex-col gap-2">
             <Link
               to="/dashboard/welcome"
-              className="text-teal-700 hover:underline inline-flex items-center justify-center"
+              className="!text-teal-800 hover:underline inline-flex items-center justify-center"
             >
               <Sparkles className="h-3.5 w-3.5 mr-1" aria-hidden="true" />
               Take the tour

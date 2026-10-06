@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, dev]
   pull_request:
 
 jobs:
@@ -22,6 +22,15 @@ jobs:
 
       - name: Lint (zero warnings)
         run: npm run lint
+
+      - name: Learning framework checks
+        run: npm run test:learning
+
+      - name: Install test browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Learning journeys and accessibility
+        run: npm run test:learning-ui
 
       # No env vars needed: the VITE_SUPABASE_* check in src/lib/supabase.ts
       # runs in the browser, not at build time, so tsc + vite build pass

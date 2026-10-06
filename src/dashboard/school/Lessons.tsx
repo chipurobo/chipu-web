@@ -3,12 +3,16 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import {
   fetchCurriculumLessons,
-  fetchMembersBySchoolUnordered,
   fetchPassedCompletionsWithStudent,
 } from '../../lib/gql/queries';
 import { useAuth } from '../../lib/auth';
 import type { StageKind } from '../../lib/database.types';
 import { BookOpen, Laptop, MonitorPlay, FolderKanban, ArrowRight, GraduationCap, Megaphone, Link as LinkIcon, ExternalLink } from 'lucide-react';
+import { fetchLearningStudents } from '../../lib/learningQueries';
+import { AssignLessonForm } from '../learning/AssignLessonForm';
+import { learningLevels, learningPathways } from '../../lib/learningFramework';
+import { hasUsableLearningPlan } from '../../lib/learningRecords';
+import type { Lesson } from '../../lib/database.types';
 import { SkeletonCards } from '../components/Skeletons';
 import { safeHttpUrl } from '../../lib/safeUrl';
 import { LevelFilter } from '../components/LevelFilter';
@@ -55,8 +59,9 @@ interface CompletionCountRow {
 }
 
 export function SchoolLessons() {
+  const [assignFor, setAssignFor] = useState<Lesson | null>(null);
   const [level, setLevel] = useState<LevelChoice>('all');
-  const { school } = useAuth();
+  const { school, profile } = useAuth();
   const schoolId = school?.id ?? null;
 
   // The whole active curriculum. Request training on any of it via Workshops.
@@ -70,8 +75,8 @@ export function SchoolLessons() {
   // because RLS will hand us back rows from any school we can read, and
   // we always want the count to be of THIS school's students.
   const studentsQuery = useQuery({
-    queryKey: ['members', schoolId],
-    queryFn: () => fetchMembersBySchoolUnordered(schoolId!),
+    queryKey: ['learning-students', schoolId],
+    queryFn: () => fetchLearningStudents(schoolId!),
     enabled: !!schoolId,
   });
 
@@ -116,7 +121,7 @@ export function SchoolLessons() {
         </p>
         <h1>Lessons</h1>
         <p className="text-sm text-gray-600 mt-1 max-w-2xl">
-          Tick the students who completed each lesson, and record a verification link for self-paced tracks. Save once you're done.
+          Assign lessons to your students, review their work and record evidence of learning.
         </p>
         {activeStudentCount > 0 && (
           <p className="text-xs text-gray-500 mt-1">
@@ -124,6 +129,8 @@ export function SchoolLessons() {
           </p>
         )}
       </div>
+
+      {assignFor && <AssignLessonForm key={assignFor.id} lesson={assignFor} onClose={() => setAssignFor(null)} />}
 
       <LevelFilter
         value={level}
@@ -172,6 +179,7 @@ export function SchoolLessons() {
                       <span className={`${badge}`}>{STAGE_KIND_LABEL[s.kind]}</span>
                       <span className="text-xs text-gray-500">{s.points} pt{s.points === 1 ? '' : 's'}</span>
                       <span className="badge-gray">{LEVEL_LABEL[s.level]}</span>
+                      {s.learning_plan && <span className="badge-teal">{learningLevels.find((level) => level.id === s.learning_plan?.level)?.title}</span>}
                       {s.required_for_certificate && (
                         <span className="badge-amber inline-flex items-center">
                           <GraduationCap className="h-3 w-3 mr-1" aria-hidden="true" />
@@ -185,6 +193,10 @@ export function SchoolLessons() {
                 {s.description && (
                   <p className="text-sm text-gray-700 mb-2">{s.description}</p>
                 )}
+
+                {s.learning_plan && <p className="text-sm text-gray-600 mb-2">
+                  {learningPathways.find((path) => path.id === s.learning_plan?.pathwayId)?.title} · {s.learning_plan.competencyIds.length} competencies
+                </p>}
 
                 {/* The resource is the lesson, for a self-paced track. Rendered
                     through safeHttpUrl so a non-http(s) value is refused rather
@@ -202,19 +214,23 @@ export function SchoolLessons() {
                 )}
 
                 <div className="mt-auto pt-3 border-t border-warm-200 flex items-center justify-between gap-3">
-                  <div className="text-xs text-gray-600">
+                  {profile?.role !== 'teacher' && <div className="text-xs text-gray-600">
                     <span className="font-medium text-gray-900">{passed}</span> passed
                     {s.points > 0 && (
                       <> · <span className="font-medium text-gray-900">{contribution}</span> pt{contribution === 1 ? '' : 's'} earned</>
                     )}
-                  </div>
+                  </div>}
+                  <div className="flex gap-3 items-center flex-wrap">
+                  <button type="button" className="btn-secondary !text-xs" disabled={!hasUsableLearningPlan(s.learning_plan)}
+                    onClick={() => setAssignFor(s)} title={!s.learning_plan ? 'Learning outcomes must be set first' : undefined}>Assign lesson</button>
                   <Link
                     to={`/dashboard/school/lessons/${s.id}`}
                     className="text-xs text-teal-700 hover:underline inline-flex items-center"
                   >
-                    Open roster
+                    Open lesson
                     <ArrowRight className="h-3.5 w-3.5 ml-1" aria-hidden="true" />
                   </Link>
+                  </div>
                 </div>
               </article>
             );

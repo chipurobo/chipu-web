@@ -1,3 +1,4 @@
+import { trackLearningActivity } from '../../lib/learningOutcomes';
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
@@ -16,6 +17,7 @@ import {
   Link as LinkIcon, ExternalLink,
 } from 'lucide-react';
 import { SkeletonRows } from '../components/Skeletons';
+import { LessonAssignments } from '../learning/AssignLessonForm';
 import { ProductThumb } from '../components/ProductThumb';
 import { safeHttpUrl } from '../../lib/safeUrl';
 
@@ -63,6 +65,23 @@ interface RowState {
 }
 
 export function SchoolLessonStage() {
+  const { profile } = useAuth();
+  return profile?.role === 'teacher' ? <TeacherLessonStage /> : <SchoolLessonRoster />;
+}
+
+function TeacherLessonStage() {
+  const { lessonId } = useParams();
+  useEffect(() => { if (lessonId) trackLearningActivity('resource_open', lessonId); }, [lessonId]);
+  const lesson = useQuery({ queryKey: ['lesson', lessonId], queryFn: () => fetchLessonById(lessonId!), enabled: !!lessonId });
+  return <div className="learning-zone px-4 sm:px-6 lg:px-10 py-8 space-y-6">
+    <Link to="/dashboard/school/lessons" className="text-sm text-teal-700 underline">Back to lessons</Link>
+    {lesson.isPending && <p role="status">Loading lesson…</p>}
+    {lesson.error && <p role="alert" className="text-red-700">{lesson.error.message}</p>}
+    {lesson.data && <><h1>{lesson.data.title}</h1><p className="text-sm text-gray-600">{lesson.data.description}</p><LessonAssignments lesson={lesson.data} /></>}
+  </div>;
+}
+
+function SchoolLessonRoster() {
   const { lessonId } = useParams<{ lessonId: string }>();
   const { school, profile } = useAuth();
   const qc = useQueryClient();
@@ -268,6 +287,8 @@ export function SchoolLessonStage() {
           )}
         </div>
       </div>
+
+      {stage && <LessonAssignments lesson={stage} />}
 
       {/* What has to exist before this lesson can run. Empty for most lessons;
           shown only when someone has attached kit to it. */}
