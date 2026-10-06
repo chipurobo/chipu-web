@@ -48,17 +48,8 @@ export interface ProgressionDecision {
   decided_at: string;
   policy_id: string;
 }
-export interface ProgressionPolicy {
-  id: string;
-  name: string;
-  framework_version: string;
-  approved: boolean;
-  review_notes: string;
-  required_competencies: Record<LearningLevel, string[]>;
-}
 export interface ProgressionReadiness {
   ready: boolean;
-  policy_approved: boolean;
   missing_competencies: string[];
   quiz_attempt_id: string | null;
   capstone_review_id: string | null;

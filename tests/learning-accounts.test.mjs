@@ -52,7 +52,7 @@ before(async () => {
     create policy orders_all on public.orders to authenticated using(public.me_is_admin() or school_id=public.me_school_id()) with check(public.me_is_admin() or school_id=public.me_school_id());
     grant select,insert,update,delete on public.club_members,public.orders to authenticated;
   `);
-  for (const name of ['20261005000000_dashboard_learning_actions.sql','20261005000001_learning_account_roles.sql','20261005000002_learning_accounts_and_submissions.sql','20261005000003_blockly_learning_programs.sql','20261005000004_blockly_lesson_course.sql','20261005000005_blockly_capstone_projects.sql','20261005000006_require_blockly_submissions.sql','20261006000000_quizzes_and_portfolios.sql','20261006000001_progression_and_reporting.sql','20261006000002_knowledge_check_content.sql']) {
+  for (const name of ['20261005000000_dashboard_learning_actions.sql','20261005000001_learning_account_roles.sql','20261005000002_learning_accounts_and_submissions.sql','20261005000003_blockly_learning_programs.sql','20261005000004_blockly_lesson_course.sql','20261005000005_blockly_capstone_projects.sql','20261005000006_require_blockly_submissions.sql','20261006000000_quizzes_and_portfolios.sql','20261006000001_progression_and_reporting.sql','20261006000002_knowledge_check_content.sql','20261006000003_evidence_based_progression.sql']) {
     await db.exec(await readFile(new URL(`../supabase/migrations/${name}`, import.meta.url), 'utf8'));
   }
   await db.query('update public.lessons set learning_plan=$1 where id=$2', [JSON.stringify(plan),id(301)]);
@@ -233,27 +233,32 @@ test('progression decisions enforce review, evidence, prior levels and role boun
  await assert.rejects(db.query('select public.learning_progression_readiness($1,$2)',[id(202),'beginner']),/access denied/);
  await asUser(teacher);let r=(await db.query('select public.learning_progression_readiness($1,$2) as r',[id(201),'beginner'])).rows[0].r;
  assert.equal(r.policy_approved,false);assert.equal(r.ready,false);
- await assert.rejects(db.query('select public.record_learning_progression($1,$2,$3,$4)',[id(201),'beginner','awarded','Ready']),/approved policy/);
+ await assert.rejects(db.query('select public.record_learning_progression($1,$2,$3,$4)',[id(201),'beginner','awarded','Ready']),/demonstrated competencies/);
  await db.query('select public.record_learning_progression($1,$2,$3,$4)',[id(201),'beginner','deferred','Practise the missing outcomes and submit the capstone.']);
- await assert.rejects(db.query('select public.approve_learning_progression_policy($1)',['Approved after review of source mapping and pilot criteria.']),/Admin access/);
- await asUser(id(1));await db.query('select public.approve_learning_progression_policy($1)',['Approved after review of source mapping and pilot criteria.']);
+ await assert.rejects(db.query('select public.approve_learning_progression_policy($1)',['Approved after review of source mapping and pilot criteria.']),/permission denied/);
+ await asUser(id(1));await assert.rejects(db.query('select public.approve_learning_progression_policy($1)',['Obsolete sign-off workflow.']),/permission denied/);
  await asUser(teacher);r=(await db.query('select public.learning_progression_readiness($1,$2) as r',[id(201),'beginner'])).rows[0].r;
- assert.equal(r.policy_approved,true);assert.equal(r.ready,false);
- await assert.rejects(db.query('select public.record_learning_progression($1,$2,$3,$4)',[id(201),'beginner','awarded','Still missing evidence']),/approved policy/);
+ assert.equal(r.policy_approved,false);assert.equal(r.ready,false);
+ await assert.rejects(db.query('select public.record_learning_progression($1,$2,$3,$4)',[id(201),'beginner','awarded','Still missing evidence']),/demonstrated competencies/);
  await asUser(otherTeacher);await assert.rejects(db.query('select public.record_learning_progression($1,$2,$3,$4)',[id(201),'beginner','deferred','No access']),/Teacher access/);
 });
 
-test('a level award retains its evidence and cannot reuse a superseded developing capstone review', async () => {
+test('a level can be awarded without curriculum sign-off and cannot reuse a superseded developing capstone review', async () => {
  await asUser(teacher);
  const work=(await db.query("select s.id from public.learning_submissions s join public.learning_assignments a on a.id=s.assignment_id where s.student_id=$1 and a.learning_plan->>'activityKind'='capstone' and a.learning_plan->>'level'='beginner' order by s.submitted_at desc limit 1",[id(201)])).rows[0].id;
  const bands={algorithms:'demonstrated',programming:'demonstrated',debugging:'demonstrated',design:'demonstrated',communication:'demonstrated'};
  await db.query('select public.review_learning_submission($1,$2,$3)',[work,'Observed all project criteria, tested the program and discussed the explanation.',bands]);
- const r=(await db.query('select public.learning_progression_readiness($1,$2) as r',[id(201),'beginner'])).rows[0].r;assert.equal(r.ready,true);
+ const r=(await db.query('select public.learning_progression_readiness($1,$2) as r',[id(201),'beginner'])).rows[0].r;assert.equal(r.policy_approved,false);assert.equal(r.ready,true);
+ assert.equal((await db.query('select public.learning_progression_readiness($1,$2) as r',[id(201),'intermediate'])).rows[0].r.previous_level_awarded,false);
  const decision=(await db.query('select public.record_learning_progression($1,$2,$3,$4) as id',[id(201),'beginner','awarded','Reviewed the quiz, practical evidence and capstone. Practise intermediate tasks next.'])).rows[0].id;
+ assert.equal((await db.query('select public.learning_progression_readiness($1,$2) as r',[id(201),'intermediate'])).rows[0].r.previous_level_awarded,true);
+ await db.exec('reset role');
+ const policies=(await db.query('select approved from public.learning_progression_policies')).rows;assert.deepEqual(policies,[{approved:false}]);
+ await asUser(teacher);
  const saved=(await db.query('select * from public.learning_progression_decisions where id=$1',[decision])).rows[0];assert.equal(saved.evidence_snapshot.quiz_attempt_id,r.quiz_attempt_id);assert.equal(saved.evidence_snapshot.capstone_review_id,r.capstone_review_id);
  await db.query('select public.review_learning_submission($1,$2,$3)',[work,'A later observation needs more testing.',{...bands,debugging:'developing'}]);
  assert.equal((await db.query('select public.learning_progression_readiness($1,$2) as r',[id(201),'beginner'])).rows[0].r.ready,false);
- await assert.rejects(db.query('select public.record_learning_progression($1,$2,$3,$4)',[id(201),'beginner','awarded','Use old best score']),/approved policy/);
+ await assert.rejects(db.query('select public.record_learning_progression($1,$2,$3,$4)',[id(201),'beginner','awarded','Use old best score']),/demonstrated competencies/);
  assert.equal((await db.query('select * from public.learning_progression_decisions where id=$1',[decision])).rows[0].outcome,'awarded');
  await asUser(learner);assert.equal((await db.query('select * from public.learning_progression_decisions where id=$1',[decision])).rows.length,1);
  await asUser(peer);assert.equal((await db.query('select * from public.learning_progression_decisions where id=$1',[decision])).rows.length,0);
