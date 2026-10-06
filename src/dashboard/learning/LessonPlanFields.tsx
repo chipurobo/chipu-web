@@ -16,7 +16,7 @@ export function LessonPlanFields({ value, onChange, id }: {
   return (
     <fieldset className="learning-zone border border-warm-200 rounded-lg p-4 space-y-4 min-w-0">
       <legend className="text-sm font-semibold px-1">Learning outcomes</legend>
-      <p className="text-sm text-gray-600">KICD Grade 10 reference · ChipuRobo mapping awaiting review.</p>
+      <p className="text-sm text-gray-600">Choose a learning level, competencies and the evidence to collect.</p>
       <div className="grid sm:grid-cols-2 gap-4">
         <div>
           <label className="field-label" htmlFor={`${id}-pathway`}>Learning pathway</label>
@@ -55,9 +55,8 @@ export function LessonPlanFields({ value, onChange, id }: {
           value={value.evidenceBrief} onChange={(e) => onChange({ ...value, evidenceBrief: e.target.value })} />
       </div>
       <details className="text-sm text-gray-600">
-        <summary className="cursor-pointer text-teal-700">Curriculum source and review status</summary>
-        <p className="mt-2">{learningFramework.source.verification}</p>
-        <a className="text-teal-700 underline" href={learningFramework.source.listingUrl} target="_blank" rel="noopener noreferrer">KICD Grade 10 designs (opens in a new tab)</a>
+        <summary className="cursor-pointer text-teal-700">Curriculum reference</summary>
+        <a className="text-teal-700 underline" href={learningFramework.source.currentUrl} target="_blank" rel="noopener noreferrer">KICD Grade 10 Computer Studies (opens in a new tab)</a>
       </details>
       <button type="button" className="text-sm text-gray-600 underline" onClick={() => onChange(null)}>Remove learning outcomes</button>
     </fieldset>

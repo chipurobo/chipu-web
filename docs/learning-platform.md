@@ -160,9 +160,11 @@ Apply migrations `20261006000000_quizzes_and_portfolios.sql`,
   missing evidence and next steps. Teachers record an award, defer for further
   practice, or revoke a prior decision, with a reason. Each decision records
   its policy and exact evidence IDs. The current draft policy cannot award
-  levels. Admins must explicitly review and approve a new ChipuRobo policy
-  version in Learning reports. This approval does not assert official KICD
-  validation. An award requires the latest observations to demonstrate all
+  levels. Curriculum sign-off is recorded outside the dashboard in the Desktop
+  curriculum and technical review document. After sign-off, an authorised
+  maintainer records a new versioned policy in the existing database. This
+  approval does not assert official KICD validation. An award requires the latest
+  observations to demonstrate all
   required competencies, a passed level quiz, a demonstrated submitted Blockly
   capstone and any previous level. A score/submission never awards a level
   automatically; later observations never overwrite decision history.

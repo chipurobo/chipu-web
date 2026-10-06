@@ -62,15 +62,14 @@ export function ProgressionReview({ studentId }: { studentId: string }) {
           <p className="text-sm">
             {r.ready
               ? 'Evidence requirements met. A teacher still needs to review and decide.'
-              : 'More evidence or curriculum review is needed before this level can be awarded.'}
+              : 'Complete the activities and reviews below to prepare for this level.'}
           </p>
+          {!r.policy_approved && (
+            <p className="text-sm">
+              Level awards are not available yet. Continue learning and collecting feedback.
+            </p>
+          )}
           <ul className="list-disc pl-5 space-y-1 text-sm">
-            <li>
-              {r.policy_approved
-                ? 'ChipuRobo progression criteria approved'
-                : 'ChipuRobo progression criteria await admin review'}
-              . Full KICD alignment is not certified by this decision.
-            </li>
             <li>
               {r.quiz_attempt_id
                 ? 'Knowledge check pass recorded'
