@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/auth';
 import { fetchSchoolLoginOptions } from '../lib/learningQueries';
-import { admissionLogin, learnerEmail } from '../lib/learnerLogin';
+import { admissionLogin, learnerEmail, learnerPassword, normaliseAdmissionNumber } from '../lib/learnerLogin';
 import { Sparkles } from 'lucide-react';
 
 function normaliseLogin(input: string, kind: 'teacher' | 'learner' | 'admin'): string {
@@ -17,12 +17,11 @@ export function Login() {
   const { signIn, signOut, sessionExpired } = useAuth();
   const [kind, setKind] = useState<'teacher' | 'learner' | 'admin'>('teacher');
   const [email, setEmail] = useState('');
-  // Learners sign in with their school and admission number. A username
-  // still works for the few accounts made before admission numbers existed.
+  // Learners sign in with their school and four-digit admission number only.
+  // The account's password is derived from the login (see learnerLogin.ts).
   const [schoolCode, setSchoolCode] = useState('');
   const [admission, setAdmission] = useState('');
-  const [useUsername, setUseUsername] = useState(false);
-  const schools = useQuery({ queryKey: ['school-login-options'], queryFn: fetchSchoolLoginOptions, enabled: kind === 'learner' && !useUsername });
+  const schools = useQuery({ queryKey: ['school-login-options'], queryFn: fetchSchoolLoginOptions, enabled: kind === 'learner' });
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,8 +30,16 @@ export function Login() {
     e.preventDefault();
     setError(null);
     setSubmitting(true);
-    const identity = kind === 'learner' && !useUsername ? learnerEmail(admissionLogin(schoolCode, admission)) : normaliseLogin(email, kind);
-    const { error: err } = await signIn(identity, password);
+    let identity = normaliseLogin(email, kind);
+    let secret = password;
+    if (kind === 'learner') {
+      const number = normaliseAdmissionNumber(admission);
+      if (!/^[0-9]{4}$/.test(number)) { setError('Your admission number is 4 digits, like 0014.'); setSubmitting(false); return; }
+      const login = admissionLogin(schoolCode, number);
+      identity = learnerEmail(login);
+      secret = learnerPassword(login);
+    }
+    const { error: err } = await signIn(identity, secret);
     if (err) {
       setError(err);
       setSubmitting(false);
@@ -69,7 +76,7 @@ export function Login() {
           <h1 className="mb-1">Sign in to ChipuRobo</h1>
           <p className="text-sm text-gray-600 mb-6">
             {kind === 'learner'
-              ? 'Pick your school, then type your admission number and password. Ask your teacher if you forget!'
+              ? 'Pick your school and type your admission number. Ask your teacher if you forget it!'
               : 'Sign in with the account your school or ChipuRobo gave you.'}
           </p>
 
@@ -93,7 +100,7 @@ export function Login() {
                 {option === 'teacher' ? 'Teacher' : option === 'learner' ? 'Learner' : 'Admin'}
               </label>)}
             </fieldset>
-            {kind === 'learner' && !useUsername ? <>
+            {kind === 'learner' ? <>
               <div>
                 <label className="field-label" htmlFor="school"><span aria-hidden="true">🏫 </span>School</label>
                 <select id="school" required aria-required="true" className="field-select" value={schoolCode} onChange={(e) => setSchoolCode(e.target.value)}>
@@ -104,11 +111,11 @@ export function Login() {
               </div>
               <div>
                 <label className="field-label" htmlFor="admission"><span aria-hidden="true">🔢 </span>Admission number</label>
-                <input id="admission" type="text" required aria-required="true" autoComplete="username" autoCapitalize="off" spellCheck={false}
-                  className="field-input" placeholder="e.g. 2026/014" value={admission} onChange={(e) => setAdmission(e.target.value)} />
+                <input id="admission" type="text" inputMode="numeric" pattern="[0-9]{1,4}" maxLength={4} required aria-required="true" autoComplete="username" autoCapitalize="off" spellCheck={false}
+                  className="field-input text-2xl tracking-[0.3em]" placeholder="0014" value={admission} onChange={(e) => setAdmission(e.target.value.replace(/[^0-9]/g, ''))} />
               </div>
             </> : <div>
-              <label className="field-label" htmlFor="email">{kind === 'learner' ? 'Learner username' : 'Email'}</label>
+              <label className="field-label" htmlFor="email">Email</label>
               <input
                 id="email"
                 type="text"
@@ -118,12 +125,12 @@ export function Login() {
                 autoCapitalize="off"
                 spellCheck={false}
                 className="field-input"
-                placeholder={kind === 'learner' ? 'your.username' : 'you@example.com'}
+                placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>}
-            <div>
+            {kind !== 'learner' && <div>
               <label className="field-label" htmlFor="password">Password</label>
               <input
                 id="password"
@@ -135,7 +142,7 @@ export function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
-            </div>
+            </div>}
 
             {error && (
               <div role="alert" className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-md px-3 py-2">
@@ -147,15 +154,11 @@ export function Login() {
               {submitting ? 'Signing in…' : 'Sign in'}
             </button>
 
-            <p className="text-sm text-center mt-3 mb-0">
-              {kind === 'learner'
-                ? <button type="button" className="!text-teal-800 hover:underline" onClick={() => { setUseUsername(!useUsername); setError(null); }}>
-                    {useUsername ? 'Sign in with school and admission number' : 'I have a username instead'}
-                  </button>
-                : <Link to="/dashboard/forgot-password" className="!text-teal-800 hover:underline">
-                    Forgot your password?
-                  </Link>}
-            </p>
+            {kind !== 'learner' && <p className="text-sm text-center mt-3 mb-0">
+              <Link to="/dashboard/forgot-password" className="!text-teal-800 hover:underline">
+                Forgot your password?
+              </Link>
+            </p>}
           </form>
 
           <div className="text-xs text-gray-500 mt-6 text-center flex flex-col gap-2">

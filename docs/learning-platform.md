@@ -302,44 +302,45 @@ query, table or review rule changed.
 
 ## Learner logins: school and admission number (October 2026)
 
-Learners sign in by choosing their school and typing their admission number
-and password. Under the hood the account is still an `auth.users` row whose
-email is `<school code>-<admission number>@learners.chipurobo.local`, so
-sessions, RLS and the `learner_accounts` link are unchanged.
+A learner signs in by choosing their school and typing a four-digit admission
+number. There is no learner password. Under the hood the account is still an
+`auth.users` row whose email is `<school code>-<number>@learners.chipurobo.local`
+and whose password is derived from that login by one fixed rule
+(`public.learner_password()`, mirrored by `learnerPassword()` in
+`src/lib/learnerLogin.ts`), so sessions, RLS and the `learner_accounts` link
+are unchanged. Anyone who knows a school and a number can open that learner's
+page; this was chosen deliberately for young learners and low-risk data.
 
 - `schools.code` is a short unique label (for example `alliance-girls`),
-  generated from the school name by migration `20261013000000` and by a
-  trigger for new schools. An admin may change it before learners exist.
-- `club_members.admission_number` is the school's own number, unique within
-  the school only, so two schools can both have `2026/001`.
-- `public.admission_login(code, admission)` derives the username; the client
+  generated from the school name (migration `20261013000000`) and by a trigger
+  for new schools. An admin may change it before learners exist.
+- `club_members.admission_number` is four digits, unique within the school,
+  assigned in order (0001, 0002, …) by a trigger on insert and by
+  `next_admission_number()` (migration `20261013000002`). Existing rosters were
+  renumbered in the order learners joined.
+- `club_members.full_name` is optional (migration `20261013000001`). Screens
+  label a learner with `learner_label()` in SQL or `learnerLabel()` in the
+  client: the name if there is one, otherwise the admission number.
+- `public.admission_login(code, number)` derives the username; the client
   mirrors it in `src/lib/learnerLogin.ts`. Change both or neither.
 - `school_login_options` is a view of names and codes readable before sign-in,
   like `public_schools_map`.
-- `admin_bulk_create_learners(school, rows, default_password)` creates roster
-  rows and logins from admission numbers, up to 500 per call. It is
-  idempotent: rerunning updates names and skips learners who already have a
-  login. The admin Learning accounts page uses it for spreadsheet imports in
-  chunks of 200; `scripts/seed-learners.mjs` uses it for large seeds.
-- Accounts made before this change keep their usernames; the sign-in page has
-  an "I have a username instead" option for them.
-- **Learners need no name.** Schools give admission numbers, not names, so
-  `club_members.full_name` is optional (migration `20261013000001`). Every
-  screen labels a learner with `learner_label()` in SQL or `learnerLabel()`
-  in `src/lib/learnerCopy.ts`: the name if there is one, otherwise the
-  admission number.
+- `admin_create_learner_login(student)` makes one login for a roster row;
+  `admin_bulk_create_learners(school, rows)` makes up to 500 at once. Both
+  assign the next number when the row has none, and both are idempotent:
+  learners who already have a login are skipped. The admin Learning accounts
+  page uses them; `scripts/seed-learners.mjs` uses the bulk one for big seeds.
 
 ### Seeding many learners
 
 ```bash
-node scripts/seed-learners.mjs --file learners.xlsx           # validate only
-node scripts/seed-learners.mjs --file learners.xlsx --apply   # write
-node scripts/seed-learners.mjs --synthetic 30000 --apply      # local scale test
+node scripts/seed-learners.mjs --file learners.xlsx                # validate only
+node scripts/seed-learners.mjs --file learners.xlsx --apply        # write
+node scripts/seed-learners.mjs --count 40 --school likoni-vi --apply   # 40 numbered learners
+node scripts/seed-learners.mjs --synthetic 30000 --apply           # local scale test
 ```
 
-Columns: school (name or code) and admission_number. Optional: grade,
-password, full_name. Generated passwords go to `.context/seed-credentials-*.csv`
-(gitignored, mode 600). By default every learner at a school gets the same
-initial password (`--password-mode school`); `--password-mode per-learner`
-generates one per learner. For a
-hosted project pass `--db "postgresql://…"` and have `psql` on the PATH.
+File columns: school (name or code). Optional: admission_number (1–4 digits;
+leave empty to assign the next ones), grade, full_name. Pass `--db linked` to
+run against the hosted project through `supabase db query --linked`. The
+script writes the assigned numbers to `.context/seed-learners-*.csv`.
