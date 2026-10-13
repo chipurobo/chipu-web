@@ -92,6 +92,8 @@ export type SpecialNeedsFocus = 'visual_impairment' | 'hearing_impairment';
 export interface School {
   id: string;
   name: string;
+  // Short unique label used in learner logins, e.g. "likoni-primary".
+  code: string;
   type: SchoolType;
   level: SchoolLevel | null;
   special_needs_focus: SpecialNeedsFocus | null;
@@ -265,6 +267,9 @@ export interface ClubMember {
   // Non-identifying analysis code. Use this, never full_name, in exports and
   // anything shared outside the school that owns the roster.
   learner_code: string | null;
+  // The school's own number for the learner. Unique within the school. With
+  // schools.code it forms the learner login: <code>-<admission number>.
+  admission_number: string | null;
   grade: string | null;
   is_active: boolean;
   in_club: boolean;

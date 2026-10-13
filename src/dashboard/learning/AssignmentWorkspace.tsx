@@ -8,8 +8,16 @@ import { useAuth } from '../../lib/auth';
 import { LearnerSubmission, SubmissionDetails } from './LearnerSubmission';
 import type { CompetencyEvidence, LearningAssignment, LearningSubmission, ReviewBand } from '../../lib/learningRecords';
 import { safeHttpUrl } from '../../lib/safeUrl';
+import { LearnerLesson } from './LearnerLesson';
 
+/** Learners get their own page with hints and scaffolding; teachers keep the review workspace. */
 export function AssignmentWorkspace() {
+  const { profile } = useAuth();
+  if (profile?.role === 'learner') return <LearnerLesson />;
+  return <TeacherAssignmentWorkspace />;
+}
+
+function TeacherAssignmentWorkspace() {
   const { assignmentId } = useParams();
   const { profile } = useAuth();
   const isLearner = profile?.role === 'learner';
@@ -42,38 +50,37 @@ export function AssignmentWorkspace() {
           <h1 ref={heading} tabIndex={-1} className="focus:outline-none">{assignment.title}</h1>
           <div className="flex gap-2 flex-wrap mt-3">
             <span className="badge-teal">{learningLevels.find((level) => level.id === assignment.learning_plan.level)?.title}</span>
-            <span className="badge-gray">{assignment.due_date ? `Due ${assignment.due_date}` : 'No due date'}</span>
-            <span className="badge-amber">Draft competency mapping</span>
+            {assignment.due_date && <span className="badge-gray"><span aria-hidden="true">📅 </span>Due {assignment.due_date}</span>}
           </div>
         </div>
-        <section className="card p-5 space-y-4" aria-label="Assigned learning task">
-          <h2 className="text-lg">{isCapstone ? 'Project brief' : 'Activity'}</h2>
-          {assignment.instructions && <p className="text-sm text-gray-700 whitespace-pre-wrap">{assignment.instructions}</p>}
-          <ol className="list-decimal pl-5 space-y-2 text-sm text-gray-800">
-            {assignment.learning_plan.steps.map((step, index) => <li key={index}>{step}</li>)}
-          </ol>
-          <div><h3 className="text-base">Evidence to show</h3><p className="text-sm text-gray-700">{assignment.learning_plan.evidenceBrief}</p></div>
-          <details className="text-sm text-gray-700">
-            <summary className="text-teal-700 cursor-pointer">Outcomes and access support</summary>
-            <ul className="list-disc pl-5 mt-3 space-y-2">
-              {competencies.filter((item) => assignment.learning_plan.competencyIds.includes(item.id))
-                .map((item) => <li key={item.id}>{item.outcomes[assignment.learning_plan.level]}</li>)}
-            </ul>
-            <p className="mt-3">Use readable text, captions, tactile materials or an oral explanation as needed. Access accommodations do not reduce competency. Record any help with the learning task separately.</p>
-          </details>
-          {assignment.learning_plan.expectedResult && <div className="mt-4"><h3 className="text-base">Check your result</h3><p className="text-sm mt-1">{assignment.learning_plan.expectedResult}</p></div>}
-          {isCapstone && <div><h3 className="text-base">Project completion criteria</h3><ul className="list-disc pl-5 text-sm space-y-2 mt-2">
-            {assignment.learning_plan.requirements?.map((requirement) => <li key={requirement}>{requirement}</li>)}
-          </ul></div>}
-        </section>
-        <Link className="btn-secondary" to={`/dashboard/quizzes?level=${assignment.learning_plan.level}`}>Open a knowledge check for this level</Link>
+        {assignment.instructions && <p className="card p-4 text-sm text-gray-800 whitespace-pre-wrap"><span aria-hidden="true">🧑‍🏫 </span><span>{assignment.instructions}</span></p>}
         {isLearner ? <LearnerSubmission key={assignment.id} assignmentId={assignment.id} level={assignment.learning_plan.level} submissions={submissions.data ?? []} reviews={evidence.data ?? []} /> : <section aria-label="Review student work" className="space-y-4">
-          <h2 className="text-lg">Review student work</h2>
-          <p className="text-sm text-gray-600">Record each student's work and your feedback. These reviews do not award an overall level or change lesson completion.</p>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-lg">Learners ({assigned.length})</h2>
+            <p className="text-sm text-gray-600"><span aria-hidden="true">📬 </span>{assigned.filter((student) => (submissions.data ?? []).some((item) => item.student_id === student.id) && !(evidence.data ?? []).some((item) => item.student_id === student.id)).length} to review</p>
+          </div>
           {(recipients.isPending || members.isPending || evidence.isPending) && <p role="status">Loading student work…</p>}
           {assigned.map((student) => <StudentEvidence key={student.id} name={student.full_name} studentId={student.id}
             assignment={assignment} submissions={(submissions.data ?? []).filter((item) => item.student_id === student.id)} evidence={(evidence.data ?? []).filter((item) => item.student_id === student.id)} />)}
         </section>}
+        <details className="card p-5 text-sm text-gray-700" aria-label="Assigned learning task">
+          <summary className="cursor-pointer font-semibold text-gray-900"><span aria-hidden="true">📖 </span>{isCapstone ? 'Project brief' : 'Lesson details'}</summary>
+          <ol className="list-decimal pl-5 mt-3 space-y-2 text-gray-800">
+            {assignment.learning_plan.steps.map((step, index) => <li key={index}>{step}</li>)}
+          </ol>
+          <h3 className="text-base mt-4">What learners should show</h3><p>{assignment.learning_plan.evidenceBrief}</p>
+          {assignment.learning_plan.expectedResult && <><h3 className="text-base mt-4">Expected result</h3><p>{assignment.learning_plan.expectedResult}</p></>}
+          {isCapstone && <><h3 className="text-base mt-4">Done when</h3><ul className="list-disc pl-5 space-y-2 mt-2">
+            {assignment.learning_plan.requirements?.map((requirement) => <li key={requirement}>{requirement}</li>)}
+          </ul></>}
+          <h3 className="text-base mt-4">What to look for</h3>
+          <ul className="list-disc pl-5 mt-2 space-y-2">
+            {competencies.filter((item) => assignment.learning_plan.competencyIds.includes(item.id))
+              .map((item) => <li key={item.id}><span className="font-medium">{item.title}:</span> {item.outcomes[assignment.learning_plan.level]}</li>)}
+          </ul>
+          <p className="mt-3 text-gray-600">Big text, captions, hands-on materials or spoken answers all count. Help with reading or typing never lowers a rating.</p>
+          <Link className="btn-secondary mt-4" to={`/dashboard/quizzes?level=${assignment.learning_plan.level}`}>Quiz for this level</Link>
+        </details>
       </>}
     </div>
   );
@@ -87,7 +94,11 @@ function StudentEvidence({ name, studentId, assignment, submissions, evidence }:
   return (
     <article className="card p-4 space-y-3" aria-label={`Work from ${name}`}>
       <div className="flex justify-between items-center gap-3 flex-wrap">
-        <div><h3 className="text-base">{name}</h3><p className="text-sm text-gray-600">{evidence.length ? `${evidence.length} evidence review${evidence.length === 1 ? '' : 's'}` : 'Awaiting evidence review'}</p></div>
+        <div className="flex items-center gap-3"><h3 className="text-base">{name}</h3>
+          {submissions.length === 0 && evidence.length === 0 ? <span className="badge-gray"><span aria-hidden="true">🚀 </span>Not started</span>
+            : submissions.length > 0 && (!evidence.length || evidence[0].recorded_at < submissions[0].submitted_at) ? <span className="badge-amber"><span aria-hidden="true">📬 </span>To review</span>
+            : <span className="badge-green"><span aria-hidden="true">⭐ </span>Reviewed{evidence.length > 1 ? ` ×${evidence.length}` : ''}</span>}
+        </div>
         <button type="button" className="btn-secondary" aria-expanded={open} aria-controls={`review-${studentId}`}
           onClick={() => { setSelectedSubmission(null); setOpen(!open); }}>{open ? 'Close review' : 'Record evidence and review'}</button>
       </div>
@@ -145,7 +156,7 @@ function EvidenceReviewForm({ assignment, studentId, name, submission }: { assig
       </div>
       </>}
       <fieldset className="space-y-4">
-        <legend className="field-label">Review competencies at {learningLevels.find((item) => item.id === plan.level)?.title}</legend>
+        <legend className="field-label">Skills at {learningLevels.find((item) => item.id === plan.level)?.title}</legend>
         {competencies.filter((item) => plan.competencyIds.includes(item.id)).map((item) => <div key={item.id}>
           <label className="field-label" htmlFor={`review-${studentId}-${item.id}`}>{item.title}</label>
           <p className="text-sm text-gray-600 mb-2" id={`outcome-${studentId}-${item.id}`}>{item.outcomes[plan.level]}</p>

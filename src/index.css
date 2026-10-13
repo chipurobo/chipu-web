@@ -919,3 +919,116 @@ h3.heading-display { font-size: clamp(1rem, 2vw, 1.5rem) !important; line-height
 .admin-zone .overflow-x-auto {
   -webkit-overflow-scrolling: touch;
 }
+
+/* ============================================================================
+   Learner theme
+   ----------------------------------------------------------------------------
+   Scoped under `.learner-zone` (applied by LearnerPage) and layered on top of
+   the dashboard theme. Rounded, bright and chunky, in the spirit of the best
+   learning apps for young people, without touching teacher or admin screens.
+   ============================================================================ */
+.learner-zone,
+.learner-zone * {
+  font-family: 'Nunito', 'Inter', system-ui, -apple-system, sans-serif;
+}
+.learner-zone h1, .learner-zone h2, .learner-zone h3, .learner-zone h4 {
+  font-family: 'Nunito', 'Inter', system-ui, sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: #0f172a;
+}
+.learner-zone h1.learner-title { font-size: clamp(1.75rem, 5vw, 2.5rem) !important; line-height: 1.15 !important; }
+.learner-zone h2 { font-size: clamp(1.25rem, 3.5vw, 1.6rem) !important; line-height: 1.25 !important; }
+.learner-zone h3 { font-size: clamp(1.05rem, 3vw, 1.25rem) !important; line-height: 1.3 !important; }
+.learner-zone p { color: #334155; }
+
+.learner-hero {
+  @apply rounded-3xl p-5 sm:p-6 space-y-5 border-2 border-white shadow-soft-md;
+  background: linear-gradient(135deg, #fef3c7 0%, #fce7f3 45%, #e0f2fe 100%);
+}
+.learner-card {
+  @apply bg-white rounded-3xl border-2 border-slate-200 shadow-soft-sm;
+}
+.learner-card-hover {
+  @apply transition-transform duration-200 hover:-translate-y-1 hover:shadow-soft-md focus-within:-translate-y-1;
+}
+/* Any card that is itself a link shows a thick ring when focused by keyboard. */
+a.learner-card:focus-visible { @apply outline-none ring-4 ring-sky-500 ring-offset-2; }
+
+/* Chunky buttons with a pressable base, a pattern learners already know. */
+.learner-zone .btn-primary,
+.learner-zone .btn-secondary,
+.learner-zone .btn-play {
+  @apply inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-2.5 text-base font-extrabold
+         transition-all duration-100 focus:outline-none focus-visible:ring-4 disabled:opacity-50 disabled:cursor-not-allowed;
+  border-bottom-width: 4px;
+}
+.learner-zone .btn-primary:active:not(:disabled),
+.learner-zone .btn-secondary:active:not(:disabled),
+.learner-zone .btn-play:active:not(:disabled) { transform: translateY(2px); border-bottom-width: 2px; }
+.learner-zone .btn-primary { @apply bg-sky-700 text-white border-sky-900 hover:bg-sky-800 focus-visible:ring-sky-300; }
+.learner-zone .btn-play    { @apply bg-emerald-700 text-white border-emerald-900 hover:bg-emerald-800 focus-visible:ring-emerald-300 text-lg px-6 py-3; }
+.learner-zone .btn-secondary { @apply bg-white text-slate-800 border-slate-300 border-2 border-b-4 hover:bg-slate-50 focus-visible:ring-slate-300; }
+
+.learner-zone .field-label { @apply block text-sm font-extrabold text-slate-800 mb-1.5; }
+.learner-zone .field-input,
+.learner-zone .field-select {
+  @apply w-full px-4 py-3 text-base bg-white border-2 border-slate-300 rounded-2xl
+         placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-sky-200 focus:border-sky-500 transition-colors;
+}
+.learner-zone .badge-teal, .learner-zone .badge-gray, .learner-zone .badge-amber {
+  @apply rounded-full px-2.5 py-0.5 text-xs font-bold;
+}
+
+.learner-zone .blockly-editor { @apply border-4 border-sky-300 rounded-2xl; }
+.learner-zone pre { @apply rounded-2xl; }
+
+/* Level filter pills. The real radio input covers the whole pill at zero
+   opacity, so taps, clicks and automated tools all hit the input itself. */
+.learner-pill {
+  @apply relative inline-flex items-center gap-1 rounded-full border-2 border-slate-200 bg-white px-4 py-2 text-sm font-extrabold text-slate-700 cursor-pointer transition-colors;
+}
+.learner-pill input,
+.quiz-tile input { @apply absolute inset-0 h-full w-full cursor-pointer opacity-0 m-0; }
+.learner-pill:has(input:checked) { @apply border-slate-900 bg-slate-900 text-white; }
+.learner-pill:has(input:focus-visible) { @apply ring-4 ring-sky-300; }
+
+/* Quiz answer tiles, one colour per choice so answers are easy to tell apart. */
+.quiz-tile {
+  @apply relative flex items-center gap-3 rounded-2xl p-4 text-base font-extrabold text-white cursor-pointer
+         border-b-4 transition-transform duration-100 min-h-[4rem];
+}
+/* Every tile keeps at least 4.5:1 between its text and background. */
+.quiz-tile-0 { @apply bg-rose-600 border-rose-800; }
+.quiz-tile-1 { @apply bg-blue-600 border-blue-800; }
+.quiz-tile-2 { @apply bg-amber-400 border-amber-600 text-slate-900; }
+.quiz-tile-3 { @apply bg-emerald-700 border-emerald-900; }
+.quiz-tile-4 { @apply bg-violet-600 border-violet-800; }
+.quiz-tile-5 { @apply bg-pink-600 border-pink-800; }
+.quiz-tile-2 .quiz-shape { @apply bg-slate-900/15; }
+.quiz-tile:has(input:checked) { @apply ring-4 ring-slate-900 ring-offset-2; }
+.quiz-tile:has(input:focus-visible) { @apply ring-4 ring-slate-900 ring-offset-2; }
+.quiz-tile .quiz-shape {
+  @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/25 text-lg;
+}
+
+/* Lesson path: a winding trail of lesson stops */
+.lesson-path { @apply relative grid gap-4 sm:grid-cols-2 lg:grid-cols-3; }
+
+.learner-spinner {
+  @apply inline-block h-5 w-5 rounded-full border-4 border-sky-200 border-t-sky-600;
+  animation: learner-spin 0.8s linear infinite;
+}
+@keyframes learner-spin { to { transform: rotate(360deg); } }
+
+.learner-confetti { position: fixed; inset: 0; pointer-events: none; z-index: 60; overflow: hidden; }
+.learner-confetti span {
+  position: absolute; top: -20px; border-radius: 3px; opacity: 0.95;
+  animation: learner-confetti-fall 2.6s ease-in forwards;
+}
+@keyframes learner-confetti-fall {
+  0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity: 0.2; }
+}
+.learner-pop { animation: learner-pop 0.5s cubic-bezier(0.2, 1.4, 0.4, 1); }
+@keyframes learner-pop { 0% { transform: scale(0.6); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }

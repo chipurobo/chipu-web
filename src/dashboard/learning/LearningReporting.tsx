@@ -11,26 +11,32 @@ import {
 } from '../../lib/learningOutcomes';
 
 const labels: Record<string, string> = {
-  enrolled_learners: 'Active roster learners',
+  enrolled_learners: 'Learners on roster',
   learners_with_accounts: 'Learners with logins',
-  active_learners: 'Learners active on the dashboard',
-  retained_learners: 'Learners active in both halves of this period',
-  quiz_attempts: 'Quiz attempts',
-  passed_quiz_attempts: 'Quiz attempts meeting pass mark',
-  learners_passing_quizzes: 'Learners meeting a quiz pass mark',
-  submissions: 'Work submissions',
-  learners_submitting: 'Learners submitting work',
-  project_artifacts: 'Capstone artifacts',
-  evidence_reviews: 'Evidence reviews',
-  level_awards: 'Level award decisions',
-  teacher_logins: 'Teachers logging in',
-  resource_opens: 'Resource opens',
-  attendance_present: 'Present attendance entries',
-  attendance_recorded: 'Recorded attendance entries',
-  observed_tasks: 'Observed core tasks',
-  independent_tasks: 'Independently completed core tasks',
-  tasks_with_barriers: 'Tasks with reported barriers',
+  active_learners: 'Learners who signed in',
+  retained_learners: 'Learners active all period',
+  quiz_attempts: 'Quiz tries',
+  passed_quiz_attempts: 'Quiz passes',
+  learners_passing_quizzes: 'Learners who passed a quiz',
+  submissions: 'Work sent',
+  learners_submitting: 'Learners who sent work',
+  project_artifacts: 'Projects sent',
+  evidence_reviews: 'Reviews you gave',
+  level_awards: 'Levels awarded',
+  teacher_logins: 'Teacher sign-ins',
+  resource_opens: 'Lessons opened',
+  attendance_present: 'Present',
+  attendance_recorded: 'Attendance recorded',
+  observed_tasks: 'Tasks observed',
+  independent_tasks: 'Done independently',
+  tasks_with_barriers: 'Tasks with barriers',
 };
+const groups: { title: string; emoji: string; keys: string[] }[] = [
+  { title: 'Learners', emoji: '🧑‍🎓', keys: ['enrolled_learners', 'learners_with_accounts', 'active_learners', 'retained_learners'] },
+  { title: 'Learning', emoji: '🧩', keys: ['resource_opens', 'submissions', 'learners_submitting', 'project_artifacts', 'evidence_reviews', 'level_awards'] },
+  { title: 'Quizzes', emoji: '🧠', keys: ['quiz_attempts', 'passed_quiz_attempts', 'learners_passing_quizzes'] },
+  { title: 'Attendance and observations', emoji: '📋', keys: ['attendance_recorded', 'attendance_present', 'observed_tasks', 'independent_tasks', 'tasks_with_barriers', 'teacher_logins'] },
+];
 const today = () => new Date().toISOString().slice(0, 10);
 export function LearningReporting() {
   const { profile, school } = useAuth();
@@ -75,12 +81,8 @@ export function LearningReporting() {
   const r = report.data;
   return (
     <div className="learning-zone px-4 sm:px-6 lg:px-10 py-8 max-w-6xl space-y-6">
-      <h1>Learning reports</h1>
-      <p className="text-sm">
-        Report exposure, knowledge checks, submitted artifacts and teacher decisions for your
-        accessible cohort. Formal baseline, midline and endline assessments remain in the wider
-        M&amp;E system.
-      </p>
+      <h1>Reports</h1>
+      <p className="text-sm text-gray-600">Counts for your learners over a date range.</p>
       <div className="card p-5 flex gap-4 flex-wrap items-end">
         {admin && (
           <label className="field-label">
@@ -139,7 +141,7 @@ export function LearningReporting() {
             )
           }
         >
-          Export report CSV
+          <span aria-hidden="true">⬇️ </span>Export report CSV
         </button>
       </div>
       {error && (
@@ -147,36 +149,35 @@ export function LearningReporting() {
           {error.message}
         </p>
       )}
-      {schoolId && report.isPending && <p role="status">Loading learning report…</p>}
+      {schoolId && report.isPending && <p role="status">Loading report…</p>}
       {r && (
         <>
+          <p className="text-sm text-gray-600">Dates are inclusive in {r.timezone}.</p>
+          {groups.map((group) => (
+            <section key={group.title} aria-label={group.title} className="space-y-3">
+              <h2 className="text-base"><span aria-hidden="true">{group.emoji} </span>{group.title}</h2>
+              <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                {group.keys.map((key) => (
+                  <li className="card p-4" key={key}>
+                    <p className="text-2xl font-semibold leading-none text-gray-900">{r[key] ?? 0}</p>
+                    <p className="mt-1 text-sm text-gray-700">{labels[key]}</p>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
           <p className="text-sm">
-            {r.cohort}. Dates are inclusive in {r.timezone}. The active roster is the denominator;
-            account coverage is reported separately. Activity tracking starts with this release and
-            does not reconstruct historical logins.
-          </p>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {Object.entries(labels).map(([key, label]) => (
-              <article className="card p-5" key={key}>
-                <h2 className="text-base">{label}</h2>
-                <p className="text-2xl mt-3">{r[key] ?? 0}</p>
-              </article>
-            ))}
-          </div>
-          <p className="text-sm">
-            Dashboard activity is exposure, quiz passes are knowledge checks, submissions are
-            artifacts and level awards are reviewed decisions. Retention means activity in both
-            halves of the selected period; it is not a programme retention estimate. Repeated
-            submissions and decisions are counted as events.
-          </p>
-          <p className="text-sm">
-            Independent task completion:{' '}
+            <span aria-hidden="true">🤝 </span>Done independently:{' '}
             {Number(r.observed_tasks) > 0
-              ? `${Math.round((100 * Number(r.independent_tasks)) / Number(r.observed_tasks))}% of ${r.observed_tasks} observed learner/task pairs`
-              : 'No observations recorded; the 80% target cannot be assessed'}
-            . Latest observation per learner and task in this period is counted. Access-group
-            targets require the agreed M&amp;E cohort; no diagnoses are collected here.
+              ? `${Math.round((100 * Number(r.independent_tasks)) / Number(r.observed_tasks))}% of ${r.observed_tasks} observed`
+              : 'no observations yet'}
           </p>
+          <details className="text-sm text-gray-700">
+            <summary className="cursor-pointer text-teal-700">How these numbers are counted</summary>
+            <p className="mt-2">{r.cohort}. The active roster is the denominator; account coverage is reported separately. Activity tracking starts with this release and does not reconstruct historical logins.</p>
+            <p className="mt-2">Dashboard activity is exposure, quiz passes are knowledge checks, submissions are artifacts and level awards are reviewed decisions. Active all period means activity in both halves of the selected period; it is not a programme retention estimate. Repeated submissions and decisions are counted as events.</p>
+            <p className="mt-2">Latest observation per learner and task in this period is counted. Access-group targets require the agreed M&amp;E cohort; no diagnoses are collected here. Formal baseline, midline and endline assessments remain in the wider M&amp;E system.</p>
+          </details>
         </>
       )}
       {schoolId && (
@@ -188,13 +189,10 @@ export function LearningReporting() {
             attendanceSave.mutate();
           }}
         >
-          <h2>Record lesson attendance</h2>
-          <p className="text-sm">
-            Choose Present or Absent for each learner attending this session. Learners left as Not
-            recorded are excluded.
-          </p>
+          <h2><span aria-hidden="true">📋 </span>Attendance</h2>
+          <p className="text-sm text-gray-600">Learners left as Not recorded are skipped.</p>
           <label className="field-label">
-            Session date
+            Date
             <input
               required
               type="date"
@@ -204,6 +202,7 @@ export function LearningReporting() {
               onChange={(e) => setAttendanceDate(e.target.value)}
             />
           </label>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {students.data?.map((s) => (
             <label key={s.id} className="field-label">
               {s.full_name}
@@ -225,12 +224,13 @@ export function LearningReporting() {
               </select>
             </label>
           ))}
+          </div>
           {attendanceSave.error && (
             <p role="alert" className="text-red-700">
               {attendanceSave.error.message}
             </p>
           )}
-          {attendanceSave.isSuccess && <p role="status">Learning attendance saved.</p>}
+          {attendanceSave.isSuccess && <p role="status"><span aria-hidden="true">✅ </span>Learning attendance saved.</p>}
           <button
             className="btn-primary"
             disabled={!Object.keys(attendance).length || attendanceSave.isPending}
@@ -248,11 +248,8 @@ export function LearningReporting() {
             observation.mutate();
           }}
         >
-          <h2>Record a core task observation</h2>
-          <p className="text-sm">
-            Observe the task with the learner. Record access barriers and accommodations without
-            diagnoses or personal case details.
-          </p>
+          <h2><span aria-hidden="true">👀 </span>Task observation</h2>
+          <p className="text-sm text-gray-600">Watch a learner do a task. Note barriers and support, never diagnoses.</p>
           <label className="field-label">
             Observed learner
             <select
@@ -285,10 +282,10 @@ export function LearningReporting() {
               checked={independent}
               onChange={(e) => setIndependent(e.target.checked)}
             />
-            Completed independently with agreed access accommodations
+            Done independently (with agreed support)
           </label>
           <label className="field-label">
-            Barrier and retest notes
+            Notes
             <textarea
               maxLength={5000}
               className="field-input"

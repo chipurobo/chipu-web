@@ -1,7 +1,8 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchAssignments, fetchBlocklyProjects, startBlocklyLesson } from '../../lib/learningQueries';
-import { learningLevels } from '../../lib/learningFramework';
+import { LearnerPage, Hero, LevelChip, FriendlyAlert, Loading, EmptyNote } from './ui/LearnerKit';
+import { LessonArt } from './ui/LearnerArt';
 
 export function BlocklyProjects() {
   const navigate = useNavigate();
@@ -12,24 +13,39 @@ export function BlocklyProjects() {
     void qc.invalidateQueries({ queryKey: ['learning-assignments'] }); navigate(`/dashboard/assignments/${id}`);
   } });
   const error = projects.error ?? assignments.error ?? start.error;
-  return <div className="learning-zone px-4 sm:px-6 lg:px-10 py-8 space-y-6 max-w-6xl">
-    <div><h1>Capstone projects</h1><p className="text-sm text-gray-600 mt-2">Put your learning together in Blockly. Choose a project, solve its brief, test your program and submit it for teacher review.</p></div>
-    <Link className="btn-secondary" to="/dashboard/my-learning">Back to my learning</Link>
-    {error && <p role="alert" className="text-sm text-red-700">{error.message}</p>}
-    {projects.isPending && <p role="status">Loading capstone projects…</p>}
-    {!projects.isPending && !error && !projects.data?.length && <p className="text-sm text-gray-600">No capstone projects are available yet.</p>}
-    <div className="grid sm:grid-cols-2 gap-4">{projects.data?.map((project) => {
-      const existing = assignments.data?.find((assignment) => assignment.lesson_id === project.id);
-      return <article key={project.id} className="card p-5 space-y-3 flex flex-col" aria-label={project.title}>
-        <span className="badge-teal self-start">{learningLevels.find((level) => level.id === project.learning_plan?.level)?.title}</span>
-        <h2 className="text-lg">{project.title}</h2><p className="text-sm text-gray-600">{project.description}</p>
-        <details className="text-sm"><summary className="cursor-pointer underline">Completion criteria</summary><ul className="list-disc pl-5 mt-2 space-y-1">
-          {project.learning_plan?.requirements?.map((requirement) => <li key={requirement}>{requirement}</li>)}
-        </ul></details>
-        {existing ? <Link className="btn-primary self-start mt-auto" to={`/dashboard/assignments/${existing.id}`}>Continue project</Link>
-          : <button type="button" className="btn-primary self-start mt-auto" disabled={start.isPending || assignments.isPending || !!assignments.error} onClick={() => start.mutate(project.id)}>
-            {start.isPending && start.variables === project.id ? 'Starting…' : 'Start project in Blockly'}</button>}
-      </article>;
-    })}</div>
-  </div>;
+  return (
+    <LearnerPage>
+      <Hero title={<>Big projects <span aria-hidden="true">🏗️</span></>} mood="think" blurb="Put everything you have learned into one build, then send it to your teacher.">
+        <Link className="btn-secondary" to="/dashboard/my-learning"><span aria-hidden="true">← </span><span className="sr-only">Back to </span>Lessons</Link>
+      </Hero>
+      <FriendlyAlert error={error} />
+      {projects.isPending && <Loading>Loading projects</Loading>}
+      {!projects.isPending && !error && !projects.data?.length && <EmptyNote emoji="🔧" title="None yet" body="Your teacher or ChipuRobo will add big projects here soon." />}
+      <div className="grid gap-4 sm:grid-cols-2">
+        {projects.data?.map((project) => {
+          const existing = assignments.data?.find((assignment) => assignment.lesson_id === project.id);
+          return (
+            <article key={project.id} className="learner-card learner-card-hover flex flex-col overflow-hidden" aria-label={project.title}>
+              <LessonArt theme="project" className="w-full" />
+              <div className="flex flex-1 flex-col gap-3 p-5">
+                <div className="flex items-center gap-2"><LevelChip level={project.learning_plan?.level} /><h2>{project.title}</h2></div>
+                <p className="sr-only">{project.description}</p>
+                {!!project.learning_plan?.requirements?.length && (
+                  <div className="rounded-2xl bg-amber-50 p-3">
+                    <h3 className="text-sm font-extrabold text-amber-900"><span aria-hidden="true">✅ </span>Done when</h3>
+                    <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-amber-900">
+                      {project.learning_plan.requirements.map((requirement) => <li key={requirement}>{requirement}</li>)}
+                    </ul>
+                  </div>
+                )}
+                {existing ? <Link className="btn-primary mt-auto self-start" to={`/dashboard/assignments/${existing.id}`}>Continue<span className="sr-only"> {project.title}</span></Link>
+                  : <button type="button" className="btn-play mt-auto self-start" disabled={start.isPending || assignments.isPending || !!assignments.error} onClick={() => start.mutate(project.id)}>
+                    {start.isPending && start.variables === project.id ? 'Starting…' : <>Start<span className="sr-only"> {project.title}</span></>}</button>}
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </LearnerPage>
+  );
 }

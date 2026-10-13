@@ -1,7 +1,10 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/auth';
+import { fetchSchoolLoginOptions } from '../lib/learningQueries';
+import { admissionLogin, learnerEmail } from '../lib/learnerLogin';
 import { Sparkles } from 'lucide-react';
 
 function normaliseLogin(input: string, kind: 'teacher' | 'learner' | 'admin'): string {
@@ -14,6 +17,12 @@ export function Login() {
   const { signIn, signOut, sessionExpired } = useAuth();
   const [kind, setKind] = useState<'teacher' | 'learner' | 'admin'>('teacher');
   const [email, setEmail] = useState('');
+  // Learners sign in with their school and admission number. A username
+  // still works for the few accounts made before admission numbers existed.
+  const [schoolCode, setSchoolCode] = useState('');
+  const [admission, setAdmission] = useState('');
+  const [useUsername, setUseUsername] = useState(false);
+  const schools = useQuery({ queryKey: ['school-login-options'], queryFn: fetchSchoolLoginOptions, enabled: kind === 'learner' && !useUsername });
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +31,8 @@ export function Login() {
     e.preventDefault();
     setError(null);
     setSubmitting(true);
-    const { error: err } = await signIn(normaliseLogin(email, kind), password);
+    const identity = kind === 'learner' && !useUsername ? learnerEmail(admissionLogin(schoolCode, admission)) : normaliseLogin(email, kind);
+    const { error: err } = await signIn(identity, password);
     if (err) {
       setError(err);
       setSubmitting(false);
@@ -58,7 +68,9 @@ export function Login() {
         <div className="card p-6 sm:p-8">
           <h1 className="mb-1">Sign in to ChipuRobo</h1>
           <p className="text-sm text-gray-600 mb-6">
-            Sign in with the account your school or ChipuRobo gave you.
+            {kind === 'learner'
+              ? 'Pick your school, then type your admission number and password. Ask your teacher if you forget!'
+              : 'Sign in with the account your school or ChipuRobo gave you.'}
           </p>
 
           {/* Surfaced if the session ended unexpectedly — token refresh
@@ -81,7 +93,21 @@ export function Login() {
                 {option === 'teacher' ? 'Teacher' : option === 'learner' ? 'Learner' : 'Admin'}
               </label>)}
             </fieldset>
-            <div>
+            {kind === 'learner' && !useUsername ? <>
+              <div>
+                <label className="field-label" htmlFor="school"><span aria-hidden="true">🏫 </span>School</label>
+                <select id="school" required aria-required="true" className="field-select" value={schoolCode} onChange={(e) => setSchoolCode(e.target.value)}>
+                  <option value="">{schools.isPending ? 'Loading schools…' : 'Choose your school'}</option>
+                  {schools.data?.map((school) => <option key={school.id} value={school.code}>{school.name}</option>)}
+                </select>
+                {schools.error && <p className="field-error">We couldn't load the school list. Check your connection and try again.</p>}
+              </div>
+              <div>
+                <label className="field-label" htmlFor="admission"><span aria-hidden="true">🔢 </span>Admission number</label>
+                <input id="admission" type="text" required aria-required="true" autoComplete="username" autoCapitalize="off" spellCheck={false}
+                  className="field-input" placeholder="e.g. 2026/014" value={admission} onChange={(e) => setAdmission(e.target.value)} />
+              </div>
+            </> : <div>
               <label className="field-label" htmlFor="email">{kind === 'learner' ? 'Learner username' : 'Email'}</label>
               <input
                 id="email"
@@ -96,7 +122,7 @@ export function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
-            </div>
+            </div>}
             <div>
               <label className="field-label" htmlFor="password">Password</label>
               <input
@@ -122,9 +148,13 @@ export function Login() {
             </button>
 
             <p className="text-sm text-center mt-3 mb-0">
-              <Link to="/dashboard/forgot-password" className="!text-teal-800 hover:underline">
-                Forgot your password?
-              </Link>
+              {kind === 'learner'
+                ? <button type="button" className="!text-teal-800 hover:underline" onClick={() => { setUseUsername(!useUsername); setError(null); }}>
+                    {useUsername ? 'Sign in with school and admission number' : 'I have a username instead'}
+                  </button>
+                : <Link to="/dashboard/forgot-password" className="!text-teal-800 hover:underline">
+                    Forgot your password?
+                  </Link>}
             </p>
           </form>
 

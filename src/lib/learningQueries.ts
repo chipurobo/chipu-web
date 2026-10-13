@@ -113,6 +113,25 @@ export async function createLearningAccount(input: { schoolId: string; role: 'te
   }));
 }
 
+export interface SchoolLoginOption { id: string; name: string; code: string }
+/** Names and codes for the learner sign-in page. Readable before sign-in. */
+export async function fetchSchoolLoginOptions(): Promise<SchoolLoginOption[]> {
+  const { data, error } = await supabase.from('school_login_options').select('id,name,code').order('name');
+  if (error) throw new Error(error.message);
+  return (data ?? []) as SchoolLoginOption[];
+}
+
+export interface BulkLearnerRow { full_name: string; admission_number: string; grade?: string; password?: string }
+export interface BulkLearnerResult {
+  created: number; skipped: number;
+  errors: { admission_number: string; full_name: string; message: string }[];
+  logins: { admission_number: string; login: string; student_id: string }[];
+}
+/** Admin only. Up to 500 rows per call; the caller chunks larger files. */
+export async function bulkCreateLearners(schoolId: string, rows: BulkLearnerRow[], defaultPassword: string | null): Promise<BulkLearnerResult> {
+  return unwrap(await supabase.rpc('admin_bulk_create_learners', { p_school_id: schoolId, p_rows: rows, p_default_password: defaultPassword }));
+}
+
 export async function setTeacherStudents(teacherId: string, studentIds: string[]): Promise<void> {
   unwrap(await supabase.rpc('admin_set_teacher_students', { p_teacher_id: teacherId, p_student_ids: studentIds }));
 }

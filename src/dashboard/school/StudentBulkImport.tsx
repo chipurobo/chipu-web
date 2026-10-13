@@ -67,6 +67,7 @@ export function StudentBulkImport({
         continue;
       }
       const grade = (row.grade ?? row.class ?? '').trim() || null;
+      const admissionNumber = (row.admission_number ?? row.admission ?? row.adm ?? row.adm_no ?? '').trim() || null;
       // Default to "in the code club" if the column is absent (admin's common case).
       const inClub = row.in_club === undefined ? true : parseBoolish(row.in_club);
       const hasDisability = parseBoolish(row.has_disability ?? row.disability ?? row.disabled);
@@ -78,6 +79,7 @@ export function StudentBulkImport({
         school_id: schoolId,
         full_name: fullName,
         grade,
+        admission_number: admissionNumber,
         in_club:   inClub,
         has_disability:   hasDisability,
         disability_notes: disabilityNotes,

@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../../lib/auth';
 import { fetchCurriculumLessons } from '../../lib/gql/queries';
-import { fetchAssignments } from '../../lib/learningQueries';
 import { learningLevels, type LearningLevel } from '../../lib/learningFramework';
 import { hasUsableLearningPlan } from '../../lib/learningRecords';
 import type { Lesson } from '../../lib/database.types';
@@ -18,12 +17,7 @@ export function TeacherHomeActions() {
     queryFn: fetchCurriculumLessons,
     enabled: !!school,
   });
-  const assignments = useQuery({
-    queryKey: ['learning-assignments'],
-    queryFn: () => fetchAssignments(),
-    enabled: !!school,
-  });
-  const error = lessons.error ?? assignments.error;
+  const error = lessons.error;
   return (
     <div className="learning-zone space-y-6 mt-8">
       {assignFor && (
@@ -40,9 +34,9 @@ export function TeacherHomeActions() {
       )}
       <section aria-label="Quick lesson actions" className="space-y-4">
         <div className="flex justify-between gap-3 flex-wrap items-end">
-          <h2>Assign a lesson</h2>
+          <h2><span aria-hidden="true">➕ </span>Assign a lesson</h2>
           <label className="text-sm">
-            Learning level
+            Level
             <select
               className="field-select mt-1"
               value={level}
@@ -72,7 +66,7 @@ export function TeacherHomeActions() {
                   {learningLevels.find((item) => item.id === lesson.learning_plan?.level)?.title}
                 </span>
                 <h3>{lesson.title}</h3>
-                <p className="text-sm">{lesson.description}</p>
+                <p className="text-sm text-gray-600">{lesson.description}</p>
                 <div className="flex gap-3 flex-wrap">
                   <button className="btn-primary" onClick={() => setAssignFor(lesson)}>
                     Assign lesson
@@ -90,25 +84,8 @@ export function TeacherHomeActions() {
             <p>No lessons with learning outcomes are published yet.</p>
           )}
         <Link className="text-teal-700 underline text-sm" to="/dashboard/school/lessons">
-          Browse all lessons and capstones
+          All lessons
         </Link>
-      </section>
-      <section aria-label="Recent assignments" className="card p-5 space-y-3">
-        <h2>Review assigned work</h2>
-        {assignments.isPending && <p role="status">Loading assignments…</p>}
-        {!assignments.isPending && !error && !assignments.data?.length && (
-          <p className="text-sm">Assign a lesson to start collecting learner work.</p>
-        )}
-        <ul className="list-none m-0 p-0 space-y-3">
-          {assignments.data?.slice(0, 5).map((item) => (
-            <li key={item.id} className="flex justify-between gap-3 flex-wrap text-sm">
-              <span>{item.title}</span>
-              <Link className="underline" to={`/dashboard/assignments/${item.id}`}>
-                Review assignment
-              </Link>
-            </li>
-          ))}
-        </ul>
       </section>
     </div>
   );
