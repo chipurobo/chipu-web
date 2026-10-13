@@ -50,7 +50,7 @@ async function mockDashboard(page: Page, role: 'admin' | 'school_lead' | 'teache
     if (path === 'remove_learning_portfolio_item') {state.portfolio=state.portfolio.filter(i=>i.id!==body!.p_item_id);await route.fulfill({json:null});return;}
     if (path === 'record_learning_progression') {state.decisions.unshift({id:'decision-one',student_id:body!.p_student_id,level:body!.p_level,outcome:body!.p_outcome,reason:body!.p_reason,decided_at:new Date().toISOString(),policy_id:'policy-one'});await route.fulfill({json:'decision-one'});return;}
     if (path === 'record_learning_task_observation' || path === 'record_learning_attendance') {state.writes.push({path,body:body!});await route.fulfill({json:null});return;}
-    if (path === 'token') { await route.fulfill({ json: session }); return; }
+    if (path === 'token') { state.writes.push({ path, body: body ?? {} }); await route.fulfill({ json: session }); return; }
     if (path === 'logout') { await route.fulfill({ status: 204, body: '' }); return; }
     if (request.method() === 'POST' || request.method() === 'PATCH') state.writes.push({ path, body: body ?? {} });
     if (path === 'learning_program_drafts') { await route.fulfill({ json: state.draft ? [state.draft] : [] }); return; }
@@ -106,8 +106,9 @@ async function mockDashboard(page: Page, role: 'admin' | 'school_lead' | 'teache
     if (path === 'profiles') rows = [{ id: userId, role, full_name: 'Test Teacher', school_id: role === 'admin' ? null : schoolId }];
     if (path === 'get_my_learning_school') { await route.fulfill({ json: { id: schoolId, name: 'Test School', is_maker_space: false } }); return; }
     if (path === 'get_my_learning_students') { await route.fulfill({ json: [{ id: studentId, school_id: schoolId, full_name: 'Test Learner', is_active: true, in_club: true }] }); return; }
-    if (path === 'schools') rows = [{ id: schoolId, name: 'Test School', is_maker_space: false }];
-    if (path === 'club_members') rows = [{ id: studentId, school_id: schoolId, full_name: 'Test Learner', learner_code: 'L-001', is_active: true, in_club: true }];
+    if (path === 'schools') rows = [{ id: schoolId, name: 'Test School', code: 'test', is_maker_space: false }];
+    if (path === 'school_login_options') rows = [{ id: schoolId, name: 'Test School', code: 'test' }];
+    if (path === 'club_members') rows = [{ id: studentId, school_id: schoolId, full_name: 'Test Learner', learner_code: 'L-001', admission_number: null, is_active: true, in_club: true }];
     if (path === 'lessons') rows = state.lessons.filter((row) => {
       const metadata = row.learning_plan as { delivery?: string; activityKind?: string };
       return (!url.searchParams.has('kind') || url.searchParams.get('kind') === `eq.${row.kind}`)
@@ -294,14 +295,16 @@ test('mobile dashboard navigation hides closed links and restores focus on Escap
 
 for (const kind of ['Teacher', 'Learner'] as const) {
   test(`${kind} can sign in and land on their own dashboard after account hydration`, async ({ page }) => {
-    await mockDashboard(page, kind === 'Teacher' ? 'teacher' : 'learner', false);
+    const state = await mockDashboard(page, kind === 'Teacher' ? 'teacher' : 'learner', false);
     await page.goto('/dashboard/login');
     await page.getByRole('radio', { name: kind, exact: true }).check();
-    await page.getByLabel(kind === 'Teacher' ? 'Email' : 'Learner username', { exact: true }).fill(kind === 'Teacher' ? 'teacher@example.test' : 'learner.one');
+    if (kind === 'Teacher') await page.getByLabel('Email', { exact: true }).fill('teacher@example.test');
+    else { await page.getByRole('combobox', { name: 'School', exact: true }).selectOption('test'); await page.getByRole('textbox', { name: 'Admission number', exact: true }).fill('2026/001'); }
     await page.getByLabel('Password', { exact: true }).fill('TestPassword123');
     await page.getByRole('button', { name: 'Sign in', exact: true }).click();
     await expect(page).toHaveURL('/dashboard');
-    await expect(page.getByRole('heading', { name: kind === 'Teacher' ? 'Welcome back, Test.' : 'My learning', exact: true, level: 1 })).toBeVisible();
+    await expect(page.getByRole('heading', { name: kind === 'Teacher' ? 'Welcome back, Test.' : 'Hi, Test!', exact: true, level: 1 })).toBeVisible();
+    expect(state.writes.find((write) => write.path === 'token')!.body.email).toBe(kind === 'Teacher' ? 'teacher@example.test' : 'test-2026-001@learners.chipurobo.local');
     await expect(page.getByRole('link', { name: 'Stock & units', exact: true })).toHaveCount(0);
   });
 }
@@ -310,7 +313,8 @@ test('selecting learner sign-in cannot turn teacher credentials into a learner a
   await mockDashboard(page, 'teacher', false);
   await page.goto('/dashboard/login');
   await page.getByRole('radio', { name: 'Learner', exact: true }).check();
-  await page.getByLabel('Learner username').fill('teacher@example.test');
+  await page.getByRole('combobox', { name: 'School', exact: true }).selectOption('test');
+  await page.getByRole('textbox', { name: 'Admission number', exact: true }).fill('teacher@example.test');
   await page.getByLabel('Password', { exact: true }).fill('TestPassword123');
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await expect(page.getByRole('alert')).toHaveText('These credentials do not match the selected account type. Choose the correct sign-in option.');
@@ -320,11 +324,11 @@ test('selecting learner sign-in cannot turn teacher credentials into a learner a
 test('a learner submits their own work and reopens the saved submission', async ({ page }) => {
   const state = await mockDashboard(page, 'learner');
   await page.goto('/dashboard');
-  await page.getByRole('link', { name: 'Start activity', exact: true }).click();
-  await page.getByLabel('Describe your work or paste your code').fill('My tested sequence.');
-  await page.getByLabel('What did you learn or find difficult? (optional)').fill('Testing found a misplaced step.');
-  await page.getByRole('button', { name: 'Submit my work', exact: true }).click();
-  await expect(page.getByRole('status').filter({ hasText: 'Your work was submitted.' })).toBeVisible();
+  await page.getByRole('link', { name: /^Start / }).click();
+  await page.getByLabel('What did you make?').fill('My tested sequence.');
+  await page.getByLabel('What did you learn? (optional)').fill('Testing found a misplaced step.');
+  await page.getByRole('button', { name: /^Send / }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Sent!' })).toBeVisible();
   expect(state.writes.find((write) => write.path === 'submit_learning_work')!.body).toMatchObject({
     p_assignment_id: assignmentId, p_evidence_text: 'My tested sequence.', p_evidence_url: null, p_reflection: 'Testing found a misplaced step.',
   });
@@ -353,7 +357,7 @@ test('a learner runs Blockly, saves blocks and resumes their program after reloa
   await page.goto(`/dashboard/assignments/${assignmentId}`);
   await page.getByRole('button', { name: 'Run program', exact: true }).click();
   await expect(page.getByRole('status').filter({ hasText: 'Hello, ChipuRobo!' })).toBeVisible();
-  await page.getByRole('button', { name: 'Save program', exact: true }).click();
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(page.getByRole('status').filter({ hasText: 'Your blocks are saved.' })).toBeVisible();
   expect(state.draft!.code).toContain('Hello, ChipuRobo!');
   await page.reload();
@@ -363,9 +367,9 @@ test('a learner runs Blockly, saves blocks and resumes their program after reloa
   await page.locator('.blocklyHtmlInput').press('Enter');
   await page.getByRole('button', { name: 'Run program', exact: true }).click();
   await expect(page.getByRole('status').filter({ hasText: 'My changed program' })).toBeVisible();
-  await page.getByLabel('Describe your work or paste your code').fill('I changed the output and tested it.');
-  await page.getByRole('button', { name: 'Submit my work', exact: true }).click();
-  await expect(page.getByRole('status').filter({ hasText: 'Your work was submitted.' })).toBeVisible();
+  await page.getByLabel('What did you make?').fill('I changed the output and tested it.');
+  await page.getByRole('button', { name: /^Send / }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Sent!' })).toBeVisible();
   expect(state.submissions[0].generated_code).toContain('My changed program');
   expect(state.submissions[0].run_output).toBe('My changed program');
 });
@@ -373,8 +377,8 @@ test('a learner runs Blockly, saves blocks and resumes their program after reloa
 test('a failed Blockly save keeps the workspace and does not claim success', async ({ page }) => {
   const state = await mockDashboard(page, 'learner'); state.failPrograms = true;
   await page.goto(`/dashboard/assignments/${assignmentId}`);
-  await page.getByRole('button', { name: 'Save program', exact: true }).click();
-  await expect(page.getByRole('alert')).toHaveText('Program could not be saved. Try again.');
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(page.getByRole('alert')).toContainText('Program could not be saved. Try again.');
   await expect(page.getByRole('status').filter({ hasText: 'Your blocks are saved.' })).toHaveCount(0);
   await page.getByRole('button', { name: 'Run program', exact: true }).click();
   await expect(page.getByRole('status').filter({ hasText: 'Hello, ChipuRobo!' })).toBeVisible();
@@ -386,9 +390,9 @@ test('Blockly stops an infinite loop and keeps the dashboard responsive', async 
     inputs: { BOOL: { block: { type: 'logic_boolean', fields: { BOOL: 'TRUE' } } } } }] } }, code: 'while(true){}', output: '' };
   await page.goto(`/dashboard/assignments/${assignmentId}`);
   await page.getByRole('button', { name: 'Run program', exact: true }).click();
-  await expect(page.getByRole('alert')).toContainText(/Program stopped/);
+  await expect(page.getByRole('alert')).toContainText(/Program stopped|paused it/);
   await expect(page.getByRole('button', { name: 'Run program', exact: true })).toBeEnabled();
-  await page.getByLabel('Describe your work or paste your code').fill('I need to fix my loop.');
+  await page.getByLabel('What did you make?').fill('I need to fix my loop.');
 });
 
 test('teachers open the submitted Blockly blocks and output for review', async ({ page }) => {
@@ -426,9 +430,9 @@ test('a learner chooses one of twenty lessons and starts its Blockly workspace',
   await page.goto('/dashboard');
   const catalog = page.getByRole('region', { name: 'Blockly lessons', exact: true });
   await expect(catalog.getByRole('article')).toHaveCount(20);
-  await page.getByLabel('Learning level', { exact: true }).selectOption('expert');
+  await page.getByRole('radio', { name: 'Expert', exact: true }).check();
   await expect(catalog.getByRole('article')).toHaveCount(5);
-  await catalog.getByRole('article', { name: 'Blockly lesson: Blockly exercise 16', exact: true }).getByRole('button', { name: 'Start lesson', exact: true }).click();
+  await catalog.getByRole('article', { name: 'Blockly lesson: Blockly exercise 16', exact: true }).getByRole('button', { name: /^Start / }).click();
   await expect(page.getByRole('heading', { name: 'Blockly exercise 16', exact: true, level: 1 })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Run program', exact: true })).toBeEnabled();
   expect(state.writes.find((write) => write.path === 'start_blockly_lesson')!.body).toEqual({ p_lesson_id: 'course-15' });
@@ -440,21 +444,21 @@ test('a learner starts a capstone project and submits its Blockly program for re
     learning_plan: { ...plan, delivery: 'blockly', activityKind: 'capstone', requirements: ['Print four clear steps.'] } };
   state.lessons.push(capstone);
   await page.goto('/dashboard/my-projects');
-  await expect(page.getByRole('heading', { name: 'Capstone projects', exact: true, level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Big projects', exact: true, level: 1 })).toBeVisible();
   const results = await new AxeBuilder({ page }).include('.learning-zone').withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
   expect(results.violations).toEqual([]);
-  await page.getByRole('button', { name: 'Start project in Blockly', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Project brief', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: /^Start / }).click();
+  await expect(page.getByRole('heading', { name: 'Mission', exact: true })).toBeVisible();
   await expect(page.getByText('Print four clear steps.', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Run program', exact: true }).click();
   await expect(page.getByRole('status').filter({ hasText: 'Hello, ChipuRobo!' })).toBeVisible();
-  await page.getByLabel('Describe your work or paste your code').fill('My project program and test record.');
-  await page.getByRole('button', { name: 'Submit my work', exact: true }).click();
-  await expect(page.getByRole('status').filter({ hasText: 'Your work was submitted.' })).toBeVisible();
+  await page.getByLabel('What did you make?').fill('My project program and test record.');
+  await page.getByRole('button', { name: /^Send / }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Sent!' })).toBeVisible();
   expect(state.submissions[0].assignment_id).toBe('started-capstone-one');
   expect(state.submissions[0].blockly_workspace).toBeTruthy();
-  await page.getByRole('link', { name: 'Back to capstone projects', exact: true }).click();
-  await expect(page.getByRole('link', { name: 'Continue project', exact: true })).toBeVisible();
+  await page.getByRole('link', { name: 'Back to Projects', exact: true }).click();
+  await expect(page.getByRole('link', { name: /^Continue / })).toBeVisible();
 });
 
 test('admin creates a learner login linked to the selected roster student', async ({ page }) => {
@@ -493,7 +497,7 @@ for (const journey of ['login', 'learner-home', 'learner-submission', 'learning-
       } else if (journey === 'learner-submission') {
         await expect(page.getByRole('form', { name: 'My submission', exact: true })).toBeVisible();
         await expect(page.getByRole('button', { name: 'Run program', exact: true })).toBeEnabled();
-      } else await expect(page.getByRole('link', { name: 'Start activity', exact: true })).toBeVisible();
+      } else await expect(page.getByRole('link', { name: /^Start / })).toBeVisible();
     }
     const results = await new AxeBuilder({ page }).include(journey === 'login' ? 'form' : '.learning-zone').withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
     expect(results.violations).toEqual([]);
@@ -520,9 +524,9 @@ test('learner progress shows submitted activities and teacher feedback without t
  state.evidence=[{id:'review',assignment_id:assignmentId,student_id:studentId,reviews:{algorithms:'demonstrated'},feedback:'Try a different sequence and explain what changed.',recorded_at:'2026-10-05T12:00:00Z'}];
  await page.goto('/dashboard/my-progress');
  const activity=page.getByRole('article',{name:'Activity progress: Give clear instructions',exact:true});
- await expect(activity.getByText('Feedback available',{exact:true})).toBeVisible();
+ await expect(activity.getByText('Teacher replied',{exact:true})).toBeAttached();
  await expect(activity.getByText('Try a different sequence and explain what changed.',{exact:true})).toBeVisible();
- await expect(activity.getByRole('link',{name:'Open activity and feedback',exact:true})).toHaveAttribute('href',`/dashboard/assignments/${assignmentId}`);
+ await expect(activity.getByRole('link',{name:/^Feedback /})).toHaveAttribute('href',`/dashboard/assignments/${assignmentId}`);
  await expect(page.getByRole('heading',{name:'Level progression',exact:true})).toHaveCount(0);
  await expect(page.getByRole('combobox',{name:'Review learning level',exact:true})).toHaveCount(0);
  await expect(page.getByRole('region',{name:'Beginner',exact:true})).toHaveCount(0);
@@ -530,11 +534,11 @@ test('learner progress shows submitted activities and teacher feedback without t
  expect(requests.some(path=>/learning_progression_readiness|learning_progression_decisions/.test(path))).toBe(false);
  expect((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze()).violations).toEqual([]);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
- await activity.getByRole('link',{name:'Open activity and feedback',exact:true}).click();
+ await activity.getByRole('link',{name:/^Feedback /}).click();
  await expect(page).toHaveURL(new RegExp(`/dashboard/assignments/${assignmentId}$`));
  await page.goto('/dashboard/school/progress');
  await expect(page).toHaveURL('/dashboard');
- await expect(page.getByRole('heading',{name:'My learning',exact:true})).toBeVisible();
+ await expect(page.getByRole('heading',{name:'Hi, Test!',exact:true})).toBeVisible();
 });
 
 test('a learner resubmission awaits feedback while preserving earlier teacher feedback',async({page})=>{
@@ -543,9 +547,9 @@ test('a learner resubmission awaits feedback while preserving earlier teacher fe
  state.evidence=[{id:'review',assignment_id:assignmentId,student_id:studentId,feedback:'Please test a second case.',recorded_at:'2026-10-05T12:00:00Z',reviews:{debugging:'developing'}}];
  await page.goto('/dashboard/my-progress');
  const activity=page.getByRole('article',{name:'Activity progress: Give clear instructions',exact:true});
- await expect(activity.getByText('Awaiting teacher feedback',{exact:true})).toBeVisible();
+ await expect(activity.getByText('Sent to teacher',{exact:true})).toBeAttached();
  await expect(activity.getByText('Please test a second case.',{exact:true})).toBeVisible();
- await expect(activity.getByText('Feedback available',{exact:true})).toHaveCount(0);
+ await expect(activity.getByText('Teacher replied',{exact:true})).toHaveCount(0);
 });
 
 test('teacher home provides real inline assignment and lesson actions',async({page})=>{
@@ -560,22 +564,22 @@ test('teacher home provides real inline assignment and lesson actions',async({pa
 
 test('learner completes an accessible knowledge check and sees versioned feedback',async({page})=>{
  const state=await mockDashboard(page,'learner');await page.goto('/dashboard/quizzes');
- await page.getByRole('button',{name:'Start knowledge check'}).click();
+ await page.getByRole('button',{name:/^Play /}).click();
  const form=page.getByRole('form',{name:'Answer Beginner knowledge check'});
  expect((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze()).violations).toEqual([]);
- await form.getByRole('radio',{name:'An algorithm',exact:true}).check();await form.getByRole('button',{name:'Submit answers'}).click();
- await expect(page.getByText(/100%.*Pass mark met/)).toBeVisible();expect(state.attempts).toHaveLength(1);
- await page.getByText('Question feedback',{exact:true}).click();await expect(page.getByText('Correct. An algorithm describes ordered steps.')).toBeVisible();
+ await form.getByRole('radio',{name:'An algorithm',exact:true}).check();await form.getByRole('button',{name:/^Check /}).click();
+ await expect(page.getByRole('region',{name:'Quiz results'}).getByText(/100%/).first()).toBeVisible();expect(state.attempts).toHaveLength(1);
+ await page.getByText('Answers',{exact:true}).click();await expect(page.getByText('An algorithm describes ordered steps.')).toBeVisible();
 });
 
 test('learner curates and exports an accessible private portfolio without deleting submissions',async({page})=>{
  const state=await mockDashboard(page,'learner');state.submissions=[{id:'submission-one',assignment_id:assignmentId,student_id:studentId,evidence_text:'My sequence and retest.',reflection:'I revised the order.',submitted_at:'2026-10-05T12:00:00Z'}];
- await page.goto('/dashboard/portfolio');await page.getByRole('combobox',{name:'Submitted work',exact:true}).selectOption('submission-one');
- await page.getByLabel('Portfolio title',{exact:true}).fill('My tested sequence');await page.getByLabel('Portfolio reflection',{exact:true}).fill('I explained the correction.');
- await page.getByRole('button',{name:'Save portfolio evidence'}).click();await expect(page.getByRole('heading',{name:'My tested sequence'})).toBeVisible();
+ await page.goto('/dashboard/portfolio');await page.getByRole('combobox',{name:'Work',exact:true}).selectOption('submission-one');
+ await page.getByRole('textbox',{name:'Title',exact:true}).fill('My tested sequence');await page.getByRole('textbox',{name:'Why?',exact:true}).fill('I explained the correction.');
+ await page.getByRole('button',{name:/^Add /}).click();await expect(page.getByRole('heading',{name:'My tested sequence'})).toBeVisible();
  expect((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze()).violations).toEqual([]);
- const download=page.waitForEvent('download');await page.getByRole('button',{name:'Export portfolio evidence'}).click();expect((await download).suggestedFilename()).toBe('chipurobo-portfolio.json');
- await page.getByRole('button',{name:'Remove from portfolio'}).click();await expect(page.getByRole('heading',{name:'My tested sequence'})).toHaveCount(0);expect(state.submissions).toHaveLength(1);
+ const download=page.waitForEvent('download');await page.getByRole('button',{name:/^Download /}).click();expect((await download).suggestedFilename()).toBe('chipurobo-portfolio.json');
+ await page.getByRole('button',{name:/^Remove /}).click();await expect(page.getByRole('heading',{name:'My tested sequence'})).toHaveCount(0);expect(state.submissions).toHaveLength(1);
 });
 
 test('teacher records an explicit evidence-backed progression decision',async({page})=>{

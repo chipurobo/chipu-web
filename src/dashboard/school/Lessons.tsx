@@ -12,6 +12,7 @@ import { fetchLearningStudents } from '../../lib/learningQueries';
 import { AssignLessonForm } from '../learning/AssignLessonForm';
 import { learningLevels, learningPathways } from '../../lib/learningFramework';
 import { hasUsableLearningPlan } from '../../lib/learningRecords';
+import { levelLook } from '../../lib/learnerCopy';
 import type { Lesson } from '../../lib/database.types';
 import { SkeletonCards } from '../components/Skeletons';
 import { safeHttpUrl } from '../../lib/safeUrl';
@@ -61,6 +62,7 @@ interface CompletionCountRow {
 export function SchoolLessons() {
   const [assignFor, setAssignFor] = useState<Lesson | null>(null);
   const [level, setLevel] = useState<LevelChoice>('all');
+  const [learnLevel, setLearnLevel] = useState<'all' | 'beginner' | 'intermediate' | 'expert'>('all');
   const { school, profile } = useAuth();
   const schoolId = school?.id ?? null;
 
@@ -94,7 +96,12 @@ export function SchoolLessons() {
     enabled: !!schoolId,
   });
 
-  const lessons      = lessonsQuery.data ?? null;
+  const isTeacher = profile?.role === 'teacher';
+  const [showAll, setShowAll] = useState(false);
+  // Teachers assign learning lessons; the wider curriculum catalogue only adds noise for them.
+  const lessons      = lessonsQuery.data
+    ? (isTeacher && !showAll ? lessonsQuery.data.filter((l) => hasUsableLearningPlan(l.learning_plan)) : lessonsQuery.data)
+    : null;
   const students     = studentsQuery.data ?? null;
   const completions  = completionsQuery.data ?? null;
 
@@ -121,7 +128,7 @@ export function SchoolLessons() {
         </p>
         <h1>Lessons</h1>
         <p className="text-sm text-gray-600 mt-1 max-w-2xl">
-          Assign lessons to your students, review their work and record evidence of learning.
+          {isTeacher ? 'Pick a lesson and assign it to your learners.' : 'Assign lessons to your students, review their work and record evidence of learning.'}
         </p>
         {activeStudentCount > 0 && (
           <p className="text-xs text-gray-500 mt-1">
@@ -132,6 +139,20 @@ export function SchoolLessons() {
 
       {assignFor && <AssignLessonForm key={assignFor.id} lesson={assignFor} onClose={() => setAssignFor(null)} />}
 
+      {isTeacher ? (
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <fieldset className="flex flex-wrap gap-2">
+            <legend className="sr-only">Learning level</legend>
+            {([{ id: 'all', emoji: '✨', title: 'All' }, ...learningLevels.map((item) => ({ id: item.id, emoji: levelLook[item.id].emoji, title: item.title }))]).map((option) => (
+              <label key={option.id} className={`inline-flex cursor-pointer items-center gap-1 rounded-full border px-3 py-1 text-sm ${learnLevel === option.id ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-700'}`}>
+                <input type="radio" name="teacher-lesson-level" className="sr-only" value={option.id} checked={learnLevel === option.id} onChange={() => setLearnLevel(option.id as typeof learnLevel)} />
+                <span aria-hidden="true">{option.emoji}</span>{option.title}
+              </label>
+            ))}
+          </fieldset>
+          <label className="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" checked={showAll} onChange={(event) => setShowAll(event.target.checked)} />Show the full curriculum</label>
+        </div>
+      ) : (
       <LevelFilter
         value={level}
         onChange={setLevel}
@@ -141,6 +162,7 @@ export function SchoolLessons() {
           secondary: lessons?.filter((l) => matchesLevel(l.level, 'secondary')).length,
         }}
       />
+      )}
 
       {err && (
         <div role="alert" className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
@@ -162,7 +184,7 @@ export function SchoolLessons() {
 
       {lessons && lessons.length > 0 && (
         <div className="grid sm:grid-cols-2 gap-4">
-          {lessons.filter((l) => matchesLevel(l.level, level)).map((s) => {
+          {lessons.filter((l) => isTeacher ? (learnLevel === 'all' || l.learning_plan?.level === learnLevel) : matchesLevel(l.level, level)).map((s) => {
             const Icon = STAGE_KIND_ICON[s.kind];
             const badge = STAGE_KIND_BADGE[s.kind];
             const passed = passedByLesson.get(s.id) ?? 0;
@@ -176,11 +198,11 @@ export function SchoolLessons() {
                   <div className="min-w-0 flex-1">
                     <h2 className="m-0 text-sm">{s.title}</h2>
                     <div className="flex items-center gap-2 flex-wrap mt-1">
-                      <span className={`${badge}`}>{STAGE_KIND_LABEL[s.kind]}</span>
-                      <span className="text-xs text-gray-500">{s.points} pt{s.points === 1 ? '' : 's'}</span>
-                      <span className="badge-gray">{LEVEL_LABEL[s.level]}</span>
-                      {s.learning_plan && <span className="badge-teal">{learningLevels.find((level) => level.id === s.learning_plan?.level)?.title}</span>}
-                      {s.required_for_certificate && (
+                      {!isTeacher && <span className={`${badge}`}>{STAGE_KIND_LABEL[s.kind]}</span>}
+                      {!isTeacher && <span className="text-xs text-gray-500">{s.points} pt{s.points === 1 ? '' : 's'}</span>}
+                      {!isTeacher && <span className="badge-gray">{LEVEL_LABEL[s.level]}</span>}
+                      {s.learning_plan && <span className="badge-teal">{s.learning_plan.activityKind === 'capstone' ? '🏗️ ' : ''}{learningLevels.find((level) => level.id === s.learning_plan?.level)?.title}</span>}
+                      {!isTeacher && s.required_for_certificate && (
                         <span className="badge-amber inline-flex items-center">
                           <GraduationCap className="h-3 w-3 mr-1" aria-hidden="true" />
                           required
@@ -194,7 +216,7 @@ export function SchoolLessons() {
                   <p className="text-sm text-gray-700 mb-2">{s.description}</p>
                 )}
 
-                {s.learning_plan && <p className="text-sm text-gray-600 mb-2">
+                {s.learning_plan && !isTeacher && <p className="text-sm text-gray-600 mb-2">
                   {learningPathways.find((path) => path.id === s.learning_plan?.pathwayId)?.title} · {s.learning_plan.competencyIds.length} competencies
                 </p>}
 

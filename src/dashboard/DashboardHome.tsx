@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { TeacherHomeActions } from './learning/TeacherHomeActions';
+import { TeacherClassBoard } from './learning/TeacherClassBoard';
 import { MyLearning } from './learning/MyLearning';
 import { useAuth } from '../lib/auth';
 import { School, Package, ClipboardList, Users, Boxes, Wrench, Send, BookOpen } from 'lucide-react';
@@ -24,7 +25,7 @@ export function DashboardHome() {
       <h1 className="mb-2">Welcome back, {profile?.full_name?.split(' ')[0] ?? 'there'}.</h1>
       <p className="text-sm text-gray-600 mb-8 max-w-2xl">
         {isTeacher
-          ? 'Plan learning activities, assign them to your learners and review their submissions.'
+          ? 'Your class at a glance.'
           : isAdmin
           ? 'Manage code clubs, the product catalogue, and orders across the network.'
           : isMakerSpace
@@ -49,10 +50,7 @@ export function DashboardHome() {
           </>
         )}
 
-        {isTeacher && <>
-          <Tile to="/dashboard/school/lessons" icon={BookOpen} title="Lessons and assignments" body="Assign coding and robotics activities to your learners." />
-          <Tile to="/dashboard/school/progress" icon={Users} title="Learner progress" body="Review individual evidence and feedback." />
-        </>}
+        {isTeacher && <div className="sm:col-span-2 lg:col-span-3"><TeacherClassBoard /></div>}
         {!isAdmin && !isTeacher && (
           <>
             <Tile to="/dashboard/school/members" icon={Users}

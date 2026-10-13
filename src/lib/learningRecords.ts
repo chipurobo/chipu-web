@@ -79,4 +79,5 @@ export interface LearningAccount {
   full_name: string;
   login: string;
   student_id: string | null;
+  admission_number?: string | null;
 }

@@ -9,7 +9,7 @@ import { fetchPendingBookingCount } from '../lib/gql/queries';
 import {
   LogOut, Home, School, Package, ClipboardList, Users, Boxes, Wrench, Send, Menu, X,
   Award, Layers, FolderKanban, BookOpen, CalendarDays, ListChecks, ShieldAlert,
-  Presentation, Trophy, Medal,
+  Presentation, Trophy, Medal, Brain, Rocket, Map, Images, Puzzle,
 } from 'lucide-react';
 
 // ----- Page titles for the SPA route announcer -----
@@ -51,7 +51,17 @@ const DASHBOARD_PAGE_TITLES: Record<string, string> = {
   '/dashboard/school/report-incident': 'Report a concern',
   '/dashboard/admin/incidents':     'Safeguarding',
 };
-function getDashboardPageTitle(path: string): string {
+const LEARNER_PAGE_TITLES: Record<string, string> = {
+  '/dashboard': 'Home',
+  '/dashboard/my-learning': 'Lessons',
+  '/dashboard/quizzes': 'Quizzes',
+  '/dashboard/my-projects': 'Projects',
+  '/dashboard/my-progress': 'Journey',
+  '/dashboard/portfolio': 'Showcase',
+};
+function getDashboardPageTitle(path: string, isLearner = false): string {
+  if (isLearner && LEARNER_PAGE_TITLES[path]) return LEARNER_PAGE_TITLES[path];
+  if (isLearner && path.startsWith('/dashboard/assignments/')) return 'Lesson';
   if (DASHBOARD_PAGE_TITLES[path]) return DASHBOARD_PAGE_TITLES[path];
   if (path.startsWith('/dashboard/admin/schools/')) return 'School details';
   if (path.startsWith('/dashboard/certificate/'))   return 'Certificate';
@@ -136,11 +146,11 @@ function DashboardShell() {
   // The aria-live region downstream picks up the change after a tick so
   // assistive tech reliably hears the new title even on fast nav.
   useEffect(() => {
-    const title = getDashboardPageTitle(location.pathname);
+    const title = getDashboardPageTitle(location.pathname, isLearner);
     document.title = `${title} · ChipuRobo`;
     const t = setTimeout(() => setRouteMessage(`Navigated to ${title}`), 100);
     return () => clearTimeout(t);
-  }, [location.pathname]);
+  }, [location.pathname, isLearner]);
 
   // Lock body scroll while drawer is open on mobile.
   useEffect(() => {
@@ -303,25 +313,28 @@ function DashboardShell() {
         </div>
 
         <nav aria-label="Primary" className="flex-1 py-4 px-3 space-y-0.5 text-sm overflow-y-auto">
-          <SidebarLink to="/dashboard" end icon={Home}>
-            Overview
-          </SidebarLink>
-
-          <SidebarLink to="/dashboard/quizzes" icon={ListChecks}>Knowledge checks</SidebarLink>
-          <SidebarLink to="/dashboard/portfolio" icon={FolderKanban}>{isLearner ? 'My portfolio' : 'Learner portfolios'}</SidebarLink>
-          {!isLearner && <SidebarLink to="/dashboard/learning-reports" icon={ClipboardList}>Learning reports</SidebarLink>}
           {isLearner ? (
             <>
-              <SidebarLink to="/dashboard/my-learning" icon={BookOpen}>My learning</SidebarLink>
-              <SidebarLink to="/dashboard/my-projects" icon={Award}>Capstone projects</SidebarLink>
-              <SidebarLink to="/dashboard/my-progress" icon={Award}>My progress</SidebarLink>
+              <SidebarLink to="/dashboard" end icon={Home} tone="text-sky-600">Home</SidebarLink>
+              <SidebarLink to="/dashboard/my-learning" icon={Puzzle} tone="text-emerald-600">Lessons</SidebarLink>
+              <SidebarLink to="/dashboard/quizzes" icon={Brain} tone="text-violet-600">Quizzes</SidebarLink>
+              <SidebarLink to="/dashboard/my-projects" icon={Rocket} tone="text-orange-600">Projects</SidebarLink>
+              <SidebarLink to="/dashboard/my-progress" icon={Map} tone="text-amber-600">Journey</SidebarLink>
+              <SidebarLink to="/dashboard/portfolio" icon={Images} tone="text-pink-600">Showcase</SidebarLink>
             </>
-          ) : isTeacher ? (
-            <>
-              <SidebarLink to="/dashboard/school/lessons" icon={BookOpen}>Lessons and assignments</SidebarLink>
-              <SidebarLink to="/dashboard/school/progress" icon={Users}>Learner progress</SidebarLink>
-            </>
-          ) : isAdmin ? (
+          ) : <>
+          <SidebarLink to="/dashboard" end icon={Home}>
+            {isTeacher ? 'My class' : 'Overview'}
+          </SidebarLink>
+          {isTeacher && <>
+            <SidebarLink to="/dashboard/school/lessons" icon={BookOpen}>Lessons</SidebarLink>
+            <SidebarLink to="/dashboard/school/progress" icon={Users}>Progress</SidebarLink>
+          </>}
+          <SidebarLink to="/dashboard/quizzes" icon={ListChecks}>{isTeacher ? 'Quizzes' : 'Knowledge checks'}</SidebarLink>
+          <SidebarLink to="/dashboard/portfolio" icon={FolderKanban}>{isTeacher ? 'Portfolios' : 'Learner portfolios'}</SidebarLink>
+          <SidebarLink to="/dashboard/learning-reports" icon={ClipboardList}>{isTeacher ? 'Reports' : 'Learning reports'}</SidebarLink>
+          </>}
+          {isLearner || isTeacher ? null : isAdmin ? (
             <>
               {/* ─── Learning group ───
                   Lessons are the curriculum and stand alone. A workshop is
@@ -487,12 +500,15 @@ function SidebarLink({
   children,
   end,
   badge,
+  tone,
 }: {
   to: string;
   icon: typeof Home;
   children: React.ReactNode;
   end?: boolean;
   badge?: number;
+  /** Optional icon colour, used on the learner menu so each place has its own colour. */
+  tone?: string;
 }) {
   return (
     <NavLink
@@ -506,7 +522,7 @@ function SidebarLink({
         }`
       }
     >
-      <Icon className="h-4 w-4 mr-2.5 flex-shrink-0" aria-hidden="true" />
+      <Icon className={`h-4 w-4 mr-2.5 flex-shrink-0 ${tone ?? ''}`} aria-hidden="true" />
       <span className="flex-1">{children}</span>
       {badge !== undefined && badge > 0 && (
         <span

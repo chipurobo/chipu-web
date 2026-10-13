@@ -277,3 +277,64 @@ were applied there after taking schema and data backups; comparison of all 68
 original backed-up table sections found no changed records. The added tables
 store quiz versions/attempts, portfolio entries, progression policies/decisions,
 activity and observed tasks.
+
+## Learner experience layer (first version, October 2026)
+
+Learners see the same assignments, submissions, quizzes, portfolio items and
+teacher reviews as before, through a separate presentation layer. No RPC,
+query, table or review rule changed.
+
+- `src/lib/learnerCopy.ts` holds the learner vocabulary (levels, skills, review
+  bands, statuses), a friendly-error translator, lesson illustration themes and
+  the points, ranks and badges. Points and badges are derived from existing
+  records when a page renders; nothing is stored.
+- `src/dashboard/learning/ui/` holds the shared learner kit: mascot and lesson
+  illustrations (inline SVG), chips, rank bar, badges, step cards, confetti.
+- `src/dashboard/learning/LearnerLesson.tsx` is the learner's lesson page. It
+  adds scaffolding on top of the lesson plan: a step checklist (local state),
+  hints that reveal one at a time, built from the plan's steps, expected result
+  and evidence brief, and a guide to the block drawers available at the level.
+- Learner branches in `LearningQuizzes.tsx` and `LearningPortfolio.tsx` keep
+  the teacher and admin views unchanged. The `learner-zone` styles in
+  `src/index.css` apply only inside learner pages.
+- The formal framework wording in `learningFramework.ts` is unchanged and still
+  used in teacher screens and reports. Learner labels map onto the same IDs.
+
+## Learner logins: school and admission number (October 2026)
+
+Learners sign in by choosing their school and typing their admission number
+and password. Under the hood the account is still an `auth.users` row whose
+email is `<school code>-<admission number>@learners.chipurobo.local`, so
+sessions, RLS and the `learner_accounts` link are unchanged.
+
+- `schools.code` is a short unique label (for example `alliance-girls`),
+  generated from the school name by migration `20261013000000` and by a
+  trigger for new schools. An admin may change it before learners exist.
+- `club_members.admission_number` is the school's own number, unique within
+  the school only, so two schools can both have `2026/001`.
+- `public.admission_login(code, admission)` derives the username; the client
+  mirrors it in `src/lib/learnerLogin.ts`. Change both or neither.
+- `school_login_options` is a view of names and codes readable before sign-in,
+  like `public_schools_map`.
+- `admin_bulk_create_learners(school, rows, default_password)` creates roster
+  rows and logins from admission numbers, up to 500 per call. It is
+  idempotent: rerunning updates names and skips learners who already have a
+  login. The admin Learning accounts page uses it for spreadsheet imports in
+  chunks of 200; `scripts/seed-learners.mjs` uses it for large seeds.
+- Accounts made before this change keep their usernames; the sign-in page has
+  an "I have a username instead" option for them.
+
+### Seeding many learners
+
+```bash
+node scripts/seed-learners.mjs --file learners.xlsx           # validate only
+node scripts/seed-learners.mjs --file learners.xlsx --apply   # write
+node scripts/seed-learners.mjs --synthetic 30000 --apply      # local scale test
+```
+
+Columns: school (name or code), admission_number, full_name, grade, password
+(optional). Generated passwords go to `.context/seed-credentials-*.csv`
+(gitignored, mode 600). By default every learner at a school gets the same
+initial password (`--password-mode school`); `--password-mode per-learner`
+generates one per learner. For a
+hosted project pass `--db "postgresql://…"` and have `psql` on the PATH.
