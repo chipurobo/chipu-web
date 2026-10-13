@@ -94,7 +94,7 @@ export function DashboardLayout() {
 }
 
 function DashboardShell() {
-  const { profile, school, signOut } = useAuth();
+  const { user, profile, school, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   useEffect(() => { if (profile) trackLearningActivity('dashboard_open'); }, [profile]);
@@ -444,7 +444,8 @@ function DashboardShell() {
 
         <div className="px-5 py-4 border-t border-warm-200">
           <p className="text-xs text-gray-500 mb-1">Signed in as</p>
-          <p className="text-sm font-medium text-gray-900 truncate">{profile?.full_name ?? '—'}</p>
+          {/* Learners usually have no name on file; their login carries the school code and admission number. */}
+          <p className="text-sm font-medium text-gray-900 truncate">{profile?.full_name || (isLearner ? user?.email?.split('@')[0] : null) || '—'}</p>
           <p className="text-xs text-gray-500 truncate">
             {school?.name ?? (isAdmin ? 'ChipuRobo admin' : '—')}
           </p>

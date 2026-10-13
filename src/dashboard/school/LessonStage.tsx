@@ -20,6 +20,7 @@ import { SkeletonRows } from '../components/Skeletons';
 import { LessonAssignments } from '../learning/AssignLessonForm';
 import { ProductThumb } from '../components/ProductThumb';
 import { safeHttpUrl } from '../../lib/safeUrl';
+import { learnerLabel } from '../../lib/learnerCopy';
 
 // =============================================================
 // /dashboard/school/lessons/:lessonId
@@ -368,21 +369,21 @@ function SchoolLessonRoster() {
                     <ConfidenceStars
                       value={state.confidence}
                       onChange={(v) => setRow(m.id, { confidence: v })}
-                      studentName={m.full_name}
+                      studentName={learnerLabel(m)}
                     />
                   </td>
                   <td>
                     <IndependenceScale
                       value={state.independence}
                       onChange={(v) => setRow(m.id, { independence: v })}
-                      studentName={m.full_name}
+                      studentName={learnerLabel(m)}
                     />
                   </td>
                   <td>
                     <EvidenceUrlField
                       value={state.evidenceUrl}
                       onChange={(v) => setRow(m.id, { evidenceUrl: v })}
-                      studentName={m.full_name}
+                      studentName={learnerLabel(m)}
                       placeholder={evidencePlaceholder}
                     />
                   </td>
