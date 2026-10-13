@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../../lib/auth';
 import { fetchLearningStudents, fetchAssignments, fetchEvidence, fetchRecipients, fetchSubmissions } from '../../lib/learningQueries';
 import { competencies, evidenceRubric, learningLevels } from '../../lib/learningFramework';
-import { levelLook, ratingLook, skillLook } from '../../lib/learnerCopy';
+import { learnerLabel, levelLook, ratingLook, skillLook } from '../../lib/learnerCopy';
 
 /**
  * One card per learner: a skills grid (three levels across, six skills down)
@@ -23,7 +23,7 @@ export function LearnerProgress() {
   const submissions = useQuery({ queryKey: ['learning-submissions'], queryFn: () => fetchSubmissions(), enabled: !!school });
   const error = students.error ?? assignments.error ?? recipients.error ?? evidence.error;
   const loading = !!school && [students, assignments, recipients, evidence].some((query) => query.isPending);
-  const roster = (students.data ?? []).filter((student) => !filter || student.full_name.toLowerCase().includes(filter.toLowerCase()));
+  const roster = (students.data ?? []).filter((student) => !filter || learnerLabel(student).toLowerCase().includes(filter.toLowerCase()));
   return (
     <div className="learning-zone px-4 sm:px-6 lg:px-10 py-8 space-y-6 max-w-6xl">
       <div className="flex flex-wrap items-end justify-between gap-3">

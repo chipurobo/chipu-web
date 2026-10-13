@@ -147,7 +147,7 @@ export function SchoolMembers() {
 
   const startEdit = (m: ClubMember) => {
     setEditingId(m.id);
-    setEditName(m.full_name);
+    setEditName(m.full_name ?? '');
     setEditGrade(m.grade ?? '');
   };
 

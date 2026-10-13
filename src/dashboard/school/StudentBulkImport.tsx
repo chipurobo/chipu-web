@@ -61,13 +61,13 @@ export function StudentBulkImport({
     for (let i = 0; i < updated.length; i++) {
       const row = updated[i];
       const fullName = (row.full_name ?? row.name ?? '').trim();
-      if (!fullName) {
-        updated[i] = { ...row, __status: 'error', __message: 'Missing full_name' };
+      const admissionNumber = (row.admission_number ?? row.admission ?? row.adm ?? row.adm_no ?? '').trim() || null;
+      if (!fullName && !admissionNumber) {
+        updated[i] = { ...row, __status: 'error', __message: 'Missing admission_number' };
         setRows([...updated]);
         continue;
       }
       const grade = (row.grade ?? row.class ?? '').trim() || null;
-      const admissionNumber = (row.admission_number ?? row.admission ?? row.adm ?? row.adm_no ?? '').trim() || null;
       // Default to "in the code club" if the column is absent (admin's common case).
       const inClub = row.in_club === undefined ? true : parseBoolish(row.in_club);
       const hasDisability = parseBoolish(row.has_disability ?? row.disability ?? row.disabled);
@@ -77,7 +77,7 @@ export function StudentBulkImport({
 
       const { error } = await supabase.from('club_members').insert({
         school_id: schoolId,
-        full_name: fullName,
+        full_name: fullName || null,
         grade,
         admission_number: admissionNumber,
         in_club:   inClub,

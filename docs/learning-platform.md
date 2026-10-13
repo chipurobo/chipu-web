@@ -323,6 +323,11 @@ sessions, RLS and the `learner_accounts` link are unchanged.
   chunks of 200; `scripts/seed-learners.mjs` uses it for large seeds.
 - Accounts made before this change keep their usernames; the sign-in page has
   an "I have a username instead" option for them.
+- **Learners need no name.** Schools give admission numbers, not names, so
+  `club_members.full_name` is optional (migration `20261013000001`). Every
+  screen labels a learner with `learner_label()` in SQL or `learnerLabel()`
+  in `src/lib/learnerCopy.ts`: the name if there is one, otherwise the
+  admission number.
 
 ### Seeding many learners
 
@@ -332,8 +337,8 @@ node scripts/seed-learners.mjs --file learners.xlsx --apply   # write
 node scripts/seed-learners.mjs --synthetic 30000 --apply      # local scale test
 ```
 
-Columns: school (name or code), admission_number, full_name, grade, password
-(optional). Generated passwords go to `.context/seed-credentials-*.csv`
+Columns: school (name or code) and admission_number. Optional: grade,
+password, full_name. Generated passwords go to `.context/seed-credentials-*.csv`
 (gitignored, mode 600). By default every learner at a school gets the same
 initial password (`--password-mode school`); `--password-mode per-learner`
 generates one per learner. For a

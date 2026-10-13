@@ -9,6 +9,7 @@ import { LearnerSubmission, SubmissionDetails } from './LearnerSubmission';
 import type { CompetencyEvidence, LearningAssignment, LearningSubmission, ReviewBand } from '../../lib/learningRecords';
 import { safeHttpUrl } from '../../lib/safeUrl';
 import { LearnerLesson } from './LearnerLesson';
+import { learnerLabel } from '../../lib/learnerCopy';
 
 /** Learners get their own page with hints and scaffolding; teachers keep the review workspace. */
 export function AssignmentWorkspace() {
@@ -60,7 +61,7 @@ function TeacherAssignmentWorkspace() {
             <p className="text-sm text-gray-600"><span aria-hidden="true">📬 </span>{assigned.filter((student) => (submissions.data ?? []).some((item) => item.student_id === student.id) && !(evidence.data ?? []).some((item) => item.student_id === student.id)).length} to review</p>
           </div>
           {(recipients.isPending || members.isPending || evidence.isPending) && <p role="status">Loading student work…</p>}
-          {assigned.map((student) => <StudentEvidence key={student.id} name={student.full_name} studentId={student.id}
+          {assigned.map((student) => <StudentEvidence key={student.id} name={learnerLabel(student)} studentId={student.id}
             assignment={assignment} submissions={(submissions.data ?? []).filter((item) => item.student_id === student.id)} evidence={(evidence.data ?? []).filter((item) => item.student_id === student.id)} />)}
         </section>}
         <details className="card p-5 text-sm text-gray-700" aria-label="Assigned learning task">

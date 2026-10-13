@@ -121,10 +121,10 @@ export async function fetchSchoolLoginOptions(): Promise<SchoolLoginOption[]> {
   return (data ?? []) as SchoolLoginOption[];
 }
 
-export interface BulkLearnerRow { full_name: string; admission_number: string; grade?: string; password?: string }
+export interface BulkLearnerRow { admission_number: string; full_name?: string; grade?: string; password?: string }
 export interface BulkLearnerResult {
   created: number; skipped: number;
-  errors: { admission_number: string; full_name: string; message: string }[];
+  errors: { admission_number: string; full_name: string | null; message: string }[];
   logins: { admission_number: string; login: string; student_id: string }[];
 }
 /** Admin only. Up to 500 rows per call; the caller chunks larger files. */
