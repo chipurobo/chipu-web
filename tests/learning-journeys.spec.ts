@@ -84,6 +84,10 @@ async function mockDashboard(page: Page, role: 'admin' | 'school_lead' | 'teache
       await route.fulfill({ json: 'review-one' }); return;
     }
     if (path === 'admin_list_learning_accounts') { await route.fulfill({ json: state.accounts }); return; }
+    if (path === 'admin_create_learner_login') {
+      state.accounts.push({ id: 'new-account', role: 'learner', full_name: '0001', login: 'test-0001', student_id: body!.p_student_id, admission_number: '0001' });
+      await route.fulfill({ json: { user_id: 'new-account', login: 'test-0001', admission_number: '0001', role: 'learner' } }); return;
+    }
     if (path === 'admin_create_learning_account') {
       state.accounts.push({ id: 'new-account', role: body!.p_role, full_name: body!.p_role === 'learner' ? 'Test Learner' : body!.p_full_name,
         login: body!.p_login, student_id: body!.p_student_id });
@@ -298,13 +302,12 @@ for (const kind of ['Teacher', 'Learner'] as const) {
     const state = await mockDashboard(page, kind === 'Teacher' ? 'teacher' : 'learner', false);
     await page.goto('/dashboard/login');
     await page.getByRole('radio', { name: kind, exact: true }).check();
-    if (kind === 'Teacher') await page.getByLabel('Email', { exact: true }).fill('teacher@example.test');
-    else { await page.getByRole('combobox', { name: 'School', exact: true }).selectOption('test'); await page.getByRole('textbox', { name: 'Admission number', exact: true }).fill('2026/001'); }
-    await page.getByLabel('Password', { exact: true }).fill('TestPassword123');
+    if (kind === 'Teacher') { await page.getByLabel('Email', { exact: true }).fill('teacher@example.test'); await page.getByLabel('Password', { exact: true }).fill('TestPassword123'); }
+    else { await page.getByRole('combobox', { name: 'School', exact: true }).selectOption('test'); await page.getByRole('textbox', { name: 'Admission number', exact: true }).fill('7'); await expect(page.getByLabel('Password', { exact: true })).toHaveCount(0); }
     await page.getByRole('button', { name: 'Sign in', exact: true }).click();
     await expect(page).toHaveURL('/dashboard');
     await expect(page.getByRole('heading', { name: kind === 'Teacher' ? 'Welcome back, Test.' : 'Hi, Test!', exact: true, level: 1 })).toBeVisible();
-    expect(state.writes.find((write) => write.path === 'token')!.body.email).toBe(kind === 'Teacher' ? 'teacher@example.test' : 'test-2026-001@learners.chipurobo.local');
+    expect(state.writes.find((write) => write.path === 'token')!.body).toMatchObject(kind === 'Teacher' ? { email: 'teacher@example.test' } : { email: 'test-0007@learners.chipurobo.local', password: 'chipu-learner-test-0007-2026' });
     await expect(page.getByRole('link', { name: 'Stock & units', exact: true })).toHaveCount(0);
   });
 }
@@ -314,8 +317,7 @@ test('selecting learner sign-in cannot turn teacher credentials into a learner a
   await page.goto('/dashboard/login');
   await page.getByRole('radio', { name: 'Learner', exact: true }).check();
   await page.getByRole('combobox', { name: 'School', exact: true }).selectOption('test');
-  await page.getByRole('textbox', { name: 'Admission number', exact: true }).fill('teacher@example.test');
-  await page.getByLabel('Password', { exact: true }).fill('TestPassword123');
+  await page.getByRole('textbox', { name: 'Admission number', exact: true }).fill('0001');
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await expect(page.getByRole('alert')).toHaveText('These credentials do not match the selected account type. Choose the correct sign-in option.');
   await expect(page).toHaveURL('/dashboard/login');
@@ -467,11 +469,10 @@ test('admin creates a learner login linked to the selected roster student', asyn
   await page.getByLabel('School', { exact: true }).selectOption(schoolId);
   await page.getByLabel('Account type').selectOption('learner');
   await page.getByLabel('Learner on the roster').selectOption(studentId);
-  await page.getByLabel('Learner username', { exact: true }).fill('test.learner');
-  await page.getByLabel('Initial password').fill('TestPassword123');
+  await expect(page.getByLabel('Initial password')).toHaveCount(0);
   await page.getByRole('button', { name: 'Create login', exact: true }).click();
-  await expect(page.getByRole('status').filter({ hasText: 'Learner login created: test.learner.' })).toBeVisible();
-  expect(state.writes.find((write) => write.path === 'admin_create_learning_account')!.body).toMatchObject({ p_role: 'learner', p_student_id: studentId });
+  await expect(page.getByRole('status').filter({ hasText: 'Learner login created: test-0001.' })).toBeVisible();
+  expect(state.writes.find((write) => write.path === 'admin_create_learner_login')!.body).toMatchObject({ p_student_id: studentId });
 });
 
 for (const role of ['teacher', 'learner'] as const) {

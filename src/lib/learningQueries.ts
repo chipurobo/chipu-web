@@ -121,15 +121,20 @@ export async function fetchSchoolLoginOptions(): Promise<SchoolLoginOption[]> {
   return (data ?? []) as SchoolLoginOption[];
 }
 
-export interface BulkLearnerRow { admission_number: string; full_name?: string; grade?: string; password?: string }
+export interface BulkLearnerRow { admission_number?: string; full_name?: string; grade?: string }
 export interface BulkLearnerResult {
   created: number; skipped: number;
   errors: { admission_number: string; full_name: string | null; message: string }[];
   logins: { admission_number: string; login: string; student_id: string }[];
 }
-/** Admin only. Up to 500 rows per call; the caller chunks larger files. */
-export async function bulkCreateLearners(schoolId: string, rows: BulkLearnerRow[], defaultPassword: string | null): Promise<BulkLearnerResult> {
-  return unwrap(await supabase.rpc('admin_bulk_create_learners', { p_school_id: schoolId, p_rows: rows, p_default_password: defaultPassword }));
+/** Admin only. Up to 500 rows per call; the caller chunks larger files. Learners have no password; a row without a number gets the next one. */
+export async function bulkCreateLearners(schoolId: string, rows: BulkLearnerRow[]): Promise<BulkLearnerResult> {
+  return unwrap(await supabase.rpc('admin_bulk_create_learners', { p_school_id: schoolId, p_rows: rows, p_default_password: null }));
+}
+
+/** Admin only. One login for a roster learner; assigns the next admission number if the row has none. */
+export async function createLearnerLogin(studentId: string): Promise<{ user_id: string; login: string; admission_number: string; role: 'learner' }> {
+  return unwrap(await supabase.rpc('admin_create_learner_login', { p_student_id: studentId }));
 }
 
 export async function setTeacherStudents(teacherId: string, studentIds: string[]): Promise<void> {
