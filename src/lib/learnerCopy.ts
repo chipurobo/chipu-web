@@ -237,6 +237,11 @@ export function activityStatus(assignmentId: string, submissions: LearningSubmis
   return 'ready';
 }
 
+/** What to call a learner on screen: name if the school gave one, otherwise the admission number. */
+export function learnerLabel(member: { full_name?: string | null; admission_number?: string | null; learner_code?: string | null } | null | undefined): string {
+  return member?.full_name?.trim() || member?.admission_number || member?.learner_code || 'Learner';
+}
+
 export function firstName(fullName: string | null | undefined): string {
   return fullName?.trim().split(/\s+/)[0] || 'there';
 }

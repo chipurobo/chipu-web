@@ -4,6 +4,7 @@ import { fetchSchools, fetchMembersBySchool } from '../../lib/gql/queries';
 import { bulkCreateLearners, createLearningAccount, fetchLearningAccounts, setTeacherStudents, type BulkLearnerResult, type BulkLearnerRow } from '../../lib/learningQueries';
 import { supabase } from '../../lib/supabase';
 import { admissionLogin } from '../../lib/learnerLogin';
+import { learnerLabel } from '../../lib/learnerCopy';
 import { parseSheet, downloadXlsx } from '../../lib/parseSheet';
 import type { ClubMember } from '../../lib/database.types';
 
@@ -58,7 +59,7 @@ export function LearningAccounts() {
           <input id="account-name" className="field-input" required maxLength={200} value={fullName} onChange={(event) => setFullName(event.target.value)} /></div>
           : <div><label className="field-label" htmlFor="account-learner">Learner on the roster</label>
             <select id="account-learner" className="field-input" required value={studentId} onChange={(event) => { setStudentId(event.target.value); const next = active.find((student) => student.id === event.target.value); setLogin(next?.admission_number && school ? admissionLogin(school.code, next.admission_number) : ''); }}>
-              <option value="">Choose a learner</option>{active.filter((student) => !accounts.data?.some((account) => account.student_id === student.id)).map((student) => <option key={student.id} value={student.id}>{student.full_name}{student.admission_number ? ` · ${student.admission_number}` : ''}</option>)}</select></div>}
+              <option value="">Choose a learner</option>{active.filter((student) => !accounts.data?.some((account) => account.student_id === student.id)).map((student) => <option key={student.id} value={student.id}>{learnerLabel(student)}{student.full_name && student.admission_number ? ` · ${student.admission_number}` : ''}</option>)}</select></div>}
         <div><label className="field-label" htmlFor="account-login">{role === 'teacher' ? 'Teacher email' : 'Learner username'}</label>
           <input id="account-login" className="field-input" type={role === 'teacher' ? 'email' : 'text'} required value={login}
             autoCapitalize="off" autoComplete="off" onChange={(event) => setLogin(event.target.value)} readOnly={role === 'learner' && !!derivedLogin}
@@ -127,20 +128,20 @@ function BulkLearnerImport({ schoolId, schoolCode, onDone }: { schoolId: string;
         grade: pick(row, ['grade', 'class', 'form']) || undefined,
         password: pick(row, ['password']) || undefined,
       }));
-      const missing = parsed.filter((row) => !row.full_name || !row.admission_number).length;
-      if (missing) setParseError(`${missing} row${missing === 1 ? '' : 's'} have no name or admission number and will be skipped.`);
-      setRows(parsed.filter((row) => row.full_name && row.admission_number));
+      const missing = parsed.filter((row) => !row.admission_number).length;
+      if (missing) setParseError(`${missing} row${missing === 1 ? '' : 's'} have no admission number and will be skipped.`);
+      setRows(parsed.filter((row) => row.admission_number));
     } catch (caught) { setParseError(caught instanceof Error ? caught.message : 'That file could not be read.'); setRows([]); }
   }
   const needsPassword = !defaultPassword && rows.some((row) => !row.password);
   return (
     <section className="card p-5 space-y-4" aria-label="Import learners">
       <div><h2 className="text-lg">Import learners from a spreadsheet</h2>
-        <p className="text-sm text-gray-600 mt-1">Columns: <code>admission_number</code>, <code>full_name</code>, <code>grade</code> (optional), <code>password</code> (optional). Logins become <code>{schoolCode}-&lt;admission number&gt;</code>. Learners already on the roster are matched by admission number; learners who already have a login are left alone.</p></div>
+        <p className="text-sm text-gray-600 mt-1">Columns: <code>admission_number</code>, then optionally <code>grade</code>, <code>password</code> and <code>full_name</code>. Logins become <code>{schoolCode}-&lt;admission number&gt;</code>. Learners already on the roster are matched by admission number; learners who already have a login are left alone.</p></div>
       <div className="flex flex-wrap items-end gap-4">
         <label className="field-label">Spreadsheet (CSV or XLSX)<input className="mt-1 block text-sm" type="file" accept=".csv,.xlsx,.xls" onChange={(event) => void onFile(event)} /></label>
         <label className="field-label">Password for every learner<input className="field-input mt-1" type="text" minLength={8} autoComplete="off" value={defaultPassword} onChange={(event) => setDefaultPassword(event.target.value)} placeholder="Leave empty if the file has a password column" /></label>
-        <button type="button" className="btn-secondary" onClick={() => downloadXlsx('chipurobo-learners-template.xlsx', [['admission_number', 'full_name', 'grade', 'password'], ['2026/014', 'Amani Achieng', '7', '']])}>Download template</button>
+        <button type="button" className="btn-secondary" onClick={() => downloadXlsx('chipurobo-learners-template.xlsx', [['admission_number', 'grade', 'password'], ['2026/014', '7', '']])}>Download template</button>
       </div>
       {fileName && <p className="text-sm text-gray-700">{fileName}: {rows.length} learner{rows.length === 1 ? '' : 's'} ready.</p>}
       {parseError && <p role="alert" className="text-sm text-amber-800">{parseError}</p>}
@@ -148,10 +149,10 @@ function BulkLearnerImport({ schoolId, schoolCode, onDone }: { schoolId: string;
       {run.isPending && <p role="status" className="text-sm">Creating logins… {progress} of {rows.length}</p>}
       {result && <div role="status" className="text-sm space-y-2">
         <p className="font-medium text-teal-800">{result.created} login{result.created === 1 ? '' : 's'} created · {result.skipped} already had one · {result.errors.length} failed.</p>
-        {result.errors.length > 0 && <ul className="list-disc pl-5 text-red-700">{result.errors.slice(0, 20).map((item, index) => <li key={index}>{item.admission_number || item.full_name}: {item.message}</li>)}</ul>}
-        {result.logins.length > 0 && <button type="button" className="btn-secondary" onClick={() => downloadXlsx('chipurobo-learner-logins.xlsx', [['admission_number', 'full_name', 'login', 'password'], ...result.logins.map((item) => {
+        {result.errors.length > 0 && <ul className="list-disc pl-5 text-red-700">{result.errors.slice(0, 20).map((item, index) => <li key={index}>{item.admission_number || 'row'}: {item.message}</li>)}</ul>}
+        {result.logins.length > 0 && <button type="button" className="btn-secondary" onClick={() => downloadXlsx('chipurobo-learner-logins.xlsx', [['admission_number', 'login', 'password'], ...result.logins.map((item) => {
           const row = rows.find((candidate) => candidate.admission_number === item.admission_number);
-          return [item.admission_number, row?.full_name ?? '', item.login, row?.password ?? defaultPassword];
+          return [item.admission_number, item.login, row?.password ?? defaultPassword];
         })], 'Logins')}>Download logins and passwords</button>}
       </div>}
       <button type="button" className="btn-primary" disabled={!rows.length || needsPassword || run.isPending} onClick={() => run.mutate()}>
@@ -166,7 +167,7 @@ function LearnerSelection({ students, value, onChange }: { students: ClubMember[
   return <fieldset className="space-y-2"><legend className="field-label">Learners in this teaching group</legend>
     {!students.length && <p className="text-sm text-gray-600">Add learners to the school roster first.</p>}
     <div className="grid sm:grid-cols-2 gap-2">{students.map((student) => <label key={student.id} className="inline-flex gap-2 items-center text-sm cursor-pointer">
-      <input type="checkbox" checked={value.includes(student.id)} onChange={(event) => onChange(event.target.checked ? [...value, student.id] : value.filter((id) => id !== student.id))} />{student.full_name}
+      <input type="checkbox" checked={value.includes(student.id)} onChange={(event) => onChange(event.target.checked ? [...value, student.id] : value.filter((id) => id !== student.id))} />{learnerLabel(student)}
     </label>)}</div>
   </fieldset>;
 }

@@ -12,6 +12,7 @@ import { useAuth } from '../../lib/auth';
 import { useNotifications } from '../../lib/notifications';
 import { ArrowLeft, Save, Users, GraduationCap } from 'lucide-react';
 import { SkeletonRows } from '../components/Skeletons';
+import { learnerLabel } from '../../lib/learnerCopy';
 
 // =============================================================
 // /dashboard/school/sessions/:sessionId
@@ -169,7 +170,7 @@ export function SessionRegister() {
       <RegisterTable
         title="Learners"
         icon={Users}
-        rows={learners.map((l) => ({ id: l.id, name: l.full_name, code: l.learner_code, kind: 'l' as const }))}
+        rows={learners.map((l) => ({ id: l.id, name: learnerLabel(l), code: l.learner_code, kind: 'l' as const }))}
         loading={learnersQuery.isPending}
         markOf={markOf}
         setMark={setMark}

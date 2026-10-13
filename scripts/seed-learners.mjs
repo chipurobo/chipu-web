@@ -7,8 +7,9 @@
  *   node scripts/seed-learners.mjs --file learners.xlsx --apply    # write
  *   node scripts/seed-learners.mjs --synthetic 30000 --apply       # fake data
  *
- * Columns (header names are matched loosely): school (name or code),
- * admission_number, full_name, grade, password (optional).
+ * Columns (header names are matched loosely): school (name or code) and
+ * admission_number. Optional: grade, password, full_name (schools usually
+ * give no names; the admission number is the learner's label).
  *
  * Passwords: --password-mode school (default) generates one password per
  * school; --password-mode per-learner generates one per learner; a password
@@ -57,10 +58,11 @@ if (args.synthetic) {
   const first = ['Amani', 'Baraka', 'Chebet', 'Dalia', 'Eman', 'Faith', 'Gacheru', 'Halima', 'Imani', 'Juma', 'Kamau', 'Lulu', 'Mumbi', 'Neema', 'Otieno', 'Pendo', 'Rehema', 'Saidi', 'Tumaini', 'Wanjiru', 'Zawadi'];
   const last = ['Achieng', 'Barasa', 'Cheruiyot', 'Githinji', 'Hassan', 'Kiprop', 'Mwangi', 'Njoroge', 'Ochieng', 'Omondi', 'Wafula', 'Wanjala', 'Yusuf'];
   const year = new Date().getFullYear();
+  const prefix = args.prefix ?? String(year);
   schools.forEach((school, s) => {
     const share = Math.floor(total / schools.length) + (s < total % schools.length ? 1 : 0);
-    for (let n = 1; n <= share; n++) rows.push({ school: school.code, admission_number: `${year}/${String(n).padStart(4, '0')}`,
-      full_name: `${first[(s * 7 + n) % first.length]} ${last[(s * 3 + n * 5) % last.length]}`, grade: String(4 + ((s + n) % 9)) });
+    for (let n = 1; n <= share; n++) rows.push({ school: school.code, admission_number: `${prefix}/${String(n).padStart(4, '0')}`,
+      full_name: args['with-names'] ? `${first[(s * 7 + n) % first.length]} ${last[(s * 3 + n * 5) % last.length]}` : '', grade: String(4 + ((s + n) % 9)) });
   });
   console.log(`Generated ${rows.length} synthetic learners across ${schools.length} schools`);
 } else if (args.file) {
@@ -83,7 +85,6 @@ for (const [i, r] of rows.entries()) {
   const school = byCode.get(r.school.toLowerCase()) ?? byName.get(r.school.toLowerCase());
   if (!school) { problems.push(`row ${line}: school "${r.school}" not found`); continue; }
   r.school_id = school.id; r.code = school.code;
-  if (!r.full_name) problems.push(`row ${line}: missing name`);
   if (!r.admission_number) { problems.push(`row ${line}: missing admission number`); continue; }
   if (!/^[A-Za-z0-9][A-Za-z0-9/._ -]{0,19}$/.test(r.admission_number)) problems.push(`row ${line}: admission number "${r.admission_number}" has unsupported characters or is longer than 20`);
   const l = login(school.code, r.admission_number);
@@ -120,7 +121,7 @@ for (const [schoolId, list] of groups) {
         else password = generatePassword();
       }
       r.resolved_password = password;
-      return { full_name: r.full_name, admission_number: r.admission_number, grade: r.grade || null, password };
+      return { full_name: r.full_name || null, admission_number: r.admission_number, grade: r.grade || null, password };
     });
     const out = JSON.parse(psql(`begin;
 select set_config('request.jwt.claim.sub', ${q(adminId)}, true);
@@ -129,13 +130,13 @@ select public.admin_bulk_create_learners(${q(schoolId)}, ${q(JSON.stringify(batc
 commit;`).split('\n').find((l) => l.startsWith('{')));
     created += out.created; skipped += out.skipped; failed += out.errors.length;
     for (const e of out.errors) console.log(`  ${school.name} ${e.admission_number}: ${e.message}`);
-    for (const l of out.logins) { const r = batch.find((b) => b.admission_number === l.admission_number); credentials.push([school.name, school.code, l.admission_number, r.full_name, l.login, r.password]); }
+    for (const l of out.logins) { const r = batch.find((b) => b.admission_number === l.admission_number); credentials.push([school.name, school.code, l.admission_number, l.login, r.password]); }
     process.stdout.write(`\r${created} created, ${skipped} already had logins, ${failed} failed  (${Math.round((Date.now() - started) / 1000)}s)   `);
   }
 }
 console.log();
 const stamp = new Date().toISOString().replace(/[:.]/g, '-');
 const file = `.context/seed-credentials-${stamp}.csv`;
-writeFileSync(file, ['school,school_code,admission_number,full_name,login,password', ...credentials.map((c) => c.map((v) => `"${String(v).replaceAll('"', '""')}"`).join(','))].join('\n'), { mode: 0o600 });
+writeFileSync(file, ['school,school_code,admission_number,login,password', ...credentials.map((c) => c.map((v) => `"${String(v).replaceAll('"', '""')}"`).join(','))].join('\n'), { mode: 0o600 });
 console.log(`Credentials for ${credentials.length} new logins written to ${file} (keep it private, delete after sharing).`);
 console.log(`Done in ${Math.round((Date.now() - started) / 1000)}s.`);

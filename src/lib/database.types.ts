@@ -263,7 +263,9 @@ export interface Profile {
 export interface ClubMember {
   id: string;
   school_id: string;
-  full_name: string;
+  // Optional: schools give admission numbers, not names. Use learnerLabel()
+  // from learnerCopy.ts for anything shown on screen.
+  full_name: string | null;
   // Non-identifying analysis code. Use this, never full_name, in exports and
   // anything shared outside the school that owns the roster.
   learner_code: string | null;
