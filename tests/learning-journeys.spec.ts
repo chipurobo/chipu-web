@@ -302,7 +302,7 @@ for (const kind of ['Teacher', 'Learner'] as const) {
     const state = await mockDashboard(page, kind === 'Teacher' ? 'teacher' : 'learner', false);
     await page.goto('/dashboard/login');
     await page.getByRole('radio', { name: kind, exact: true }).check();
-    if (kind === 'Teacher') { await page.getByLabel('Email', { exact: true }).fill('teacher@example.test'); await page.getByLabel('Password', { exact: true }).fill('TestPassword123'); }
+    if (kind === 'Teacher') { await page.getByLabel('Email or username', { exact: true }).fill('teacher@example.test'); await page.getByLabel('Password', { exact: true }).fill('TestPassword123'); }
     else { await page.getByRole('combobox', { name: 'School', exact: true }).selectOption('test'); await page.getByRole('textbox', { name: 'Admission number', exact: true }).fill('7'); await expect(page.getByLabel('Password', { exact: true })).toHaveCount(0); }
     await page.getByRole('button', { name: 'Sign in', exact: true }).click();
     await expect(page).toHaveURL('/dashboard');
@@ -319,8 +319,111 @@ test('selecting learner sign-in cannot turn teacher credentials into a learner a
   await page.getByRole('combobox', { name: 'School', exact: true }).selectOption('test');
   await page.getByRole('textbox', { name: 'Admission number', exact: true }).fill('0001');
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
-  await expect(page.getByRole('alert')).toHaveText('These credentials do not match the selected account type. Choose the correct sign-in option.');
+  await expect(page.getByRole('alert')).toHaveText('This account uses a different sign-in option. Choose Learner, Teacher or Admin above and try again.');
   await expect(page).toHaveURL('/dashboard/login');
+});
+
+test('login role cards work with the keyboard and teacher passwords can be checked without losing them', async ({ page }) => {
+  await mockDashboard(page, 'teacher', false);
+  await page.goto('/dashboard/login');
+  const learner = page.getByRole('radio', { name: 'Learner', exact: true });
+  await expect(learner).toBeChecked();
+  await learner.focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(page.getByRole('radio', { name: 'Teacher', exact: true })).toBeChecked();
+  await expect(page.getByRole('combobox', { name: 'School', exact: true })).toHaveCount(0);
+  const password = page.getByLabel('Password', { exact: true });
+  await password.fill('A teacher password');
+  await page.getByRole('button', { name: 'Show password', exact: true }).click();
+  await expect(password).toHaveAttribute('type', 'text');
+  await expect(password).toHaveValue('A teacher password');
+  await page.getByRole('button', { name: 'Hide password', exact: true }).click();
+  await expect(password).toHaveAttribute('type', 'password');
+  await page.getByRole('radio', { name: 'Admin', exact: true }).check();
+  await expect(password).toHaveAttribute('type', 'password');
+  await expect(page.getByText('Welcome back, admin.', { exact: true })).toBeVisible();
+  const results = await new AxeBuilder({ page }).include('.login-page').withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
+  expect(results.violations).toEqual([]);
+});
+
+test('teacher usernames sign in through the existing short-login rule', async ({ page }) => {
+  const state = await mockDashboard(page, 'teacher', false);
+  await page.goto('/dashboard/login');
+  await page.getByRole('radio', { name: 'Teacher', exact: true }).check();
+  await page.getByLabel('Email or username', { exact: true }).fill('  ihub.teacher  ');
+  await page.getByLabel('Password', { exact: true }).fill('TestPassword123');
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+  await expect(page).toHaveURL('/dashboard');
+  expect(state.writes.find((write) => write.path === 'token')!.body).toMatchObject({ email: 'ihub.teacher@chipurobo.local', password: 'TestPassword123' });
+});
+
+test('login explains failed credentials and moves keyboard focus to the error', async ({ page }) => {
+  await mockDashboard(page, 'learner', false);
+  await page.route('**/auth/v1/token?**', (route) => route.fulfill({ status: 400, json: { error: 'invalid_grant', error_description: 'Invalid login credentials' } }));
+  await page.goto('/dashboard/login');
+  await page.getByRole('combobox', { name: 'School', exact: true }).selectOption('test');
+  await page.getByRole('textbox', { name: 'Admission number', exact: true }).fill('1');
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+  const error = page.getByRole('alert');
+  await expect(error).toHaveText('We couldn’t find that learner. Check your school and admission number, or ask your teacher.');
+  await expect(error).toBeFocused();
+  await expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeEnabled();
+});
+
+test('school loading failure can be retried without reloading the login page', async ({ page }) => {
+  await mockDashboard(page, 'learner', false);
+  let recovered = false;
+  await page.route('**/rest/v1/school_login_options?**', (route) => route.fulfill(recovered
+    ? { json: [{ id: schoolId, name: 'Test School', code: 'test' }] }
+    : { status: 400, json: { message: 'School list unavailable' } }));
+  await page.goto('/dashboard/login');
+  const retry = page.getByRole('button', { name: 'Try again', exact: true });
+  await expect(retry).toBeVisible({ timeout: 15000 });
+  await expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeDisabled();
+  recovered = true;
+  await retry.click();
+  await page.getByRole('combobox', { name: 'School', exact: true }).selectOption('test');
+  await expect(page.getByRole('alert')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeEnabled();
+});
+
+test('login prevents role changes and duplicate submissions while signing in', async ({ page }) => {
+  await mockDashboard(page, 'teacher', false);
+  let finishRequest!: () => void;
+  const pendingRequest = new Promise<void>((resolve) => { finishRequest = resolve; });
+  let requests = 0;
+  await page.route('**/auth/v1/token?**', async (route) => {
+    requests++;
+    await pendingRequest;
+    await route.fulfill({ status: 400, json: { error: 'invalid_grant', error_description: 'Invalid login credentials' } });
+  });
+  await page.goto('/dashboard/login');
+  await page.getByRole('radio', { name: 'Teacher', exact: true }).check();
+  await page.getByLabel('Email or username', { exact: true }).fill('teacher.test');
+  await page.getByLabel('Password', { exact: true }).fill('TestPassword123');
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Signing in…', exact: true })).toBeDisabled();
+  for (const role of ['Learner', 'Teacher', 'Admin']) await expect(page.getByRole('radio', { name: role, exact: true })).toBeDisabled();
+  await expect(page.getByLabel('Password', { exact: true })).toBeDisabled();
+  await expect(page.getByRole('status')).toHaveText('Signing you in. Please wait.');
+  finishRequest();
+  await expect(page.getByRole('alert')).toContainText('Those details didn’t match.');
+  await expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeEnabled();
+  expect(requests).toBe(1);
+});
+
+test('login roles and fields stay within a narrow phone screen', async ({ page }) => {
+  await mockDashboard(page, 'teacher', false);
+  await page.setViewportSize({ width: 320, height: 700 });
+  await page.goto('/dashboard/login');
+  for (const role of ['Learner', 'Teacher', 'Admin']) {
+    await page.getByRole('radio', { name: role, exact: true }).check();
+    const controls = await page.locator('.login-role, .login-input, .login-submit').evaluateAll((elements) => elements.map((el) => {
+      const rect = el.getBoundingClientRect();
+      return { left: rect.left, right: rect.right, height: rect.height };
+    }));
+    expect(controls.every(({ left, right, height }) => left >= 0 && right <= 320 && height >= 44)).toBe(true);
+  }
 });
 
 test('a learner submits their own work and reopens the saved submission', async ({ page }) => {
@@ -487,6 +590,7 @@ for (const role of ['teacher', 'learner'] as const) {
 for (const journey of ['login', 'learner-home', 'learner-submission', 'learning-account']) {
   test(`${journey} controls have no automated WCAG AA violations`, async ({ page }) => {
     if (journey === 'login') {
+      await mockDashboard(page, 'learner', false);
       await page.goto('/dashboard/login');
       await page.getByRole('radio', { name: 'Learner', exact: true }).check();
     } else {
@@ -500,7 +604,7 @@ for (const journey of ['login', 'learner-home', 'learner-submission', 'learning-
         await expect(page.getByRole('button', { name: 'Run program', exact: true })).toBeEnabled();
       } else await expect(page.getByRole('link', { name: /^Start / })).toBeVisible();
     }
-    const results = await new AxeBuilder({ page }).include(journey === 'login' ? 'form' : '.learning-zone').withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
+    const results = await new AxeBuilder({ page }).include(journey === 'login' ? '.login-page' : '.learning-zone').withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
     expect(results.violations).toEqual([]);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   });
