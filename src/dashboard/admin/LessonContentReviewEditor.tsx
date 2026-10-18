@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ClipboardCheck, X } from 'lucide-react';
 import type { Lesson, LearningNeed, LessonReviewStatus } from '../../lib/database.types';
@@ -6,19 +6,31 @@ import { reviewLessonContent, updateLesson } from '../../lib/gql/queries';
 import { useNotifications } from '../../lib/notifications';
 import { LEARNING_NEEDS, REVIEW_STATUS_LABEL } from '../learning/lessonSuitability';
 
-function toInput(value: number | null) { return value === null ? '' : String(value); }
+function toInput(value: number | null | undefined) { return value == null ? '' : String(value); }
 function toNumber(value: string) { return value === '' ? null : Number(value); }
 
 export function LessonContentReviewEditor({ lesson, onClose }: { lesson: Lesson; onClose: () => void }) {
   const { notify } = useNotifications();
   const queryClient = useQueryClient();
+  const panelRef = useRef<HTMLFormElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
   const [minimumAge, setMinimumAge] = useState(toInput(lesson.minimum_age));
   const [maximumAge, setMaximumAge] = useState(toInput(lesson.maximum_age));
   const [minimumGrade, setMinimumGrade] = useState(toInput(lesson.minimum_grade));
   const [maximumGrade, setMaximumGrade] = useState(toInput(lesson.maximum_grade));
-  const [learningNeeds, setLearningNeeds] = useState<LearningNeed[]>(lesson.learning_needs);
-  const [status, setStatus] = useState<LessonReviewStatus>(lesson.review_status);
+  const [learningNeeds, setLearningNeeds] = useState<LearningNeed[]>(lesson.learning_needs ?? []);
+  const [status, setStatus] = useState<LessonReviewStatus>(lesson.review_status ?? 'draft');
   const [notes, setNotes] = useState(lesson.review_notes ?? '');
+  const databaseReady = ['review_status', 'minimum_age', 'learning_needs']
+    .every((field) => Object.prototype.hasOwnProperty.call(lesson, field));
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      panelRef.current?.scrollIntoView({ block: 'start' });
+      titleRef.current?.focus({ preventScroll: true });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, []);
 
   const minimumAgeNumber = toNumber(minimumAge);
   const maximumAgeNumber = toNumber(maximumAge);
@@ -53,14 +65,15 @@ export function LessonContentReviewEditor({ lesson, onClose }: { lesson: Lesson;
 
   return (
     <form
-      className="card max-w-4xl space-y-5 border-violet-200 p-5"
+      ref={panelRef}
+      className="card max-w-4xl scroll-mt-4 space-y-5 border-violet-200 p-5"
       aria-label={`Content review for ${lesson.title}`}
       onSubmit={(event: FormEvent) => { event.preventDefault(); if (rangesValid) save.mutate(); }}
     >
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-xs uppercase tracking-wider text-violet-700">Content appropriateness</p>
-          <h2>{lesson.title}</h2>
+          <h2 ref={titleRef} tabIndex={-1} className="outline-none">{lesson.title}</h2>
           <p className="mt-1 text-sm text-gray-600">Tag the intended learners, then choose the editorial status. Only Approved lessons are published.</p>
         </div>
         <button type="button" className="p-2 text-gray-500 hover:text-gray-900" onClick={onClose} aria-label="Close content review editor"><X className="h-5 w-5" aria-hidden="true" /></button>
@@ -74,6 +87,11 @@ export function LessonContentReviewEditor({ lesson, onClose }: { lesson: Lesson;
         setMinimumGrade={setMinimumGrade} setMaximumGrade={setMaximumGrade}
         learningNeeds={learningNeeds} toggleNeed={toggleNeed}
       />
+      {!databaseReady && (
+        <p role="alert" className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-950">
+          Content review is waiting for the latest database migration. Apply the pending Supabase migrations before saving an approval.
+        </p>
+      )}
       {!rangesValid && <p role="alert" className="text-sm font-medium text-red-700">The minimum cannot be higher than the maximum.</p>}
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -90,7 +108,7 @@ export function LessonContentReviewEditor({ lesson, onClose }: { lesson: Lesson;
       </div>
 
       <div className="flex flex-wrap gap-3">
-        <button type="submit" className="btn-primary" disabled={!rangesValid || save.isPending}>
+        <button type="submit" className="btn-primary" disabled={!databaseReady || !rangesValid || save.isPending}>
           <ClipboardCheck className="mr-1.5 h-4 w-4" aria-hidden="true" />
           {save.isPending ? 'Saving…' : 'Save review'}
         </button>

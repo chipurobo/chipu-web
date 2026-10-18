@@ -142,6 +142,13 @@ export function AdminLessons() {
   const lessons = all.filter((l) => matchesLevel(l.level, filterLevel));
   const newRangesValid = (!minimumAge || !maximumAge || Number(minimumAge) <= Number(maximumAge))
     && (!minimumGrade || !maximumGrade || Number(minimumGrade) <= Number(maximumGrade));
+  const openReview = (lesson: Lesson) => {
+    setCreating(false);
+    setPlanFor(null);
+    setMediaFor(null);
+    setKitFor(null);
+    setReviewFor(lesson);
+  };
 
   return (
     <div className="px-4 sm:px-6 lg:px-10 py-8 space-y-6">
@@ -366,7 +373,7 @@ export function AdminLessons() {
                     <button
                       type="button"
                       className="btn-secondary !py-1 !text-xs"
-                      onClick={() => setReviewFor(l)}
+                      onClick={() => openReview(l)}
                     >
                       <ClipboardCheck className="h-3 w-3 mr-1" aria-hidden="true" />Review content
                     </button>

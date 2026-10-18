@@ -201,6 +201,32 @@ test('admin tags, reviews and publishes a lesson before teachers can use it', as
   expect(state.lessons[0].learning_needs).toEqual(['hearing support', 'visual support']);
 });
 
+test('content review opens in view and announces the selected lesson', async ({ page }) => {
+  const state = await mockDashboard(page, 'admin');
+  for (let index = 2; index <= 18; index += 1) {
+    state.lessons.push({ ...structuredClone(state.lessons[0]), id: `lesson-${index}`, title: `Lesson ${index}`, position: index });
+  }
+  await page.goto('/dashboard/admin/lessons');
+  const lessonRow = page.getByRole('row').filter({ hasText: 'Lesson 18' });
+  await lessonRow.getByRole('button', { name: 'Review content', exact: true }).click();
+  const form = page.getByRole('form', { name: 'Content review for Lesson 18' });
+  await expect(form).toBeInViewport();
+  await expect(form.getByRole('heading', { name: 'Lesson 18', exact: true })).toBeFocused();
+});
+
+test('admin sees a clear migration warning instead of a broken review editor', async ({ page }) => {
+  const state = await mockDashboard(page, 'admin');
+  const legacyLesson = state.lessons[0] as unknown as Record<string, unknown>;
+  delete legacyLesson.review_status;
+  delete legacyLesson.minimum_age;
+  delete legacyLesson.learning_needs;
+  await page.goto('/dashboard/admin/lessons');
+  await page.getByRole('button', { name: 'Review content', exact: true }).click();
+  const form = page.getByRole('form', { name: 'Content review for Give clear instructions' });
+  await expect(form.getByRole('alert')).toContainText('latest database migration');
+  await expect(form.getByRole('button', { name: 'Save review', exact: true })).toBeDisabled();
+});
+
 test('teacher curates approved lessons by grade, age, competency and learning need', async ({ page }) => {
   const state = await mockDashboard(page, 'teacher');
   state.lessons.push({ ...structuredClone(state.lessons[0]), id: 'lesson-two', title: 'Advanced robotics',
