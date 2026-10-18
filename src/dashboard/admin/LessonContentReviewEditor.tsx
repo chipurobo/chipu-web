@@ -12,7 +12,6 @@ function toNumber(value: string) { return value === '' ? null : Number(value); }
 export function LessonContentReviewEditor({ lesson, onClose }: { lesson: Lesson; onClose: () => void }) {
   const { notify } = useNotifications();
   const queryClient = useQueryClient();
-  const panelRef = useRef<HTMLFormElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const [minimumAge, setMinimumAge] = useState(toInput(lesson.minimum_age));
   const [maximumAge, setMaximumAge] = useState(toInput(lesson.maximum_age));
@@ -25,10 +24,7 @@ export function LessonContentReviewEditor({ lesson, onClose }: { lesson: Lesson;
     .every((field) => Object.prototype.hasOwnProperty.call(lesson, field));
 
   useEffect(() => {
-    const frame = requestAnimationFrame(() => {
-      panelRef.current?.scrollIntoView({ block: 'start' });
-      titleRef.current?.focus({ preventScroll: true });
-    });
+    const frame = requestAnimationFrame(() => titleRef.current?.focus({ preventScroll: true }));
     return () => cancelAnimationFrame(frame);
   }, []);
 
@@ -65,7 +61,6 @@ export function LessonContentReviewEditor({ lesson, onClose }: { lesson: Lesson;
 
   return (
     <form
-      ref={panelRef}
       className="card max-w-4xl scroll-mt-4 space-y-5 border-violet-200 p-5"
       aria-label={`Content review for ${lesson.title}`}
       onSubmit={(event: FormEvent) => { event.preventDefault(); if (rangesValid) save.mutate(); }}

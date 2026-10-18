@@ -134,6 +134,11 @@ export function SchoolLessons() {
       && (grade === null || ((lesson.minimum_grade === null || lesson.minimum_grade <= grade) && (lesson.maximum_grade === null || lesson.maximum_grade >= grade)))
       && (learningNeed === 'all' || (lesson.learning_needs ?? []).includes(learningNeed));
   });
+  const closeAssign = () => {
+    const lessonId = assignFor?.id;
+    setAssignFor(null);
+    if (lessonId) requestAnimationFrame(() => document.getElementById(`assign-lesson-${lessonId}`)?.focus());
+  };
 
   return (
     <div className="px-4 sm:px-6 lg:px-10 py-8 space-y-6">
@@ -142,22 +147,18 @@ export function SchoolLessons() {
           {school?.name ?? 'Your school'}
         </p>
         <h1>Lessons</h1>
-        <p className="text-sm text-gray-600 mt-1 max-w-2xl">
-          {isTeacher ? 'Pick a lesson and assign it to your learners.' : 'Assign lessons to your students, review their work and record evidence of learning.'}
-        </p>
-        {isTeacher && <p className="mt-1 text-xs font-medium text-teal-800">Only reviewed and approved lessons are shown.</p>}
-        {activeStudentCount > 0 && (
+        {!isTeacher && <p className="text-sm text-gray-600 mt-1 max-w-2xl">Assign, review and record progress.</p>}
+        {!isTeacher && activeStudentCount > 0 && (
           <p className="text-xs text-gray-500 mt-1">
             {activeStudentCount} active student{activeStudentCount === 1 ? '' : 's'} on the roster.
           </p>
         )}
       </div>
 
-      {assignFor && <AssignLessonForm key={assignFor.id} lesson={assignFor} onClose={() => setAssignFor(null)} />}
-
       {isTeacher ? (
-        <div className="card space-y-4 p-4" aria-label="Curate lessons">
-          <div className="flex flex-wrap items-center justify-between gap-3">
+        <details className="card p-4" aria-label="Curate lessons">
+          <summary className="cursor-pointer font-semibold text-gray-900">Filters</summary>
+          <div className="mt-4 space-y-4">
             <fieldset className="flex flex-wrap gap-2">
             <legend className="sr-only">Learning level</legend>
             {([{ id: 'all', emoji: '✨', title: 'All' }, ...learningLevels.map((item) => ({ id: item.id, emoji: levelLook[item.id].emoji, title: item.title }))]).map((option) => (
@@ -167,29 +168,29 @@ export function SchoolLessons() {
               </label>
             ))}
             </fieldset>
-            <label className="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" checked={showAll} onChange={(event) => setShowAll(event.target.checked)} />Show the full curriculum</label>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div><label className="text-sm text-gray-700" htmlFor="lesson-filter-age">Age</label>
+                <select id="lesson-filter-age" className="field-input mt-1" value={learnerAge} onChange={(event) => setLearnerAge(event.target.value)}>
+                  <option value="all">All</option>
+                  {Array.from({ length: 22 }, (_, index) => index + 4).map((age) => <option key={age} value={age}>{age}</option>)}
+                </select>
+              </div>
+              <div><label className="text-sm text-gray-700" htmlFor="lesson-filter-grade">Grade</label>
+                <select id="lesson-filter-grade" className="field-input mt-1" value={learnerGrade} onChange={(event) => setLearnerGrade(event.target.value)}>
+                  <option value="all">All</option>
+                  {Array.from({ length: 12 }, (_, index) => index + 1).map((grade) => <option key={grade} value={grade}>{grade}</option>)}
+                </select>
+              </div>
+              <div><label className="text-sm text-gray-700" htmlFor="lesson-filter-support">Support</label>
+                <select id="lesson-filter-support" className="field-input mt-1" value={learningNeed} onChange={(event) => setLearningNeed(event.target.value as 'all' | LearningNeed)}>
+                  <option value="all">All</option>
+                  {LEARNING_NEEDS.map((need) => <option key={need.id} value={need.id}>{need.label}</option>)}
+                </select>
+              </div>
+            </div>
+            <label className="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" checked={showAll} onChange={(event) => setShowAll(event.target.checked)} />Full curriculum</label>
           </div>
-          <div className="grid gap-3 sm:grid-cols-3">
-            <label className="text-sm text-gray-700">Learner age
-              <select className="field-input mt-1" value={learnerAge} onChange={(event) => setLearnerAge(event.target.value)}>
-                <option value="all">All ages</option>
-                {Array.from({ length: 22 }, (_, index) => index + 4).map((age) => <option key={age} value={age}>{age} years</option>)}
-              </select>
-            </label>
-            <label className="text-sm text-gray-700">Grade
-              <select className="field-input mt-1" value={learnerGrade} onChange={(event) => setLearnerGrade(event.target.value)}>
-                <option value="all">All grades</option>
-                {Array.from({ length: 12 }, (_, index) => index + 1).map((grade) => <option key={grade} value={grade}>Grade {grade}</option>)}
-              </select>
-            </label>
-            <label className="text-sm text-gray-700">Learning need
-              <select className="field-input mt-1" value={learningNeed} onChange={(event) => setLearningNeed(event.target.value as 'all' | LearningNeed)}>
-                <option value="all">All learning needs</option>
-                {LEARNING_NEEDS.map((need) => <option key={need.id} value={need.id}>{need.label}</option>)}
-              </select>
-            </label>
-          </div>
-        </div>
+        </details>
       ) : (
       <LevelFilter
         value={level}
@@ -250,7 +251,7 @@ export function SchoolLessons() {
                   </div>
                 </div>
 
-                {s.description && (
+                {s.description && !isTeacher && (
                   <p className="text-sm text-gray-700 mb-2">{s.description}</p>
                 )}
 
@@ -283,17 +284,19 @@ export function SchoolLessons() {
                     )}
                   </div>}
                   <div className="flex gap-3 items-center flex-wrap">
-                  <button type="button" className="btn-secondary !text-xs" disabled={!hasUsableLearningPlan(s.learning_plan)}
-                    onClick={() => setAssignFor(s)} title={!s.learning_plan ? 'Learning outcomes must be set first' : undefined}>Assign lesson</button>
+                  <button type="button" id={`assign-lesson-${s.id}`} className="btn-primary !text-xs" disabled={!hasUsableLearningPlan(s.learning_plan)}
+                    onClick={() => setAssignFor(s)} title={!s.learning_plan ? 'Learning outcomes must be set first' : undefined} aria-label={`Assign ${s.title}`}>Assign</button>
                   <Link
                     to={`/dashboard/school/lessons/${s.id}`}
                     className="text-xs text-teal-700 hover:underline inline-flex items-center"
+                    aria-label={`Open ${s.title}`}
                   >
-                    Open lesson
+                    Open
                     <ArrowRight className="h-3.5 w-3.5 ml-1" aria-hidden="true" />
                   </Link>
                   </div>
                 </div>
+                {assignFor?.id === s.id && <AssignLessonForm key={s.id} lesson={s} onClose={closeAssign} />}
               </article>
             );
           })}

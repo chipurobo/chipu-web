@@ -212,9 +212,13 @@ test('content review opens in view and announces the selected lesson', async ({ 
   const lessonRow = table.getByRole('row').filter({ hasText: 'Lesson 18' });
   const trigger = lessonRow.getByRole('button', { name: 'Review content for Lesson 18', exact: true });
   await expect(lessonRow.getByRole('rowheader')).toHaveText('Lesson 18');
+  await trigger.scrollIntoViewIfNeeded();
+  const scrollBefore = await page.evaluate(() => window.scrollY);
   await trigger.click();
   const form = page.getByRole('form', { name: 'Content review for Lesson 18' });
   await expect(form).toBeInViewport();
+  expect(await page.evaluate(() => window.scrollY)).toBe(scrollBefore);
+  expect(await form.evaluate((node) => node.closest('tr')?.previousElementSibling?.textContent?.includes('Lesson 18'))).toBe(true);
   await expect(form.getByRole('heading', { name: 'Lesson 18', exact: true })).toBeFocused();
   const tabStops = [
     form.getByRole('button', { name: 'Close content review for Lesson 18' }),
@@ -238,7 +242,8 @@ test('content review opens in view and announces the selected lesson', async ({ 
     await expect(tabStop).toBeFocused();
   }
   expect((await new AxeBuilder({ page }).include('.admin-zone').withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()).violations).toEqual([]);
-  await form.getByRole('button', { name: 'Cancel review for Lesson 18' }).click();
+  await form.getByRole('button', { name: 'Cancel review for Lesson 18' }).focus();
+  await page.keyboard.press('Enter');
   await expect(trigger).toBeFocused();
 });
 
@@ -263,11 +268,11 @@ test('teacher curates approved lessons by grade, age, competency and learning ne
   state.lessons.push({ ...structuredClone(state.lessons[0]), id: 'lesson-draft', title: 'Unapproved lesson',
     review_status: 'draft', is_active: false });
   await page.goto('/dashboard/school/lessons');
-  await expect(page.getByText('Only reviewed and approved lessons are shown.')).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Unapproved lesson' })).toHaveCount(0);
-  await page.getByLabel('Learner age').selectOption('10');
-  await page.getByLabel('Grade').selectOption('5');
-  await page.getByLabel('Learning need').selectOption('hearing support');
+  await page.getByText('Filters', { exact: true }).click();
+  await page.getByLabel('Age', { exact: true }).selectOption('10');
+  await page.getByLabel('Grade', { exact: true }).selectOption('5');
+  await page.getByLabel('Support', { exact: true }).selectOption('hearing support');
   await expect(page.getByRole('heading', { name: 'Give clear instructions', exact: true })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Advanced robotics', exact: true })).toHaveCount(0);
   await expect(page.getByLabel('Lesson suitability').getByText('Ages 9–12')).toBeVisible();
@@ -289,12 +294,13 @@ test('admin updates an existing lesson with saved learning outcomes', async ({ p
 test('teacher assigns a lesson to selected students and reopens the saved task', async ({ page }, testInfo) => {
   const state = await mockDashboard(page, 'teacher');
   await page.goto('/dashboard/school/lessons');
-  await page.getByRole('button', { name: 'Assign lesson', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Assign to selected students' })).toBeDisabled();
+  await page.getByRole('button', { name: 'Assign Give clear instructions', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Assign Give clear instructions to selected learners' })).toBeDisabled();
   await page.getByLabel('Test Learner', { exact: true }).check();
-  await page.getByLabel('Instructions for this class').fill('Build your sequence and explain your own work.');
-  await page.getByLabel('Due date (optional)').fill('2026-10-12');
-  await page.getByRole('button', { name: 'Assign to selected students' }).click();
+  await page.getByText('Add details (optional)', { exact: true }).click();
+  await page.getByLabel('Note').fill('Build your sequence and explain your own work.');
+  await page.getByLabel('Due').fill('2026-10-12');
+  await page.getByRole('button', { name: 'Assign Give clear instructions to selected learners' }).click();
   await expect(page).toHaveURL(`/dashboard/assignments/${assignmentId}`);
   await expect(page.getByRole('heading', { name: 'Give clear instructions', exact: true, level: 1 })).toBeVisible();
   await expect(page.getByText('Build your sequence and explain your own work.', { exact: true })).toBeVisible();
@@ -380,7 +386,7 @@ for (const journey of ['plan', 'assignment', 'review', 'progress']) {
       await page.getByRole('button', { name: 'Edit learning plan for Give clear instructions', exact: true }).click();
     } else if (journey === 'assignment') {
       await page.goto('/dashboard/school/lessons');
-      await page.getByRole('button', { name: 'Assign lesson', exact: true }).click();
+      await page.getByRole('button', { name: 'Assign Give clear instructions', exact: true }).click();
     } else if (journey === 'review') {
       await page.goto(`/dashboard/assignments/${assignmentId}`); await fillReview(page);
     } else {
@@ -419,7 +425,7 @@ for (const kind of ['Teacher', 'Learner'] as const) {
     else { await page.getByRole('combobox', { name: 'School', exact: true }).selectOption('test'); await page.getByRole('textbox', { name: 'Admission number', exact: true }).fill('7'); await expect(page.getByLabel('Password', { exact: true })).toHaveCount(0); }
     await page.getByRole('button', { name: 'Sign in', exact: true }).click();
     await expect(page).toHaveURL('/dashboard');
-    await expect(page.getByRole('heading', { name: kind === 'Teacher' ? 'Welcome back, Test.' : 'Hi, Test!', exact: true, level: 1 })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Hi, Test!', exact: true, level: 1 })).toBeVisible();
     expect(state.writes.find((write) => write.path === 'token')!.body).toMatchObject(kind === 'Teacher' ? { email: 'teacher@example.test' } : { email: 'test-0007@learners.chipurobo.local', password: 'chipu-learner-test-0007-2026' });
     await expect(page.getByRole('link', { name: 'Stock & units', exact: true })).toHaveCount(0);
   });
@@ -859,11 +865,28 @@ test('a learner resubmission awaits feedback while preserving earlier teacher fe
 test('teacher home provides real inline assignment and lesson actions',async({page})=>{
  const state=await mockDashboard(page,'teacher');await page.goto('/dashboard');
  const section=page.getByRole('region',{name:'Quick lesson actions'});
- await expect(section.getByRole('link',{name:'Open lesson',exact:true})).toHaveAttribute('href',`/dashboard/school/lessons/${lessonId}`);
- await section.getByRole('button',{name:'Assign lesson',exact:true}).click();
+ await page.getByRole('link',{name:'Assign',exact:true}).click();
+ await expect(section.locator('details')).toHaveAttribute('open','');
+ await expect(section.getByRole('link',{name:'Open Give clear instructions',exact:true})).toHaveAttribute('href',`/dashboard/school/lessons/${lessonId}`);
+ await section.getByRole('button',{name:'Assign Give clear instructions',exact:true}).click();
  const form=page.getByRole('form',{name:'Assign Give clear instructions'});
- await form.getByLabel('Test Learner',{exact:true}).check();await form.getByRole('button',{name:'Assign to selected students'}).click();
+ await form.getByLabel('Test Learner',{exact:true}).check();await form.getByRole('button',{name:'Assign Give clear instructions to selected learners'}).click();
  await expect(page).toHaveURL(new RegExp(`/dashboard/assignments/${assignmentId}$`));expect(state.writes.some(w=>w.path==='assign_learning_lesson')).toBeTruthy();
+});
+
+test('teacher home starts with essentials and reveals detail on demand', async ({ page }) => {
+  await mockDashboard(page, 'teacher');
+  await page.goto('/dashboard');
+  const main = page.locator('#dashboard-main');
+  await expect(page.getByRole('navigation', { name: 'Teacher shortcuts' })).toBeVisible();
+  await expect(main.getByRole('table', { name: 'Learners and their lessons' })).not.toBeVisible();
+  await expect(main.getByRole('heading', { name: 'Give clear instructions', exact: true })).not.toBeVisible();
+  expect((await main.innerText()).trim().split(/\s+/).length).toBeLessThan(45);
+  const classBoard = main.locator('#class-board');
+  await classBoard.locator('summary').click();
+  await expect(classBoard.getByRole('table', { name: 'Learners and their lessons' })).toBeVisible();
+  await classBoard.locator('summary').click();
+  expect((await new AxeBuilder({ page }).include('.learning-zone').withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()).violations).toEqual([]);
 });
 
 test('learner completes an accessible knowledge check and sees versioned feedback',async({page})=>{
