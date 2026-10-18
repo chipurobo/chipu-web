@@ -556,21 +556,23 @@ test('a learner submits their own work and reopens the saved submission', async 
   await expect(page.getByRole('heading', { name: 'Review student work', exact: true })).toHaveCount(0);
 });
 
-test('learners can flag a concern from a lesson using child-friendly choices', async ({ page }) => {
+test('learners can quickly flag a concern from a lesson with no written details', async ({ page }) => {
   const state = await mockDashboard(page, 'learner');
   await page.goto(`/dashboard/assignments/${assignmentId}`);
   await page.getByRole('link', { name: 'Report a concern about this lesson', exact: true }).click();
   await expect(page).toHaveURL(new RegExp(`/dashboard/report-concern\\?lessonId=${lessonId}$`));
   await expect(page.getByRole('heading', { name: 'Tell us if something feels wrong' })).toBeVisible();
   await expect(page.getByText(`Reporting from lesson: Give clear instructions`)).toBeVisible();
+  const form = page.getByRole('form', { name: 'Safeguarding concern form' });
   const descriptionLabel = page.locator('label[for="description"]');
-  const descriptionField = page.getByLabel('Tell us what happened');
+  const descriptionField = page.getByLabel('Tell us more (optional)');
   const [labelBox, fieldBox] = await Promise.all([descriptionLabel.boundingBox(), descriptionField.boundingBox()]);
   expect(labelBox).not.toBeNull(); expect(fieldBox).not.toBeNull();
   expect(labelBox!.y + labelBox!.height).toBeLessThanOrEqual(fieldBox!.y);
   expect(Math.abs(labelBox!.x - fieldBox!.x)).toBeLessThanOrEqual(2);
-  await page.getByLabel(/^Bullying/).check();
-  await page.getByLabel('Tell us what happened').fill('Someone kept sending me hurtful messages during the lesson.');
+  await expect(form.getByLabel('Date')).toHaveCount(0);
+  await expect(form.getByText('Add details (optional)')).toHaveCount(0);
+  await page.getByLabel('What are you worried about?').selectOption('bullying');
   await page.getByRole('button', { name: 'Send my report', exact: true }).click();
   await expect(page.getByRole('status').filter({ hasText: 'Your report has been sent' })).toBeVisible();
   expect(state.writes.find((write) => write.path === 'incidents')!.body).toMatchObject({
@@ -578,6 +580,29 @@ test('learners can flag a concern from a lesson using child-friendly choices', a
   });
   expect(String(state.writes.find((write) => write.path === 'incidents')!.body.description)).toContain('Concern type: bullying');
   expect(String(state.writes.find((write) => write.path === 'incidents')!.body.description)).toContain(`Lesson: Give clear instructions (${lessonId})`);
+  expect(String(state.writes.find((write) => write.path === 'incidents')!.body.description)).toContain('No extra details supplied.');
+});
+
+test('teachers can send a quick concern or reveal optional details', async ({ page }) => {
+  const state = await mockDashboard(page, 'teacher');
+  await page.goto('/dashboard/report-concern');
+  const form = page.getByRole('form', { name: 'Safeguarding concern form' });
+  await expect(form.getByLabel('Learner code')).not.toBeVisible();
+  await expect(form.getByLabel('Date')).not.toBeVisible();
+  await expect(form.getByLabel('Urgency')).not.toBeVisible();
+  await form.getByText('Add details (optional)').click();
+  await expect(form.getByLabel('Learner code')).toBeVisible();
+  await expect(form.getByLabel('Date')).toBeVisible();
+  await expect(form.getByLabel('Urgency')).toBeVisible();
+  await form.getByText('Add details (optional)').click();
+  await form.getByLabel('What are you worried about?').selectOption('online interaction');
+  await form.getByRole('button', { name: 'Send report', exact: true }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Your report has been sent' })).toBeVisible();
+  expect(state.writes.find((write) => write.path === 'incidents')!.body).toMatchObject({
+    school_id: schoolId, reported_by: userId, learner_code: null, severity: 'medium',
+  });
+  expect(String(state.writes.find((write) => write.path === 'incidents')!.body.description)).toContain('Concern type: online interaction');
+  expect(String(state.writes.find((write) => write.path === 'incidents')!.body.description)).toContain('No extra details supplied.');
 });
 
 test('teacher dashboard and lesson pages keep the safeguarding flag visible', async ({ page }, testInfo) => {
