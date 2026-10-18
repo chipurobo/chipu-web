@@ -509,6 +509,12 @@ test('learners can flag a concern from a lesson using child-friendly choices', a
   await expect(page).toHaveURL(new RegExp(`/dashboard/report-concern\\?lessonId=${lessonId}$`));
   await expect(page.getByRole('heading', { name: 'Tell us if something feels wrong' })).toBeVisible();
   await expect(page.getByText(`Reporting from lesson: Give clear instructions`)).toBeVisible();
+  const descriptionLabel = page.locator('label[for="description"]');
+  const descriptionField = page.getByLabel('Tell us what happened');
+  const [labelBox, fieldBox] = await Promise.all([descriptionLabel.boundingBox(), descriptionField.boundingBox()]);
+  expect(labelBox).not.toBeNull(); expect(fieldBox).not.toBeNull();
+  expect(labelBox!.y + labelBox!.height).toBeLessThanOrEqual(fieldBox!.y);
+  expect(Math.abs(labelBox!.x - fieldBox!.x)).toBeLessThanOrEqual(2);
   await page.getByLabel(/^Bullying/).check();
   await page.getByLabel('Tell us what happened').fill('Someone kept sending me hurtful messages during the lesson.');
   await page.getByRole('button', { name: 'Send my report', exact: true }).click();
@@ -531,20 +537,17 @@ test('teacher dashboard and lesson pages keep the safeguarding flag visible', as
 
 test('lesson video exposes captions, written instructions and a visible transcript', async ({ page }) => {
   const state = await mockDashboard(page, 'learner');
-  Object.assign(state.lessons[0], {
-    media_type: 'video',
-    media_url: 'https://example.test/lesson.mp4',
-    captions_url: 'https://example.test/lesson-en.vtt',
-    media_instructions: 'Pause after each step and build the same sequence with your blocks.',
-    media_transcript: 'Welcome. First, place the start block. Next, add a print block. Finally, run your program.',
-  });
+  Object.assign(state.lessons[0].learning_plan, { delivery: 'blockly' });
   await page.goto(`/dashboard/assignments/${assignmentId}`);
   const media = page.getByRole('region', { name: 'Accessible lesson media', exact: true });
   await expect(media.getByText('CC Captions', { exact: true })).toBeVisible();
   await expect(media.getByText('Written transcript', { exact: true })).toBeVisible();
-  await expect(media.getByText('Pause after each step and build the same sequence with your blocks.', { exact: true })).toBeVisible();
-  await expect(media.getByText(/Welcome\. First, place the start block/)).toBeVisible();
-  await expect(media.locator('video track[kind="captions"]')).toHaveAttribute('src', 'https://example.test/lesson-en.vtt');
+  await expect(media.getByText(/1\. Read your mission/)).toBeVisible();
+  await expect(media.getByText(/First, read your mission/)).toBeVisible();
+  await expect(media.locator('video')).toHaveAttribute('poster', '/lesson-media/lesson-orientation-poster.svg');
+  await expect(media.locator('video track[kind="captions"]')).toHaveAttribute('src', 'http://127.0.0.1:4187/lesson-media/lesson-orientation.vtt');
+  await expect.poll(() => media.locator('video').evaluate((video: HTMLVideoElement) => video.readyState)).toBeGreaterThanOrEqual(1);
+  await expect.poll(() => media.locator('video').evaluate((video: HTMLVideoElement) => video.textTracks[0]?.mode)).toBe('showing');
   expect((await new AxeBuilder({ page }).include('.learning-zone').withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()).violations).toEqual([]);
 });
 

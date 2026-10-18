@@ -139,22 +139,30 @@ export function ReportIncident() {
   });
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="heading-display text-2xl text-gray-900 flex items-center gap-2">
-          <Flag className="h-6 w-6 text-terracotta-600" aria-hidden="true" />
-          {isLearner ? 'Tell us if something feels wrong' : 'Report a concern'}
-        </h1>
-        <p className="text-sm text-gray-600 mt-2 max-w-2xl">
-          {isLearner
-            ? 'You can tell us about something that happened to you or someone else. You will not be in trouble for asking for help.'
-            : 'Tell ChipuRobo’s safeguarding lead about something that may be unsafe or harmful.'}{' '}
-          <strong>If someone is in danger right now, tell a trusted adult nearby or contact the authorities first.</strong>
+    <div className="mx-auto max-w-4xl space-y-5">
+      <header className="rounded-2xl border border-terracotta-200 bg-gradient-to-br from-terracotta-50 to-white p-5 sm:p-6">
+        <div className="flex items-start gap-4">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-terracotta-100 text-terracotta-700">
+            <Flag className="h-5 w-5" aria-hidden="true" />
+          </span>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-gray-950 sm:text-3xl">
+              {isLearner ? 'Tell us if something feels wrong' : 'Report a concern'}
+            </h1>
+            <p className="mt-2 max-w-2xl text-sm text-gray-700">
+              {isLearner
+                ? 'You can tell us about something that happened to you or someone else. You will not be in trouble for asking for help.'
+                : 'Tell ChipuRobo’s safeguarding lead about something that may be unsafe or harmful.'}
+            </p>
+          </div>
+        </div>
+        <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-950">
+          If someone is in danger right now, tell a trusted adult nearby or contact the authorities first.
         </p>
-      </div>
+      </header>
 
-      <div className="card p-4 bg-warm-50 border-warm-200 flex items-start gap-3">
-        <Lock className="h-4 w-4 text-gray-500 mt-0.5 flex-shrink-0" aria-hidden="true" />
+      <div className="card flex items-start gap-3 border-teal-200 bg-teal-50 p-4">
+        <Lock className="mt-0.5 h-5 w-5 flex-shrink-0 text-teal-700" aria-hidden="true" />
         <p className="text-sm text-gray-700 m-0">
           <strong>Your report is private.</strong> Only ChipuRobo&rsquo;s safeguarding team can read it.
           You and other people at your school cannot open it after it is sent.
@@ -169,7 +177,7 @@ export function ReportIncident() {
       )}
 
       {submitted && (
-        <div role="status" className="card max-w-2xl border-emerald-300 bg-emerald-50 p-5 text-emerald-950">
+        <div role="status" className="card border-emerald-300 bg-emerald-50 p-5 text-emerald-950">
           <div className="flex items-start gap-3">
             <CheckCircle2 className="mt-0.5 h-6 w-6 shrink-0 text-emerald-700" aria-hidden="true" />
             <div>
@@ -181,14 +189,16 @@ export function ReportIncident() {
       )}
 
       <form
-        className="card p-6 space-y-5 max-w-2xl"
+        className="card space-y-6 p-5 sm:p-7"
+        aria-label="Safeguarding concern form"
         onSubmit={(e) => { e.preventDefault(); if (canSubmit) submit.mutate(); }}
       >
         <fieldset>
-          <legend className="label">What are you worried about?</legend>
-          <div className="mt-2 grid gap-3 sm:grid-cols-2">
+          <legend className="text-base font-semibold text-gray-950">What are you worried about?</legend>
+          <p className="mt-1 text-sm text-gray-600">Choose the option that feels closest. It is okay if you are not sure.</p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
             {CONCERN_TYPES.map((type) => (
-              <label key={type.value} className={`cursor-pointer rounded-xl border-2 p-4 ${category === type.value ? 'border-terracotta-500 bg-terracotta-50' : 'border-warm-200 bg-white'}`}>
+              <label key={type.value} className={`flex h-full cursor-pointer rounded-xl border p-4 transition-colors ${type.value === 'something else' ? 'sm:col-span-2' : ''} ${category === type.value ? 'border-terracotta-500 bg-terracotta-50 ring-2 ring-terracotta-100' : 'border-gray-200 bg-white hover:border-gray-300'}`}>
                 <span className="flex items-start gap-3">
                   <input type="radio" name="concern-type" value={type.value} checked={category === type.value}
                     onChange={() => { setCategory(type.value); setSubmitted(false); }} className="mt-1" />
@@ -200,10 +210,10 @@ export function ReportIncident() {
         </fieldset>
 
         {!isLearner && <div>
-          <label htmlFor="learner-code" className="label">Learner code (optional)</label>
+          <label htmlFor="learner-code" className="field-label !text-sm">Learner code (optional)</label>
           <input
             id="learner-code"
-            className="input font-mono"
+            className="field-input font-mono"
             placeholder="LRN-000123"
             value={learnerCode}
             onChange={(e) => setLearnerCode(e.target.value.toUpperCase())}
@@ -222,18 +232,18 @@ export function ReportIncident() {
 
         <div className={`grid gap-4 ${isLearner ? '' : 'sm:grid-cols-2'}`}>
           <div>
-            <label htmlFor="occurred-on" className="label">When did it happen?</label>
+            <label htmlFor="occurred-on" className="field-label !text-sm">When did it happen?</label>
             <input
-              id="occurred-on" type="date" className="input"
+              id="occurred-on" type="date" className="field-input"
               max={new Date().toISOString().slice(0, 10)}
               value={occurredOn}
               onChange={(e) => setOccurredOn(e.target.value)}
             />
           </div>
           {!isLearner && <div>
-            <label htmlFor="severity" className="label">How urgent is it?</label>
+            <label htmlFor="severity" className="field-label !text-sm">How urgent is it?</label>
             <select
-              id="severity" className="input" value={severity}
+              id="severity" className="field-input" value={severity}
               onChange={(e) => setSeverity(e.target.value as IncidentSeverity)}
             >
               {SEVERITIES.map((s) => (
@@ -247,9 +257,9 @@ export function ReportIncident() {
         </div>
 
         <div>
-          <label htmlFor="description" className="label">Tell us what happened</label>
+          <label htmlFor="description" className="field-label !text-sm">Tell us what happened</label>
           <textarea
-            id="description" className="input min-h-[9rem]" value={description}
+            id="description" className="field-input min-h-[10rem] resize-y" value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder={isLearner ? 'Write what happened and anything that would help us understand.' : 'What you saw or were told, when, and who else was present. Use participant codes rather than names.'}
             onFocus={() => setSubmitted(false)}
@@ -262,8 +272,8 @@ export function ReportIncident() {
           {tooShort && <p className="sr-only">Description is too short.</p>}
         </div>
 
-        <button type="submit" className="btn-cta" disabled={!canSubmit || submit.isPending}>
-          <Send className="mr-2 h-4 w-4" aria-hidden="true" />
+        <button type="submit" className="btn-primary gap-2 !bg-terracotta-600 hover:!bg-terracotta-700" disabled={!canSubmit || submit.isPending}>
+          <Send className="h-4 w-4" aria-hidden="true" />
           {submit.isPending ? 'Sending…' : isLearner ? 'Send my report' : 'Send report'}
         </button>
       </form>
