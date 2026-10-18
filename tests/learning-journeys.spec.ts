@@ -537,19 +537,13 @@ test('teacher dashboard and lesson pages keep the safeguarding flag visible', as
 
 test('lesson video exposes captions, written instructions and a visible transcript', async ({ page }) => {
   const state = await mockDashboard(page, 'learner');
-  Object.assign(state.lessons[0], {
-    media_type: 'video',
-    media_url: 'http://127.0.0.1:4187/lesson-media/lesson-orientation.webm',
-    captions_url: 'http://127.0.0.1:4187/lesson-media/lesson-orientation.vtt',
-    media_instructions: 'Pause after each step and build the same sequence with your blocks.',
-    media_transcript: 'Welcome. First, place the start block. Next, add a print block. Finally, run your program.',
-  });
+  Object.assign(state.lessons[0].learning_plan, { delivery: 'blockly' });
   await page.goto(`/dashboard/assignments/${assignmentId}`);
   const media = page.getByRole('region', { name: 'Accessible lesson media', exact: true });
   await expect(media.getByText('CC Captions', { exact: true })).toBeVisible();
   await expect(media.getByText('Written transcript', { exact: true })).toBeVisible();
-  await expect(media.getByText('Pause after each step and build the same sequence with your blocks.', { exact: true })).toBeVisible();
-  await expect(media.getByText(/Welcome\. First, place the start block/)).toBeVisible();
+  await expect(media.getByText(/1\. Read your mission/)).toBeVisible();
+  await expect(media.getByText(/First, read your mission/)).toBeVisible();
   await expect(media.locator('video')).toHaveAttribute('poster', '/lesson-media/lesson-orientation-poster.svg');
   await expect(media.locator('video track[kind="captions"]')).toHaveAttribute('src', 'http://127.0.0.1:4187/lesson-media/lesson-orientation.vtt');
   await expect.poll(() => media.locator('video').evaluate((video: HTMLVideoElement) => video.readyState)).toBeGreaterThanOrEqual(1);
