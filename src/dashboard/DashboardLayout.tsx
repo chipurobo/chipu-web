@@ -9,7 +9,7 @@ import { fetchPendingBookingCount } from '../lib/gql/queries';
 import {
   LogOut, Home, School, Package, ClipboardList, Users, Boxes, Wrench, Send, Menu, X,
   Award, Layers, FolderKanban, BookOpen, CalendarDays, ListChecks, ShieldAlert,
-  Presentation, Trophy, Medal, Brain, Rocket, Map, Images, Puzzle,
+  Presentation, Trophy, Medal, Brain, Rocket, Map, Images, Puzzle, Flag,
 } from 'lucide-react';
 
 // ----- Page titles for the SPA route announcer -----
@@ -49,6 +49,7 @@ const DASHBOARD_PAGE_TITLES: Record<string, string> = {
   '/dashboard/school/sessions':     'Sessions',
   '/dashboard/school/actions':      'Actions',
   '/dashboard/school/report-incident': 'Report a concern',
+  '/dashboard/report-concern':       'Report a concern',
   '/dashboard/admin/incidents':     'Safeguarding',
 };
 const LEARNER_PAGE_TITLES: Record<string, string> = {
@@ -58,6 +59,7 @@ const LEARNER_PAGE_TITLES: Record<string, string> = {
   '/dashboard/my-projects': 'Projects',
   '/dashboard/my-progress': 'Journey',
   '/dashboard/portfolio': 'Showcase',
+  '/dashboard/report-concern': 'Report a concern',
 };
 function getDashboardPageTitle(path: string, isLearner = false): string {
   if (isLearner && LEARNER_PAGE_TITLES[path]) return LEARNER_PAGE_TITLES[path];
@@ -321,6 +323,7 @@ function DashboardShell() {
               <SidebarLink to="/dashboard/my-projects" icon={Rocket} tone="text-orange-600">Projects</SidebarLink>
               <SidebarLink to="/dashboard/my-progress" icon={Map} tone="text-amber-600">Journey</SidebarLink>
               <SidebarLink to="/dashboard/portfolio" icon={Images} tone="text-pink-600">Showcase</SidebarLink>
+              <SidebarLink to="/dashboard/report-concern" icon={Flag} tone="text-terracotta-600">Report a concern</SidebarLink>
             </>
           ) : <>
           <SidebarLink to="/dashboard" end icon={Home}>
@@ -333,6 +336,7 @@ function DashboardShell() {
           <SidebarLink to="/dashboard/quizzes" icon={ListChecks}>{isTeacher ? 'Quizzes' : 'Knowledge checks'}</SidebarLink>
           <SidebarLink to="/dashboard/portfolio" icon={FolderKanban}>{isTeacher ? 'Portfolios' : 'Learner portfolios'}</SidebarLink>
           <SidebarLink to="/dashboard/learning-reports" icon={ClipboardList}>{isTeacher ? 'Reports' : 'Learning reports'}</SidebarLink>
+          {isTeacher && <SidebarLink to="/dashboard/report-concern" icon={Flag} tone="text-terracotta-600">Report a concern</SidebarLink>}
           </>}
           {isLearner || isTeacher ? null : isAdmin ? (
             <>
@@ -420,7 +424,7 @@ function DashboardShell() {
               <SidebarLink to="/dashboard/school/actions" icon={ListChecks}>
                 Actions
               </SidebarLink>
-              <SidebarLink to="/dashboard/school/report-incident" icon={ShieldAlert}>
+              <SidebarLink to="/dashboard/report-concern" icon={Flag}>
                 Report a concern
               </SidebarLink>
 

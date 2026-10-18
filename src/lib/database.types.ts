@@ -153,6 +153,21 @@ export type ProjectStatus = 'draft' | 'submitted' | 'judged';
  *  curriculum is taught in upper primary and junior secondary alike. */
 export type LessonLevel = 'primary' | 'secondary' | 'both';
 
+export type LearningNeed =
+  | 'hearing support'
+  | 'visual support'
+  | 'reading support'
+  | 'motor support'
+  | 'language support'
+  | 'step-by-step support';
+
+export type LessonReviewStatus =
+  | 'draft'
+  | 'under_review'
+  | 'approved'
+  | 'needs_revision'
+  | 'withdrawn';
+
 export interface Lesson {
   learning_plan: LessonLearningPlan | null;
   id: string;
@@ -166,6 +181,23 @@ export interface Lesson {
    *  enforced by a DB check constraint, and re-checked with safeHttpUrl()
    *  before it is ever rendered as an anchor. */
   resource_url: string | null;
+  /** Optional directly playable lesson media. Media is only publishable when
+   *  the database also has a transcript and written instructions; videos must
+   *  additionally have a WebVTT captions URL. */
+  media_type: 'video' | 'audio' | null;
+  media_url: string | null;
+  captions_url: string | null;
+  media_transcript: string | null;
+  media_instructions: string | null;
+  minimum_age: number | null;
+  maximum_age: number | null;
+  minimum_grade: number | null;
+  maximum_grade: number | null;
+  learning_needs: LearningNeed[];
+  review_status: LessonReviewStatus;
+  review_notes: string | null;
+  approved_at: string | null;
+  approved_by: string | null;
   level: LessonLevel;
   /** Points awarded per student per completion. */
   points: number;

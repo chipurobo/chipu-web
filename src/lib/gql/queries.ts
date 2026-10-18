@@ -702,6 +702,7 @@ export async function fetchCurriculumLessons(): Promise<Lesson[]> {
   return unwrap(
     await supabase.from('lessons').select('*')
       .eq('is_active', true)
+      .eq('review_status', 'approved')
       .order('position'),
   );
 }
@@ -722,6 +723,18 @@ export async function updateLesson(id: string, patch: Partial<Lesson>): Promise<
   return unwrap(
     await supabase.from('lessons').update(patch).eq('id', id).select().single(),
   );
+}
+
+export async function reviewLessonContent(
+  id: string,
+  status: Lesson['review_status'],
+  notes: string,
+): Promise<Lesson> {
+  return unwrap(await supabase.rpc('review_lesson_content', {
+    p_lesson_id: id,
+    p_status: status,
+    p_notes: notes.trim() || null,
+  }));
 }
 
 // ── Workshops ───────────────────────────────────────────────

@@ -218,7 +218,8 @@ function App() {
               <Route path="school/sessions" element={<RequireAuth roles={['admin', 'school_lead']}><SchoolSessions /></RequireAuth>} />
               <Route path="school/sessions/:sessionId" element={<RequireAuth roles={['admin', 'school_lead']}><SessionRegister /></RequireAuth>} />
               <Route path="school/actions" element={<RequireAuth roles={['admin', 'school_lead']}><SchoolActions /></RequireAuth>} />
-              <Route path="school/report-incident" element={<RequireAuth roles={['admin', 'school_lead']}><ReportIncident /></RequireAuth>} />
+              <Route path="report-concern" element={<RequireAuth roles={['admin', 'school_lead', 'teacher', 'learner']}><ReportIncident /></RequireAuth>} />
+              <Route path="school/report-incident" element={<Navigate to="/dashboard/report-concern" replace />} />
             </Route>
 
             {/* === Public marketing site ===
