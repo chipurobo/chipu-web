@@ -21,6 +21,8 @@ import { LessonAssignments } from '../learning/AssignLessonForm';
 import { ProductThumb } from '../components/ProductThumb';
 import { safeHttpUrl } from '../../lib/safeUrl';
 import { learnerLabel } from '../../lib/learnerCopy';
+import { ReportConcernLink } from '../components/ReportConcernLink';
+import { AccessibleLessonMedia } from '../learning/AccessibleLessonMedia';
 
 // =============================================================
 // /dashboard/school/lessons/:lessonId
@@ -75,10 +77,13 @@ function TeacherLessonStage() {
   useEffect(() => { if (lessonId) trackLearningActivity('resource_open', lessonId); }, [lessonId]);
   const lesson = useQuery({ queryKey: ['lesson', lessonId], queryFn: () => fetchLessonById(lessonId!), enabled: !!lessonId });
   return <div className="learning-zone px-4 sm:px-6 lg:px-10 py-8 space-y-6">
-    <Link to="/dashboard/school/lessons" className="text-sm text-teal-700 underline">Back to lessons</Link>
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <Link to="/dashboard/school/lessons" className="text-sm text-teal-700 underline">Back to lessons</Link>
+      <ReportConcernLink lessonId={lessonId} />
+    </div>
     {lesson.isPending && <p role="status">Loading lesson…</p>}
     {lesson.error && <p role="alert" className="text-red-700">{lesson.error.message}</p>}
-    {lesson.data && <><h1>{lesson.data.title}</h1><p className="text-sm text-gray-600">{lesson.data.description}</p><LessonAssignments lesson={lesson.data} /></>}
+    {lesson.data && <><h1>{lesson.data.title}</h1><p className="text-sm text-gray-600">{lesson.data.description}</p><AccessibleLessonMedia lesson={lesson.data} /><LessonAssignments lesson={lesson.data} /></>}
   </div>;
 }
 
@@ -251,13 +256,16 @@ function SchoolLessonRoster() {
   return (
     <div className="px-4 sm:px-6 lg:px-10 py-8 space-y-6">
       <div>
-        <Link
-          to="/dashboard/school/lessons"
-          className="text-xs text-teal-700 hover:underline inline-flex items-center"
-        >
-          <ArrowLeft className="h-3.5 w-3.5 mr-1" aria-hidden="true" />
-          Back to lessons
-        </Link>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <Link
+            to="/dashboard/school/lessons"
+            className="text-xs text-teal-700 hover:underline inline-flex items-center"
+          >
+            <ArrowLeft className="h-3.5 w-3.5 mr-1" aria-hidden="true" />
+            Back to lessons
+          </Link>
+          <ReportConcernLink lessonId={lessonId} />
+        </div>
       </div>
 
       <div className="flex items-start gap-3 flex-wrap">
@@ -290,6 +298,8 @@ function SchoolLessonRoster() {
       </div>
 
       {stage && <LessonAssignments lesson={stage} />}
+
+      {stage && <AccessibleLessonMedia lesson={stage} />}
 
       {/* What has to exist before this lesson can run. Empty for most lessons;
           shown only when someone has attached kit to it. */}

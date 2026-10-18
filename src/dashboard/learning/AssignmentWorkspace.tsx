@@ -10,6 +10,7 @@ import type { CompetencyEvidence, LearningAssignment, LearningSubmission, Review
 import { safeHttpUrl } from '../../lib/safeUrl';
 import { LearnerLesson } from './LearnerLesson';
 import { learnerLabel } from '../../lib/learnerCopy';
+import { ReportConcernLink } from '../components/ReportConcernLink';
 
 /** Learners get their own page with hints and scaffolding; teachers keep the review workspace. */
 export function AssignmentWorkspace() {
@@ -40,8 +41,11 @@ function TeacherAssignmentWorkspace() {
   const assigned = (members.data ?? []).filter((member) => recipients.data?.some((row) => row.student_id === member.id));
   return (
     <div className="learning-zone px-4 sm:px-6 lg:px-10 py-8 space-y-6 max-w-6xl">
-      <Link to={isLearner ? isCapstone ? '/dashboard/my-projects' : '/dashboard/my-learning' : assignment ? `/dashboard/school/lessons/${assignment.lesson_id}` : '/dashboard/school/lessons'}
-        className="text-sm text-teal-700 underline">{isLearner ? isCapstone ? 'Back to capstone projects' : 'Back to my learning' : 'Back to lessons'}</Link>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Link to={isLearner ? isCapstone ? '/dashboard/my-projects' : '/dashboard/my-learning' : assignment ? `/dashboard/school/lessons/${assignment.lesson_id}` : '/dashboard/school/lessons'}
+          className="text-sm text-teal-700 underline">{isLearner ? isCapstone ? 'Back to capstone projects' : 'Back to my learning' : 'Back to lessons'}</Link>
+        <ReportConcernLink lessonId={assignment?.lesson_id} />
+      </div>
       {error && <p role="alert" className="text-sm text-red-700">{error.message}</p>}
       {assignmentQuery.isPending && <p role="status">Loading assignment…</p>}
       {!assignmentQuery.isPending && !error && !assignment && <h1>Assignment not found</h1>}

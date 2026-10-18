@@ -9,12 +9,15 @@ import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { trackLearningActivity } from '../../lib/learningOutcomes';
 import { fetchAssignment, fetchEvidence, fetchSubmissions } from '../../lib/learningQueries';
+import { fetchLessonById } from '../../lib/gql/queries';
 import type { LearningLevel } from '../../lib/learningFramework';
 import type { LessonLearningPlan } from '../../lib/learningRecords';
 import { artThemeFor, pathwayLook, skillGoals, skillLook, stepKindFor, type ArtTheme } from '../../lib/learnerCopy';
 import { LearnerPage, LevelChip, SkillChip, FriendlyAlert, Loading, ReadAloud } from './ui/LearnerKit';
 import { LessonArt, StepIcon, Mascot } from './ui/LearnerArt';
 import { LearnerSubmission } from './LearnerSubmission';
+import { ReportConcernLink } from '../components/ReportConcernLink';
+import { AccessibleLessonMedia } from './AccessibleLessonMedia';
 
 const drawerTip: Record<ArtTheme, string> = {
   loop: 'Open the Repeat drawer and look for the "repeat" block.',
@@ -59,6 +62,7 @@ export function LearnerLesson() {
   const { assignmentId } = useParams();
   const assignmentQuery = useQuery({ queryKey: ['learning-assignment', assignmentId], queryFn: () => fetchAssignment(assignmentId!), enabled: !!assignmentId });
   const assignment = assignmentQuery.data;
+  const lessonQuery = useQuery({ queryKey: ['lesson', assignment?.lesson_id], queryFn: () => fetchLessonById(assignment!.lesson_id), enabled: !!assignment?.lesson_id });
   useEffect(() => { if (assignment) trackLearningActivity('resource_open', assignment.lesson_id); }, [assignment]);
   const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => { heading.current?.focus(); }, [assignment?.id]);
@@ -71,9 +75,12 @@ export function LearnerLesson() {
 
   return (
     <LearnerPage>
-      <Link to={isCapstone ? '/dashboard/my-projects' : '/dashboard/my-learning'} className="btn-secondary">
-        <span aria-hidden="true">← </span><span className="sr-only">Back to </span>{isCapstone ? 'Projects' : 'Lessons'}
-      </Link>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Link to={isCapstone ? '/dashboard/my-projects' : '/dashboard/my-learning'} className="btn-secondary">
+          <span aria-hidden="true">← </span><span className="sr-only">Back to </span>{isCapstone ? 'Projects' : 'Lessons'}
+        </Link>
+        <ReportConcernLink lessonId={assignment?.lesson_id} />
+      </div>
       <FriendlyAlert error={error} />
       {assignmentQuery.isPending && <Loading>Opening your lesson</Loading>}
       {!assignmentQuery.isPending && !error && !assignment && <h1 className="learner-title"><span aria-hidden="true">🔍 </span>Not found</h1>}
@@ -92,6 +99,8 @@ export function LearnerLesson() {
             </ul>
           </div>
         </header>
+
+        {lessonQuery.data && <AccessibleLessonMedia lesson={lessonQuery.data} learnerFriendly />}
 
         <section className="space-y-4" aria-label="Your mission">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -147,6 +156,12 @@ function StepChecklist({ steps }: { steps: string[] }) {
         </div>
         <p className="text-sm font-extrabold text-slate-700" role="status">{done.size}/{steps.length}<span className="sr-only"> steps done</span>{done.size === steps.length && steps.length > 0 ? <> <span aria-hidden="true">🎉</span><span className="sr-only">, all finished!</span></> : ''}</p>
       </div>
+      {done.size === steps.length && steps.length > 0 && (
+        <div role="status" aria-live="polite" className="learner-card flex items-center gap-3 border-emerald-300 bg-emerald-50 p-4 text-emerald-950">
+          <span className="text-3xl" aria-hidden="true">✅</span>
+          <div><p className="font-extrabold">All steps complete!</p><p className="text-sm font-semibold">Great work. You can now test your project and send it to your teacher.</p></div>
+        </div>
+      )}
       <ol className="grid gap-3 sm:grid-cols-2" aria-label="Steps">
         {steps.map((step, index) => (
           <li key={index} className={`learner-card flex items-start gap-3 p-4 transition-colors ${done.has(index) ? 'border-emerald-300 bg-emerald-50' : ''}`}>
