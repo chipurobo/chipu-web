@@ -13,6 +13,9 @@ export function AccessibleLessonMedia({
 
   const captionsUrl = safeHttpUrl(lesson.captions_url);
   const isVideo = lesson.media_type === 'video';
+  const poster = mediaUrl.endsWith('/lesson-media/lesson-orientation.webm')
+    ? '/lesson-media/lesson-orientation-poster.svg'
+    : undefined;
 
   return (
     <section
@@ -34,7 +37,7 @@ export function AccessibleLessonMedia({
       </div>
 
       {isVideo ? (
-        <video className="w-full max-w-3xl rounded-xl bg-black" controls playsInline preload="metadata">
+        <video className="aspect-video w-full rounded-xl bg-black shadow-sm" controls playsInline preload="metadata" poster={poster}>
           <source src={mediaUrl} />
           {captionsUrl && (
             <track kind="captions" src={captionsUrl} srcLang="en" label="English" default />
