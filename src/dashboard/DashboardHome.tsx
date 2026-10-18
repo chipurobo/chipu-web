@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { TeacherHomeActions } from './learning/TeacherHomeActions';
 import { TeacherClassBoard } from './learning/TeacherClassBoard';
 import { MyLearning } from './learning/MyLearning';
+import { Hero, LearnerPage } from './learning/ui/LearnerKit';
 import { useAuth } from '../lib/auth';
 import { School, Package, ClipboardList, Users, Boxes, Wrench, Send, BookOpen } from 'lucide-react';
 
@@ -14,6 +15,7 @@ export function DashboardHome() {
   const { profile, school } = useAuth();
   if (profile?.role === 'learner') return <MyLearning />;
   const isTeacher = profile?.role === 'teacher';
+  if (isTeacher) return <TeacherDashboard name={profile.full_name} schoolName={school?.name} />;
   const isAdmin = profile?.role === 'admin';
   const isMakerSpace = !!school?.is_maker_space;
 
@@ -24,9 +26,7 @@ export function DashboardHome() {
       </p>
       <h1 className="mb-2">Welcome back, {profile?.full_name?.split(' ')[0] ?? 'there'}.</h1>
       <p className="text-sm text-gray-600 mb-8 max-w-2xl">
-        {isTeacher
-          ? 'Your class at a glance.'
-          : isAdmin
+        {isAdmin
           ? 'Manage code clubs, the product catalogue, and orders across the network.'
           : isMakerSpace
             ? 'See incoming orders to fulfil, fabricate units, ship them, and manage your club members.'
@@ -50,8 +50,7 @@ export function DashboardHome() {
           </>
         )}
 
-        {isTeacher && <div className="sm:col-span-2 lg:col-span-3"><TeacherClassBoard /></div>}
-        {!isAdmin && !isTeacher && (
+        {!isAdmin && (
           <>
             <Tile to="/dashboard/school/members" icon={Users}
                   title="Students" body="Roster + students who hold equipment." />
@@ -73,8 +72,41 @@ export function DashboardHome() {
           </>
         )}
       </div>
-      {isTeacher && <TeacherHomeActions />}
     </div>
+  );
+}
+
+function TeacherDashboard({ name, schoolName }: { name?: string | null; schoolName?: string | null }) {
+  const firstName = name?.trim().split(/\s+/)[0] || 'there';
+  const quickLinks = [
+    { href: '#review-work', emoji: '📬', label: 'Review', tone: 'from-amber-200 to-orange-100' },
+    { href: '#assign-lesson', emoji: '➕', label: 'Assign', tone: 'from-sky-200 to-cyan-100' },
+    { href: '/dashboard/school/progress', emoji: '🗺️', label: 'Progress', tone: 'from-violet-200 to-fuchsia-100' },
+  ];
+
+  return (
+    <LearnerPage>
+      <Hero eyebrow={schoolName ?? 'My class'} title={<>Hi, {firstName}! <span aria-hidden="true">👋</span></>}>
+        <nav aria-label="Teacher shortcuts" className="grid grid-cols-3 gap-3">
+          {quickLinks.map((item) => (
+            <a
+              key={item.href}
+              href={item.href}
+              onClick={item.href === '#assign-lesson' ? () => requestAnimationFrame(() => {
+                const panel = document.getElementById('assign-lesson') as HTMLDetailsElement | null;
+                if (panel) panel.open = true;
+              }) : undefined}
+              className={`learner-card learner-card-hover flex flex-col items-center gap-1 bg-gradient-to-br p-3 text-center ${item.tone}`}
+            >
+              <span className="text-3xl" aria-hidden="true">{item.emoji}</span>
+              <span className="text-sm font-extrabold text-slate-900">{item.label}</span>
+            </a>
+          ))}
+        </nav>
+      </Hero>
+      <TeacherClassBoard />
+      <TeacherHomeActions />
+    </LearnerPage>
   );
 }
 

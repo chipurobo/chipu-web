@@ -37,14 +37,12 @@ const SEVERITIES: { value: IncidentSeverity; label: string; hint: string }[] = [
   { value: 'high',   label: 'High',   hint: 'A learner may be at risk. Do not wait for this form — call as well.' },
 ];
 
-const MIN_DESCRIPTION = 20;
-
 const CONCERN_TYPES = [
-  { value: 'bullying', label: 'Bullying', hint: 'Someone is being hurt, threatened, left out or picked on.' },
-  { value: 'inappropriate behaviour', label: 'Inappropriate behaviour', hint: 'Someone behaved in a way that felt wrong or uncomfortable.' },
-  { value: 'unsafe content', label: 'Unsafe content', hint: 'You saw a picture, video, message or lesson that felt unsafe.' },
-  { value: 'online interaction', label: 'Online interaction', hint: 'Something worrying happened in a chat, game, call or online space.' },
-  { value: 'something else', label: 'Something else', hint: 'Choose this if you are not sure. You can still tell us.' },
+  { value: 'bullying', label: 'Bullying' },
+  { value: 'inappropriate behaviour', label: 'Inappropriate behaviour' },
+  { value: 'unsafe content', label: 'Unsafe content' },
+  { value: 'online interaction', label: 'Online interaction' },
+  { value: 'something else', label: 'Something else' },
 ] as const;
 
 // PostgreSQL accepts canonical UUIDs beyond the RFC version/variant patterns,
@@ -84,10 +82,9 @@ export function ReportIncident() {
 
   const codeLooksWrong =
     learnerCode.trim() !== '' && !/^LRN-\d{6}$/.test(learnerCode.trim());
-  const tooShort = description.trim().length > 0 && description.trim().length < MIN_DESCRIPTION;
   const canSubmit =
     !!schoolId && !!profile?.id && !!category
-    && description.trim().length >= MIN_DESCRIPTION && !codeLooksWrong;
+    && !codeLooksWrong;
 
   const submit = useMutation({
     mutationFn: async () => {
@@ -95,7 +92,7 @@ export function ReportIncident() {
         `Concern type: ${category}`,
         lesson ? `Lesson: ${lesson.title} (${lesson.id})` : null,
         '',
-        description.trim(),
+        description.trim() || 'No extra details supplied.',
       ].filter((line) => line !== null).join('\n');
       await createIncident({
         school_id:    schoolId!,
@@ -125,6 +122,7 @@ export function ReportIncident() {
     },
     onSuccess: (alerted) => {
       setLearnerCode(''); setDescription(''); setSeverity('medium'); setCategory('');
+      setOccurredOn(new Date().toISOString().slice(0, 10));
       setSubmitted(true);
       queryClient.invalidateQueries({ queryKey: ['incident-count', schoolId] });
       notify(
@@ -193,84 +191,77 @@ export function ReportIncident() {
         aria-label="Safeguarding concern form"
         onSubmit={(e) => { e.preventDefault(); if (canSubmit) submit.mutate(); }}
       >
-        <fieldset>
-          <legend className="text-base font-semibold text-gray-950">What are you worried about?</legend>
-          <p className="mt-1 text-sm text-gray-600">Choose the option that feels closest. It is okay if you are not sure.</p>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <fieldset aria-describedby="concern-type-help">
+          <legend className="field-label !text-sm">What are you worried about?</legend>
+          <p id="concern-type-help" className="mb-3 text-xs text-gray-600">
+            Choose the closest one. It is okay if you are not sure.
+          </p>
+          <div className="grid gap-2 sm:grid-cols-2">
             {CONCERN_TYPES.map((type) => (
-              <label key={type.value} className={`flex h-full cursor-pointer rounded-xl border p-4 transition-colors ${type.value === 'something else' ? 'sm:col-span-2' : ''} ${category === type.value ? 'border-terracotta-500 bg-terracotta-50 ring-2 ring-terracotta-100' : 'border-gray-200 bg-white hover:border-gray-300'}`}>
-                <span className="flex items-start gap-3">
-                  <input type="radio" name="concern-type" value={type.value} checked={category === type.value}
-                    onChange={() => { setCategory(type.value); setSubmitted(false); }} className="mt-1" />
-                  <span><strong className="block text-sm text-gray-900">{type.label}</strong><span className="mt-1 block text-xs text-gray-600">{type.hint}</span></span>
-                </span>
+              <label
+                key={type.value}
+                className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+                  category === type.value
+                    ? 'border-terracotta-500 bg-terracotta-50 text-gray-950 ring-2 ring-terracotta-100'
+                    : 'border-gray-200 bg-white text-gray-800 hover:border-gray-300'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="concern-type"
+                  value={type.value}
+                  checked={category === type.value}
+                  required
+                  onChange={() => { setCategory(type.value); setSubmitted(false); }}
+                />
+                <span>{type.label}</span>
               </label>
             ))}
           </div>
         </fieldset>
 
-        {!isLearner && <div>
-          <label htmlFor="learner-code" className="field-label !text-sm">Learner code (optional)</label>
-          <input
-            id="learner-code"
-            className="field-input font-mono"
-            placeholder="LRN-000123"
-            value={learnerCode}
-            onChange={(e) => setLearnerCode(e.target.value.toUpperCase())}
-            aria-describedby="learner-code-help"
-          />
-          <p id="learner-code-help" className="text-xs text-gray-500 mt-1">
-            The learner&rsquo;s participant code, never their name. Leave blank if no single
-            learner is involved. You can find codes on your Students page.
-          </p>
-          {codeLooksWrong && (
-            <p className="text-xs text-terracotta-700 mt-1">
-              That is not a participant code. It should look like LRN-000123.
-            </p>
-          )}
-        </div>}
-
-        <div className={`grid gap-4 ${isLearner ? '' : 'sm:grid-cols-2'}`}>
-          <div>
-            <label htmlFor="occurred-on" className="field-label !text-sm">When did it happen?</label>
-            <input
-              id="occurred-on" type="date" className="field-input"
-              max={new Date().toISOString().slice(0, 10)}
-              value={occurredOn}
-              onChange={(e) => setOccurredOn(e.target.value)}
-            />
-          </div>
-          {!isLearner && <div>
-            <label htmlFor="severity" className="field-label !text-sm">How urgent is it?</label>
-            <select
-              id="severity" className="field-input" value={severity}
-              onChange={(e) => setSeverity(e.target.value as IncidentSeverity)}
-            >
-              {SEVERITIES.map((s) => (
-                <option key={s.value} value={s.value}>{s.label}</option>
-              ))}
-            </select>
-            <p className="text-xs text-gray-500 mt-1">
-              {SEVERITIES.find((s) => s.value === severity)?.hint}
-            </p>
-          </div>}
-        </div>
-
         <div>
-          <label htmlFor="description" className="field-label !text-sm">Tell us what happened</label>
+          <label htmlFor="description" className="field-label !text-sm">Tell us more <span className="font-normal text-gray-500">(optional)</span></label>
           <textarea
-            id="description" className="field-input min-h-[10rem] resize-y" value={description}
+            id="description" className="field-input min-h-[7rem] resize-y" rows={3} value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder={isLearner ? 'Write what happened and anything that would help us understand.' : 'What you saw or were told, when, and who else was present. Use participant codes rather than names.'}
+            placeholder={isLearner ? 'You can leave this blank if you do not know what to write.' : 'Add anything that would help us understand. Avoid learners’ names.'}
             onFocus={() => setSubmitted(false)}
           />
-          <p className="text-xs text-gray-500 mt-1">
-            {description.trim().length < MIN_DESCRIPTION
-              ? `At least ${MIN_DESCRIPTION} characters — ${MIN_DESCRIPTION - description.trim().length} to go.`
-              : isLearner ? 'That is enough detail to send.' : 'Please avoid learners’ names. Use their participant code.'}
-          </p>
-          {tooShort && <p className="sr-only">Description is too short.</p>}
         </div>
+
+        {!isLearner && (
+          <details className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+            <summary className="cursor-pointer text-sm font-semibold text-gray-800">Add details (optional)</summary>
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              <div className="sm:col-span-2">
+                <label htmlFor="learner-code" className="field-label !text-sm">Learner code</label>
+                <input
+                  id="learner-code"
+                  className="field-input font-mono"
+                  placeholder="LRN-000123"
+                  value={learnerCode}
+                  onChange={(e) => setLearnerCode(e.target.value.toUpperCase())}
+                  aria-describedby={codeLooksWrong ? 'learner-code-help learner-code-error' : 'learner-code-help'}
+                  aria-invalid={codeLooksWrong}
+                />
+                <p id="learner-code-help" className="mt-1 text-xs text-gray-500">Use a participant code, never a learner&rsquo;s name.</p>
+                {codeLooksWrong && <p id="learner-code-error" role="alert" className="mt-1 text-xs text-terracotta-700">Use a code like LRN-000123.</p>}
+              </div>
+              <div>
+                <label htmlFor="occurred-on" className="field-label !text-sm">Date</label>
+                <input id="occurred-on" type="date" className="field-input" max={new Date().toISOString().slice(0, 10)} value={occurredOn} onChange={(e) => setOccurredOn(e.target.value)} />
+              </div>
+              <div>
+                <label htmlFor="severity" className="field-label !text-sm">Urgency</label>
+                <select id="severity" className="field-input" value={severity} aria-describedby="severity-help" onChange={(e) => setSeverity(e.target.value as IncidentSeverity)}>
+                  {SEVERITIES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+                </select>
+                <p id="severity-help" className="mt-1 text-xs text-gray-500">{SEVERITIES.find((s) => s.value === severity)?.hint}</p>
+              </div>
+            </div>
+          </details>
+        )}
 
         <button type="submit" className="btn-primary gap-2 !bg-terracotta-600 hover:!bg-terracotta-700" disabled={!canSubmit || submit.isPending}>
           <Send className="h-4 w-4" aria-hidden="true" />

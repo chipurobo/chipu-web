@@ -258,8 +258,12 @@
   @apply text-xs font-semibold uppercase tracking-wider text-gray-500
          px-4 py-2 text-left border-b border-warm-200 bg-warm-100/40;
 }
-.admin-zone .data-table tbody td {
+.admin-zone .data-table tbody td,
+.admin-zone .data-table tbody th {
   @apply px-4 py-3 border-b border-warm-200 text-gray-800 align-middle;
+}
+.admin-zone .data-table tbody th {
+  @apply text-left;
 }
 .admin-zone .data-table tbody tr:hover {
   @apply bg-warm-100/30;
@@ -864,7 +868,8 @@ h3.heading-display { font-size: clamp(1rem, 2vw, 1.5rem) !important; line-height
 @media (max-width: 639px) {
   /* Tables: cap cell padding so wide tables don't blow up the layout */
   .admin-zone .data-table thead th,
-  .admin-zone .data-table tbody td {
+  .admin-zone .data-table tbody td,
+  .admin-zone .data-table tbody th {
     padding: 0.5rem 0.625rem !important;
     font-size: 0.8125rem !important;
   }
@@ -876,7 +881,8 @@ h3.heading-display { font-size: clamp(1rem, 2vw, 1.5rem) !important; line-height
      a clipped mess. Long-form copy (descriptions, inline forms) should
      opt back into wrapping with `whitespace-normal` on the td.        */
   .admin-zone .data-table thead th,
-  .admin-zone .data-table tbody td {
+  .admin-zone .data-table tbody td,
+  .admin-zone .data-table tbody th {
     white-space: nowrap;
   }
   .admin-zone .data-table td.whitespace-normal,

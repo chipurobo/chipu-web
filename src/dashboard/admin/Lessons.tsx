@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { Fragment, useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   fetchAllLessonsAdmin, createLesson, updateLesson, fetchLessonProductCounts,
@@ -149,6 +149,21 @@ export function AdminLessons() {
     setKitFor(null);
     setReviewFor(lesson);
   };
+  const openPlan = (lesson: Lesson) => {
+    setCreating(false); setMediaFor(null); setKitFor(null); setReviewFor(null); setPlanFor(lesson);
+  };
+  const openMedia = (lesson: Lesson) => {
+    setCreating(false); setPlanFor(null); setKitFor(null); setReviewFor(null); setMediaFor(lesson);
+  };
+  const openKit = (lesson: Lesson) => {
+    setCreating(false); setPlanFor(null); setMediaFor(null); setReviewFor(null); setKitFor({ id: lesson.id, title: lesson.title });
+  };
+  const restoreFocus = (id: string) => requestAnimationFrame(() => document.getElementById(id)?.focus());
+  const closeReview = () => {
+    const lessonId = reviewFor?.id;
+    setReviewFor(null);
+    if (lessonId) requestAnimationFrame(() => document.getElementById(`review-content-${lessonId}`)?.focus());
+  };
 
   return (
     <div className="px-4 sm:px-6 lg:px-10 py-8 space-y-6">
@@ -166,20 +181,6 @@ export function AdminLessons() {
           {creating ? 'Cancel' : 'New lesson'}
         </button>
       </div>
-
-      {planFor && <LessonPlanEditor key={planFor.id} lesson={planFor} onClose={() => setPlanFor(null)} />}
-
-      {mediaFor && <LessonMediaEditor key={mediaFor.id} lesson={mediaFor} onClose={() => setMediaFor(null)} />}
-
-      {reviewFor && <LessonContentReviewEditor key={reviewFor.id} lesson={reviewFor} onClose={() => setReviewFor(null)} />}
-
-      {kitFor && (
-        <LessonKitPanel
-          lessonId={kitFor.id}
-          lessonTitle={kitFor.title}
-          onClose={() => setKitFor(null)}
-        />
-      )}
 
       {creating && (
         <form onSubmit={onSubmit} className="card p-4" aria-label="New lesson">
@@ -292,18 +293,19 @@ export function AdminLessons() {
       />
 
       <div className="card overflow-x-auto">
-        <table className="data-table" aria-label="Curriculum lessons">
+        <table className="data-table" aria-label="Curriculum lessons and review actions">
+          <caption className="sr-only">Curriculum lessons and review actions</caption>
           <thead>
             <tr>
-              <th>#</th>
-              <th>Lesson</th>
-              <th>Kind</th>
-              <th>Track</th>
-              <th>Resource</th>
-              <th>Points</th>
-              <th>Review</th>
-              <th>Kit</th>
-              <th />
+              <th scope="col">#</th>
+              <th scope="col">Lesson</th>
+              <th scope="col">Kind</th>
+              <th scope="col">Track</th>
+              <th scope="col">Resource</th>
+              <th scope="col">Points</th>
+              <th scope="col">Review</th>
+              <th scope="col">Kit</th>
+              <th scope="col"><span className="sr-only">Lesson actions</span></th>
             </tr>
           </thead>
           <tbody>
@@ -317,9 +319,10 @@ export function AdminLessons() {
               </tr>
             ) : (
               lessons.map((l) => (
-                <tr key={l.id}>
+                <Fragment key={l.id}>
+                <tr>
                   <td className="text-gray-400 text-sm">{l.position}</td>
-                  <td className="font-medium text-gray-900">
+                  <th scope="row" className="font-medium text-gray-900">
                     <span className="inline-flex items-center gap-1.5">
                       <BookOpen className="h-3.5 w-3.5 text-teal-600" aria-hidden="true" />
                       {l.title}
@@ -328,7 +331,7 @@ export function AdminLessons() {
                       <GraduationCap className="h-3.5 w-3.5 text-amber-500 inline ml-1.5"
                         aria-label="Required for certificate" />
                     )}
-                  </td>
+                  </th>
                   <td className="text-sm text-gray-600">{KIND_LABEL[l.kind]}</td>
                   <td><span className="badge-gray">{LEVEL_LABEL[l.level]}</span></td>
                   <td className="text-sm">
@@ -337,7 +340,7 @@ export function AdminLessons() {
                          className="text-teal-700 hover:underline inline-flex items-center gap-1">
                         <ExternalLink className="h-3 w-3" aria-hidden="true" />Open
                       </a>
-                    ) : <span className="text-gray-400">—</span>}
+                    ) : <span className="text-gray-400"><span aria-hidden="true">—</span><span className="sr-only">No resource link</span></span>}
                     {l.media_url && (
                       <span className="mt-1 flex items-center gap-1 text-xs font-semibold text-sky-800">
                         <Captions className="h-3.5 w-3.5" aria-hidden="true" />
@@ -347,15 +350,20 @@ export function AdminLessons() {
                   </td>
                   <td className="text-sm">{l.points}</td>
                   <td>
-                    <span className={l.review_status === 'approved' ? 'badge-teal' : l.review_status === 'needs_revision' ? 'badge-amber' : 'badge-gray'}>
-                      {REVIEW_STATUS_LABEL[l.review_status]}
+                    <span
+                      className={l.review_status === 'approved' ? 'badge-teal' : l.review_status === 'needs_revision' ? 'badge-amber' : 'badge-gray'}
+                      aria-label={`Review status: ${REVIEW_STATUS_LABEL[l.review_status] ?? 'Draft'}`}
+                    >
+                      {REVIEW_STATUS_LABEL[l.review_status] ?? 'Draft'}
                     </span>
                   </td>
                   <td>
                     <button
                       type="button"
+                      id={`kit-${l.id}`}
                       className="text-xs text-teal-700 hover:underline inline-flex items-center"
-                      onClick={() => setKitFor({ id: l.id, title: l.title })}
+                      onClick={() => openKit(l)}
+                      aria-label={`${kitCounts.data?.[l.id] ? 'Edit' : 'Add'} kit for ${l.title}`}
                     >
                       <Package className="h-3 w-3 mr-1" aria-hidden="true" />
                       {kitCounts.data?.[l.id]
@@ -364,21 +372,28 @@ export function AdminLessons() {
                     </button>
                   </td>
                   <td className="text-right space-x-2">
-                    <button type="button" className="btn-secondary !py-1 !text-xs" onClick={() => setMediaFor(l)}>
+                    <button type="button" id={`media-${l.id}`} className="btn-secondary !py-1 !text-xs" onClick={() => openMedia(l)} aria-label={`Accessible media for ${l.title}`}>
                       <Captions className="h-3 w-3 mr-1" aria-hidden="true" />Accessible media
                     </button>
-                    <button type="button" className="btn-secondary !py-1 !text-xs" onClick={() => setPlanFor(l)}>
+                    <button type="button" id={`plan-${l.id}`} className="btn-secondary !py-1 !text-xs" onClick={() => openPlan(l)} aria-label={`${l.learning_plan ? 'Edit learning plan' : 'Set learning outcomes'} for ${l.title}`}>
                       {l.learning_plan ? 'Edit learning plan' : 'Set learning outcomes'}
                     </button>
                     <button
                       type="button"
+                      id={`review-content-${l.id}`}
                       className="btn-secondary !py-1 !text-xs"
                       onClick={() => openReview(l)}
+                      aria-label={`Review content for ${l.title}`}
                     >
                       <ClipboardCheck className="h-3 w-3 mr-1" aria-hidden="true" />Review content
                     </button>
                   </td>
                 </tr>
+                {planFor?.id === l.id && <tr><td colSpan={9} className="whitespace-normal !bg-warm-50 !p-4"><LessonPlanEditor key={l.id} lesson={l} onClose={() => { setPlanFor(null); restoreFocus(`plan-${l.id}`); }} /></td></tr>}
+                {mediaFor?.id === l.id && <tr><td colSpan={9} className="whitespace-normal !bg-warm-50 !p-4"><LessonMediaEditor key={l.id} lesson={l} onClose={() => { setMediaFor(null); restoreFocus(`media-${l.id}`); }} /></td></tr>}
+                {reviewFor?.id === l.id && <tr><td colSpan={9} className="whitespace-normal !bg-warm-50 !p-4"><LessonContentReviewEditor key={l.id} lesson={l} onClose={closeReview} /></td></tr>}
+                {kitFor?.id === l.id && <tr><td colSpan={9} className="whitespace-normal !bg-warm-50 !p-4"><LessonKitPanel lessonId={l.id} lessonTitle={l.title} onClose={() => { setKitFor(null); restoreFocus(`kit-${l.id}`); }} /></td></tr>}
+                </Fragment>
               ))
             )}
           </tbody>

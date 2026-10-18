@@ -12,7 +12,6 @@ function toNumber(value: string) { return value === '' ? null : Number(value); }
 export function LessonContentReviewEditor({ lesson, onClose }: { lesson: Lesson; onClose: () => void }) {
   const { notify } = useNotifications();
   const queryClient = useQueryClient();
-  const panelRef = useRef<HTMLFormElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const [minimumAge, setMinimumAge] = useState(toInput(lesson.minimum_age));
   const [maximumAge, setMaximumAge] = useState(toInput(lesson.maximum_age));
@@ -25,10 +24,7 @@ export function LessonContentReviewEditor({ lesson, onClose }: { lesson: Lesson;
     .every((field) => Object.prototype.hasOwnProperty.call(lesson, field));
 
   useEffect(() => {
-    const frame = requestAnimationFrame(() => {
-      panelRef.current?.scrollIntoView({ block: 'start' });
-      titleRef.current?.focus({ preventScroll: true });
-    });
+    const frame = requestAnimationFrame(() => titleRef.current?.focus({ preventScroll: true }));
     return () => cancelAnimationFrame(frame);
   }, []);
 
@@ -65,7 +61,6 @@ export function LessonContentReviewEditor({ lesson, onClose }: { lesson: Lesson;
 
   return (
     <form
-      ref={panelRef}
       className="card max-w-4xl scroll-mt-4 space-y-5 border-violet-200 p-5"
       aria-label={`Content review for ${lesson.title}`}
       onSubmit={(event: FormEvent) => { event.preventDefault(); if (rangesValid) save.mutate(); }}
@@ -73,10 +68,10 @@ export function LessonContentReviewEditor({ lesson, onClose }: { lesson: Lesson;
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-xs uppercase tracking-wider text-violet-700">Content appropriateness</p>
-          <h2 ref={titleRef} tabIndex={-1} className="outline-none">{lesson.title}</h2>
+          <h2 ref={titleRef} tabIndex={-1} className="rounded-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50">{lesson.title}</h2>
           <p className="mt-1 text-sm text-gray-600">Tag the intended learners, then choose the editorial status. Only Approved lessons are published.</p>
         </div>
-        <button type="button" className="p-2 text-gray-500 hover:text-gray-900" onClick={onClose} aria-label="Close content review editor"><X className="h-5 w-5" aria-hidden="true" /></button>
+        <button type="button" className="p-2 text-gray-500 hover:text-gray-900" onClick={onClose} aria-label={`Close content review for ${lesson.title}`}><X className="h-5 w-5" aria-hidden="true" /></button>
       </div>
 
       <SuitabilityFields
@@ -97,9 +92,14 @@ export function LessonContentReviewEditor({ lesson, onClose }: { lesson: Lesson;
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label className="field-label" htmlFor={`review-status-${lesson.id}`}>Review status</label>
-          <select id={`review-status-${lesson.id}`} className="field-input" value={status} onChange={(event) => setStatus(event.target.value as LessonReviewStatus)}>
+          <select id={`review-status-${lesson.id}`} className="field-input" value={status} aria-describedby={`review-status-help-${lesson.id}`} onChange={(event) => setStatus(event.target.value as LessonReviewStatus)}>
             {(Object.keys(REVIEW_STATUS_LABEL) as LessonReviewStatus[]).map((value) => <option key={value} value={value}>{REVIEW_STATUS_LABEL[value]}</option>)}
           </select>
+          <p id={`review-status-help-${lesson.id}`} role="status" aria-live="polite" className="mt-1 text-xs text-gray-600">
+            {status === 'approved'
+              ? 'Approved lessons are published and visible to teachers.'
+              : `${REVIEW_STATUS_LABEL[status]} lessons are not visible to teachers.`}
+          </p>
         </div>
         <div className="sm:col-span-2">
           <label className="field-label" htmlFor={`review-notes-${lesson.id}`}>Review notes</label>
@@ -112,7 +112,7 @@ export function LessonContentReviewEditor({ lesson, onClose }: { lesson: Lesson;
           <ClipboardCheck className="mr-1.5 h-4 w-4" aria-hidden="true" />
           {save.isPending ? 'Saving…' : 'Save review'}
         </button>
-        <button type="button" className="btn-secondary" onClick={onClose}>Cancel</button>
+        <button type="button" className="btn-secondary" onClick={onClose} aria-label={`Cancel review for ${lesson.title}`}>Cancel</button>
       </div>
     </form>
   );

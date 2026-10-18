@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../lib/auth';
@@ -13,6 +13,7 @@ export function AssignLessonForm({ lesson, onClose }: { lesson: Lesson; onClose:
   const [selected, setSelected] = useState<string[]>([]);
   const [instructions, setInstructions] = useState('');
   const [dueDate, setDueDate] = useState('');
+  const headingRef = useRef<HTMLHeadingElement>(null);
   const members = useQuery({ queryKey: ['learning-students', school?.id],
     queryFn: () => fetchLearningStudents(school!.id), enabled: !!school });
   const active = members.data?.filter((member) => member.is_active) ?? [];
@@ -21,17 +22,18 @@ export function AssignLessonForm({ lesson, onClose }: { lesson: Lesson; onClose:
       studentIds: selected, instructions, dueDate }),
     onSuccess: (id) => { void qc.invalidateQueries({ queryKey: ['learning-assignments'] }); navigate(`/dashboard/assignments/${id}`); },
   });
+  useEffect(() => { headingRef.current?.focus({ preventScroll: true }); }, []);
   function submit(event: FormEvent) { event.preventDefault(); mutation.mutate(); }
   return (
-    <form onSubmit={submit} className="card p-4 space-y-4 learning-zone" aria-label={`Assign ${lesson.title}`}>
-      <h2 className="text-lg">Assign: {lesson.title}</h2>
+    <form onSubmit={submit} className="mt-4 rounded-2xl border-2 border-sky-200 bg-sky-50 p-4 space-y-4 learning-zone" aria-label={`Assign ${lesson.title}`}>
+      <h2 ref={headingRef} tabIndex={-1} className="rounded-sm text-lg focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-300">Assign {lesson.title}</h2>
       <fieldset className="space-y-2">
-        <legend className="field-label">Students</legend>
-        {members.isPending && <p role="status">Loading students…</p>}
+        <legend className="field-label">Learners</legend>
+        {members.isPending && <p role="status">Loading…</p>}
         {members.error && <p role="alert" className="text-red-700">{members.error.message}</p>}
         {active.length > 0 && <button type="button" className="text-sm underline text-teal-700"
           onClick={() => setSelected(selected.length === active.length ? [] : active.map((member) => member.id))}>
-          {selected.length === active.length ? 'Clear selection' : 'Select all active students'}
+          {selected.length === active.length ? 'Clear' : 'Select all'}
         </button>}
         <div className="grid sm:grid-cols-2 gap-2">
           {active.map((member) => <label key={member.id} className="flex gap-2 items-center text-sm cursor-pointer">
@@ -39,24 +41,29 @@ export function AssignLessonForm({ lesson, onClose }: { lesson: Lesson; onClose:
               ? [...selected, member.id] : selected.filter((id) => id !== member.id))} />{member.full_name}
           </label>)}
         </div>
-        {!members.isPending && !members.error && !active.length && <p className="text-sm">Add active students under Students before assigning a lesson.</p>}
+        {!members.isPending && !members.error && !active.length && <p className="text-sm">No learners.</p>}
       </fieldset>
-      <div>
-        <label className="field-label" htmlFor="assignment-instructions">Instructions for this class</label>
-        <textarea id="assignment-instructions" className="field-input" rows={3} maxLength={10000}
-          value={instructions} onChange={(event) => setInstructions(event.target.value)} />
-      </div>
-      <div>
-        <label className="field-label" htmlFor="assignment-due-date">Due date (optional)</label>
-        <input id="assignment-due-date" className="field-input max-w-xs" type="date" value={dueDate}
-          onChange={(event) => setDueDate(event.target.value)} />
-      </div>
+      <details className="rounded-xl border border-sky-200 bg-white p-3">
+        <summary className="cursor-pointer text-sm font-extrabold text-slate-800">Add details (optional)</summary>
+        <div className="mt-3 grid gap-3">
+          <div>
+            <label className="field-label" htmlFor="assignment-instructions">Note</label>
+            <textarea id="assignment-instructions" className="field-input" rows={2} maxLength={10000}
+              value={instructions} onChange={(event) => setInstructions(event.target.value)} />
+          </div>
+          <div>
+            <label className="field-label" htmlFor="assignment-due-date">Due</label>
+            <input id="assignment-due-date" className="field-input max-w-xs" type="date" value={dueDate}
+              onChange={(event) => setDueDate(event.target.value)} />
+          </div>
+        </div>
+      </details>
       {mutation.error && <p role="alert" className="text-sm text-red-700">{mutation.error.message}</p>}
       <div className="flex gap-3 flex-wrap">
-        <button type="submit" className="btn-primary" disabled={!selected.length || !school || !hasUsableLearningPlan(lesson.learning_plan) || mutation.isPending}>
-          {mutation.isPending ? 'Assigning…' : 'Assign to selected students'}
+        <button type="submit" className="btn-primary" aria-label={`Assign ${lesson.title} to selected learners`} disabled={!selected.length || !school || !hasUsableLearningPlan(lesson.learning_plan) || mutation.isPending}>
+          {mutation.isPending ? 'Assigning…' : 'Assign'}
         </button>
-        <button type="button" className="btn-secondary" onClick={onClose}>Cancel assignment</button>
+        <button type="button" className="btn-secondary" onClick={onClose}>Cancel</button>
       </div>
     </form>
   );

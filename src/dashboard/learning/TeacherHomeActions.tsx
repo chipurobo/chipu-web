@@ -7,7 +7,7 @@ import { learningLevels, type LearningLevel } from '../../lib/learningFramework'
 import { hasUsableLearningPlan } from '../../lib/learningRecords';
 import type { Lesson } from '../../lib/database.types';
 import { AssignLessonForm } from './AssignLessonForm';
-import { LessonSuitabilityTags } from './LessonSuitabilityTags';
+import { LevelChip } from './ui/LearnerKit';
 
 export function TeacherHomeActions() {
   const { school } = useAuth();
@@ -19,76 +19,62 @@ export function TeacherHomeActions() {
     enabled: !!school,
   });
   const error = lessons.error;
+  const visibleLessons = lessons.data
+    ?.filter((lesson) => hasUsableLearningPlan(lesson.learning_plan)
+      && (level === 'all' || lesson.learning_plan?.level === level))
+    .slice(0, 6);
+  const closeAssign = () => {
+    const lessonId = assignFor?.id;
+    setAssignFor(null);
+    if (lessonId) requestAnimationFrame(() => document.getElementById(`home-assign-${lessonId}`)?.focus());
+  };
+
   return (
-    <div className="learning-zone space-y-6 mt-8">
-      {assignFor && (
-        <AssignLessonForm
-          key={assignFor.id}
-          lesson={assignFor}
-          onClose={() => setAssignFor(null)}
-        />
-      )}
+    <section aria-label="Quick lesson actions">
       {error && (
         <p role="alert" className="text-red-700 text-sm">
           {error.message}
         </p>
       )}
-      <section aria-label="Quick lesson actions" className="space-y-4">
-        <div className="flex justify-between gap-3 flex-wrap items-end">
-          <h2><span aria-hidden="true">➕ </span>Assign a lesson</h2>
-          <label className="text-sm">
+      <details id="assign-lesson" className="learner-card scroll-mt-4 overflow-hidden">
+        <summary className="cursor-pointer px-5 py-4 text-lg font-extrabold text-slate-900"><span aria-hidden="true">➕ </span>Assign lesson</summary>
+        <div className="space-y-4 border-t border-slate-200 p-5">
+          <label className="block max-w-xs text-sm font-extrabold text-slate-800">
             Level
-            <select
-              className="field-select mt-1"
-              value={level}
-              onChange={(e) => setLevel(e.target.value as LearningLevel | 'all')}
-            >
-              <option value="all">All learning levels</option>
-              {learningLevels.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.title}
-                </option>
-              ))}
+            <select className="field-select mt-1" value={level} onChange={(event) => setLevel(event.target.value as LearningLevel | 'all')}>
+              <option value="all">All</option>
+              {learningLevels.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}
             </select>
           </label>
-        </div>
-        {lessons.isPending && <p role="status">Loading lesson actions…</p>}
-        <div className="grid sm:grid-cols-2 gap-4">
-          {lessons.data
-            ?.filter(
-              (lesson) =>
-                hasUsableLearningPlan(lesson.learning_plan) &&
-                (level === 'all' || lesson.learning_plan.level === level),
-            )
-            .slice(0, 6)
-            .map((lesson) => (
-              <article key={lesson.id} className="card p-5 space-y-3" aria-label={lesson.title}>
-                <span className="badge-teal">
-                  {learningLevels.find((item) => item.id === lesson.learning_plan?.level)?.title}
-                </span>
-                <h3>{lesson.title}</h3>
-                <p className="text-sm text-gray-600">{lesson.description}</p>
-                <LessonSuitabilityTags lesson={lesson} />
-                <div className="flex gap-3 flex-wrap">
-                  <button className="btn-primary" onClick={() => setAssignFor(lesson)}>
-                    Assign lesson
-                  </button>
-                  <Link className="btn-secondary" to={`/dashboard/school/lessons/${lesson.id}`}>
-                    Open lesson
-                  </Link>
-                </div>
-              </article>
+          {lessons.isPending && <p role="status">Loading…</p>}
+          <ul className="divide-y divide-slate-200">
+            {visibleLessons?.map((lesson) => (
+              <li key={lesson.id} className="py-4">
+                <article className="space-y-3" aria-label={lesson.title}>
+                  <div className="flex items-center gap-3">
+                    <LevelChip level={lesson.learning_plan?.level} />
+                    <h3>{lesson.title}</h3>
+                    {lesson.description && <p className="sr-only">{lesson.description}</p>}
+                  </div>
+                  <div className="flex gap-3 flex-wrap">
+                    <button id={`home-assign-${lesson.id}`} className="btn-primary" onClick={() => setAssignFor(lesson)} aria-label={`Assign ${lesson.title}`}>
+                      Assign
+                    </button>
+                    <Link className="btn-secondary" to={`/dashboard/school/lessons/${lesson.id}`} aria-label={`Open ${lesson.title}`}>
+                      Open
+                    </Link>
+                  </div>
+                  {assignFor?.id === lesson.id && <AssignLessonForm key={lesson.id} lesson={lesson} onClose={closeAssign} />}
+                </article>
+              </li>
             ))}
+          </ul>
+          {!lessons.isPending && !error && !visibleLessons?.length && <p>None yet.</p>}
+          <Link className="text-sm font-bold text-teal-700 underline" to="/dashboard/school/lessons">
+            All lessons
+          </Link>
         </div>
-        {!lessons.isPending &&
-          !error &&
-          !lessons.data?.some((lesson) => hasUsableLearningPlan(lesson.learning_plan)) && (
-            <p>No lessons with learning outcomes are published yet.</p>
-          )}
-        <Link className="text-teal-700 underline text-sm" to="/dashboard/school/lessons">
-          All lessons
-        </Link>
-      </section>
-    </div>
+      </details>
+    </section>
   );
 }
