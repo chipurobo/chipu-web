@@ -50,9 +50,56 @@ supabase/snippets/
 # OS files
 .DS_Store
 **/.DS_Store
-.env
 
-# Claude Desktop worktrees
+# Credentials, private keys, local exports, and agent artifacts
+.env*
+*.pem
+*.key
+*.p12
+*.pfx
+*.csv
+*.xlsx
+*.xls
+.context/
+coverage/
+playwright-report/
+test-results/
+
+# Local agent worktrees
 .claude/
-.env.local
-.env.*.local
+
+# Private/local-only project material. These files are useful in a developer
+# workspace but are not required by the Vercel application or Supabase backend,
+# so they must not be published in the public GitHub repository.
+.env.example
+.github/
+.prettierrc
+README.md
+GOOGLE_FORMS_SETUP.md
+components.json
+docs/
+eslint.config.js
+home/
+netlify.toml
+playwright.config.ts
+scripts/
+security-headers.js
+server.js
+tests/
+supabase/README.md
+supabase/functions/.env.example
+
+# Source originals, notes, and unused image variants are kept locally. Only
+# assets referenced by the production application remain tracked and deployed.
+public/img/_originals/
+public/img/blog/_originals/
+public/img/blog/README.md
+public/img/babacindy.*
+public/img/cindy.*
+public/img/daview.*
+public/img/jeffery.*
+public/img/kevin.*
+public/img/blog/inclusive3.webp
+public/img/blog/inclusive4.webp
+public/img/blog/inclusive5.webp
+public/img/blog/inclusive6.webp
