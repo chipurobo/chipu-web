@@ -38,11 +38,11 @@ const SEVERITIES: { value: IncidentSeverity; label: string; hint: string }[] = [
 ];
 
 const CONCERN_TYPES = [
-  { value: 'bullying', label: 'Bullying', hint: 'Someone is being hurt, threatened, left out or picked on.' },
-  { value: 'inappropriate behaviour', label: 'Inappropriate behaviour', hint: 'Someone behaved in a way that felt wrong or uncomfortable.' },
-  { value: 'unsafe content', label: 'Unsafe content', hint: 'You saw a picture, video, message or lesson that felt unsafe.' },
-  { value: 'online interaction', label: 'Online interaction', hint: 'Something worrying happened in a chat, game, call or online space.' },
-  { value: 'something else', label: 'Something else', hint: 'Choose this if you are not sure. You can still tell us.' },
+  { value: 'bullying', label: 'Bullying' },
+  { value: 'inappropriate behaviour', label: 'Inappropriate behaviour' },
+  { value: 'unsafe content', label: 'Unsafe content' },
+  { value: 'online interaction', label: 'Online interaction' },
+  { value: 'something else', label: 'Something else' },
 ] as const;
 
 // PostgreSQL accepts canonical UUIDs beyond the RFC version/variant patterns,
@@ -191,24 +191,34 @@ export function ReportIncident() {
         aria-label="Safeguarding concern form"
         onSubmit={(e) => { e.preventDefault(); if (canSubmit) submit.mutate(); }}
       >
-        <div>
-          <label htmlFor="concern-type" className="field-label !text-sm">What are you worried about?</label>
-          <select
-            id="concern-type"
-            className="field-input"
-            value={category}
-            required
-            aria-describedby="concern-type-help"
-            onChange={(event) => { setCategory(event.target.value); setSubmitted(false); }}
-          >
-            <option value="">Choose one</option>
-            {CONCERN_TYPES.map((type) => <option key={type.value} value={type.value}>{type.label}</option>)}
-          </select>
-          <p id="concern-type-help" className="mt-1 text-xs text-gray-600" aria-live="polite">
-            {CONCERN_TYPES.find((type) => type.value === category)?.hint
-              ?? 'Choose the closest option. It is okay if you are not sure.'}
+        <fieldset aria-describedby="concern-type-help">
+          <legend className="field-label !text-sm">What are you worried about?</legend>
+          <p id="concern-type-help" className="mb-3 text-xs text-gray-600">
+            Choose the closest one. It is okay if you are not sure.
           </p>
-        </div>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {CONCERN_TYPES.map((type) => (
+              <label
+                key={type.value}
+                className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+                  category === type.value
+                    ? 'border-terracotta-500 bg-terracotta-50 text-gray-950 ring-2 ring-terracotta-100'
+                    : 'border-gray-200 bg-white text-gray-800 hover:border-gray-300'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="concern-type"
+                  value={type.value}
+                  checked={category === type.value}
+                  required
+                  onChange={() => { setCategory(type.value); setSubmitted(false); }}
+                />
+                <span>{type.label}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
 
         <div>
           <label htmlFor="description" className="field-label !text-sm">Tell us more <span className="font-normal text-gray-500">(optional)</span></label>

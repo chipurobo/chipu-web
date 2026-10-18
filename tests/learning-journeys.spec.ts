@@ -572,7 +572,19 @@ test('learners can quickly flag a concern from a lesson with no written details'
   expect(Math.abs(labelBox!.x - fieldBox!.x)).toBeLessThanOrEqual(2);
   await expect(form.getByLabel('Date')).toHaveCount(0);
   await expect(form.getByText('Add details (optional)')).toHaveCount(0);
-  await page.getByLabel('What are you worried about?').selectOption('bullying');
+  const concernGroup = form.getByRole('group', { name: 'What are you worried about?' });
+  await expect(concernGroup.getByRole('radio')).toHaveCount(5);
+  await expect(concernGroup.getByRole('radio', { name: 'Bullying', exact: true })).toBeVisible();
+  await expect(concernGroup.getByRole('radio', { name: 'Inappropriate behaviour', exact: true })).toBeVisible();
+  await expect(concernGroup.getByRole('radio', { name: 'Unsafe content', exact: true })).toBeVisible();
+  await expect(concernGroup.getByRole('radio', { name: 'Online interaction', exact: true })).toBeVisible();
+  await expect(concernGroup.getByRole('radio', { name: 'Something else', exact: true })).toBeVisible();
+  await expect(form.getByRole('combobox')).toHaveCount(0);
+  expect((await new AxeBuilder({ page })
+    .include('form[aria-label="Safeguarding concern form"]')
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+    .analyze()).violations).toEqual([]);
+  await concernGroup.getByRole('radio', { name: 'Bullying', exact: true }).check();
   await page.getByRole('button', { name: 'Send my report', exact: true }).click();
   await expect(page.getByRole('status').filter({ hasText: 'Your report has been sent' })).toBeVisible();
   expect(state.writes.find((write) => write.path === 'incidents')!.body).toMatchObject({
@@ -595,7 +607,7 @@ test('teachers can send a quick concern or reveal optional details', async ({ pa
   await expect(form.getByLabel('Date')).toBeVisible();
   await expect(form.getByLabel('Urgency')).toBeVisible();
   await form.getByText('Add details (optional)').click();
-  await form.getByLabel('What are you worried about?').selectOption('online interaction');
+  await form.getByRole('radio', { name: 'Online interaction', exact: true }).check();
   await form.getByRole('button', { name: 'Send report', exact: true }).click();
   await expect(page.getByRole('status').filter({ hasText: 'Your report has been sent' })).toBeVisible();
   expect(state.writes.find((write) => write.path === 'incidents')!.body).toMatchObject({
