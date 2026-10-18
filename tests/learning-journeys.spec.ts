@@ -185,7 +185,7 @@ test('admin tags, reviews and publishes a lesson before teachers can use it', as
   state.lessons[0].review_status = 'draft'; state.lessons[0].is_active = false;
   state.lessons[0].approved_at = null; state.lessons[0].approved_by = null;
   await page.goto('/dashboard/admin/lessons');
-  await page.getByRole('button', { name: 'Review content', exact: true }).click();
+  await page.getByRole('button', { name: 'Review content for Give clear instructions', exact: true }).click();
   const form = page.getByRole('form', { name: 'Content review for Give clear instructions' });
   await form.getByLabel('Minimum age').fill('10');
   await form.getByLabel('Maximum age').fill('13');
@@ -193,6 +193,7 @@ test('admin tags, reviews and publishes a lesson before teachers can use it', as
   await form.getByLabel('Maximum grade').fill('7');
   await form.getByLabel('Visual support').check();
   await form.getByLabel('Review status').selectOption('approved');
+  await expect(form.getByRole('status')).toHaveText('Approved lessons are published and visible to teachers.');
   await form.getByLabel('Review notes').fill('Checked for age, accessibility and learning outcomes.');
   await form.getByRole('button', { name: 'Save review', exact: true }).click();
   await expect(form).toHaveCount(0);
@@ -207,11 +208,38 @@ test('content review opens in view and announces the selected lesson', async ({ 
     state.lessons.push({ ...structuredClone(state.lessons[0]), id: `lesson-${index}`, title: `Lesson ${index}`, position: index });
   }
   await page.goto('/dashboard/admin/lessons');
-  const lessonRow = page.getByRole('row').filter({ hasText: 'Lesson 18' });
-  await lessonRow.getByRole('button', { name: 'Review content', exact: true }).click();
+  const table = page.getByRole('table', { name: 'Curriculum lessons and review actions' });
+  const lessonRow = table.getByRole('row').filter({ hasText: 'Lesson 18' });
+  const trigger = lessonRow.getByRole('button', { name: 'Review content for Lesson 18', exact: true });
+  await expect(lessonRow.getByRole('rowheader')).toHaveText('Lesson 18');
+  await trigger.click();
   const form = page.getByRole('form', { name: 'Content review for Lesson 18' });
   await expect(form).toBeInViewport();
   await expect(form.getByRole('heading', { name: 'Lesson 18', exact: true })).toBeFocused();
+  const tabStops = [
+    form.getByRole('button', { name: 'Close content review for Lesson 18' }),
+    form.getByLabel('Minimum age'),
+    form.getByLabel('Maximum age'),
+    form.getByLabel('Minimum grade'),
+    form.getByLabel('Maximum grade'),
+    form.getByLabel('Hearing support'),
+    form.getByLabel('Visual support'),
+    form.getByLabel('Reading support'),
+    form.getByLabel('Motor support'),
+    form.getByLabel('Language support'),
+    form.getByLabel('Step-by-step support'),
+    form.getByLabel('Review status'),
+    form.getByLabel('Review notes'),
+    form.getByRole('button', { name: 'Save review' }),
+    form.getByRole('button', { name: 'Cancel review for Lesson 18' }),
+  ];
+  for (const tabStop of tabStops) {
+    await page.keyboard.press('Tab');
+    await expect(tabStop).toBeFocused();
+  }
+  expect((await new AxeBuilder({ page }).include('.admin-zone').withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()).violations).toEqual([]);
+  await form.getByRole('button', { name: 'Cancel review for Lesson 18' }).click();
+  await expect(trigger).toBeFocused();
 });
 
 test('admin sees a clear migration warning instead of a broken review editor', async ({ page }) => {
@@ -221,7 +249,7 @@ test('admin sees a clear migration warning instead of a broken review editor', a
   delete legacyLesson.minimum_age;
   delete legacyLesson.learning_needs;
   await page.goto('/dashboard/admin/lessons');
-  await page.getByRole('button', { name: 'Review content', exact: true }).click();
+  await page.getByRole('button', { name: 'Review content for Give clear instructions', exact: true }).click();
   const form = page.getByRole('form', { name: 'Content review for Give clear instructions' });
   await expect(form.getByRole('alert')).toContainText('latest database migration');
   await expect(form.getByRole('button', { name: 'Save review', exact: true })).toBeDisabled();
@@ -250,7 +278,7 @@ test('teacher curates approved lessons by grade, age, competency and learning ne
 test('admin updates an existing lesson with saved learning outcomes', async ({ page }) => {
   const state = await mockDashboard(page, 'admin');
   await page.goto('/dashboard/admin/lessons');
-  await page.getByRole('button', { name: 'Edit learning plan', exact: true }).click();
+  await page.getByRole('button', { name: 'Edit learning plan for Give clear instructions', exact: true }).click();
   await page.getByLabel('Learning level', { exact: true }).selectOption('expert');
   await page.getByRole('button', { name: 'Save learning plan', exact: true }).click();
   await expect(page.getByRole('form', { name: 'Learning plan for Give clear instructions' })).toHaveCount(0);
@@ -349,7 +377,7 @@ for (const journey of ['plan', 'assignment', 'review', 'progress']) {
     await mockDashboard(page, journey === 'plan' ? 'admin' : 'school_lead');
     if (journey === 'plan') {
       await page.goto('/dashboard/admin/lessons');
-      await page.getByRole('button', { name: 'Edit learning plan', exact: true }).click();
+      await page.getByRole('button', { name: 'Edit learning plan for Give clear instructions', exact: true }).click();
     } else if (journey === 'assignment') {
       await page.goto('/dashboard/school/lessons');
       await page.getByRole('button', { name: 'Assign lesson', exact: true }).click();
