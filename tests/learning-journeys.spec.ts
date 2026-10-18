@@ -22,7 +22,13 @@ async function mockDashboard(page: Page, role: 'admin' | 'school_lead' | 'teache
     localStorage.setItem('chipurobo:onboarding-seen', '1');
   }, { session, authenticated });
   const lesson = { id: lessonId, title: 'Give clear instructions', description: 'Plan and test a sequence.',
-    kind: 'lesson', level: 'both', points: 1, position: 1, is_active: true, learning_plan: structuredClone(plan), resource_url: null };
+    kind: 'lesson', level: 'both', points: 1, position: 1, is_active: true, learning_plan: structuredClone(plan), resource_url: null,
+    media_type: null as 'video' | 'audio' | null, media_url: null as string | null, captions_url: null as string | null,
+    media_transcript: null as string | null, media_instructions: null as string | null,
+    minimum_age: 9 as number | null, maximum_age: 12 as number | null,
+    minimum_grade: 4 as number | null, maximum_grade: 6 as number | null,
+    learning_needs: ['hearing support'], review_status: 'approved', review_notes: null as string | null,
+    approved_at: '2026-10-01T00:00:00Z', approved_by: userId };
   const assignment = { id: assignmentId, school_id: schoolId, lesson_id: lessonId, title: lesson.title,
     instructions: 'Work in pairs, then explain your own solution.', due_date: null as string | null, learning_plan: structuredClone(plan), assigned_by: userId, created_at: '2026-10-05T09:00:00Z' };
   const state = {
@@ -71,6 +77,15 @@ async function mockDashboard(page: Page, role: 'admin' | 'school_lead' | 'teache
       state.recipients = (body!.p_student_ids as string[]).map((id) => ({ assignment_id: assignmentId, student_id: id }));
       await route.fulfill({ json: assignmentId }); return;
     }
+    if (path === 'review_lesson_content') {
+      const selected = state.lessons.find((item) => item.id === body!.p_lesson_id)!;
+      selected.review_status = String(body!.p_status);
+      selected.review_notes = body!.p_notes as string | null;
+      selected.is_active = body!.p_status === 'approved';
+      selected.approved_at = selected.is_active ? new Date().toISOString() : null;
+      selected.approved_by = selected.is_active ? userId : null;
+      await route.fulfill({ json: selected }); return;
+    }
     if (path === 'submit_learning_work') {
       state.submissions.unshift({ id: 'submission-one', assignment_id: body!.p_assignment_id, student_id: studentId,
         blockly_workspace: body!.p_blockly_workspace, generated_code: body!.p_generated_code, run_output: body!.p_run_output,
@@ -116,6 +131,8 @@ async function mockDashboard(page: Page, role: 'admin' | 'school_lead' | 'teache
     if (path === 'lessons') rows = state.lessons.filter((row) => {
       const metadata = row.learning_plan as { delivery?: string; activityKind?: string };
       return (!url.searchParams.has('kind') || url.searchParams.get('kind') === `eq.${row.kind}`)
+        && (!url.searchParams.has('is_active') || url.searchParams.get('is_active') === `eq.${row.is_active}`)
+        && (!url.searchParams.has('review_status') || url.searchParams.get('review_status') === `eq.${row.review_status}`)
         && (!url.searchParams.has('learning_plan->>delivery') || metadata.delivery === 'blockly')
         && (!url.searchParams.has('learning_plan->>activityKind') || metadata.activityKind === 'capstone');
     });
@@ -155,11 +172,53 @@ test('admin creates an actionable lesson plan from a template', async ({ page })
   await page.getByLabel('Start from an activity template').selectOption('first-sequence');
   await expect(page.getByLabel('Title', { exact: true })).toHaveValue('Give clear instructions');
   await page.getByLabel('Learning level', { exact: true }).selectOption('intermediate');
-  await page.getByRole('button', { name: 'Add lesson', exact: true }).click();
+  await page.getByRole('button', { name: 'Save draft lesson', exact: true }).click();
   await expect(page.getByRole('form', { name: 'New lesson' })).toHaveCount(0);
   const write = state.writes.find((item) => item.path === 'lessons')!;
   expect(write.body.learning_plan).toMatchObject({ level: 'intermediate', frameworkVersion: '0.1', competencyIds: ['algorithms', 'debugging', 'communication'] });
+  expect(write.body).toMatchObject({ review_status: 'draft', is_active: false });
   expect(state.lessons).toHaveLength(2);
+});
+
+test('admin tags, reviews and publishes a lesson before teachers can use it', async ({ page }) => {
+  const state = await mockDashboard(page, 'admin');
+  state.lessons[0].review_status = 'draft'; state.lessons[0].is_active = false;
+  state.lessons[0].approved_at = null; state.lessons[0].approved_by = null;
+  await page.goto('/dashboard/admin/lessons');
+  await page.getByRole('button', { name: 'Review content', exact: true }).click();
+  const form = page.getByRole('form', { name: 'Content review for Give clear instructions' });
+  await form.getByLabel('Minimum age').fill('10');
+  await form.getByLabel('Maximum age').fill('13');
+  await form.getByLabel('Minimum grade').fill('5');
+  await form.getByLabel('Maximum grade').fill('7');
+  await form.getByLabel('Visual support').check();
+  await form.getByLabel('Review status').selectOption('approved');
+  await form.getByLabel('Review notes').fill('Checked for age, accessibility and learning outcomes.');
+  await form.getByRole('button', { name: 'Save review', exact: true }).click();
+  await expect(form).toHaveCount(0);
+  expect(state.lessons[0]).toMatchObject({ minimum_age: 10, maximum_age: 13, minimum_grade: 5, maximum_grade: 7,
+    review_status: 'approved', is_active: true, review_notes: 'Checked for age, accessibility and learning outcomes.' });
+  expect(state.lessons[0].learning_needs).toEqual(['hearing support', 'visual support']);
+});
+
+test('teacher curates approved lessons by grade, age, competency and learning need', async ({ page }) => {
+  const state = await mockDashboard(page, 'teacher');
+  state.lessons.push({ ...structuredClone(state.lessons[0]), id: 'lesson-two', title: 'Advanced robotics',
+    minimum_age: 14, maximum_age: 18, minimum_grade: 8, maximum_grade: 12,
+    learning_needs: ['visual support'], learning_plan: { ...structuredClone(plan), level: 'expert' } });
+  state.lessons.push({ ...structuredClone(state.lessons[0]), id: 'lesson-draft', title: 'Unapproved lesson',
+    review_status: 'draft', is_active: false });
+  await page.goto('/dashboard/school/lessons');
+  await expect(page.getByText('Only reviewed and approved lessons are shown.')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Unapproved lesson' })).toHaveCount(0);
+  await page.getByLabel('Learner age').selectOption('10');
+  await page.getByLabel('Grade').selectOption('5');
+  await page.getByLabel('Learning need').selectOption('hearing support');
+  await expect(page.getByRole('heading', { name: 'Give clear instructions', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Advanced robotics', exact: true })).toHaveCount(0);
+  await expect(page.getByLabel('Lesson suitability').getByText('Ages 9–12')).toBeVisible();
+  await page.getByRole('radio', { name: /Expert/ }).check({ force: true });
+  await expect(page.getByRole('heading', { name: 'Give clear instructions', exact: true })).toHaveCount(0);
 });
 
 test('admin updates an existing lesson with saved learning outcomes', async ({ page }) => {
@@ -441,6 +500,52 @@ test('a learner submits their own work and reopens the saved submission', async 
   await page.reload();
   await expect(page.getByRole('region', { name: 'My submissions', exact: true }).getByText('My tested sequence.', { exact: true })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Review student work', exact: true })).toHaveCount(0);
+});
+
+test('learners can flag a concern from a lesson using child-friendly choices', async ({ page }) => {
+  const state = await mockDashboard(page, 'learner');
+  await page.goto(`/dashboard/assignments/${assignmentId}`);
+  await page.getByRole('link', { name: 'Report a concern about this lesson', exact: true }).click();
+  await expect(page).toHaveURL(new RegExp(`/dashboard/report-concern\\?lessonId=${lessonId}$`));
+  await expect(page.getByRole('heading', { name: 'Tell us if something feels wrong' })).toBeVisible();
+  await expect(page.getByText(`Reporting from lesson: Give clear instructions`)).toBeVisible();
+  await page.getByLabel(/^Bullying/).check();
+  await page.getByLabel('Tell us what happened').fill('Someone kept sending me hurtful messages during the lesson.');
+  await page.getByRole('button', { name: 'Send my report', exact: true }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Your report has been sent' })).toBeVisible();
+  expect(state.writes.find((write) => write.path === 'incidents')!.body).toMatchObject({
+    school_id: schoolId, reported_by: userId, learner_code: null, severity: 'medium',
+  });
+  expect(String(state.writes.find((write) => write.path === 'incidents')!.body.description)).toContain('Concern type: bullying');
+  expect(String(state.writes.find((write) => write.path === 'incidents')!.body.description)).toContain(`Lesson: Give clear instructions (${lessonId})`);
+});
+
+test('teacher dashboard and lesson pages keep the safeguarding flag visible', async ({ page }, testInfo) => {
+  await mockDashboard(page, 'teacher');
+  await page.goto('/dashboard');
+  if (testInfo.project.name === 'mobile') await page.getByRole('button', { name: 'Open navigation menu' }).click();
+  await expect(page.getByRole('link', { name: 'Report a concern', exact: true })).toBeVisible();
+  await page.goto(`/dashboard/school/lessons/${lessonId}`);
+  await expect(page.getByRole('link', { name: 'Report a concern about this lesson', exact: true })).toBeVisible();
+});
+
+test('lesson video exposes captions, written instructions and a visible transcript', async ({ page }) => {
+  const state = await mockDashboard(page, 'learner');
+  Object.assign(state.lessons[0], {
+    media_type: 'video',
+    media_url: 'https://example.test/lesson.mp4',
+    captions_url: 'https://example.test/lesson-en.vtt',
+    media_instructions: 'Pause after each step and build the same sequence with your blocks.',
+    media_transcript: 'Welcome. First, place the start block. Next, add a print block. Finally, run your program.',
+  });
+  await page.goto(`/dashboard/assignments/${assignmentId}`);
+  const media = page.getByRole('region', { name: 'Accessible lesson media', exact: true });
+  await expect(media.getByText('CC Captions', { exact: true })).toBeVisible();
+  await expect(media.getByText('Written transcript', { exact: true })).toBeVisible();
+  await expect(media.getByText('Pause after each step and build the same sequence with your blocks.', { exact: true })).toBeVisible();
+  await expect(media.getByText(/Welcome\. First, place the start block/)).toBeVisible();
+  await expect(media.locator('video track[kind="captions"]')).toHaveAttribute('src', 'https://example.test/lesson-en.vtt');
+  expect((await new AxeBuilder({ page }).include('.learning-zone').withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()).violations).toEqual([]);
 });
 
 test('a teacher reviews submitted work and saves feedback linked to that submission', async ({ page }) => {

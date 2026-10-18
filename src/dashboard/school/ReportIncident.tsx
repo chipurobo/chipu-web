@@ -1,22 +1,25 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createIncident, fetchMySchoolIncidentCount } from '../../lib/gql/queries';
+import { createIncident, fetchLessonById, fetchMySchoolIncidentCount } from '../../lib/gql/queries';
 import { useAuth } from '../../lib/auth';
 import { useNotifications } from '../../lib/notifications';
 import { sendEmail } from '../../lib/sendEmail';
 import type { IncidentSeverity } from '../../lib/database.types';
-import { ShieldAlert, Send, Lock } from 'lucide-react';
+import { Send, Lock, Flag, CheckCircle2 } from 'lucide-react';
 
 // =============================================================
-// /dashboard/school/report-incident
+// /dashboard/report-concern
 //
-// A school lead files a safeguarding concern here. Three things about this
+// Any signed-in learner or educator files a safeguarding concern here. Three
+// things about this
 // screen are deliberate and easy to "fix" by mistake:
 //
 //   1. There is no list. Reading incidents is admin-only, including for the
 //      person who filed one — a concern may involve a colleague at the same
 //      school, so school-scoped visibility would be the wrong default. The
-//      lead sees a count of what their school has filed, and nothing else.
+//      School leads see a count of what their school has filed; learners and
+//      teachers do not, because even the number can reveal sensitive activity.
 //
 //   2. The learner is identified by participant code, never by name. The
 //      mapping from LRN-000123 to a child stays with the school.
@@ -36,38 +39,71 @@ const SEVERITIES: { value: IncidentSeverity; label: string; hint: string }[] = [
 
 const MIN_DESCRIPTION = 20;
 
+const CONCERN_TYPES = [
+  { value: 'bullying', label: 'Bullying', hint: 'Someone is being hurt, threatened, left out or picked on.' },
+  { value: 'inappropriate behaviour', label: 'Inappropriate behaviour', hint: 'Someone behaved in a way that felt wrong or uncomfortable.' },
+  { value: 'unsafe content', label: 'Unsafe content', hint: 'You saw a picture, video, message or lesson that felt unsafe.' },
+  { value: 'online interaction', label: 'Online interaction', hint: 'Something worrying happened in a chat, game, call or online space.' },
+  { value: 'something else', label: 'Something else', hint: 'Choose this if you are not sure. You can still tell us.' },
+] as const;
+
+// PostgreSQL accepts canonical UUIDs beyond the RFC version/variant patterns,
+// including historical/imported identifiers, so validate the shape here and
+// let the database perform the authoritative type check.
+const UUID = /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i;
+
 export function ReportIncident() {
   const { school, profile } = useAuth();
+  const [searchParams] = useSearchParams();
   const schoolId = school?.id ?? null;
   const { notify } = useNotifications();
   const queryClient = useQueryClient();
+  const isLearner = profile?.role === 'learner';
+  const maySeeCount = profile?.role === 'school_lead' || profile?.role === 'admin';
+  const lessonIdParam = searchParams.get('lessonId');
+  const lessonId = lessonIdParam && UUID.test(lessonIdParam) ? lessonIdParam : null;
 
+  const [category,    setCategory]    = useState('');
   const [learnerCode, setLearnerCode] = useState('');
   const [occurredOn,  setOccurredOn]  = useState(() => new Date().toISOString().slice(0, 10));
   const [severity,    setSeverity]    = useState<IncidentSeverity>('medium');
   const [description, setDescription] = useState('');
+  const [submitted,   setSubmitted]   = useState(false);
+
+  const { data: lesson } = useQuery({
+    queryKey: ['lesson', lessonId],
+    queryFn: () => fetchLessonById(lessonId!),
+    enabled: !!lessonId,
+  });
 
   const { data: filedCount } = useQuery({
     queryKey: ['incident-count', schoolId],
     queryFn: fetchMySchoolIncidentCount,
-    enabled: !!schoolId,
+    enabled: !!schoolId && maySeeCount,
   });
 
   const codeLooksWrong =
     learnerCode.trim() !== '' && !/^LRN-\d{6}$/.test(learnerCode.trim());
   const tooShort = description.trim().length > 0 && description.trim().length < MIN_DESCRIPTION;
   const canSubmit =
-    !!schoolId && !!profile?.id && description.trim().length >= MIN_DESCRIPTION && !codeLooksWrong;
+    !!schoolId && !!profile?.id && !!category
+    && description.trim().length >= MIN_DESCRIPTION && !codeLooksWrong;
 
   const submit = useMutation({
     mutationFn: async () => {
+      const context = [
+        `Concern type: ${category}`,
+        lesson ? `Lesson: ${lesson.title} (${lesson.id})` : null,
+        '',
+        description.trim(),
+      ].filter((line) => line !== null).join('\n');
       await createIncident({
         school_id:    schoolId!,
         reported_by:  profile!.id,
-        learner_code: learnerCode.trim() === '' ? null : learnerCode.trim(),
+        learner_code: isLearner || learnerCode.trim() === '' ? null : learnerCode.trim(),
         occurred_on:  occurredOn,
-        severity,
-        description:  description.trim(),
+        severity:      isLearner ? 'medium' : severity,
+        description:   context,
       });
 
       // Best effort. The report is already saved; failing to send the alert
@@ -78,15 +114,18 @@ export function ReportIncident() {
         text:
           `A safeguarding report has been filed.\n\n` +
           `School:   ${school?.name ?? schoolId}\n` +
-          `Severity: ${severity}\n` +
+          `Type:     ${category}\n` +
+          `Severity: ${isLearner ? 'medium' : severity}\n` +
           `Occurred: ${occurredOn}\n` +
-          `Learner:  ${learnerCode.trim() || 'not specified'}\n\n` +
+          `Lesson:   ${lesson?.title ?? 'not linked'}\n` +
+          `Learner:  ${isLearner ? 'reporter account' : learnerCode.trim() || 'not specified'}\n\n` +
           `Open the dashboard to read it. The detail is deliberately not in this email.`,
       });
       return alert.ok;
     },
     onSuccess: (alerted) => {
-      setLearnerCode(''); setDescription(''); setSeverity('medium');
+      setLearnerCode(''); setDescription(''); setSeverity('medium'); setCategory('');
+      setSubmitted(true);
       queryClient.invalidateQueries({ queryKey: ['incident-count', schoolId] });
       notify(
         alerted ? 'success' : 'warning',
@@ -103,31 +142,64 @@ export function ReportIncident() {
     <div className="space-y-6">
       <div>
         <h1 className="heading-display text-2xl text-gray-900 flex items-center gap-2">
-          <ShieldAlert className="h-6 w-6 text-terracotta-600" aria-hidden="true" />
-          Report a concern
+          <Flag className="h-6 w-6 text-terracotta-600" aria-hidden="true" />
+          {isLearner ? 'Tell us if something feels wrong' : 'Report a concern'}
         </h1>
         <p className="text-sm text-gray-600 mt-2 max-w-2xl">
-          For safeguarding concerns about a learner or the running of your club. This goes
-          straight to ChipuRobo&rsquo;s safeguarding lead.{' '}
-          <strong>If a learner is in immediate danger, contact the authorities first.</strong>
+          {isLearner
+            ? 'You can tell us about something that happened to you or someone else. You will not be in trouble for asking for help.'
+            : 'Tell ChipuRobo’s safeguarding lead about something that may be unsafe or harmful.'}{' '}
+          <strong>If someone is in danger right now, tell a trusted adult nearby or contact the authorities first.</strong>
         </p>
       </div>
 
       <div className="card p-4 bg-warm-50 border-warm-200 flex items-start gap-3">
         <Lock className="h-4 w-4 text-gray-500 mt-0.5 flex-shrink-0" aria-hidden="true" />
         <p className="text-sm text-gray-700 m-0">
-          Once filed, a report can only be read by ChipuRobo&rsquo;s safeguarding lead — not by
-          you, and not by anyone else at your school. That is deliberate: a concern may involve
-          a colleague. Your school has filed{' '}
-          <strong>{filedCount ?? 0}</strong> report{filedCount === 1 ? '' : 's'}.
+          <strong>Your report is private.</strong> Only ChipuRobo&rsquo;s safeguarding team can read it.
+          You and other people at your school cannot open it after it is sent.
+          {maySeeCount && <> Your school has filed <strong>{filedCount ?? 0}</strong> report{filedCount === 1 ? '' : 's'}.</>}
         </p>
       </div>
+
+      {lesson && (
+        <div className="card border-sky-200 bg-sky-50 p-4 text-sm text-sky-950">
+          <strong>Reporting from lesson:</strong> {lesson.title}
+        </div>
+      )}
+
+      {submitted && (
+        <div role="status" className="card max-w-2xl border-emerald-300 bg-emerald-50 p-5 text-emerald-950">
+          <div className="flex items-start gap-3">
+            <CheckCircle2 className="mt-0.5 h-6 w-6 shrink-0 text-emerald-700" aria-hidden="true" />
+            <div>
+              <h2 className="text-lg font-bold">Your report has been sent</h2>
+              <p className="mt-1 text-sm">Thank you for speaking up. The safeguarding team will look at it.</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <form
         className="card p-6 space-y-5 max-w-2xl"
         onSubmit={(e) => { e.preventDefault(); if (canSubmit) submit.mutate(); }}
       >
-        <div>
+        <fieldset>
+          <legend className="label">What are you worried about?</legend>
+          <div className="mt-2 grid gap-3 sm:grid-cols-2">
+            {CONCERN_TYPES.map((type) => (
+              <label key={type.value} className={`cursor-pointer rounded-xl border-2 p-4 ${category === type.value ? 'border-terracotta-500 bg-terracotta-50' : 'border-warm-200 bg-white'}`}>
+                <span className="flex items-start gap-3">
+                  <input type="radio" name="concern-type" value={type.value} checked={category === type.value}
+                    onChange={() => { setCategory(type.value); setSubmitted(false); }} className="mt-1" />
+                  <span><strong className="block text-sm text-gray-900">{type.label}</strong><span className="mt-1 block text-xs text-gray-600">{type.hint}</span></span>
+                </span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        {!isLearner && <div>
           <label htmlFor="learner-code" className="label">Learner code (optional)</label>
           <input
             id="learner-code"
@@ -146,9 +218,9 @@ export function ReportIncident() {
               That is not a participant code. It should look like LRN-000123.
             </p>
           )}
-        </div>
+        </div>}
 
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className={`grid gap-4 ${isLearner ? '' : 'sm:grid-cols-2'}`}>
           <div>
             <label htmlFor="occurred-on" className="label">When did it happen?</label>
             <input
@@ -158,7 +230,7 @@ export function ReportIncident() {
               onChange={(e) => setOccurredOn(e.target.value)}
             />
           </div>
-          <div>
+          {!isLearner && <div>
             <label htmlFor="severity" className="label">How urgent is it?</label>
             <select
               id="severity" className="input" value={severity}
@@ -171,27 +243,28 @@ export function ReportIncident() {
             <p className="text-xs text-gray-500 mt-1">
               {SEVERITIES.find((s) => s.value === severity)?.hint}
             </p>
-          </div>
+          </div>}
         </div>
 
         <div>
-          <label htmlFor="description" className="label">What happened?</label>
+          <label htmlFor="description" className="label">Tell us what happened</label>
           <textarea
             id="description" className="input min-h-[9rem]" value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="What you saw or were told, when, and who else was present. Use participant codes rather than names."
+            placeholder={isLearner ? 'Write what happened and anything that would help us understand.' : 'What you saw or were told, when, and who else was present. Use participant codes rather than names.'}
+            onFocus={() => setSubmitted(false)}
           />
           <p className="text-xs text-gray-500 mt-1">
             {description.trim().length < MIN_DESCRIPTION
               ? `At least ${MIN_DESCRIPTION} characters — ${MIN_DESCRIPTION - description.trim().length} to go.`
-              : 'Please avoid learners’ names. Use their participant code.'}
+              : isLearner ? 'That is enough detail to send.' : 'Please avoid learners’ names. Use their participant code.'}
           </p>
           {tooShort && <p className="sr-only">Description is too short.</p>}
         </div>
 
         <button type="submit" className="btn-cta" disabled={!canSubmit || submit.isPending}>
           <Send className="mr-2 h-4 w-4" aria-hidden="true" />
-          {submit.isPending ? 'Filing…' : 'File report'}
+          {submit.isPending ? 'Sending…' : isLearner ? 'Send my report' : 'Send report'}
         </button>
       </form>
     </div>

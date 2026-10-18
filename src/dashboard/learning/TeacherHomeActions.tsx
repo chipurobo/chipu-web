@@ -7,6 +7,7 @@ import { learningLevels, type LearningLevel } from '../../lib/learningFramework'
 import { hasUsableLearningPlan } from '../../lib/learningRecords';
 import type { Lesson } from '../../lib/database.types';
 import { AssignLessonForm } from './AssignLessonForm';
+import { LessonSuitabilityTags } from './LessonSuitabilityTags';
 
 export function TeacherHomeActions() {
   const { school } = useAuth();
@@ -67,6 +68,7 @@ export function TeacherHomeActions() {
                 </span>
                 <h3>{lesson.title}</h3>
                 <p className="text-sm text-gray-600">{lesson.description}</p>
+                <LessonSuitabilityTags lesson={lesson} />
                 <div className="flex gap-3 flex-wrap">
                   <button className="btn-primary" onClick={() => setAssignFor(lesson)}>
                     Assign lesson

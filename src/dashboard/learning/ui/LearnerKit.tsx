@@ -166,9 +166,12 @@ export function Confetti({ show }: { show: boolean }) {
 
 export function Cheer({ title, body, emoji = '🎉' }: { title: string; body?: string; emoji?: string }) {
   return (
-    <div role="status" className="learner-card flex items-center gap-4 border-emerald-300 bg-gradient-to-r from-emerald-50 to-lime-50 p-4">
+    <div role="status" aria-live="polite" className="learner-card flex items-center gap-4 border-emerald-300 bg-gradient-to-r from-emerald-50 to-lime-50 p-4">
       <Mascot size={56} mood="cheer" />
-      <div><p className="text-lg font-extrabold text-emerald-900">{title} <span aria-hidden="true">{emoji}</span></p>{body && <p className="sr-only">{body}</p>}</div>
+      <div>
+        <p className="text-lg font-extrabold text-emerald-900">{title} <span aria-hidden="true">{emoji}</span></p>
+        {body && <p className="mt-1 text-sm font-semibold text-emerald-950">{body}</p>}
+      </div>
     </div>
   );
 }

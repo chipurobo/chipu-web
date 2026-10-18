@@ -13,11 +13,13 @@ import { AssignLessonForm } from '../learning/AssignLessonForm';
 import { learningLevels, learningPathways } from '../../lib/learningFramework';
 import { hasUsableLearningPlan } from '../../lib/learningRecords';
 import { levelLook } from '../../lib/learnerCopy';
-import type { Lesson } from '../../lib/database.types';
+import type { Lesson, LearningNeed } from '../../lib/database.types';
 import { SkeletonCards } from '../components/Skeletons';
 import { safeHttpUrl } from '../../lib/safeUrl';
 import { LevelFilter } from '../components/LevelFilter';
 import { matchesLevel, LEVEL_LABEL, type LevelChoice } from '../components/levels';
+import { LessonSuitabilityTags } from '../learning/LessonSuitabilityTags';
+import { LEARNING_NEEDS } from '../learning/lessonSuitability';
 
 // =============================================================
 // /dashboard/school/lessons
@@ -63,6 +65,9 @@ export function SchoolLessons() {
   const [assignFor, setAssignFor] = useState<Lesson | null>(null);
   const [level, setLevel] = useState<LevelChoice>('all');
   const [learnLevel, setLearnLevel] = useState<'all' | 'beginner' | 'intermediate' | 'expert'>('all');
+  const [learnerAge, setLearnerAge] = useState('all');
+  const [learnerGrade, setLearnerGrade] = useState('all');
+  const [learningNeed, setLearningNeed] = useState<'all' | LearningNeed>('all');
   const { school, profile } = useAuth();
   const schoolId = school?.id ?? null;
 
@@ -120,6 +125,16 @@ export function SchoolLessons() {
     ?? completionsQuery.error?.message
     ?? null;
 
+  const visibleLessons = lessons?.filter((lesson) => {
+    if (!isTeacher) return matchesLevel(lesson.level, level);
+    const age = learnerAge === 'all' ? null : Number(learnerAge);
+    const grade = learnerGrade === 'all' ? null : Number(learnerGrade);
+    return (learnLevel === 'all' || lesson.learning_plan?.level === learnLevel)
+      && (age === null || ((lesson.minimum_age === null || lesson.minimum_age <= age) && (lesson.maximum_age === null || lesson.maximum_age >= age)))
+      && (grade === null || ((lesson.minimum_grade === null || lesson.minimum_grade <= grade) && (lesson.maximum_grade === null || lesson.maximum_grade >= grade)))
+      && (learningNeed === 'all' || (lesson.learning_needs ?? []).includes(learningNeed));
+  });
+
   return (
     <div className="px-4 sm:px-6 lg:px-10 py-8 space-y-6">
       <div>
@@ -130,6 +145,7 @@ export function SchoolLessons() {
         <p className="text-sm text-gray-600 mt-1 max-w-2xl">
           {isTeacher ? 'Pick a lesson and assign it to your learners.' : 'Assign lessons to your students, review their work and record evidence of learning.'}
         </p>
+        {isTeacher && <p className="mt-1 text-xs font-medium text-teal-800">Only reviewed and approved lessons are shown.</p>}
         {activeStudentCount > 0 && (
           <p className="text-xs text-gray-500 mt-1">
             {activeStudentCount} active student{activeStudentCount === 1 ? '' : 's'} on the roster.
@@ -140,8 +156,9 @@ export function SchoolLessons() {
       {assignFor && <AssignLessonForm key={assignFor.id} lesson={assignFor} onClose={() => setAssignFor(null)} />}
 
       {isTeacher ? (
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <fieldset className="flex flex-wrap gap-2">
+        <div className="card space-y-4 p-4" aria-label="Curate lessons">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <fieldset className="flex flex-wrap gap-2">
             <legend className="sr-only">Learning level</legend>
             {([{ id: 'all', emoji: '✨', title: 'All' }, ...learningLevels.map((item) => ({ id: item.id, emoji: levelLook[item.id].emoji, title: item.title }))]).map((option) => (
               <label key={option.id} className={`inline-flex cursor-pointer items-center gap-1 rounded-full border px-3 py-1 text-sm ${learnLevel === option.id ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-700'}`}>
@@ -149,8 +166,29 @@ export function SchoolLessons() {
                 <span aria-hidden="true">{option.emoji}</span>{option.title}
               </label>
             ))}
-          </fieldset>
-          <label className="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" checked={showAll} onChange={(event) => setShowAll(event.target.checked)} />Show the full curriculum</label>
+            </fieldset>
+            <label className="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" checked={showAll} onChange={(event) => setShowAll(event.target.checked)} />Show the full curriculum</label>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <label className="text-sm text-gray-700">Learner age
+              <select className="field-input mt-1" value={learnerAge} onChange={(event) => setLearnerAge(event.target.value)}>
+                <option value="all">All ages</option>
+                {Array.from({ length: 22 }, (_, index) => index + 4).map((age) => <option key={age} value={age}>{age} years</option>)}
+              </select>
+            </label>
+            <label className="text-sm text-gray-700">Grade
+              <select className="field-input mt-1" value={learnerGrade} onChange={(event) => setLearnerGrade(event.target.value)}>
+                <option value="all">All grades</option>
+                {Array.from({ length: 12 }, (_, index) => index + 1).map((grade) => <option key={grade} value={grade}>Grade {grade}</option>)}
+              </select>
+            </label>
+            <label className="text-sm text-gray-700">Learning need
+              <select className="field-input mt-1" value={learningNeed} onChange={(event) => setLearningNeed(event.target.value as 'all' | LearningNeed)}>
+                <option value="all">All learning needs</option>
+                {LEARNING_NEEDS.map((need) => <option key={need.id} value={need.id}>{need.label}</option>)}
+              </select>
+            </label>
+          </div>
         </div>
       ) : (
       <LevelFilter
@@ -172,19 +210,19 @@ export function SchoolLessons() {
 
       {!lessons && <SkeletonCards count={3} label="Loading lessons" />}
 
-      {lessons && lessons.length === 0 && (
+      {visibleLessons && visibleLessons.length === 0 && (
         <div className="card p-8 text-center">
           <BookOpen className="h-7 w-7 text-gray-300 mx-auto mb-2" aria-hidden="true" />
-          <p className="text-sm text-gray-600">No lessons yet.</p>
+          <p className="text-sm text-gray-600">{lessons?.length ? 'No lessons match these filters.' : 'No lessons yet.'}</p>
           <p className="text-xs text-gray-500 mt-1">
-            No lessons published yet. Once ChipuRobo adds them you can request a workshop on any of them.
+            {lessons?.length ? 'Try a different age, grade, competency level or learning need.' : 'No lessons published yet. Once ChipuRobo adds them you can request a workshop on any of them.'}
           </p>
         </div>
       )}
 
-      {lessons && lessons.length > 0 && (
+      {visibleLessons && visibleLessons.length > 0 && (
         <div className="grid sm:grid-cols-2 gap-4">
-          {lessons.filter((l) => isTeacher ? (learnLevel === 'all' || l.learning_plan?.level === learnLevel) : matchesLevel(l.level, level)).map((s) => {
+          {visibleLessons.map((s) => {
             const Icon = STAGE_KIND_ICON[s.kind];
             const badge = STAGE_KIND_BADGE[s.kind];
             const passed = passedByLesson.get(s.id) ?? 0;
@@ -219,6 +257,8 @@ export function SchoolLessons() {
                 {s.learning_plan && !isTeacher && <p className="text-sm text-gray-600 mb-2">
                   {learningPathways.find((path) => path.id === s.learning_plan?.pathwayId)?.title} · {s.learning_plan.competencyIds.length} competencies
                 </p>}
+
+                {isTeacher && <div className="mb-3"><LessonSuitabilityTags lesson={s} /></div>}
 
                 {/* The resource is the lesson, for a self-paced track. Rendered
                     through safeHttpUrl so a non-http(s) value is refused rather
