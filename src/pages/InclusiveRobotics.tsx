@@ -6,22 +6,6 @@ import {
   MonitorPlay, Wrench, Mail, Copy, Check, ChevronDown, ChevronUp, ExternalLink,
 } from 'lucide-react';
 
-// =============================================================
-// Inclusive Robotics — ChipuRobo's schools robotics competition.
-//
-// This page describes the COMPETITION and nothing else. Outreach,
-// bootcamps, teacher training and the partners who help deliver them
-// belong on /impact — mixing them in here is what previously made one
-// competition read like a menu of three separate programmes.
-//
-// Everything below mirrors how the competition is actually modelled in
-// the dashboard (supabase/migrations/20260810000006_competitions.sql):
-// one cycle per year with a draft → open → closed → judged lifecycle,
-// schools entered into a cycle, one team project per school as its
-// entry, and that project moving draft → submitted → judged with a
-// score out of 100.
-// =============================================================
-
 const TRACKS = [
   {
     icon: Cog,
@@ -42,7 +26,7 @@ const TRACKS = [
     focus: 'Coding · AI · 3D design and print',
     body:
       'Older learners program their builds, apply introductory AI, and design and print their own ' +
-      'parts — the skills a competition entry is judged on.',
+      'parts to improve their soccer robots throughout the season.',
   },
 ];
 
@@ -50,116 +34,105 @@ const STEPS = [
   {
     icon: School,
     step: '01',
-    title: 'A school is entered',
+    title: 'Form your team',
     body:
-      'ChipuRobo enters schools into the year\'s cycle. Entry is arranged directly with the school, ' +
-      'so a club is set up and supported before the work begins.',
+      'Public, private and special schools are welcome, including teams beginning robotics for ' +
+      'the first time. Register your interest and form a school club.',
   },
   {
     icon: BookOpen,
     step: '02',
-    title: 'Learners work the curriculum',
+    title: 'Build your robot',
     body:
-      'Close to two hundred lessons across the two tracks, each linking straight to the resource a ' +
-      'teacher runs it from. A school can book a workshop on any lesson, in person or online.',
+      'Learners assemble and code reusable soccer robots, supported by teacher training, ' +
+      'accessible learning resources and locally fabricated replacement parts.',
   },
   {
     icon: Code,
     step: '03',
-    title: 'The team builds its entry',
+    title: 'Practise and play',
     body:
-      'Each school builds one team project per cycle — the thing it is competing with. Learners are ' +
-      'named to the team with their roles, and the build is documented as it goes.',
+      'Practise together and play friendly matches. Learners develop engineering, coding and ' +
+      'teamwork skills while improving their robots for the pitch.',
   },
   {
     icon: Trophy,
     step: '04',
-    title: 'Entries are judged',
+    title: 'Qualifiers and September finals',
     body:
-      'A school submits when it is ready. Entries are scored out of 100 with written feedback, and ' +
-      'presented at the National Showcase.',
+      'Compete in qualifiers and work towards the September finals. Returning teams can mentor ' +
+      'new learners and build more advanced skills each season.',
   },
 ];
 
-// How a school takes part. Beginner is what the registration fee buys; the two
-// levels above it are support a school asks for when it wants it, and are not
-// required to compete.
-//
-// Prices are exactly as given: KES 2,000 to register, KES 1,000 per hour for
-// virtual assistance. Where no price was given — physical visits, project
-// support — the page says how it is arranged rather than inventing a figure.
 const LEVELS = [
   {
-    level: 'Beginner',
-    tagline: 'Included with registration',
-    price: 'KES 2,000',
+    level: 'School registration',
+    tagline: 'Join the robotics soccer season',
+    price: 'KES 5,000',
     priceNote: 'One-off, per school',
     icon: Trophy,
     accent: 'border-teal-300',
     body:
-      'Register, work the curriculum, submit your project and be judged. This runs to the end of ' +
-      'the year, and it is everything a school needs to compete.',
+      'Register your school for a season of building, coding, practice and robotics soccer. ' +
+      'The team will confirm fee inclusions and equipment arrangements before payment.',
     points: [
-      'Your school entered into the cycle',
-      'The dashboard, with the full curriculum on both tracks',
-      'Submit your team project and have it judged',
+      'Public, private and special schools welcome',
+      'Accessible learning and teacher support',
+      'Friendly matches, qualifiers and September finals',
     ],
   },
   {
-    level: 'Intermediate',
-    tagline: 'Support when you want it',
-    price: 'KES 1,000',
-    priceNote: 'Per hour, virtual assistance',
+    level: 'Individual registration',
+    tagline: 'Express your interest in taking part',
+    price: 'KES 2,000',
+    priceNote: 'Per individual',
     icon: MonitorPlay,
     accent: 'border-indigo-300',
     body:
-      'Ask for help from the dashboard, and request parts from it too. Virtual assistance walks a ' +
-      'teacher through the lesson plans — it covers the lesson plans and whatever further help the ' +
-      'teacher needs with them.',
+      'Learners with and without disabilities are welcome. Contact ChipuRobo to discuss ' +
+      'participation arrangements, accessibility needs and equipment before payment.',
     points: [
-      'Request help on any lesson, from the dashboard',
-      'Request parts and kits from the dashboard',
-      'Virtual assistance at KES 1,000 per hour',
-      'In-person visits arranged directly once you ask',
+      'Build practical engineering and coding skills',
+      'Learn and practise together',
+      'Confirm participation arrangements with the team',
     ],
   },
   {
-    level: 'Advanced',
-    tagline: 'For schools building something bigger',
+    level: 'Partnerships and support',
+    tagline: 'Help make participation accessible',
     price: 'Arranged',
-    priceNote: 'Quoted against the project',
+    priceNote: 'Discuss with ChipuRobo',
     icon: Wrench,
     accent: 'border-amber-300',
     body:
-      'When a school needs help completing its project, the ChipuRobo team works with the team ' +
-      'through to a finished build.',
+      'Partner with ChipuRobo to support accessible equipment, teacher training, school ' +
+      'participation and the September finals.',
     points: [
-      'Hands-on technical support',
-      'Carried through to a completed project',
-      'Arranged case by case',
+      'Accessible equipment and learning resources',
+      'Teacher development and local repairs',
+      'School participation and September finals',
     ],
   },
 ];
 
-// The waitlist is by email — this is the template a school sends. Folded in
-// from the old /register-2026 page so the competition lives on one page.
-//
-// Joining costs nothing. The fee is still stated here, and on the page, because
-// a school should know what registration will cost before it puts its name
-// down — a waitlist that hides the price only moves the surprise later.
-const EMAIL_TEMPLATE = `Subject: Waitlist – Inclusive Robotics 2026
+const EMAIL_TEMPLATE = `Subject: Interest - Inclusive Robotics Programme
 
 Dear ChipuRobo Team,
 
-I would like to join the waitlist for Inclusive Robotics, the 2026 schools
-competition cycle. I understand there is nothing to pay to join,
-and that registration is KES 2,000 per school when the cycle opens, covering
-entry, dashboard access, the full curriculum and judging.
+I would like to register interest in the next Inclusive Robotics soccer season,
+leading to September finals. Expressing interest is free. I understand that
+registration is KES 2,000 per individual or KES 5,000 per school.
+Please confirm the season year, fee inclusions and equipment arrangements
+before payment.
 
-SCHOOL DETAILS:
-• School Name: [Enter your school name]
+PARTICIPATION:
+[School / Individual / Partner]
+
+SCHOOL DETAILS (if applicable):
+• School Name: [Enter your school name, or N/A for an individual]
 • County: [Enter your county]
-• Public or private? [Enter one]
+• School type: [Public / Private / Special]
 • Student Enrollment: [Number of students]
 
 WHICH TRACK:
@@ -173,14 +146,14 @@ CONTACT INFORMATION:
 • Email: [Your email address]
 • Phone: [Your phone number]
 
-SUPPORT WE MAY WANT (optional — not required to compete):
-☐ Virtual assistance with the lesson plans (KES 1,000 per hour)
-☐ An in-person visit (arranged directly with your team)
-☐ Help completing our project
+SUPPORT WE WOULD LIKE TO DISCUSS:
+☐ Teacher training and accessible learning resources
+☐ Equipment, local fabrication and repairs
+☐ Support for school participation or the September finals
 
 ACCESSIBILITY:
-[Tell us about learners with hearing or visual impairments, and any
-adaptations that would help them take part]
+[Tell us about accessibility needs and any adaptations that would help
+learners participate meaningfully]
 
 ADDITIONAL INFORMATION:
 [Current technology at the school, or any questions]
@@ -192,10 +165,10 @@ Best regards,
 const WAITLIST_TO = 'chipurobo@gmail.com';
 
 const ENTRY_PARTS = [
-  { icon: FileText, label: 'Title and description', hint: 'What the team built, and the problem it set out to solve.' },
-  { icon: GitBranch, label: 'Code repository', hint: 'The project\'s source, so judges can see the work itself.' },
-  { icon: Video, label: 'Video', hint: 'The build demonstrated and explained by the team.' },
-  { icon: Users, label: 'The team', hint: 'Which learners took part, and the role each of them held.' },
+  { icon: FileText, label: 'Accessible resources', hint: 'Accessible instructions, tactile resources and visual learning materials developed with learners and teachers.' },
+  { icon: GitBranch, label: 'Adapted controls', hint: 'Controls that support meaningful participation for learners with and without disabilities.' },
+  { icon: Video, label: 'Practice and teamwork', hint: 'Regular club activities and friendly matches help learners improve together.' },
+  { icon: Users, label: 'Reusable robots', hint: 'Reusable electronics, locally fabricated structures and replaceable parts keep schools playing across seasons.' },
 ];
 
 const InclusiveRobotics = () => {
@@ -223,26 +196,27 @@ const InclusiveRobotics = () => {
     <section className="relative overflow-hidden bg-warm-50 border-b border-warm-200">
       <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 text-center">
         <p className="font-pixel text-[0.55rem] sm:text-[0.65rem] tracking-[0.25em] text-terracotta-600 mb-5 uppercase">
-          // the competition
+          // the programme
         </p>
         <h1 className="heading-display text-3xl md:text-4xl lg:text-5xl text-gray-900 mb-6 leading-[1.2]">
           Inclusive Robotics
           <br />
-          <span className="text-teal-600">One cycle a year. Two tracks. One team project per school.</span>
+          <span className="text-teal-600">Build. Code. Play. Belong.</span>
         </h1>
         <p className="text-base sm:text-lg text-gray-700 max-w-3xl mx-auto leading-relaxed mb-8">
-          Schools build inclusive robotics projects through the curriculum and present them at the
-          National Showcase. One cycle runs each year.
+          Learners with and without disabilities build, code and compete together through robotics
+          soccer. Public, private and special schools are welcome for a season leading to September
+          finals, including teams beginning robotics for the first time.
         </p>
 
         <div className="inline-flex items-center bg-teal-50 border border-teal-200 px-4 py-1.5 rounded-full text-teal-700 text-sm font-medium mb-8">
           <Trophy className="h-4 w-4 mr-2" aria-hidden="true" />
-          The 2026 cycle — waitlist open
+          Next season - register your interest
         </div>
 
         <div className="flex flex-wrap gap-3 justify-center">
           <a href="#register" className="btn-cta">
-            Join the Waitlist
+            Register Your School's Interest
             <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
           </a>
           <a
@@ -254,7 +228,7 @@ const InclusiveRobotics = () => {
         </div>
 
         <p className="text-sm text-gray-500 mt-5">
-          Free to join. Registration is KES 2,000 per school when the cycle opens.
+          Expressing interest is free. Registration is KES 2,000 per individual or KES 5,000 per school.
         </p>
       </div>
     </section>
@@ -265,9 +239,10 @@ const InclusiveRobotics = () => {
     <section className="py-16 sm:py-20">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h2 className="heading-display text-2xl md:text-3xl text-gray-900 mb-3">How the competition works</h2>
+          <h2 className="heading-display text-2xl md:text-3xl text-gray-900 mb-3">Your School's Journey to September</h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Four steps, from a school being entered to its project being judged.
+            Form your team. Build your robot. Practise together. Play friendly matches.
+            Compete in qualifiers and work towards the September finals.
           </p>
         </div>
 
@@ -328,15 +303,12 @@ const InclusiveRobotics = () => {
       </div>
     </section>
 
-    {/* ============================================================
-        What an entry is
-    ============================================================ */}
     <section className="py-16 sm:py-20">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h2 className="heading-display text-2xl md:text-3xl text-gray-900 mb-3">What an entry is</h2>
+          <h2 className="heading-display text-2xl md:text-3xl text-gray-900 mb-3">Inclusive by Design</h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            One team project per school, per cycle. This is what a school submits.
+            Accessible learning and reusable equipment help every learner take part meaningfully.
           </p>
         </div>
 
@@ -357,12 +329,12 @@ const InclusiveRobotics = () => {
         <div className="card p-6 mt-8 bg-warm-50">
           <h3 className="text-base font-semibold text-gray-900 mb-3 flex items-center gap-2">
             <CheckCircle className="h-5 w-5 text-teal-600" aria-hidden="true" />
-            Judging
+            A season to grow through
           </h3>
           <p className="text-sm text-gray-600 leading-relaxed">
-            A team drafts its entry, submits it when ready, and it is then judged — scored out of 100
-            with written feedback. Judged entries are presented at the National Showcase. Learners and
-            teachers earn certificates for the work they complete along the way.
+            School practice, friendly matches and qualifiers give teams opportunities to improve
+            before the September finals. Keep building on the same equipment across seasons,
+            with teacher support and locally fabricated replacement parts.
           </p>
         </div>
       </div>
@@ -376,7 +348,7 @@ const InclusiveRobotics = () => {
         <div className="text-center mb-10">
           <h2 className="heading-display text-2xl md:text-3xl text-gray-900 mb-3">Recognition</h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            The competition rewards the whole year's work, not only the finished entry.
+            Celebrate learning, teamwork and progress throughout the soccer season.
           </p>
         </div>
 
@@ -397,37 +369,34 @@ const InclusiveRobotics = () => {
           </div>
           <div className="card p-6 text-center">
             <Presentation className="h-7 w-7 text-indigo-600 mx-auto mb-3" aria-hidden="true" />
-            <h3 className="text-base font-semibold text-gray-900 mb-2">National Showcase</h3>
+            <h3 className="text-base font-semibold text-gray-900 mb-2">September Finals</h3>
             <p className="text-sm text-gray-600">
-              Judged entries are presented and celebrated at the close of the cycle.
+              Teams work towards the September finals through practice, friendly matches and qualifiers.
             </p>
           </div>
         </div>
       </div>
     </section>
 
-    {/* ============================================================
-        Taking part — registration and the three levels
-    ============================================================ */}
     <section id="taking-part" className="scroll-mt-20 py-16 sm:py-20">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-10">
           <h2 className="heading-display text-2xl md:text-3xl text-gray-900 mb-3">Taking part</h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Nothing is payable to join the waitlist. Registration is a one-off fee and covers
-            everything needed to compete. The two levels above it are support a school asks for
-            when it wants it — neither is required to enter.
+            Expressing interest is free. Registration is KES 2,000 per individual or KES 5,000 per
+            school. Fee inclusions, equipment arrangements and the season year will be confirmed
+            by the team before payment.
           </p>
         </div>
 
         {/* Registration price, stated plainly */}
         <div className="card p-6 sm:p-8 mb-10 text-center bg-warm-50 border-teal-200">
-          <p className="text-sm font-medium text-gray-600 mb-2">Registration for the 2026 cycle</p>
-          <p className="font-pixel text-4xl sm:text-5xl text-gray-900 mb-2">KES 2,000</p>
+          <p className="text-sm font-medium text-gray-600 mb-2">Programme registration</p>
+          <p className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">KES 2,000 per individual</p>
+          <p className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">KES 5,000 per school</p>
           <p className="text-sm text-gray-600">
-            One-off, per school. Covers entry, the dashboard and the full curriculum, through to
-            judging at the end of the year. Payable when the cycle opens — joining the waitlist
-            costs nothing.
+            Register your interest without payment. Do not assume robots or kits are included:
+            please confirm what the registration fee covers and any equipment costs with ChipuRobo.
           </p>
         </div>
 
@@ -464,30 +433,23 @@ const InclusiveRobotics = () => {
         </div>
 
         <p className="text-xs text-gray-500 text-center mt-6 max-w-2xl mx-auto">
-          Help and parts are requested from the dashboard once a school is registered. In-person
-          visits have no fixed price — the ChipuRobo team gets in touch to arrange one after you ask.
+          Ask the team about teacher training, accessible resources, equipment and local repairs.
+          Any additional support and costs will be agreed directly before payment.
         </p>
       </div>
     </section>
 
-    {/* ============================================================
-        Waitlist — everything the old /register-2026 page carried, on the
-        one page the competition lives on.
-
-        The anchor stays #register: the home page, the /impact CTA and the
-        /register-2026 redirect all point at it, and renaming it would break
-        every one of those links plus anything already shared.
-    ============================================================ */}
     <section id="register" className="scroll-mt-20 relative overflow-hidden bg-gray-900 py-16 sm:py-20 scanlines">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(20,184,166,0.12),transparent_70%)]" />
       <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-white">
         <div className="text-center mb-10">
           <Trophy className="h-10 w-10 text-teal-400 mx-auto mb-4" aria-hidden="true" />
-          <h2 className="heading-display text-2xl sm:text-3xl text-white mb-3">Join the waitlist for the 2026 cycle</h2>
+          <h2 className="heading-display text-2xl sm:text-3xl text-white mb-3">Bring Inclusive Robotics to Your School</h2>
           <p className="text-lg text-gray-300 max-w-2xl mx-auto">
-            Joining the waitlist is <strong className="text-white">free</strong>. Registration is{' '}
-            <strong className="text-white">KES 2,000</strong> per school when the cycle opens, and
-            covers entry, the dashboard, the curriculum and judging.
+            Register your interest for the next robotics soccer season. Expressing interest is{' '}
+            <strong className="text-white">free</strong>. Programme registration is{' '}
+            <strong className="text-white">KES 2,000 per individual or KES 5,000 per school</strong>.
+            Fee inclusions and equipment arrangements will be confirmed before payment.
           </p>
         </div>
 
@@ -495,12 +457,12 @@ const InclusiveRobotics = () => {
         <div className="bg-white/5 border border-white/10 rounded-xl p-6 text-center mb-6">
           <p className="text-sm text-gray-300 mb-2 inline-flex items-center gap-2">
             <Mail className="h-4 w-4 text-teal-400" aria-hidden="true" />
-            Send your waitlist request to
+            Send your registration interest to
           </p>
           <p className="font-pixel text-lg sm:text-xl text-teal-300 break-all">{WAITLIST_TO}</p>
           <p className="text-sm text-gray-400 mt-3">
-            We reply within 48 hours to confirm your place on the waitlist, and get in touch
-            again the moment registration opens.
+            The team will follow up about participation, accessibility needs, the confirmed season
+            year and registration arrangements.
           </p>
         </div>
 
