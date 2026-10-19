@@ -8,7 +8,7 @@ import {
   School,
   Globe,
   Heart,
-  Leaf,
+  Wrench,
   ArrowRight,
   Rocket,
   Recycle,
@@ -65,52 +65,52 @@ const Home = () => {
 
   const useCases = [
     {
+      icon: Heart,
+      title: 'Inclusive by Design',
+      description:
+        'We work with learners and teachers to develop accessible instructions, tactile resources, visual learning materials and adapted controls that support meaningful participation.',
+      impact: 'Build, code and play together.',
+    },
+    {
       icon: Recycle,
-      title: 'Sustainable Innovation & Manufacturing',
+      title: 'Affordable to Keep Playing',
       description:
-        'KSEF teams built PET recycling machines that supply filament for ADC bootcamp prototypes.',
-      impact: '13 machines deployed plus youth micro-enterprises.',
+        'Reusable electronics, locally fabricated structures and replaceable parts help schools maintain their robots and welcome new learners each season.',
+      impact: 'Keep learning with the same equipment.',
     },
     {
-      icon: Brain,
-      title: 'Inclusive & Accessible AI Education',
+      icon: Trophy,
+      title: 'A Season to Grow Through',
       description:
-        'Student projects delivered Braille kits, KSL videos, and neurodiverse-friendly AI lessons.',
-      impact: 'Every learner can engage with robotics.',
-    },
-    {
-      icon: Robot,
-      title: 'Real-World Automation Applications',
-      description:
-        'Students now design robots that sort materials with computer vision and solve campus tasks.',
-      impact: 'Class concepts move straight into automation.',
+        'School practice, friendly matches and qualifiers give teams opportunities to improve before the September finals.',
+      impact: 'Grow from first build to the finals.',
     },
   ];
 
   const pillars = [
     {
-      icon: Globe,
-      title: 'African AI Solutions',
+      icon: School,
+      title: 'School Clubs',
       description:
-        'Develop AI solutions through sustainable digital fabrication, inclusive learning systems, and locally-relevant automation technologies.',
+        'Regular learning and practice throughout the season.',
+    },
+    {
+      icon: Users,
+      title: 'Teacher Support',
+      description:
+        'Training and resources to facilitate activities independently.',
+    },
+    {
+      icon: Wrench,
+      title: 'Local Fabrication and Repairs',
+      description:
+        'Parts produced and maintained closer to schools.',
     },
     {
       icon: Robot,
-      title: 'Local Innovation',
+      title: 'Annual Progression',
       description:
-        'Create AI-powered robotics solutions using locally available resources and addressing regional needs.',
-    },
-    {
-      icon: Heart,
-      title: 'Community Impact',
-      description:
-        'Apply AI to solve real community challenges while preserving and enhancing African cultural values.',
-    },
-    {
-      icon: Leaf,
-      title: 'Sustainable Development',
-      description:
-        'Leverage AI for sustainable development goals while promoting environmental consciousness.',
+        'Returning teams, learner mentorship and increasingly advanced skills.',
     },
   ];
 
@@ -122,14 +122,12 @@ const Home = () => {
         <div className="code-bg absolute inset-0 opacity-40 " aria-hidden="true" />
 
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-8 text-center">
-          {/* The headline is the competition itself. This pill carries what the
-     headline cannot: which cycle, and that it is open right now. */}
           <Link
             to="/competition#register"
             className="inline-flex items-center gap-2 bg-teal-50 border border-teal-200 hover:border-teal-400 px-4 py-1.5 rounded-full text-teal-800 text-sm font-medium mb-8 transition-colors"
           >
             <Trophy className="h-4 w-4" aria-hidden="true" />
-            Inclusive Robotics 2026 — the waitlist is open
+            Inclusive Robotics Programme - register your interest
             <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
           </Link>
 
@@ -142,23 +140,25 @@ const Home = () => {
           </h1>
 
           <p className="text-base sm:text-lg text-gray-700 max-w-3xl mx-auto mb-10 leading-relaxed">
-            Empowering 4 million youth across Africa by 2030 through hands-on AI, robotics, and
-            sustainable innovation — CBC aligned, inclusive, and locally fabricated. Inclusive
-            Robotics, our schools competition, is where it gets built.
+            Our Inclusive Robotics Programme brings learners with and without disabilities together
+            to build, code and compete through robotics soccer. Open to public, private and special
+            schools, the programme combines accessible learning, affordable reusable robots and a
+            school season leading to September finals.
           </p>
 
           <div className="flex flex-wrap gap-5 justify-center mb-16">
             <Link to="/competition#register" className="btn-cta">
-              Join the Waitlist
+              Register Your School's Interest
               <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
             </Link>
             <Link to="/competition" className="btn-outline">
-              ◇ How the competition works
+              Explore the Programme
             </Link>
           </div>
 
           <p className="text-sm text-gray-500 -mt-10 mb-16">
-            Free to join. Registration is KES 2,000 per school when the cycle opens.
+            Expressing interest is free. Programme registration: KES 2,000 per individual or
+            KES 5,000 per school. Equipment arrangements will be confirmed separately.
           </p>
         </div>
 
@@ -228,9 +228,9 @@ const Home = () => {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-10">
             {[
               { icon: Users, value: '800+', label: 'Learners Reached in 2025' },
-              { icon: Code, value: '66', label: 'Active Code Clubs' },
-              { icon: Recycle, value: '13', label: 'PET Recycling Machines' },
-              { icon: School, value: '3', label: 'National Bootcamps' },
+              { icon: Code, value: '66', label: 'Code Clubs in 2025' },
+              { icon: Recycle, value: '13', label: 'PET Recycling Machines in 2025' },
+              { icon: School, value: '3', label: 'National Bootcamps in 2025' },
             ].map((stat, i) => (
               <div key={i} className="text-center">
                 <stat.icon className="h-7 w-7 text-emerald-400 mx-auto mb-3" aria-hidden="true" />
@@ -247,13 +247,15 @@ const Home = () => {
         <div className="container relative">
           <div className="text-center mb-16">
             <h2 className="heading-display text-3xl sm:text-4xl md:text-5xl text-gray-900 mb-4">
-              Building Better <span className="text-gray-400 ">Learning Workflows</span>
-              <br />
-              for Robotics
+              Build. Code. Play. <span className="text-gray-400">Belong.</span>
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Students publish open-source hardware, software, and data — enabling others to
-              rebuild, remix, and scale innovation across Africa.
+              From assembling their first robot to representing their school on the pitch, learners
+              develop practical engineering, coding and teamwork skills through robotics soccer.
+            </p>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto mt-4">
+              Schools build on the same equipment across seasons, supported by teacher training,
+              accessible learning resources and locally fabricated replacement parts.
             </p>
           </div>
 
@@ -308,13 +310,27 @@ const Home = () => {
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">{uc.title}</h3>
                   <p className="text-gray-600 text-sm mb-4 leading-relaxed">{uc.description}</p>
-                  <div className="bg-gray-50 px-4 py-3 rounded-lg">
-                    <p className={`${colors.impact} font-medium text-sm`}>{uc.impact}</p>
-                  </div>
+                  <p className={`${colors.impact} font-medium text-sm`}>{uc.impact}</p>
                 </article>
               );
             })}
           </div>
+        </div>
+      </section>
+
+      <section className="section bg-white" aria-labelledby="season-title">
+        <div className="container text-center">
+          <h2 id="season-title" className="heading-display text-3xl sm:text-4xl text-gray-900 mb-6">
+            Your School's Journey to September
+          </h2>
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto mb-4">
+            Form your team. Build your robot. Practise together. Play friendly matches.
+            Compete in qualifiers and work towards the September finals.
+          </p>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            Public, private and special schools are welcome, including teams beginning robotics
+            for the first time.
+          </p>
         </div>
       </section>
 
@@ -444,8 +460,8 @@ const Home = () => {
               A Pan-African <span className="text-gray-500">Innovation</span> Ecosystem
             </h2>
             <p className="text-lg text-gray-400 max-w-3xl mx-auto">
-              We teach robotics while building Africa's innovation ecosystem through AI-driven
-              education.
+              School clubs, teacher development and local fabrication connect our existing work
+              to the next chapter: an inclusive robotics soccer season that schools can sustain.
             </p>
           </div>
 
@@ -505,33 +521,36 @@ const Home = () => {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(20,184,166,0.12),transparent_70%)]" />
         <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
           <p className="font-pixel text-teal-400 text-[0.6rem] sm:text-xs mb-4 tracking-widest">
-            // 2026
+            // Inclusive Robotics Programme
           </p>
           <h2 className="heading-display text-2xl sm:text-3xl md:text-4xl text-white mb-6">
-            Inclusive Robotics 2026
-            <br className="sm:hidden" />
-            <span className="text-teal-400">The Waitlist Is Open</span>
+            Bring Inclusive Robotics to Your School
           </h2>
           <p className="text-lg sm:text-xl text-gray-300 mb-3 max-w-3xl mx-auto">
-            Join the waitlist now. When the cycle opens you register, work the curriculum, build
-            your team project, and have it judged at the National Showcase.
+            Join a growing community of school teams learning, building and competing through
+            robotics soccer.
           </p>
           <p className="text-base text-gray-400 mb-10 max-w-2xl mx-auto">
-            Nothing to pay to join. Registration is KES 2,000 per school — covering entry, the
-            dashboard, the curriculum and judging.
+            Register your school's interest for the next season, or partner with ChipuRobo to
+            support accessible equipment, teacher training, school participation and the September
+            finals.
+          </p>
+          <p className="text-sm text-gray-400 mb-8">
+            Programme registration: KES 2,000 per individual or KES 5,000 per school.
+            Equipment arrangements will be confirmed separately. Televised coverage is planned,
+            not confirmed. Our ambition is to become Africa's largest live robotics competition.
           </p>
           <div className="flex flex-wrap gap-5 justify-center">
             <Link to="/competition#register" className="btn-cta">
               <Trophy className="mr-2 h-4 w-4" aria-hidden="true" />
-              Join the Waitlist
+              Register Your School's Interest
             </Link>
             <Link
-              to="/about"
-              aria-label="Learn more about ChipuRobo's mission and programs"
+              to="/contact"
               className="btn-outline btn-outline-on-dark"
             >
               <Heart className="mr-2 h-4 w-4" aria-hidden="true" />
-              About ChipuRobo
+              Partner With ChipuRobo
             </Link>
           </div>
         </div>
