@@ -94,17 +94,16 @@ export function BlocklyEditor({ initial, level = 'beginner', readOnly = false, o
   return <section className="space-y-3 min-w-0" aria-label={readOnly ? 'Submitted Blockly program' : 'Blockly coding workspace'}>
     {!readOnly && <>
       <p className="sr-only">Drag blocks out of the drawers, snap them together, then press Run. The print block shows words on the screen.</p>
-      <details className="text-sm"><summary className="cursor-pointer underline"><span aria-hidden="true">⌨️ </span>Keyboard</summary>
+      <details className="text-sm"><summary className="cursor-pointer underline"><span aria-hidden="true">⌨️ </span>Using the keyboard</summary>
         <p className="mt-2">Tab to the workspace. Press T for the toolbox, arrow keys to navigate, Enter to add a block or edit a value, M to move a block, and Delete to remove it. Tab leaves the workspace.</p></details>
     </>}
     <div ref={host} className="blockly-editor h-[420px] sm:h-[480px] w-full border border-gray-400 rounded-md overflow-hidden" />
     {!readOnly && <div className="flex gap-3 flex-wrap">
-      <button type="button" className="btn-primary" onClick={run} disabled={running || !blockCount}>{running ? 'Running…' : <><span aria-hidden="true">▶ </span>Run program</>}</button>
+      <button type="button" className="btn-play" onClick={run} disabled={running || !blockCount}>{running ? 'Running…' : <><span aria-hidden="true">▶ </span>Run</>}</button>
       {running && <button type="button" className="btn-secondary" onClick={() => { stopWorker(); setRunning(false); setError('Stopped.'); }}>Stop program</button>}
     </div>}
     {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
-    <div><h3 className="text-base"><span aria-hidden="true">📺 </span>Output</h3><pre role="status" aria-live="polite" className="bg-gray-50 border rounded-md p-3 text-sm whitespace-pre-wrap break-words max-h-56 overflow-auto">{output || (readOnly ? '' : '▶ Run')}</pre></div>
-    <details className="text-sm"><summary className="cursor-pointer underline">{readOnly ? 'Submitted JavaScript' : <><span aria-hidden="true">{'{ } '}</span>Code</>}</summary><pre className="bg-gray-50 p-3 whitespace-pre-wrap break-words">{code || '…'}</pre></details>
-    <p className="text-xs text-gray-600"><a href="https://blockly.com/" className="!text-teal-800 underline" target="_blank" rel="noopener noreferrer">Blockly</a></p>
+    <div><h3 className="text-base">{readOnly ? 'Output' : 'Your program shows'}</h3><pre role="status" aria-live="polite" className="bg-slate-900 text-white rounded-md p-3 text-base whitespace-pre-wrap break-words max-h-56 overflow-auto">{output || (readOnly ? '' : 'Press Run to see what it shows.')}</pre></div>
+    {readOnly && <details className="text-sm"><summary className="cursor-pointer underline">Submitted JavaScript</summary><pre className="bg-gray-50 p-3 whitespace-pre-wrap break-words">{code || '…'}</pre></details>}
   </section>;
 }

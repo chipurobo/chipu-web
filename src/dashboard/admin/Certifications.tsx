@@ -320,7 +320,7 @@ function TemplateForm({
           <label className="field-label" htmlFor="template-title">Title<span aria-hidden="true" className="text-red-600 ml-0.5">*</span></label>
           <input id="template-title" className="field-input" required aria-required="true" value={title}
                  onChange={(e) => setTitle(e.target.value)}
-                 placeholder="e.g. Inclusive Robotics — Beginner" />
+                 placeholder="e.g. Inclusive Robotics — Grade 8" />
         </div>
 
         <div>

@@ -12,17 +12,17 @@ import {
   fetchPortfolio,
   savePortfolio,
   removePortfolio,
-  fetchDecisions,
+  fetchCbcAssessments,
   fetchQuizAttempts,
   downloadArtifact,
   type PortfolioItem,
 } from '../../lib/learningOutcomes';
 import { fetchSchools } from '../../lib/gql/queries';
-import { competencies, learningLevels } from '../../lib/learningFramework';
+import { cbcLevels, competencies } from '../../lib/learningFramework';
 import { SubmissionDetails } from './LearnerSubmission';
-import { artThemeFor, friendlyDate, levelLook, ratingLook } from '../../lib/learnerCopy';
+import { artThemeFor, friendlyDate, ratingLook } from '../../lib/learnerCopy';
 import type { ReviewBand } from '../../lib/learningRecords';
-import { LearnerPage, Hero, LevelChip, SkillChip, FriendlyAlert, Loading, EmptyNote } from './ui/LearnerKit';
+import { LearnerPage, FriendlyAlert, Loading, EmptyNote } from './ui/LearnerKit';
 import { LessonArt } from './ui/LearnerArt';
 
 export function LearningPortfolio() {
@@ -43,7 +43,7 @@ export function LearningPortfolio() {
     queryFn: () => fetchAssignments(),
   });
   const reviews = useQuery({ queryKey: ['competency-evidence'], queryFn: () => fetchEvidence() });
-  const decisions = useQuery({ queryKey: ['progression-decisions'], queryFn: fetchDecisions });
+  const decisions = useQuery({ queryKey: ['cbc-assessments'], queryFn: fetchCbcAssessments });
   const attempts = useQuery({ queryKey: ['quiz-attempts'], queryFn: fetchQuizAttempts });
   const students = useQuery({
     queryKey: ['learning-students', schoolId],
@@ -51,7 +51,6 @@ export function LearningPortfolio() {
     enabled: !!schoolId,
   });
   const [student, setStudent] = useState('');
-  const [level, setLevel] = useState('all');
   const [selection, setSelection] = useState('');
   const [title, setTitle] = useState('');
   const [reflection, setReflection] = useState('');
@@ -84,13 +83,7 @@ export function LearningPortfolio() {
     [items, submissions, assignments, reviews, decisions, attempts].some((q) => q.isPending) ||
     (!!schoolId && students.isPending);
   const ownItems = (items.data ?? []).filter((i) => i.student_id === studentId);
-  const visible = ownItems.filter(
-    (i) =>
-      level === 'all' ||
-      assignments.data?.find(
-        (a) => a.id === submissions.data?.find((s) => s.id === i.submission_id)?.assignment_id,
-      )?.learning_plan.level === level,
-  );
+  const visible = ownItems;
   function exportPortfolio() {
     const work = (submissions.data ?? []).filter((s) =>
       ownItems.some((i) => i.submission_id === s.id),
@@ -109,7 +102,7 @@ export function LearningPortfolio() {
               e.student_id === studentId && work.some((s) => s.assignment_id === e.assignment_id),
           ),
           quizzes: attempts.data?.filter((a) => a.student_id === studentId),
-          progression: decisions.data?.filter((d) => d.student_id === studentId),
+          cbc_assessments: decisions.data?.filter((d) => d.student_id === studentId),
         },
         null,
         2,
@@ -118,150 +111,84 @@ export function LearningPortfolio() {
     );
   }
   if (learner) {
-    const outcomeLook = { awarded: { emoji: '🎉', label: 'Level up!' }, deferred: { emoji: '💪', label: 'Not yet, keep going' }, revoked: { emoji: '🔁', label: 'Needs another look' } } as const;
+    const pick = (id: string) => {
+      setSelection(id);
+      const item = items.data?.find((i) => i.submission_id === id);
+      const sub = submissions.data?.find((s) => s.id === id);
+      setTitle(item?.title ?? assignments.data?.find((a) => a.id === sub?.assignment_id)?.title ?? '');
+      setReflection(item?.reflection ?? '');
+    };
     return (
-      <LearnerPage>
-        <Hero title={<>Showcase <span aria-hidden="true">🖼️</span></>} blurb="Your favourite work, all in one place. Only you and your teachers can see it." mood="cheer" />
+      <LearnerPage className="max-w-3xl">
+        <h1 className="learner-title">My showcase <span aria-hidden="true">🖼️</span></h1>
+        <p className="text-base font-semibold">Your favourite work. Only you and your teachers can see it.</p>
         <FriendlyAlert error={error} />
         {loading && <Loading>Opening your showcase</Loading>}
-        <form
-          aria-label="Add portfolio evidence"
+        {!loading && !error && !visible.length && (
+          <EmptyNote emoji="🖼️" title="Nothing here yet" body="Send some work from a lesson, then pick your favourite to put up here." />
+        )}
+        <div className="grid gap-4 sm:grid-cols-2">
+          {visible.map((item: PortfolioItem) => {
+            const sub = submissions.data?.find((s) => s.id === item.submission_id);
+            const assignment = assignments.data?.find((a) => a.id === sub?.assignment_id);
+            const capstone = assignment?.learning_plan.activityKind === 'capstone';
+            return (
+              <article className="learner-card flex flex-col overflow-hidden" key={item.id} aria-label={item.title}>
+                <LessonArt theme={assignment ? artThemeFor(assignment.title, { pathwayId: assignment.learning_plan.pathwayId, capstone }) : 'print'} className="w-full max-h-40" />
+                <div className="flex flex-1 flex-col gap-3 p-5">
+                  <h2>{item.title}</h2>
+                  {item.reflection && <p className="whitespace-pre-wrap text-base">{item.reflection}</p>}
+                  <div className="mt-auto flex flex-wrap gap-2 pt-2">
+                    {assignment && (
+                      <Link className="btn-secondary" to={`/dashboard/assignments/${assignment.id}`}>Open<span className="sr-only"> {item.title}</span></Link>
+                    )}
+                    <button type="button" className="btn-secondary" disabled={remove.isPending} onClick={() => remove.mutate(item.id)}>
+                      Remove<span className="sr-only"> {item.title} from my showcase</span>
+                    </button>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+        <FriendlyAlert error={remove.error} />
+
+        {!!submissions.data?.length && <form
+          aria-labelledby="add-heading"
           className="learner-card p-5 space-y-4"
           onSubmit={(e) => {
             e.preventDefault();
             save.mutate();
           }}
         >
-          <h2><span aria-hidden="true">➕ </span>Add</h2>
-          <label className="field-label">
-            <span aria-hidden="true">📨 </span>Work
-            <select
-              required
-              className="field-select mt-1.5 font-semibold"
-              value={selection}
-              onChange={(e) => {
-                setSelection(e.target.value);
-                const item = items.data?.find((i) => i.submission_id === e.target.value);
-                const sub = submissions.data?.find((s) => s.id === e.target.value);
-                setTitle(
-                  item?.title ??
-                    assignments.data?.find((a) => a.id === sub?.assignment_id)?.title ??
-                    '',
-                );
-                setReflection(item?.reflection ?? '');
-              }}
-            >
-              <option value="">Choose…</option>
-              {submissions.data?.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {assignments.data?.find((a) => a.id === s.assignment_id)?.title ?? 'Activity'} ·{' '}
-                  {friendlyDate(s.submitted_at)}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="field-label">
-            <span aria-hidden="true">🏷️ </span>Title
-            <input required maxLength={200} className="field-input mt-1.5 font-semibold" value={title} onChange={(e) => setTitle(e.target.value)} />
-          </label>
-          <label className="field-label">
-            <span aria-hidden="true">💛 </span>Why?
-            <textarea maxLength={5000} className="field-input mt-1.5 font-semibold" rows={3} value={reflection} onChange={(e) => setReflection(e.target.value)} />
-          </label>
+          <h2 id="add-heading">Add work</h2>
+          <fieldset className="space-y-2">
+            <legend className="field-label">Which work?</legend>
+            {submissions.data.map((s) => (
+              <label key={s.id} className="choice-tile">
+                <input type="radio" required name="showcase-work" value={s.id} checked={selection === s.id} onChange={() => pick(s.id)} />
+                <span className="flex-1">{assignments.data?.find((a) => a.id === s.assignment_id)?.title ?? 'My work'}</span>
+                <span className="text-sm font-semibold opacity-80">{friendlyDate(s.submitted_at)}</span>
+              </label>
+            ))}
+          </fieldset>
+          {selection && <>
+            <label className="field-label">
+              Title
+              <input required maxLength={200} className="field-input mt-1.5 font-semibold" value={title} onChange={(e) => setTitle(e.target.value)} />
+            </label>
+            <label className="field-label">
+              Why do you like it? <span className="font-normal text-slate-600">(you can skip this)</span>
+              <textarea maxLength={5000} className="field-input mt-1.5 font-semibold" rows={2} value={reflection} onChange={(e) => setReflection(e.target.value)} />
+            </label>
+          </>}
           <FriendlyAlert error={save.error} />
-          {save.isSuccess && <p role="status" className="text-sm font-bold text-emerald-800"><span aria-hidden="true">✅ </span>Added<span className="sr-only"> to your showcase</span></p>}
+          {save.isSuccess && <p role="status" className="text-base font-bold text-teal-800"><span aria-hidden="true">✅ </span>Added<span className="sr-only"> to your showcase</span></p>}
           <button className="btn-play" disabled={!selection || save.isPending}>
             {save.isPending ? 'Adding…' : 'Add'}<span className="sr-only"> to my showcase</span>
           </button>
-        </form>
-        {studentId && (
-          <>
-            <div className="flex flex-wrap items-end justify-between gap-3">
-              <fieldset className="flex flex-wrap gap-2">
-                <legend className="sr-only">Portfolio level</legend>
-                {([{ id: 'all', emoji: '✨', title: 'All' }, ...learningLevels.map((l) => ({ id: l.id, emoji: levelLook[l.id].emoji, title: l.title }))]).map((option) => (
-                  <label key={option.id} className="learner-pill text-xl" title={option.title}>
-                    <input type="radio" name="portfolio-level" value={option.id} checked={level === option.id} onChange={() => setLevel(option.id)} />
-                    <span aria-hidden="true">{option.emoji}</span><span className="sr-only">{option.title}</span>
-                  </label>
-                ))}
-              </fieldset>
-              <button className="btn-secondary" disabled={loading || !!error} onClick={exportPortfolio}>
-                <span aria-hidden="true">⬇️</span> Download<span className="sr-only"> my showcase</span>
-              </button>
-            </div>
-            {!loading && !error && !visible.length && (
-              <EmptyNote emoji="🖼️" title="Nothing yet" body="Send some work from a lesson, then pick your favourite to put up here." />
-            )}
-            <div className="grid gap-4 sm:grid-cols-2">
-              {visible.map((item: PortfolioItem) => {
-                const sub = submissions.data?.find((s) => s.id === item.submission_id);
-                const assignment = assignments.data?.find((a) => a.id === sub?.assignment_id);
-                const capstone = assignment?.learning_plan.activityKind === 'capstone';
-                return (
-                  <article className="learner-card flex flex-col overflow-hidden" key={item.id} aria-label={item.title}>
-                    <LessonArt theme={assignment ? artThemeFor(assignment.title, { pathwayId: assignment.learning_plan.pathwayId, capstone }) : 'print'} className="w-full" />
-                    <div className="flex flex-1 flex-col gap-3 p-5">
-                      <h2>{item.title}</h2>
-                      <div className="flex flex-wrap gap-2">
-                        <LevelChip level={assignment?.learning_plan.level} />
-                        <span title={capstone ? 'Big project' : 'Lesson'} className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-sm"><span aria-hidden="true">{capstone ? '🏗️' : '🧩'}</span><span className="sr-only">{capstone ? 'Big project' : 'Lesson'}</span></span>
-                      </div>
-                      {!!assignment?.learning_plan.competencyIds.length && (
-                        <ul className="flex flex-wrap gap-2" aria-label="Skills">
-                          {assignment.learning_plan.competencyIds.map((id) => <li key={id}><SkillChip id={id} /></li>)}
-                        </ul>
-                      )}
-                      {item.reflection && (
-                        <p className="whitespace-pre-wrap rounded-2xl bg-amber-50 p-3 text-sm font-semibold text-amber-950"><span aria-hidden="true">💛 </span>{item.reflection}</p>
-                      )}
-                      {sub && <SubmissionDetails submission={sub} friendly />}
-                      {reviews.data
-                        ?.filter(
-                          (e) =>
-                            e.student_id === item.student_id &&
-                            e.assignment_id === sub?.assignment_id &&
-                            (!e.submission_id || e.submission_id === sub?.id),
-                        )
-                        .map((e) => (
-                          <div className="rounded-2xl bg-emerald-50 p-3 text-sm" key={e.id}>
-                            <p className="font-bold text-emerald-900"><span aria-hidden="true">💌 </span><span className="sr-only">Teacher said, </span>{friendlyDate(e.recorded_at)}</p>
-                            <p className="whitespace-pre-wrap text-emerald-950">{e.feedback}</p>
-                            <ul className="mt-2 flex flex-wrap gap-2">
-                              {Object.entries(e.reviews).map(([id, band]) => (
-                                <li key={id}><SkillChip id={id as (typeof competencies)[number]['id']} band={band as ReviewBand} /></li>
-                              ))}
-                            </ul>
-                          </div>
-                        ))}
-                      <div className="mt-auto flex flex-wrap gap-2 pt-2">
-                        {assignment && (
-                          <Link className="btn-secondary" to={`/dashboard/assignments/${assignment.id}`}>Open<span className="sr-only"> {item.title}</span></Link>
-                        )}
-                        <button type="button" className="btn-secondary" disabled={remove.isPending} onClick={() => remove.mutate(item.id)}>
-                          Remove<span className="sr-only"> {item.title} from my showcase</span>
-                        </button>
-                      </div>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-            <FriendlyAlert error={remove.error} />
-            <section className="learner-card p-5 space-y-3" aria-label="Portfolio progression">
-              <h2><span aria-hidden="true">🏅 </span>Level ups</h2>
-              {!decisions.data?.some((d) => d.student_id === studentId) && <p className="text-sm text-slate-600"><span aria-hidden="true">— </span>None yet<span className="sr-only">. When your teacher moves you up a level, it will show here.</span></p>}
-              {decisions.data
-                ?.filter((d) => d.student_id === studentId)
-                .map((d) => (
-                  <p key={d.id} className="text-sm font-semibold text-slate-800">
-                    <span aria-hidden="true">{outcomeLook[d.outcome].emoji} </span>{levelLook[d.level].title}: {outcomeLook[d.outcome].label} · {friendlyDate(d.decided_at)}{d.reason ? ` · ${d.reason}` : ''}
-                  </p>
-                ))}
-              <Link className="btn-secondary self-start" to="/dashboard/my-progress"><span aria-hidden="true">🗺️</span> Journey</Link>
-            </section>
-          </>
-        )}
+        </form>}
+
       </LearnerPage>
     );
   }
@@ -383,21 +310,6 @@ export function LearningPortfolio() {
       {studentId && (
         <>
           <div className="flex gap-4 flex-wrap items-end">
-            <label className="field-label">
-              Portfolio level
-              <select
-                className="field-select"
-                value={level}
-                onChange={(e) => setLevel(e.target.value)}
-              >
-                <option value="all">All levels</option>
-                {learningLevels.map((l) => (
-                  <option key={l.id} value={l.id}>
-                    {l.title}
-                  </option>
-                ))}
-              </select>
-            </label>
             <button
               className="btn-secondary"
               disabled={loading || !!error}
@@ -408,7 +320,7 @@ export function LearningPortfolio() {
           </div>
           {!loading && !error && !visible.length && (
             <p>
-              No portfolio items at this level. Submit an activity, then add it to your portfolio.
+              No portfolio items yet. Submit an activity, then add it to the portfolio.
             </p>
           )}
           {visible.map((item: PortfolioItem) => {
@@ -418,7 +330,6 @@ export function LearningPortfolio() {
               <article className="card p-5 space-y-4" key={item.id}>
                 <h2>{item.title}</h2>
                 <p className="text-sm text-gray-600">
-                  {learningLevels.find((l) => l.id === assignment?.learning_plan.level)?.title ?? assignment?.learning_plan.level} ·{' '}
                   {assignment?.learning_plan.activityKind === 'capstone'
                     ? 'Project'
                     : 'Lesson'}
@@ -482,14 +393,14 @@ export function LearningPortfolio() {
             </p>
           )}
           <section className="card p-5 space-y-3" aria-label="Portfolio progression">
-            <h2>Level decisions</h2>
+            <h2>CBC assessments</h2>
             {!decisions.data?.some((d) => d.student_id === studentId) && <p className="text-sm text-gray-600">None yet.</p>}
             {decisions.data
               ?.filter((d) => d.student_id === studentId)
               .map((d) => (
                 <p key={d.id} className="text-sm">
-                  {levelLook[d.level].title}: {d.outcome} · {new Date(d.decided_at).toLocaleDateString()} ·{' '}
-                  {d.reason}
+                  {cbcLevels.find((level) => level.id === d.performance_level)?.title}: {new Date(d.decided_at).toLocaleDateString()} ·{' '}
+                  {d.comment}
                 </p>
               ))}
             <Link

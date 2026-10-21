@@ -123,3 +123,13 @@
   .login-role.is-selected { border: 3px solid Highlight; }
   .login-role:has(input:focus-visible) { outline-color: Highlight; }
 }
+
+/* School finder: a short list of big radio rows instead of a long dropdown. */
+.login-page .login-label { display: block; font-size: 14px; font-weight: 650; margin-bottom: 6px; }
+.login-school-list { display: grid; gap: 6px; margin-top: 8px; border: 0; padding: 0; }
+.login-school-option { position: relative; display: flex; align-items: center; min-height: 48px; padding: 10px 14px; border: 1px solid #cbd5c8; border-radius: 9px; background: #fff; font-size: 15px; cursor: pointer; }
+.login-school-option:hover { background: #f6f8f3; border-color: #90ac9b; }
+.login-school-option input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.login-school-option:has(input:focus-visible) { outline: 3px solid #256a59; outline-offset: 2px; }
+.login-school-option:has(input:checked) { border: 2px solid #396850; background: #eff5eb; font-weight: 650; }
+.login-school-option span { flex: 1; }

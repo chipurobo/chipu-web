@@ -23,7 +23,7 @@ export function AccessibleLessonMedia({
     ? new URL('/lesson-media/lesson-orientation.vtt', appOrigin).toString()
     : null);
   const transcript = lesson.media_transcript ?? (useOrientation ? ORIENTATION_TRANSCRIPT : null);
-  const instructions = lesson.media_instructions ?? (useOrientation ? ORIENTATION_INSTRUCTIONS : null);
+  const instructions = (lesson.media_instructions ?? (useOrientation ? ORIENTATION_INSTRUCTIONS : null))?.replace(/\\n/g, '\n') ?? null;
   const isVideo = lesson.media_type === 'video' || useOrientation;
   const poster = mediaUrl.endsWith('/lesson-media/lesson-orientation.webm')
     ? '/lesson-media/lesson-orientation-poster.svg'
@@ -31,22 +31,26 @@ export function AccessibleLessonMedia({
 
   return (
     <section
-      aria-label="Accessible lesson media"
+      aria-label={learnerFriendly ? (isVideo ? 'Watch' : 'Listen') : 'Accessible lesson media'}
       className={learnerFriendly
-        ? 'learner-card space-y-4 border-sky-200 bg-sky-50 p-5'
+        ? 'learner-card space-y-4 p-5'
         : 'card space-y-4 p-5'}
     >
-      <div>
-        <h2 className="text-lg font-extrabold text-slate-900">
-          <span aria-hidden="true">{isVideo ? '🎬 ' : '🎧 '}</span>
-          {isVideo ? 'Watch and read' : 'Listen and read'}
-        </h2>
-        <p className="mt-1 text-sm text-slate-700">
-          {isVideo
-            ? 'Captions are available in the video controls. The same words are written below.'
-            : 'Everything said in the audio is written below.'}
-        </p>
-      </div>
+      {learnerFriendly ? (
+        <h3><span aria-hidden="true">{isVideo ? '🎬 ' : '🎧 '}</span>{isVideo ? 'Watch' : 'Listen'}</h3>
+      ) : (
+        <div>
+          <h2 className="text-lg font-extrabold text-slate-900">
+            <span aria-hidden="true">{isVideo ? '🎬 ' : '🎧 '}</span>
+            {isVideo ? 'Watch and read' : 'Listen and read'}
+          </h2>
+          <p className="mt-1 text-sm text-slate-700">
+            {isVideo
+              ? 'Captions are available in the video controls. The same words are written below.'
+              : 'Everything said in the audio is written below.'}
+          </p>
+        </div>
+      )}
 
       {isVideo ? (
         <video className="aspect-video w-full rounded-xl bg-black shadow-sm" controls playsInline preload="metadata" poster={poster}>
@@ -65,15 +69,15 @@ export function AccessibleLessonMedia({
         </audio>
       )}
 
-      <div className="flex flex-wrap gap-2 text-xs font-bold">
+      {!learnerFriendly && <div className="flex flex-wrap gap-2 text-xs font-bold">
         {isVideo && <span className="rounded-full bg-sky-100 px-3 py-1 text-sky-900">CC Captions</span>}
         <span className="rounded-full bg-emerald-100 px-3 py-1 text-emerald-900">Written transcript</span>
         {instructions && (
           <span className="rounded-full bg-violet-100 px-3 py-1 text-violet-900">Written instructions</span>
         )}
-      </div>
+      </div>}
 
-      {instructions && (
+      {instructions && !learnerFriendly && (
         <div className="rounded-xl border border-violet-200 bg-white p-4">
           <h3 className="font-extrabold text-violet-950">What to do</h3>
           <p className="mt-2 whitespace-pre-wrap text-sm text-slate-800">{instructions}</p>
@@ -81,8 +85,8 @@ export function AccessibleLessonMedia({
       )}
 
       <details className="rounded-xl border border-slate-200 bg-white p-4" open>
-        <summary className="cursor-pointer font-extrabold text-slate-900">Transcript</summary>
-        <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-800">
+        <summary className="cursor-pointer font-extrabold text-slate-900">{learnerFriendly ? 'Words in the video' : 'Transcript'}</summary>
+        <p className={`mt-3 whitespace-pre-wrap leading-7 text-slate-800 ${learnerFriendly ? 'text-base' : 'text-sm'}`}>
           {transcript}
         </p>
       </details>

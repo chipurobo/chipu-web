@@ -3,9 +3,9 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchLearningStudents, fetchAssignment, fetchEvidence, fetchRecipients, fetchSubmissions, recordCompetencyEvidence, reviewLearningSubmission } from '../../lib/learningQueries';
-import { competencies, evidenceRubric, learningLevels, learningPathways, type CompetencyId } from '../../lib/learningFramework';
+import { cbcLevels, competencies, evidenceRubric, learningPathways, type CompetencyId } from '../../lib/learningFramework';
 import { useAuth } from '../../lib/auth';
-import { LearnerSubmission, SubmissionDetails } from './LearnerSubmission';
+import { SubmissionDetails } from './LearnerSubmission';
 import type { CompetencyEvidence, LearningAssignment, LearningSubmission, ReviewBand } from '../../lib/learningRecords';
 import { safeHttpUrl } from '../../lib/safeUrl';
 import { LearnerLesson } from './LearnerLesson';
@@ -54,12 +54,11 @@ function TeacherAssignmentWorkspace() {
           <p className="text-sm text-gray-600">{learningPathways.find((path) => path.id === assignment.learning_plan.pathwayId)?.title}</p>
           <h1 ref={heading} tabIndex={-1} className="focus:outline-none">{assignment.title}</h1>
           <div className="flex gap-2 flex-wrap mt-3">
-            <span className="badge-teal">{learningLevels.find((level) => level.id === assignment.learning_plan.level)?.title}</span>
             {assignment.due_date && <span className="badge-gray"><span aria-hidden="true">📅 </span>Due {assignment.due_date}</span>}
           </div>
         </div>
         {assignment.instructions && <p className="card p-4 text-sm text-gray-800 whitespace-pre-wrap"><span aria-hidden="true">🧑‍🏫 </span><span>{assignment.instructions}</span></p>}
-        {isLearner ? <LearnerSubmission key={assignment.id} assignmentId={assignment.id} level={assignment.learning_plan.level} submissions={submissions.data ?? []} reviews={evidence.data ?? []} /> : <section aria-label="Review student work" className="space-y-4">
+        {isLearner ? null : <section aria-label="Review student work" className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-lg">Learners ({assigned.length})</h2>
             <p className="text-sm text-gray-600"><span aria-hidden="true">📬 </span>{assigned.filter((student) => (submissions.data ?? []).some((item) => item.student_id === student.id) && !(evidence.data ?? []).some((item) => item.student_id === student.id)).length} to review</p>
@@ -161,7 +160,7 @@ function EvidenceReviewForm({ assignment, studentId, name, submission }: { assig
       </div>
       </>}
       <fieldset className="space-y-4">
-        <legend className="field-label">Skills at {learningLevels.find((item) => item.id === plan.level)?.title}</legend>
+        <legend className="field-label">Rate each skill on the CBC performance levels</legend>
         {competencies.filter((item) => plan.competencyIds.includes(item.id)).map((item) => <div key={item.id}>
           <label className="field-label" htmlFor={`review-${studentId}-${item.id}`}>{item.title}</label>
           <p className="text-sm text-gray-600 mb-2" id={`outcome-${studentId}-${item.id}`}>{item.outcomes[plan.level]}</p>
@@ -172,8 +171,8 @@ function EvidenceReviewForm({ assignment, studentId, name, submission }: { assig
               else delete next[item.id];
               setReviews(next);
             }}>
-            <option value="">Not yet observed</option>
-            {evidenceRubric.filter((band) => band.id !== 'not-observed').map((band) => <option key={band.id} value={band.id}>{band.title}</option>)}
+            <option value="">Not yet assessed</option>
+            {cbcLevels.map((band) => <option key={band.id} value={band.id}>{band.short} · {band.title}</option>)}
           </select>
         </div>)}
       </fieldset>

@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../lib/auth';
-import { learningLevels, type LearningLevel } from '../../lib/learningFramework';
+import type { LearningLevel } from '../../lib/learningFramework';
 import {
   listQuizzes,
   fetchQuizAttempts,
@@ -11,11 +11,12 @@ import {
   trackLearningActivity,
   type LearningQuiz,
   type QuizQuestion,
+  type QuizStage,
 } from '../../lib/learningOutcomes';
 import { fetchLearningStudents } from '../../lib/learningQueries';
 import { fetchCurriculumLessons } from '../../lib/gql/queries';
-import { levelLook, friendlyDate } from '../../lib/learnerCopy';
-import { LearnerPage, Hero, LevelChip, FriendlyAlert, Loading, EmptyNote, Confetti, Cheer } from './ui/LearnerKit';
+import { friendlyDate } from '../../lib/learnerCopy';
+import { LearnerPage, Hero, FriendlyAlert, Loading, EmptyNote, Confetti, Cheer } from './ui/LearnerKit';
 import { LessonArt } from './ui/LearnerArt';
 
 export function LearningQuizzes() {
@@ -30,45 +31,33 @@ export function LearningQuizzes() {
   const quizzes = useQuery({ queryKey: ['learning-quizzes'], queryFn: listQuizzes });
   const attempts = useQuery({ queryKey: ['quiz-attempts'], queryFn: fetchQuizAttempts });
   const [selected, setSelected] = useState<LearningQuiz | null>(null);
-  const [params] = useSearchParams();
-  const initialLevel = params.get('level');
-  const [level, setLevel] = useState<LearningLevel | 'all'>(
-    learningLevels.some((l) => l.id === initialLevel) ? (initialLevel as LearningLevel) : 'all',
-  );
   const [editing, setEditing] = useState(false);
   const [justFinished, setJustFinished] = useState(false);
   const error = quizzes.error ?? attempts.error ?? students.error;
-  const visible = quizzes.data?.filter((q) => level === 'all' || q.level === level) ?? [];
+  // Checks that live inside a lesson are taken there, not on this page.
+  const visible = quizzes.data?.filter((q) => !q.stage) ?? [];
+  const [showLessonChecks, setShowLessonChecks] = useState(false);
+  const lessonCheckCount = quizzes.data?.filter((q) => q.stage).length ?? 0;
   const latest = attempts.data?.[0];
   if (learner) {
     return (
       <LearnerPage>
         <Confetti show={justFinished && !!latest?.passed} />
-        <Hero title={<>Quizzes <span aria-hidden="true">🧠</span></>} blurb="No timer, and you can always have another go.">
-          <fieldset className="flex flex-wrap gap-2">
-            <legend className="sr-only">Learning level</legend>
-            {([{ id: 'all' as const, emoji: '✨', title: 'All' }, ...learningLevels.map((item) => ({ id: item.id, emoji: levelLook[item.id].emoji, title: item.title }))]).map((option) => (
-              <label key={option.id} className="learner-pill text-xl" title={option.title}>
-                <input type="radio" name="quiz-level" value={option.id} checked={level === option.id} onChange={() => setLevel(option.id)} />
-                <span aria-hidden="true">{option.emoji}</span><span className="sr-only">{option.title}</span>
-              </label>
-            ))}
-          </fieldset>
-        </Hero>
+        <Hero title={<>Quizzes <span aria-hidden="true">🧠</span></>} blurb="No timer, and you can always have another go." />
         <FriendlyAlert error={error} />
         {justFinished && latest && (latest.passed
           ? <Cheer title={`${latest.score}%`} body={`You passed with ${latest.score} percent. Scroll down to see each answer.`} />
           : <Cheer title={`${latest.score}%`} emoji="💪" body={`You scored ${latest.score} percent. Peek at the answers below, then have another go.`} />)}
         {quizzes.isPending && <Loading>Loading quizzes</Loading>}
-        {!quizzes.isPending && !error && !visible.length && <EmptyNote emoji="🔍" title="None here" body="Try another level, or come back after your next lesson." />}
+        {!quizzes.isPending && !error && !visible.length && <EmptyNote emoji="🔍" title="None here" body="Come back after your next lesson." />}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {visible.map((quiz) => {
             const best = attempts.data?.filter((a) => a.quiz_id === quiz.id).reduce<number | null>((top, a) => (top === null || a.score > top ? a.score : top), null);
             return (
-              <article className={`learner-card learner-card-hover flex flex-col overflow-hidden bg-gradient-to-b ${levelLook[quiz.level].gradient}`} key={quiz.id} aria-label={quiz.title}>
+              <article className="learner-card learner-card-hover flex flex-col overflow-hidden" key={quiz.id} aria-label={quiz.title}>
                 <LessonArt theme="decision" className="w-full" />
                 <div className="flex flex-1 flex-col gap-2 p-4">
-                  <div className="flex items-center gap-2"><LevelChip level={quiz.level} /><h2>{quiz.title}</h2></div>
+                  <h2>{quiz.title}</h2>
                   <p className="text-sm font-semibold text-slate-700"><span aria-hidden="true">❓ </span>{quiz.questions.length}<span className="sr-only"> questions</span> · <span aria-hidden="true">🎯 </span>{quiz.pass_percent}%<span className="sr-only"> to pass</span>{best !== null && <> · <span aria-hidden="true">🏅 </span><span className="sr-only">best </span>{best}%</>}</p>
                   <button className="btn-play mt-auto self-start" onClick={() => { setJustFinished(false); setSelected(quiz); trackLearningActivity('resource_open', quiz.lesson_id ?? undefined); }}>
                     <span aria-hidden="true">▶</span> Play<span className="sr-only"> {quiz.title}</span>
@@ -112,7 +101,7 @@ export function LearningQuizzes() {
   return (
     <div className="learning-zone px-4 sm:px-6 lg:px-10 py-8 max-w-6xl space-y-6">
       <h1>{admin ? 'Knowledge checks' : 'Quizzes'}</h1>
-      <p className="text-sm text-gray-600">{admin ? 'Check understanding alongside Blockly practice. A quiz score alone does not award a learning level.' : 'Quizzes your learners can play, and their scores.'}</p>
+      <p className="text-sm text-gray-600">{admin ? 'Check understanding alongside Blockly practice. Teachers rate skills on the CBC performance levels; a quiz score alone is not a rating.' : 'Quizzes your learners can play, and their scores.'}</p>
       {admin && (
         <button className="btn-primary" onClick={() => setEditing(!editing)}>
           {editing ? 'Close quiz builder' : 'Publish a quiz version'}
@@ -124,30 +113,22 @@ export function LearningQuizzes() {
           {error.message}
         </p>
       )}
-      <label className="field-label">
-        Learning level
-        <select
-          className="field-select max-w-xs"
-          value={level}
-          onChange={(e) => setLevel(e.target.value as LearningLevel | 'all')}
-        >
-          <option value="all">All levels</option>
-          {learningLevels.map((l) => (
-            <option key={l.id} value={l.id}>
-              {l.title}
-            </option>
-          ))}
-        </select>
-      </label>
+      {!!lessonCheckCount && (
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={showLessonChecks} onChange={(e) => setShowLessonChecks(e.target.checked)} />
+          Also show the {lessonCheckCount} checks inside lessons (before, during and at the end)
+        </label>
+      )}
       {quizzes.isPending && <p role="status">Loading knowledge checks…</p>}
       <div className="grid sm:grid-cols-2 gap-4">
         {quizzes.data
-          ?.filter((q) => level === 'all' || q.level === level)
+          ?.filter((q) => showLessonChecks || !q.stage)
           .map((quiz) => (
             <article className="card p-5 space-y-3" key={quiz.id}>
               <h2>{quiz.title}</h2>
+              {quiz.stage && <p className="text-sm font-medium text-teal-800">Inside a lesson: {quiz.stage === 'pre' ? 'before it starts' : quiz.stage === 'mid' ? 'quick check after the ideas' : 'final check'}</p>}
               <p className="text-sm text-gray-600">
-                {learningLevels.find((l) => l.id === quiz.level)?.title ?? quiz.level} · {quiz.questions.length} questions · pass at {quiz.pass_percent}%{admin && <> · v{quiz.version}</>}
+                {quiz.questions.length} questions · pass at {quiz.pass_percent}%{admin && <> · v{quiz.version}</>}
               </p>
               {quiz.lesson_id && (
                 <Link
@@ -286,8 +267,10 @@ function QuizBuilder() {
   const lessons = useQuery({ queryKey: ['quiz-lessons'], queryFn: fetchCurriculumLessons });
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');
-  const [level, setLevel] = useState<LearningLevel>('beginner');
+  // Quizzes keep an internal level for ordering; there are no course levels.
+  const level: LearningLevel = 'beginner';
   const [lesson, setLesson] = useState('');
+  const [stage, setStage] = useState<QuizStage | ''>('');
   const [pass, setPass] = useState(80);
   const [questions, setQuestions] = useState([
     { prompt: '', choices: ['', ''], correct: 0, explanation: '' },
@@ -299,6 +282,7 @@ function QuizBuilder() {
         title,
         level,
         lesson,
+        stage: lesson ? stage : '',
         pass,
         questions: questions.map(
           (q, i): QuizQuestion => ({ id: `q${i + 1}`, prompt: q.prompt, choices: q.choices }),
@@ -351,23 +335,9 @@ function QuizBuilder() {
         />
       </label>
       <label className="field-label">
-        Quiz level
-        <select
-          className="field-select"
-          value={level}
-          onChange={(e) => setLevel(e.target.value as LearningLevel)}
-        >
-          {learningLevels.map((l) => (
-            <option key={l.id} value={l.id}>
-              {l.title}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="field-label">
         Related lesson
         <select className="field-select" value={lesson} onChange={(e) => setLesson(e.target.value)}>
-          <option value="">Level-wide knowledge check</option>
+          <option value="">Not tied to one lesson</option>
           {lessons.data?.map((l) => (
             <option key={l.id} value={l.id}>
               {l.title}
@@ -375,6 +345,15 @@ function QuizBuilder() {
           ))}
         </select>
       </label>
+      {lesson && <label className="field-label">
+        When learners see it
+        <select className="field-select" value={stage} onChange={(e) => setStage(e.target.value as QuizStage | '')}>
+          <option value="">Separate quiz, not inside the lesson</option>
+          <option value="pre">Before the lesson starts</option>
+          <option value="mid">During the lesson, after the ideas</option>
+          <option value="end">Final check at the end of the lesson</option>
+        </select>
+      </label>}
       <label className="field-label">
         Pass mark (%)
         <input
