@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { competencies, learningLevels, learningPathways, learningFramework, type LearningLevel } from '../../lib/learningFramework';
+import { competencies, learningPathways, learningFramework } from '../../lib/learningFramework';
 import { cleanLearningPlan, hasUsableLearningPlan, newLearningPlan, type LessonLearningPlan } from '../../lib/learningRecords';
 import type { Lesson } from '../../lib/database.types';
 import { updateLesson } from '../../lib/gql/queries';
@@ -23,13 +23,6 @@ export function LessonPlanFields({ value, onChange, id }: {
           <select id={`${id}-pathway`} className="field-input" value={value.pathwayId}
             onChange={(e) => onChange({ ...value, pathwayId: e.target.value })}>
             {learningPathways.map((path) => <option key={path.id} value={path.id}>{path.title}</option>)}
-          </select>
-        </div>
-        <div>
-          <label className="field-label" htmlFor={`${id}-stage`}>Learning level</label>
-          <select id={`${id}-stage`} className="field-input" value={value.level}
-            onChange={(e) => onChange({ ...value, level: e.target.value as LearningLevel })}>
-            {learningLevels.map((level) => <option key={level.id} value={level.id}>{level.title}</option>)}
           </select>
         </div>
       </div>

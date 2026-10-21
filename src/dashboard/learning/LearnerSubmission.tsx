@@ -10,83 +10,90 @@ import { SkillChip, FriendlyAlert, Loading, Confetti, Cheer } from './ui/Learner
 
 const BlocklyEditor = lazy(() => import('./BlocklyEditor').then((module) => ({ default: module.BlocklyEditor })));
 
-export function LearnerSubmission({ assignmentId, level, submissions, reviews }: {
-  assignmentId: string; level: LearningLevel; submissions: LearningSubmission[]; reviews: CompetencyEvidence[];
-}) {
-  const [text, setText] = useState('');
-  const [url, setUrl] = useState('');
-  const [reflection, setReflection] = useState('');
+/**
+ * The learner's blocks for one lesson. Lives above the lesson stages so moving
+ * between Build and Send never loses unsaved blocks.
+ */
+export function useLessonWork(assignmentId: string) {
+  const qc = useQueryClient();
   const [program, setProgram] = useState<BlocklyProgram | null>(null);
   const [blockCount, setBlockCount] = useState(0);
   const [savedProgram, setSavedProgram] = useState('');
-  const qc = useQueryClient();
   const draft = useQuery({ queryKey: ['learning-program', assignmentId], queryFn: () => fetchLearningProgram(assignmentId) });
   const save = useMutation({ mutationFn: (value: BlocklyProgram) => saveLearningProgram(assignmentId, value),
     onSuccess: (_, value) => { setSavedProgram(JSON.stringify(value)); void qc.invalidateQueries({ queryKey: ['learning-program', assignmentId] }); } });
-  const mutation = useMutation({ mutationFn: (value: { text: string; url: string; reflection: string; program: BlocklyProgram }) => submitLearningWork({ assignmentId, ...value }),
-    onSuccess: (_, value) => { void qc.invalidateQueries({ queryKey: ['learning-submissions'] }); void qc.invalidateQueries({ queryKey: ['learning-program', assignmentId] });
-      setSavedProgram(JSON.stringify(value.program)); setText(''); setUrl(''); setReflection(''); } });
-  function submit(event: FormEvent) { event.preventDefault(); if (program) mutation.mutate({ text, url, reflection, program }); }
-  const ran = !!program?.output?.trim();
-  const checklist = [
-    { done: blockCount > 0, emoji: '🧩', label: 'Blocks', help: 'Add some blocks' },
-    { done: ran, emoji: '▶️', label: 'Run', help: 'Press Run and see what happens' },
-    { done: text.trim().length > 0, emoji: '✍️', label: 'Words', help: 'Say what you made' },
-  ];
-  return <>
-    <Confetti show={mutation.isSuccess} />
-    <section className="learner-card p-4 sm:p-5 space-y-4" aria-label="Code this lesson">
-      <h2><span aria-hidden="true">🧩 </span>Build</h2>
+  const unsaved = !!program && blockCount > 0 && JSON.stringify(program) !== (savedProgram || JSON.stringify(draft.data ?? null));
+  return {
+    assignmentId, draft, save, program, blockCount, savedProgram, setSavedProgram, unsaved,
+    update: (value: BlocklyProgram, count: number) => { setProgram(value); setBlockCount(count); },
+    /** Save quietly when the learner moves to another stage. */
+    saveIfChanged: () => { if (unsaved && program && !save.isPending) save.mutate(program); },
+  };
+}
+export type LessonWork = ReturnType<typeof useLessonWork>;
+
+export function LessonBuild({ work, level }: { work: LessonWork; level: LearningLevel }) {
+  const { draft, save, program, blockCount, savedProgram } = work;
+  return (
+    <div className="space-y-4">
       {draft.isPending && <Loading>Loading your saved blocks</Loading>}
       {draft.error && <p role="alert" className="learner-card border-rose-300 bg-rose-50 p-4 text-sm font-semibold text-rose-900"><span aria-hidden="true">😬 </span>Blocks didn't load. <button type="button" className="underline" onClick={() => void draft.refetch()}>Try again</button></p>}
       {!draft.isPending && !draft.error && <Suspense fallback={<Loading>Loading the block editor</Loading>}>
-        <BlocklyEditor initial={draft.data} level={level} onChange={(value, count) => { setProgram(value); setBlockCount(count); }} />
+        <BlocklyEditor initial={program ?? draft.data} level={level} onChange={work.update} />
       </Suspense>}
       <div className="flex flex-wrap items-center gap-3">
-        <button type="button" className="btn-secondary" disabled={!program || !blockCount || save.isPending || mutation.isPending || !!draft.error}
+        <button type="button" className="btn-secondary" disabled={!program || !blockCount || save.isPending || !!draft.error}
           onClick={() => program && save.mutate(program)}><span aria-hidden="true">💾</span> {save.isPending ? 'Saving…' : 'Save'}</button>
-        {savedProgram && <p role="status" className="text-sm font-bold text-emerald-800">{JSON.stringify(program) === savedProgram ? <><span aria-hidden="true">✅ </span>Saved<span className="sr-only">. Your blocks are saved.</span></> : <><span aria-hidden="true">✏️ </span>Unsaved<span className="sr-only">. You have changes to save.</span></>}</p>}
+        {savedProgram && <p role="status" className="text-sm font-bold text-teal-800">{JSON.stringify(program) === savedProgram ? <><span aria-hidden="true">✅ </span>Saved<span className="sr-only">. Your blocks are saved.</span></> : <><span aria-hidden="true">✏️ </span>Not saved yet</>}</p>}
       </div>
       <FriendlyAlert error={save.error} />
-    </section>
+    </div>
+  );
+}
 
-    <section className="learner-card p-5 space-y-4" aria-label="Submit my work">
-      <h2><span aria-hidden="true">📬 </span>Send</h2>
-      <ul className="flex flex-wrap gap-2" aria-label="Before you send">
-        {checklist.map((item) => <li key={item.label} title={item.help} className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm font-bold ${item.done ? 'bg-emerald-100 text-emerald-900' : 'bg-slate-100 text-slate-600'}`}>
-          <span aria-hidden="true">{item.done ? '✅' : '⬜'} {item.emoji}</span>{item.label}<span className="sr-only">: {item.done ? 'done' : item.help}</span></li>)}
-      </ul>
-      <form aria-label="My submission" onSubmit={submit} className="space-y-4">
-        <div><label htmlFor="my-work" className="field-label"><span aria-hidden="true">✍️ </span>What did you make?</label>
-          <textarea id="my-work" className="field-input" rows={3} required maxLength={10000} value={text} onChange={(event) => setText(event.target.value)} /></div>
-        <div><label htmlFor="my-work-link" className="field-label"><span aria-hidden="true">🔗 </span>Link <span className="font-normal text-slate-500">(optional)</span></label>
-          <input id="my-work-link" className="field-input" type="url" maxLength={2000} value={url} onChange={(event) => setUrl(event.target.value)}
-            aria-invalid={!!url && !safeHttpUrl(url) || undefined} /></div>
-        <div><label htmlFor="my-reflection" className="field-label"><span aria-hidden="true">💭 </span>What did you learn? <span className="font-normal text-slate-500">(optional)</span></label>
-          <textarea id="my-reflection" className="field-input" rows={2} maxLength={5000} value={reflection} onChange={(event) => setReflection(event.target.value)} /></div>
-        <FriendlyAlert error={mutation.error} />
-        {mutation.isSuccess && <Cheer title="Sent!" body="Nice work. Your teacher will take a look and reply right here." />}
-        <button type="submit" className="btn-play" disabled={mutation.isPending || save.isPending || !program || !blockCount || !text.trim() || (!!url && !safeHttpUrl(url))}>
-          <span aria-hidden="true">🚀</span> {mutation.isPending ? 'Sending…' : 'Send'}<span className="sr-only"> to my teacher</span></button>
-      </form>
-    </section>
+export function LessonSend({ work, submissions, reviews, onSent }: {
+  work: LessonWork; submissions: LearningSubmission[]; reviews: CompetencyEvidence[]; onSent?: () => void;
+}) {
+  const qc = useQueryClient();
+  const [text, setText] = useState('');
+  const [reflection, setReflection] = useState('');
+  const program = work.program ?? work.draft.data ?? null;
+  const hasBlocks = work.program ? work.blockCount > 0 : !!program?.code?.trim();
+  const ran = !!program?.output?.trim();
+  const mutation = useMutation({ mutationFn: (value: { text: string; reflection: string; program: BlocklyProgram }) => submitLearningWork({ assignmentId: work.assignmentId, url: '', ...value }),
+    onSuccess: (_, value) => { void qc.invalidateQueries({ queryKey: ['learning-submissions'] }); void qc.invalidateQueries({ queryKey: ['learning-program', work.assignmentId] });
+      work.setSavedProgram(JSON.stringify(value.program)); setText(''); setReflection(''); onSent?.(); } });
+  function submit(event: FormEvent) { event.preventDefault(); if (program) mutation.mutate({ text, reflection, program }); }
+  const latestReview = reviews[0];
+  return <div className="space-y-5">
+    <Confetti show={mutation.isSuccess} />
+    {latestReview && <article className="learner-card space-y-3 border-teal-200 bg-teal-50 p-5">
+      <h3><span aria-hidden="true">💌 </span>Your teacher said</h3>
+      <p className="whitespace-pre-wrap break-words text-base font-semibold text-teal-950">{latestReview.feedback}</p>
+      <ul className="flex flex-wrap gap-2" aria-label="Skill ratings">{Object.entries(latestReview.reviews).map(([id, rating]) => <li key={id}>
+        <SkillChip id={id as CompetencyId} band={rating} />
+      </li>)}</ul>
+    </article>}
 
-    <section className="learner-card p-5 space-y-4" aria-label="My submissions"><h2><span aria-hidden="true">📨 </span>Sent</h2>
-      {!submissions.length && <p className="text-sm text-slate-600"><span aria-hidden="true">— </span>Nothing yet<span className="sr-only">. Build your program above, then send it.</span></p>}
-      {submissions.map((submission) => <SubmissionDetails key={submission.id} submission={submission} friendly />)}
-    </section>
+    {!hasBlocks && <p className="learner-card p-4 text-base font-semibold text-slate-800"><span aria-hidden="true">🧩 </span>Build your program first, then come back here to send it.</p>}
+    {hasBlocks && !ran && <p className="text-sm font-semibold text-slate-700"><span aria-hidden="true">▶️ </span>Tip: press Run on the Build step so your teacher can see what it does.</p>}
 
-    <section className="learner-card p-5 space-y-4" aria-label="My feedback"><h2><span aria-hidden="true">💌 </span>Teacher</h2>
-      {!reviews.length && <p className="text-sm text-slate-600"><span aria-hidden="true">— </span>Not yet<span className="sr-only">. Your teacher's reply will appear here after they look at your work.</span></p>}
-      {reviews.map((review) => <article key={review.id} className="rounded-2xl bg-emerald-50 p-4 text-sm space-y-3">
-        <p className="font-bold text-emerald-900/70">{friendlyDate(review.recorded_at)}</p>
-        <p className="whitespace-pre-wrap break-words text-base font-semibold text-emerald-950">{review.feedback}</p>
-        <ul className="flex flex-wrap gap-2" aria-label="Skill ratings">{Object.entries(review.reviews).map(([id, rating]) => <li key={id}>
-          <SkillChip id={id as CompetencyId} band={rating} />
-        </li>)}</ul>
-      </article>)}
-    </section>
-  </>;
+    <form aria-label="Send my work" onSubmit={submit} className="space-y-4">
+      <div><label htmlFor="my-work" className="field-label">What did you make?</label>
+        <textarea id="my-work" className="field-input" rows={3} required maxLength={10000} value={text} onChange={(event) => setText(event.target.value)} /></div>
+      <div><label htmlFor="my-reflection" className="field-label">What did you learn? <span className="font-normal text-slate-600">(you can skip this)</span></label>
+        <textarea id="my-reflection" className="field-input" rows={2} maxLength={5000} value={reflection} onChange={(event) => setReflection(event.target.value)} /></div>
+      <FriendlyAlert error={mutation.error} />
+      {mutation.isSuccess && <Cheer title="Sent!" body="Nice work. Your teacher will reply here. Your next lesson is open now." />}
+      <button type="submit" className="btn-play" disabled={mutation.isPending || !program || !hasBlocks || !text.trim()}>
+        <span aria-hidden="true">🚀</span> {mutation.isPending ? 'Sending…' : 'Send'}<span className="sr-only"> to my teacher</span></button>
+    </form>
+
+    {!!submissions.length && <details className="text-sm">
+      <summary className="cursor-pointer font-extrabold text-slate-900">Sent before ({submissions.length})</summary>
+      <div className="mt-3 space-y-3">{submissions.map((submission) => <SubmissionDetails key={submission.id} submission={submission} friendly />)}</div>
+    </details>}
+  </div>;
 }
 
 /** `friendly` switches to learner wording; teachers keep the formal labels. */

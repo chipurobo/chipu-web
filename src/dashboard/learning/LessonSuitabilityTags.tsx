@@ -1,5 +1,4 @@
 import type { Lesson } from '../../lib/database.types';
-import { learningLevels } from '../../lib/learningFramework';
 import { LEARNING_NEEDS } from './lessonSuitability';
 
 function rangeLabel(prefix: string, minimum: number | null, maximum: number | null) {
@@ -12,8 +11,7 @@ function rangeLabel(prefix: string, minimum: number | null, maximum: number | nu
 export function LessonSuitabilityTags({ lesson }: { lesson: Lesson }) {
   const age = rangeLabel('Ages', lesson.minimum_age, lesson.maximum_age);
   const grade = rangeLabel('Grades', lesson.minimum_grade, lesson.maximum_grade);
-  const competency = learningLevels.find((item) => item.id === lesson.learning_plan?.level)?.title;
-  const tags = [age, grade, competency, ...(lesson.learning_needs ?? []).map((need) =>
+  const tags = [age, grade, ...(lesson.learning_needs ?? []).map((need) =>
     LEARNING_NEEDS.find((item) => item.id === need)?.label ?? need)];
 
   return (

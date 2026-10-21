@@ -25,20 +25,20 @@ export const levelLook: Record<LearningLevel, LevelLook> = {
   beginner: {
     emoji: '🌱', title: 'Beginner', nickname: 'Explorer',
     blurb: 'Try ideas, follow the steps and say what happened.',
-    chip: 'bg-lime-100 text-lime-900 ring-lime-300', ring: '#65a30d',
-    gradient: 'from-lime-200 via-emerald-100 to-teal-100',
+    chip: 'bg-slate-100 text-slate-900 ring-slate-200', ring: '#0f766e',
+    gradient: 'from-white to-white',
   },
   intermediate: {
     emoji: '🔧', title: 'Intermediate', nickname: 'Builder',
     blurb: 'Mix ideas together, test different ways and explain your choices.',
-    chip: 'bg-sky-100 text-sky-900 ring-sky-300', ring: '#0284c7',
-    gradient: 'from-sky-200 via-cyan-100 to-blue-100',
+    chip: 'bg-slate-100 text-slate-900 ring-slate-200', ring: '#0f766e',
+    gradient: 'from-white to-white',
   },
   expert: {
     emoji: '🚀', title: 'Expert', nickname: 'Inventor',
     blurb: 'Design your own solution, test it hard and make it better.',
-    chip: 'bg-violet-100 text-violet-900 ring-violet-300', ring: '#7c3aed',
-    gradient: 'from-violet-200 via-fuchsia-100 to-pink-100',
+    chip: 'bg-slate-100 text-slate-900 ring-slate-200', ring: '#0f766e',
+    gradient: 'from-white to-white',
   },
 };
 
@@ -47,19 +47,21 @@ export const levelOrder: LearningLevel[] = ['beginner', 'intermediate', 'expert'
 export interface SkillLook { emoji: string; label: string; blurb: string; color: string }
 
 export const skillLook: Record<CompetencyId, SkillLook> = {
-  algorithms:    { emoji: '🗺️', label: 'Planning',   blurb: 'Work out the steps before you build.',       color: 'bg-amber-100 text-amber-900' },
-  programming:   { emoji: '🧩', label: 'Coding',     blurb: 'Snap blocks together to make things happen.', color: 'bg-sky-100 text-sky-900' },
-  debugging:     { emoji: '🐞', label: 'Bug fixing', blurb: 'Find what went wrong and fix it.',           color: 'bg-rose-100 text-rose-900' },
-  robotics:      { emoji: '🤖', label: 'Robots',     blurb: 'Make code control real things.',             color: 'bg-teal-100 text-teal-900' },
-  design:        { emoji: '💡', label: 'Inventing',  blurb: 'Dream up a solution and improve it.',        color: 'bg-violet-100 text-violet-900' },
-  communication: { emoji: '💬', label: 'Sharing',    blurb: 'Explain what you made and work with others.', color: 'bg-orange-100 text-orange-900' },
+  algorithms:    { emoji: '🗺️', label: 'Planning',   blurb: 'Work out the steps before you build.',       color: 'bg-slate-100 text-slate-900' },
+  programming:   { emoji: '🧩', label: 'Coding',     blurb: 'Snap blocks together to make things happen.', color: 'bg-slate-100 text-slate-900' },
+  debugging:     { emoji: '🐞', label: 'Bug fixing', blurb: 'Find what went wrong and fix it.',           color: 'bg-slate-100 text-slate-900' },
+  robotics:      { emoji: '🤖', label: 'Robots',     blurb: 'Make code control real things.',             color: 'bg-slate-100 text-slate-900' },
+  design:        { emoji: '💡', label: 'Inventing',  blurb: 'Dream up a solution and improve it.',        color: 'bg-slate-100 text-slate-900' },
+  communication: { emoji: '💬', label: 'Sharing',    blurb: 'Explain what you made and work with others.', color: 'bg-slate-100 text-slate-900' },
 };
 
+/** CBC performance levels as learners see them: the same words their school uses, plus up to four stars. */
 export const ratingLook: Record<ReviewBand | 'not-observed', { emoji: string; label: string; stars: number; color: string }> = {
-  'not-observed': { emoji: '👀', label: 'Not seen yet',   stars: 0, color: 'bg-gray-100 text-gray-700' },
-  developing:     { emoji: '🌤️', label: 'Getting there',  stars: 1, color: 'bg-amber-100 text-amber-900' },
-  demonstrated:   { emoji: '⭐', label: 'Got it!',        stars: 2, color: 'bg-emerald-100 text-emerald-900' },
-  extending:      { emoji: '🌟', label: 'Going further',  stars: 3, color: 'bg-violet-100 text-violet-900' },
+  'not-observed': { emoji: '👀', label: 'Not yet assessed',         stars: 0, color: 'bg-slate-100 text-slate-900' },
+  below:          { emoji: '🌱', label: 'Below expectations',       stars: 1, color: 'bg-slate-100 text-slate-900' },
+  approaching:    { emoji: '🌤️', label: 'Approaching expectations', stars: 2, color: 'bg-slate-100 text-slate-900' },
+  meeting:        { emoji: '⭐', label: 'Meeting expectations',     stars: 3, color: 'bg-slate-100 text-slate-900' },
+  exceeding:      { emoji: '🌟', label: 'Exceeding expectations',   stars: 4, color: 'bg-slate-100 text-slate-900' },
 };
 
 /** What each skill looks like at each level, in the learner's own voice. */
@@ -105,9 +107,9 @@ export const pathwayLook: Record<string, { emoji: string; label: string }> = {
 export type ActivityStatus = 'ready' | 'sent' | 'replied';
 
 export const statusLook: Record<ActivityStatus, { emoji: string; label: string; color: string; action: string }> = {
-  ready:   { emoji: '🚀', label: "Let's go",        color: 'bg-sky-100 text-sky-900',         action: 'Start activity' },
-  sent:    { emoji: '📬', label: 'Sent to teacher', color: 'bg-amber-100 text-amber-900',     action: 'See my work' },
-  replied: { emoji: '💌', label: 'Teacher replied', color: 'bg-emerald-100 text-emerald-900', action: 'Read my feedback' },
+  ready:   { emoji: '🚀', label: "Let's go",        color: 'bg-slate-100 text-slate-900', action: 'Start activity' },
+  sent:    { emoji: '📬', label: 'Sent to teacher', color: 'bg-teal-50 text-teal-900',    action: 'See my work' },
+  replied: { emoji: '💌', label: 'Teacher replied', color: 'bg-teal-50 text-teal-900',    action: 'Read my feedback' },
 };
 
 /** Pick an illustration theme for a lesson from the words in its title. */
@@ -205,10 +207,10 @@ export function computeStats(input: {
   const attempts = input.attempts ?? [];
   const sentIds = new Set(submissions.map((item) => item.assignment_id));
   const repliedIds = new Set(evidence.filter((item) => item.feedback?.trim()).map((item) => item.assignment_id));
-  const gotIt = evidence.filter((item) => Object.values(item.reviews).some((band) => band === 'demonstrated' || band === 'extending')).length;
+  const gotIt = evidence.filter((item) => Object.values(item.reviews).some((band) => band === 'meeting' || band === 'exceeding')).length;
   const quizPasses = attempts.filter((item) => item.passed).length;
   const projectsStarted = assignments.filter((item) => item.learning_plan.activityKind === 'capstone').length;
-  const levelsSent = new Set(assignments.filter((item) => sentIds.has(item.id)).map((item) => item.learning_plan.level));
+  const projectsSent = assignments.filter((item) => item.learning_plan.activityKind === 'capstone' && sentIds.has(item.id)).length;
   const xp = assignments.length * XP.start + submissions.length * XP.send + repliedIds.size * XP.reply
     + gotIt * XP.gotIt + attempts.length * XP.quizTry + quizPasses * XP.quizPass;
   const rankIndex = ranks.reduce((found, rank, index) => (xp >= rank.min ? index : found), 0);
@@ -219,10 +221,10 @@ export function computeStats(input: {
     { id: 'first-steps',  emoji: '👟', title: 'First steps',    hint: 'Start your first lesson.',                 earned: assignments.length > 0 },
     { id: 'sent-it',      emoji: '📬', title: 'Sent it!',       hint: 'Send your first piece of work to your teacher.', earned: submissions.length > 0 },
     { id: 'quiz-whiz',    emoji: '🧠', title: 'Quiz whiz',      hint: 'Pass a quiz.',                             earned: quizPasses > 0 },
-    { id: 'teacher-star', emoji: '⭐', title: "Teacher's star", hint: 'Get a "Got it!" from your teacher.',       earned: gotIt > 0 },
+    { id: 'teacher-star', emoji: '⭐', title: "Teacher's star", hint: 'Get "Meeting expectations" from your teacher.',       earned: gotIt > 0 },
     { id: 'high-five',    emoji: '🖐️', title: 'High five',      hint: 'Send work for five different lessons.',    earned: sentIds.size >= 5 },
     { id: 'project-pro',  emoji: '🏗️', title: 'Project pro',    hint: 'Start a big project.',                     earned: projectsStarted > 0 },
-    { id: 'all-rounder',  emoji: '🌈', title: 'All-rounder',    hint: 'Send work at every level.',                earned: levelsSent.size >= 3 },
+    { id: 'all-rounder',  emoji: '🌈', title: 'All-rounder',    hint: 'Send a big project.',                      earned: projectsSent > 0 },
     { id: 'ten-up',       emoji: '🔟', title: 'Ten up',         hint: 'Send ten pieces of work.',                 earned: submissions.length >= 10 },
   ];
   return { xp, rank, nextRank, progressToNext, started: assignments.length, sent: sentIds.size, replied: repliedIds.size,
@@ -240,6 +242,11 @@ export function activityStatus(assignmentId: string, submissions: LearningSubmis
 /** What to call a learner on screen: name if the school gave one, otherwise the admission number. */
 export function learnerLabel(member: { full_name?: string | null; admission_number?: string | null; learner_code?: string | null } | null | undefined): string {
   return member?.full_name?.trim() || member?.admission_number || member?.learner_code || 'Learner';
+}
+
+/** Lesson titles for learners: big projects drop the "Capstone:" label, which the screen already says in plain words. */
+export function learnerTitle(title: string): string {
+  return title.replace(/^capstone:\s*/i, '').replace(/^./, (letter) => letter.toUpperCase());
 }
 
 export function firstName(fullName: string | null | undefined): string {

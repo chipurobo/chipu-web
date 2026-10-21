@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchAssignments, fetchBlocklyProjects, startBlocklyLesson } from '../../lib/learningQueries';
-import { LearnerPage, Hero, LevelChip, FriendlyAlert, Loading, EmptyNote } from './ui/LearnerKit';
+import { LearnerPage, Hero, FriendlyAlert, Loading, EmptyNote } from './ui/LearnerKit';
 import { LessonArt } from './ui/LearnerArt';
 
 export function BlocklyProjects() {
@@ -28,7 +28,7 @@ export function BlocklyProjects() {
             <article key={project.id} className="learner-card learner-card-hover flex flex-col overflow-hidden" aria-label={project.title}>
               <LessonArt theme="project" className="w-full" />
               <div className="flex flex-1 flex-col gap-3 p-5">
-                <div className="flex items-center gap-2"><LevelChip level={project.learning_plan?.level} /><h2>{project.title}</h2></div>
+                <h2>{project.title}</h2>
                 <p className="sr-only">{project.description}</p>
                 {!!project.learning_plan?.requirements?.length && (
                   <div className="rounded-2xl bg-amber-50 p-3">

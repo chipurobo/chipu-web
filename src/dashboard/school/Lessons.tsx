@@ -10,9 +10,8 @@ import type { StageKind } from '../../lib/database.types';
 import { BookOpen, Laptop, MonitorPlay, FolderKanban, ArrowRight, GraduationCap, Megaphone, Link as LinkIcon, ExternalLink } from 'lucide-react';
 import { fetchLearningStudents } from '../../lib/learningQueries';
 import { AssignLessonForm } from '../learning/AssignLessonForm';
-import { learningLevels, learningPathways } from '../../lib/learningFramework';
+import { learningPathways } from '../../lib/learningFramework';
 import { hasUsableLearningPlan } from '../../lib/learningRecords';
-import { levelLook } from '../../lib/learnerCopy';
 import type { Lesson, LearningNeed } from '../../lib/database.types';
 import { SkeletonCards } from '../components/Skeletons';
 import { safeHttpUrl } from '../../lib/safeUrl';
@@ -64,7 +63,6 @@ interface CompletionCountRow {
 export function SchoolLessons() {
   const [assignFor, setAssignFor] = useState<Lesson | null>(null);
   const [level, setLevel] = useState<LevelChoice>('all');
-  const [learnLevel, setLearnLevel] = useState<'all' | 'beginner' | 'intermediate' | 'expert'>('all');
   const [learnerAge, setLearnerAge] = useState('all');
   const [learnerGrade, setLearnerGrade] = useState('all');
   const [learningNeed, setLearningNeed] = useState<'all' | LearningNeed>('all');
@@ -129,7 +127,7 @@ export function SchoolLessons() {
     if (!isTeacher) return matchesLevel(lesson.level, level);
     const age = learnerAge === 'all' ? null : Number(learnerAge);
     const grade = learnerGrade === 'all' ? null : Number(learnerGrade);
-    return (learnLevel === 'all' || lesson.learning_plan?.level === learnLevel)
+    return true
       && (age === null || ((lesson.minimum_age === null || lesson.minimum_age <= age) && (lesson.maximum_age === null || lesson.maximum_age >= age)))
       && (grade === null || ((lesson.minimum_grade === null || lesson.minimum_grade <= grade) && (lesson.maximum_grade === null || lesson.maximum_grade >= grade)))
       && (learningNeed === 'all' || (lesson.learning_needs ?? []).includes(learningNeed));
@@ -159,15 +157,6 @@ export function SchoolLessons() {
         <details className="card p-4" aria-label="Curate lessons">
           <summary className="cursor-pointer font-semibold text-gray-900">Filters</summary>
           <div className="mt-4 space-y-4">
-            <fieldset className="flex flex-wrap gap-2">
-            <legend className="sr-only">Learning level</legend>
-            {([{ id: 'all', emoji: '✨', title: 'All' }, ...learningLevels.map((item) => ({ id: item.id, emoji: levelLook[item.id].emoji, title: item.title }))]).map((option) => (
-              <label key={option.id} className={`inline-flex cursor-pointer items-center gap-1 rounded-full border px-3 py-1 text-sm ${learnLevel === option.id ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-700'}`}>
-                <input type="radio" name="teacher-lesson-level" className="sr-only" value={option.id} checked={learnLevel === option.id} onChange={() => setLearnLevel(option.id as typeof learnLevel)} />
-                <span aria-hidden="true">{option.emoji}</span>{option.title}
-              </label>
-            ))}
-            </fieldset>
             <div className="grid gap-3 sm:grid-cols-3">
               <div><label className="text-sm text-gray-700" htmlFor="lesson-filter-age">Age</label>
                 <select id="lesson-filter-age" className="field-input mt-1" value={learnerAge} onChange={(event) => setLearnerAge(event.target.value)}>
@@ -240,7 +229,7 @@ export function SchoolLessons() {
                       {!isTeacher && <span className={`${badge}`}>{STAGE_KIND_LABEL[s.kind]}</span>}
                       {!isTeacher && <span className="text-xs text-gray-500">{s.points} pt{s.points === 1 ? '' : 's'}</span>}
                       {!isTeacher && <span className="badge-gray">{LEVEL_LABEL[s.level]}</span>}
-                      {s.learning_plan && <span className="badge-teal">{s.learning_plan.activityKind === 'capstone' ? '🏗️ ' : ''}{learningLevels.find((level) => level.id === s.learning_plan?.level)?.title}</span>}
+                      {s.learning_plan && <span className="badge-teal">{s.learning_plan.activityKind === 'capstone' ? '🏗️ Big project' : 'Coding lesson'}</span>}
                       {!isTeacher && s.required_for_certificate && (
                         <span className="badge-amber inline-flex items-center">
                           <GraduationCap className="h-3 w-3 mr-1" aria-hidden="true" />

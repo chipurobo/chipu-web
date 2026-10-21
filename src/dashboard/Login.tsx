@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, ArrowRight, Blocks, Check, Eye, EyeOff, GraduationCap, Lightbulb, Loader2, ShieldCheck, Sparkles, Users } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/auth';
-import { fetchSchoolLoginOptions } from '../lib/learningQueries';
+import { fetchSchoolLoginOptions, type SchoolLoginOption } from '../lib/learningQueries';
 import { admissionLogin, learnerEmail, learnerPassword, normaliseAdmissionNumber } from '../lib/learnerLogin';
 import { Mascot } from './learning/ui/LearnerArt';
 import './Login.css';
@@ -47,6 +47,11 @@ export function Login() {
     let identity = normaliseLogin(email, kind);
     let secret = password;
     if (kind === 'learner') {
+      if (!schoolCode) {
+        showError('Find and choose your school first.');
+        setSubmitting(false);
+        return;
+      }
       const number = normaliseAdmissionNumber(admission);
       if (!/^[0-9]{4}$/.test(number)) {
         showError('Your admission number is 4 digits, like 0001.');
@@ -149,15 +154,8 @@ export function Login() {
             <fieldset className="login-fields" disabled={submitting} aria-describedby="login-instructions">
               <legend className="sr-only">{kind === 'learner' ? 'Learner details' : kind === 'teacher' ? 'Teacher details' : 'Admin details'}</legend>
               {kind === 'learner' ? <>
-                <div className="login-field">
-                  <label htmlFor="school">School</label>
-                  <select id="school" required className="login-input" value={schoolCode} disabled={schools.isPending || schools.isError}
-                    aria-describedby={schools.isError ? 'school-error' : undefined} onChange={(e) => { setSchoolCode(e.target.value); setError(null); }}>
-                    <option value="">{schools.isPending ? 'Loading schools…' : schools.isError ? 'School list unavailable' : 'Choose your school'}</option>
-                    {schools.data?.map((school) => <option key={school.id} value={school.code}>{school.name}</option>)}
-                  </select>
-                  {schools.isError && <div id="school-error" role="alert" className="login-school-error">We couldn’t load the schools. Check your connection. <button type="button" onClick={() => void schools.refetch()}>Try again</button></div>}
-                </div>
+                <SchoolPicker schools={schools.data ?? []} loading={schools.isPending} failed={schools.isError} onRetry={() => void schools.refetch()}
+                  value={schoolCode} onChange={(code) => { setSchoolCode(code); setError(null); }} />
                 <div className="login-field">
                   <label htmlFor="admission">Admission number</label>
                   <input id="admission" type="text" inputMode="numeric" pattern="[0-9]{1,4}" maxLength={4} required autoComplete="username" autoCapitalize="off" spellCheck={false}
@@ -195,6 +193,45 @@ export function Login() {
         </section>
       </main>
       <footer className="login-footer">A place for every learner. A chance for every idea.</footer>
+    </div>
+  );
+}
+
+/**
+ * School finder for learners. A long dropdown is hard to use with a screen
+ * reader, so learners type part of the name and pick from a short list of
+ * radio buttons instead. The number of matches is announced as they type.
+ */
+function SchoolPicker({ schools, loading, failed, onRetry, value, onChange }: {
+  schools: SchoolLoginOption[]; loading: boolean; failed: boolean; onRetry: () => void;
+  value: string; onChange: (code: string) => void;
+}) {
+  const [query, setQuery] = useState('');
+  const chosen = schools.find((school) => school.code === value);
+  const words = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const matches = schools.filter((school) => words.every((word) => `${school.name} ${school.code}`.toLowerCase().includes(word)));
+  // Radio buttons select as the arrow keys move, so the list must stay put
+  // after a choice. The chosen school stays listed even if the search changes.
+  const shown = words.length || schools.length <= 6 ? matches.slice(0, 6) : [];
+  const listed = chosen && !shown.includes(chosen) ? [chosen, ...shown] : shown;
+
+  return (
+    <div className="login-field">
+      <label htmlFor="school">School</label>
+      <input id="school" type="search" className="login-input" autoComplete="off" spellCheck={false} disabled={loading || failed}
+        placeholder={loading ? 'Loading schools…' : 'Type your school’s name'} aria-describedby="school-count"
+        value={query} onChange={(e) => setQuery(e.target.value)} />
+      <p id="school-count" role="status" className="login-field-help">
+        {failed ? '' : !words.length ? 'Type a few letters, then pick your school.' : matches.length === 0 ? 'No school found. Try fewer letters.' : matches.length === 1 ? '1 school found.' : `${matches.length} schools found${matches.length > 6 ? '. Type more to see yours.' : '.'}`}
+      </p>
+      {failed && <div id="school-error" role="alert" className="login-school-error">We couldn’t load the schools. Check your connection. <button type="button" onClick={onRetry}>Try again</button></div>}
+      {!!listed.length && <fieldset className="login-school-list">
+        <legend className="sr-only">Pick your school</legend>
+        {listed.map((school) => <label key={school.id} className="login-school-option">
+          <input type="radio" name="school" value={school.code} checked={school.code === value} onChange={() => onChange(school.code)} />
+          <span>{school.name}</span>{school.code === value && <Check size={18} aria-hidden="true" />}
+        </label>)}
+      </fieldset>}
     </div>
   );
 }

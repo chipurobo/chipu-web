@@ -18,9 +18,9 @@ export function Hero({ eyebrow, title, blurb, mood = 'happy', children }: {
   return (
     <header className="learner-hero">
       <div className="flex items-center gap-4 sm:gap-6">
-        <Mascot size={88} mood={mood} className="shrink-0 drop-shadow-md" />
+        <Mascot size={64} mood={mood} className="shrink-0" />
         <div className="min-w-0">
-          {eyebrow && <p className="text-xs font-extrabold uppercase tracking-widest text-sky-800/80">{eyebrow}</p>}
+          {eyebrow && <p className="text-xs font-extrabold uppercase tracking-widest text-slate-600">{eyebrow}</p>}
           <h1 className="learner-title">{title}</h1>
           {blurb && <p className="sr-only">{blurb}</p>}
         </div>
@@ -58,7 +58,7 @@ export function SkillChip({ id, band }: { id: CompetencyId; band?: ReviewBand | 
     <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-bold ${skill.color}`}>
       <span aria-hidden="true">{skill.emoji}</span><span>{skill.label}</span>
       {rating && <span className="ml-1 rounded-full bg-white/70 px-2 py-0.5 text-xs">
-        <span aria-hidden="true">{'★'.repeat(rating.stars)}{'☆'.repeat(3 - rating.stars)} </span><span className="sr-only">{rating.stars} of 3 stars, </span>{rating.label}
+        <span aria-hidden="true">{'★'.repeat(rating.stars)}{'☆'.repeat(4 - rating.stars)} </span>{rating.label}
       </span>}
     </span>
   );
@@ -69,7 +69,7 @@ export function XpBar({ stats }: { stats: LearnerStats }) {
   return (
     <div className="learner-card flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:gap-6">
       <div className="flex items-center gap-3">
-        <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-300 to-orange-400 text-3xl shadow-inner" aria-hidden="true">{stats.rank.emoji}</span>
+        <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-100 text-3xl" aria-hidden="true">{stats.rank.emoji}</span>
         <div>
           <p className="sr-only">Your rank</p>
           <p className="text-xl font-extrabold text-slate-900">{stats.rank.title}</p>
@@ -81,7 +81,7 @@ export function XpBar({ stats }: { stats: LearnerStats }) {
           {stats.nextRank ? <span>{stats.nextRank.min - stats.xp} <span aria-hidden="true">→ {stats.nextRank.emoji}</span><span className="sr-only">more to reach {stats.nextRank.title}</span></span> : <span aria-hidden="true">🏆</span>}
         </div>
         <div className="h-4 w-full overflow-hidden rounded-full bg-slate-200" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent} aria-label={`Progress to ${stats.nextRank?.title ?? 'top rank'}`}>
-          <div className="h-full rounded-full bg-gradient-to-r from-amber-400 via-orange-400 to-pink-500 transition-all duration-700" style={{ width: `${Math.max(4, percent)}%` }} />
+          <div className="h-full rounded-full bg-amber-400 transition-all duration-700" style={{ width: `${Math.max(4, percent)}%` }} />
         </div>
       </div>
     </div>
@@ -103,7 +103,7 @@ export function BadgeGrid({ badges }: { badges: Badge[] }) {
       {badges.map((badge) => (
         <li key={badge.id} className={`learner-card flex flex-col items-center p-4 text-center ${badge.earned ? '' : 'border-dashed bg-slate-50'}`}>
           {/* Locked badges dim the icon only; the words keep full contrast so they stay readable. */}
-          <span className={`flex h-14 w-14 items-center justify-center rounded-full text-3xl ${badge.earned ? 'bg-gradient-to-br from-yellow-200 to-amber-400 shadow-md' : 'bg-slate-200 opacity-70 grayscale'}`} aria-hidden="true">{badge.earned ? badge.emoji : '🔒'}</span>
+          <span className={`flex h-14 w-14 items-center justify-center rounded-full text-3xl ${badge.earned ? 'bg-amber-100' : 'bg-slate-200 opacity-70 grayscale'}`} aria-hidden="true">{badge.earned ? badge.emoji : '🔒'}</span>
           <p className="mt-2 font-extrabold text-slate-900"><span className="sr-only">{badge.earned ? 'Earned badge: ' : 'Locked badge: '}</span>{badge.title}</p>
           <p className="sr-only">{badge.earned ? 'You got it!' : `To earn it: ${badge.hint}`}</p>
         </li>
@@ -166,11 +166,11 @@ export function Confetti({ show }: { show: boolean }) {
 
 export function Cheer({ title, body, emoji = '🎉' }: { title: string; body?: string; emoji?: string }) {
   return (
-    <div role="status" aria-live="polite" className="learner-card flex items-center gap-4 border-emerald-300 bg-gradient-to-r from-emerald-50 to-lime-50 p-4">
+    <div role="status" aria-live="polite" className="learner-card flex items-center gap-4 border-teal-200 bg-teal-50 p-4">
       <Mascot size={56} mood="cheer" />
       <div>
-        <p className="text-lg font-extrabold text-emerald-900">{title} <span aria-hidden="true">{emoji}</span></p>
-        {body && <p className="mt-1 text-sm font-semibold text-emerald-950">{body}</p>}
+        <p className="text-lg font-extrabold text-teal-900">{title} <span aria-hidden="true">{emoji}</span></p>
+        {body && <p className="mt-1 text-sm font-semibold text-teal-950">{body}</p>}
       </div>
     </div>
   );

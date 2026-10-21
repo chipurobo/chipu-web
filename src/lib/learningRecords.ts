@@ -14,6 +14,10 @@ export interface LessonLearningPlan {
   contentVersion?: string;
   activityKind?: 'capstone';
   requirements?: string[];
+  /** Learner stages: the real-life problem that opens the lesson… */
+  problem?: string;
+  /** …and the short ideas to learn before building. */
+  ideas?: { title: string; body: string }[];
 }
 
 export function newLearningPlan(): LessonLearningPlan {
@@ -31,7 +35,8 @@ export function hasUsableLearningPlan(plan: LessonLearningPlan | null | undefine
     && !!plan.evidenceBrief.trim();
 }
 
-export type ReviewBand = 'developing' | 'demonstrated' | 'extending';
+/** CBC performance levels: Below (BE), Approaching (AE), Meeting (ME) and Exceeding (EE) expectations. */
+export type ReviewBand = 'below' | 'approaching' | 'meeting' | 'exceeding';
 export interface LearningAssignment {
   id: string;
   school_id: string;
@@ -42,6 +47,8 @@ export interface LearningAssignment {
   learning_plan: LessonLearningPlan;
   assigned_by: string | null;
   created_at: string;
+  /** True when the learner opened it from the lesson path; false when a teacher set it. */
+  self_started?: boolean;
 }
 export interface AssignmentRecipient {
   assignment_id: string;

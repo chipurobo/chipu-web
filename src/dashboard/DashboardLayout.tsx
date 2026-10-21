@@ -9,7 +9,7 @@ import { fetchPendingBookingCount } from '../lib/gql/queries';
 import {
   LogOut, Home, School, Package, ClipboardList, Users, Boxes, Wrench, Send, Menu, X,
   Award, Layers, FolderKanban, BookOpen, CalendarDays, ListChecks, ShieldAlert,
-  Presentation, Trophy, Medal, Brain, Rocket, Map, Images, Puzzle, Flag,
+  Presentation, Trophy, Medal, Puzzle, Flag, Star,
 } from 'lucide-react';
 
 // ----- Page titles for the SPA route announcer -----
@@ -57,7 +57,7 @@ const LEARNER_PAGE_TITLES: Record<string, string> = {
   '/dashboard/my-learning': 'Lessons',
   '/dashboard/quizzes': 'Quizzes',
   '/dashboard/my-projects': 'Projects',
-  '/dashboard/my-progress': 'Journey',
+  '/dashboard/my-progress': 'My stars',
   '/dashboard/portfolio': 'Showcase',
   '/dashboard/report-concern': 'Report a concern',
 };
@@ -317,13 +317,10 @@ function DashboardShell() {
         <nav aria-label="Primary" className="flex-1 py-4 px-3 space-y-0.5 text-sm overflow-y-auto">
           {isLearner ? (
             <>
-              <SidebarLink to="/dashboard" end icon={Home} tone="text-sky-600">Home</SidebarLink>
-              <SidebarLink to="/dashboard/my-learning" icon={Puzzle} tone="text-emerald-600">Lessons</SidebarLink>
-              <SidebarLink to="/dashboard/quizzes" icon={Brain} tone="text-violet-600">Quizzes</SidebarLink>
-              <SidebarLink to="/dashboard/my-projects" icon={Rocket} tone="text-orange-600">Projects</SidebarLink>
-              <SidebarLink to="/dashboard/my-progress" icon={Map} tone="text-amber-600">Journey</SidebarLink>
-              <SidebarLink to="/dashboard/portfolio" icon={Images} tone="text-pink-600">Showcase</SidebarLink>
-              <SidebarLink to="/dashboard/report-concern" icon={Flag} tone="text-terracotta-600">Report a concern</SidebarLink>
+              <SidebarLink to="/dashboard" end icon={Home} tone="text-teal-700">Home</SidebarLink>
+              <SidebarLink to="/dashboard/my-learning" icon={Puzzle} tone="text-teal-700">Lessons</SidebarLink>
+              <SidebarLink to="/dashboard/my-progress" icon={Star} tone="text-teal-700">My stars</SidebarLink>
+              <SidebarLink to="/dashboard/report-concern" icon={Flag} tone="text-teal-700">Report a concern</SidebarLink>
             </>
           ) : <>
           <SidebarLink to="/dashboard" end icon={Home}>
@@ -453,13 +450,13 @@ function DashboardShell() {
           <p className="text-xs text-gray-500 truncate">
             {school?.name ?? (isAdmin ? 'ChipuRobo admin' : '—')}
           </p>
-          <span className={`mt-2 inline-block px-2 py-0.5 rounded-full text-[0.65rem] font-medium uppercase tracking-wide ${
+          {!isLearner && <span className={`mt-2 inline-block px-2 py-0.5 rounded-full text-[0.65rem] font-medium uppercase tracking-wide ${
             isAdmin       ? 'bg-terracotta-100 text-terracotta-700' :
             isMakerSpace  ? 'bg-indigo-100 text-indigo-700' :
                             'bg-teal-100 text-teal-700'
           }`}>
             {roleLabel}
-          </span>
+          </span>}
           <button
             type="button"
             onClick={handleSignOut}

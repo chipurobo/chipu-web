@@ -1,23 +1,34 @@
 /**
- * The lesson page a learner sees. Wraps the same assignment, submission and
- * feedback records as the teacher view, but adds scaffolding: a step
- * checklist, hints that reveal one at a time, and a block-drawer guide.
- * Hints are built from the lesson plan itself, so nothing new is stored.
+ * The lesson page a learner sees, one stage at a time:
+ *   Think (the problem + what do you know?) → Learn (two ideas + quick check)
+ *   → Build (blocks, steps, hints) → Check (final check) → Send.
+ * Only one stage is on screen, so there is one thing to read and one thing to
+ * press. Uses the same assignment, submission and feedback records as the
+ * teacher view; hints are built from the lesson plan, so nothing new is stored.
  */
 import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { trackLearningActivity } from '../../lib/learningOutcomes';
-import { fetchAssignment, fetchEvidence, fetchSubmissions } from '../../lib/learningQueries';
+import { fetchAssignment, fetchAssignments, fetchBlocklyLessons, fetchBlocklyProjects, fetchEvidence, fetchSubmissions } from '../../lib/learningQueries';
 import { fetchLessonById } from '../../lib/gql/queries';
-import type { LearningLevel } from '../../lib/learningFramework';
 import type { LessonLearningPlan } from '../../lib/learningRecords';
-import { artThemeFor, pathwayLook, skillGoals, skillLook, stepKindFor, type ArtTheme } from '../../lib/learnerCopy';
-import { LearnerPage, LevelChip, SkillChip, FriendlyAlert, Loading, ReadAloud } from './ui/LearnerKit';
-import { LessonArt, StepIcon, Mascot } from './ui/LearnerArt';
-import { LearnerSubmission } from './LearnerSubmission';
-import { ReportConcernLink } from '../components/ReportConcernLink';
+import { artThemeFor, learnerTitle, type ArtTheme } from '../../lib/learnerCopy';
+import { buildPath } from '../../lib/learnerPath';
+import { LearnerPage, FriendlyAlert, Loading, ReadAloud } from './ui/LearnerKit';
+import { LessonArt } from './ui/LearnerArt';
+import { StageQuiz } from './ui/StageQuiz';
+import { LessonBuild, LessonSend, useLessonWork } from './LearnerSubmission';
 import { AccessibleLessonMedia } from './AccessibleLessonMedia';
+
+const stages = [
+  { id: 'think', emoji: '🤔', label: 'Think' },
+  { id: 'learn', emoji: '📖', label: 'Learn' },
+  { id: 'build', emoji: '🧩', label: 'Build' },
+  { id: 'check', emoji: '🏁', label: 'Check' },
+  { id: 'send', emoji: '📬', label: 'Send' },
+] as const;
+type StageId = (typeof stages)[number]['id'];
 
 const drawerTip: Record<ArtTheme, string> = {
   loop: 'Open the Repeat drawer and look for the "repeat" block.',
@@ -34,17 +45,6 @@ const drawerTip: Record<ArtTheme, string> = {
   project: 'Break the project into small parts. Build and test one part before you start the next.',
 };
 
-const drawers: { name: string; emoji: string; what: string; from?: LearningLevel }[] = [
-  { name: 'Output and text', emoji: '💬', what: 'Show words on the screen with the print block.' },
-  { name: 'Numbers', emoji: '🔢', what: 'Add, subtract, multiply or pick a random number.' },
-  { name: 'Choices (if)', emoji: '🔀', what: 'Do something only when a test is true.' },
-  { name: 'Repeat (loops)', emoji: '🔁', what: 'Do the same blocks again and again without copying them.' },
-  { name: 'Remember (variables)', emoji: '📦', what: 'Give a value a name so your program can remember it.' },
-  { name: 'Lists', emoji: '📋', what: 'Keep lots of values together in one place.', from: 'intermediate' },
-  { name: 'My own blocks (functions)', emoji: '🧰', what: 'Name a group of blocks so you can use it again and again.', from: 'expert' },
-];
-const levelRank: Record<LearningLevel, number> = { beginner: 0, intermediate: 1, expert: 2 };
-
 function buildHints(title: string, plan: LessonLearningPlan): string[] {
   const theme = artThemeFor(title, { pathwayId: plan.pathwayId, capstone: plan.activityKind === 'capstone' });
   const hints: string[] = [];
@@ -58,118 +58,214 @@ function buildHints(title: string, plan: LessonLearningPlan): string[] {
   return hints;
 }
 
+const stageKey = (assignmentId: string) => `chipurobo:lesson-stage:${assignmentId}`;
+
 export function LearnerLesson() {
   const { assignmentId } = useParams();
   const assignmentQuery = useQuery({ queryKey: ['learning-assignment', assignmentId], queryFn: () => fetchAssignment(assignmentId!), enabled: !!assignmentId });
   const assignment = assignmentQuery.data;
   const lessonQuery = useQuery({ queryKey: ['lesson', assignment?.lesson_id], queryFn: () => fetchLessonById(assignment!.lesson_id), enabled: !!assignment?.lesson_id });
   useEffect(() => { if (assignment) trackLearningActivity('resource_open', assignment.lesson_id); }, [assignment]);
-  const heading = useRef<HTMLHeadingElement>(null);
-  useEffect(() => { heading.current?.focus(); }, [assignment?.id]);
   const evidence = useQuery({ queryKey: ['competency-evidence', assignmentId], queryFn: () => fetchEvidence(assignmentId!), enabled: !!assignment });
   const submissions = useQuery({ queryKey: ['learning-submissions', assignmentId], queryFn: () => fetchSubmissions(assignmentId!), enabled: !!assignment });
   const error = submissions.error ?? assignmentQuery.error ?? evidence.error;
-  const isCapstone = assignment?.learning_plan.activityKind === 'capstone';
-  const plan = assignment?.learning_plan;
-  const theme = assignment ? artThemeFor(assignment.title, { pathwayId: assignment.learning_plan.pathwayId, capstone: isCapstone }) : 'print';
 
   return (
-    <LearnerPage>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Link to={isCapstone ? '/dashboard/my-projects' : '/dashboard/my-learning'} className="btn-secondary">
-          <span aria-hidden="true">← </span><span className="sr-only">Back to </span>{isCapstone ? 'Projects' : 'Lessons'}
-        </Link>
-        <ReportConcernLink lessonId={assignment?.lesson_id} />
-      </div>
+    <LearnerPage className="!space-y-5 max-w-4xl">
       <FriendlyAlert error={error} />
       {assignmentQuery.isPending && <Loading>Opening your lesson</Loading>}
-      {!assignmentQuery.isPending && !error && !assignment && <h1 className="learner-title"><span aria-hidden="true">🔍 </span>Not found</h1>}
-      {assignment && plan && <>
-        <header className="learner-card flex flex-col overflow-hidden sm:flex-row">
-          <LessonArt theme={theme} className="w-full sm:w-64 shrink-0" />
-          <div className="flex flex-col gap-3 p-5">
-            <p className="sr-only">{pathwayLook[plan.pathwayId]?.label}</p>
-            <h1 ref={heading} tabIndex={-1} className="learner-title focus:outline-none">{assignment.title}</h1>
-            <div className="flex flex-wrap items-center gap-2">
-              <LevelChip level={plan.level} big />
-              {assignment.due_date && <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 text-sm font-bold text-slate-700"><span aria-hidden="true">📅</span><span className="sr-only">Due</span> {assignment.due_date}</span>}
-            </div>
-            <ul className="flex flex-wrap gap-2" aria-label="Skills you will practise">
-              {plan.competencyIds.map((id) => <li key={id}><SkillChip id={id} /></li>)}
-            </ul>
-          </div>
-        </header>
-
-        {lessonQuery.data && <AccessibleLessonMedia lesson={lessonQuery.data} learnerFriendly />}
-
-        <section className="space-y-4" aria-label="Your mission">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2><span aria-hidden="true">🎯 </span>Mission</h2>
-            <ReadAloud text={[assignment.title, assignment.instructions, ...plan.steps.map((step, index) => `Step ${index + 1}. ${step}`), `What to show your teacher. ${plan.evidenceBrief}`, plan.expectedResult ? `When it is working, your program should show: ${plan.expectedResult}` : ''].filter(Boolean).join('. ')} />
-          </div>
-          {assignment.instructions && <p className="learner-card whitespace-pre-wrap border-sky-200 bg-sky-50 p-4 text-base font-semibold text-sky-950"><span aria-hidden="true">🧑‍🏫 </span>{assignment.instructions}</p>}
-          <StepChecklist key={assignment.id} steps={plan.steps} />
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="learner-card p-4">
-              <h3><span aria-hidden="true">📸 </span>Show</h3>
-              <p className="mt-1 text-sm text-slate-700">{plan.evidenceBrief}</p>
-            </div>
-            {plan.expectedResult && <div className="learner-card p-4">
-              <h3><span aria-hidden="true">👀 </span>Should show</h3>
-              <pre className="mt-2 whitespace-pre-wrap break-words rounded-2xl bg-slate-900 p-3 text-sm text-emerald-300">{plan.expectedResult}</pre>
-            </div>}
-          </div>
-          {isCapstone && !!plan.requirements?.length && <div className="learner-card border-amber-200 bg-amber-50 p-4">
-            <h3 className="text-amber-900"><span aria-hidden="true">✅ </span>Done when</h3>
-            <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-amber-900">{plan.requirements.map((requirement) => <li key={requirement}>{requirement}</li>)}</ul>
-          </div>}
-          <details className="learner-card p-4 text-sm text-slate-700">
-            <summary className="cursor-pointer font-extrabold text-slate-900"><span aria-hidden="true">💪 </span>Skills</summary>
-            <ul className="mt-3 space-y-2">
-              {plan.competencyIds.map((id) => <li key={id} className="flex items-start gap-2"><span aria-hidden="true">{skillLook[id].emoji}</span><span><span className="font-extrabold">{skillLook[id].label}:</span> {skillGoals[id][plan.level]}</span></li>)}
-            </ul>
-            <p className="mt-3"><span aria-hidden="true">🤝 </span>Help is always okay.</p>
-          </details>
-        </section>
-
-        <HintBox key={`hints-${assignment.id}`} hints={buildHints(assignment.title, plan)} level={plan.level} />
-
-        <LearnerSubmission key={assignment.id} assignmentId={assignment.id} level={plan.level} submissions={submissions.data ?? []} reviews={evidence.data ?? []} />
-
-        <Link className="btn-secondary" to={`/dashboard/quizzes?level=${plan.level}`}><span aria-hidden="true">🧠</span> Quiz</Link>
+      {!assignmentQuery.isPending && !error && !assignment && <>
+        <h1 className="learner-title"><span aria-hidden="true">🔍 </span>Not found</h1>
+        <Link to="/dashboard/my-learning" className="btn-secondary">Back to lessons</Link>
       </>}
+      {assignment && submissions.isSuccess && <LessonStages key={assignment.id}
+        assignmentId={assignment.id} title={lessonQuery.data?.title ?? assignment.title} lessonId={assignment.lesson_id}
+        instructions={assignment.self_started ? '' : assignment.instructions}
+        plan={{ ...assignment.learning_plan, ...pickStageContent(lessonQuery.data?.learning_plan) }}
+        lesson={lessonQuery.data ?? null}
+        submissions={submissions.data} reviews={evidence.data ?? []} />}
     </LearnerPage>
+  );
+}
+
+/**
+ * Assignments keep a copy of the lesson plan from the day they were set. The
+ * learner-facing wording (problem, ideas, simple steps) comes from the lesson
+ * itself, so improvements reach work that was set earlier. The skills and the
+ * teacher's evidence brief stay as they were set.
+ */
+function pickStageContent(plan: LessonLearningPlan | null | undefined): Partial<LessonLearningPlan> {
+  if (!plan) return {};
+  const fresh: Partial<LessonLearningPlan> = { problem: plan.problem, ideas: plan.ideas };
+  if (plan.steps?.length) fresh.steps = plan.steps;
+  if (plan.expectedResult) fresh.expectedResult = plan.expectedResult;
+  if (plan.requirements?.length) fresh.requirements = plan.requirements;
+  return fresh;
+}
+
+function LessonStages({ assignmentId, title, lessonId, instructions, plan, lesson, submissions, reviews }: {
+  assignmentId: string; title: string; lessonId: string; instructions: string; plan: LessonLearningPlan;
+  lesson: Awaited<ReturnType<typeof fetchLessonById>> | null;
+  submissions: Parameters<typeof LessonSend>[0]['submissions']; reviews: Parameters<typeof LessonSend>[0]['reviews'];
+}) {
+  const [stage, setStage] = useState<StageId>(() => {
+    const saved = localStorage.getItem(stageKey(assignmentId)) as StageId | null;
+    if (saved && stages.some((item) => item.id === saved)) return saved;
+    return submissions.length ? 'send' : 'think';
+  });
+  const heading = useRef<HTMLHeadingElement>(null);
+  const firstRender = useRef(true);
+  const work = useLessonWork(assignmentId);
+  const path = usePath();
+  const here = path.findIndex((item) => item.lesson.id === lessonId);
+  const next = here >= 0 ? path[here + 1] : undefined;
+  const isProject = plan.activityKind === 'capstone';
+  const index = stages.findIndex((item) => item.id === stage);
+  const current = stages[index];
+  const theme = artThemeFor(title, { pathwayId: plan.pathwayId, capstone: isProject });
+  // The general "how to use your lesson" video belongs on the first lesson
+  // only; lesson-specific audio or video shows on its own lesson.
+  const generalVideo = !lesson?.media_url || lesson.media_url.endsWith('/lesson-media/lesson-orientation.webm');
+  const showMedia = !!lesson && (!generalVideo || here === 0);
+
+  useEffect(() => {
+    localStorage.setItem(stageKey(assignmentId), stage);
+    // Moving to a new stage puts focus on its heading, so screen readers start
+    // reading the new stage and keyboard users are not left at the bottom.
+    if (firstRender.current) { firstRender.current = false; heading.current?.focus(); return; }
+    heading.current?.focus();
+    window.scrollTo?.({ top: 0 });
+  }, [stage, assignmentId]);
+
+  function go(to: StageId) { if (stage === 'build') work.saveIfChanged(); setStage(to); }
+
+  const spoken: Record<StageId, string> = {
+    think: [title, plan.problem ?? '', instructions].filter(Boolean).join('. '),
+    learn: [...(plan.ideas ?? []).map((idea) => `${idea.title}. ${idea.body}`), plan.expectedResult ? `When it works, you will see: ${plan.expectedResult}` : ''].filter(Boolean).join('. '),
+    build: plan.steps.map((step, n) => `Step ${n + 1}. ${step}`).join('. '),
+    check: 'Final check. Answer each question, then check your answers.',
+    send: 'Say what you made, then press Send. Your teacher will reply here.',
+  };
+
+  return <>
+    <div className="flex items-center gap-3">
+      <Link to="/dashboard/my-learning" className="btn-secondary !px-3" title="All lessons">
+        <span aria-hidden="true">←</span><span className="sr-only">All lessons</span>
+      </Link>
+      <h1 className="learner-title !text-2xl sm:!text-3xl">{learnerTitle(title)}</h1>
+    </div>
+
+    <nav aria-label="Lesson steps">
+      <ol className="grid grid-cols-5 gap-1.5 sm:gap-2">
+        {stages.map((item, n) => (
+          <li key={item.id} aria-current={n === index ? 'step' : undefined}
+            className={`flex flex-col items-center gap-1 rounded-2xl px-1 py-2 text-xs font-extrabold sm:text-sm ${n === index ? 'bg-teal-700 text-white' : n < index ? 'bg-teal-50 text-teal-900' : 'bg-white text-slate-600 border-2 border-slate-200'}`}>
+            <span aria-hidden="true" className="text-lg">{n < index ? '✓' : item.emoji}</span>
+            <span><span className="sr-only">Step {n + 1}: </span>{item.label}<span className="sr-only">{n < index ? ', done' : n === index ? ', you are here' : ''}</span></span>
+          </li>
+        ))}
+      </ol>
+    </nav>
+
+    <section aria-labelledby="stage-heading" className="space-y-5">
+      <div className="flex items-center justify-between gap-3">
+        <h2 id="stage-heading" ref={heading} tabIndex={-1} className="focus:outline-none">
+          <span className="sr-only">Step {index + 1} of {stages.length}: </span><span aria-hidden="true">{current.emoji} </span>{current.label}
+        </h2>
+        <ReadAloud key={stage} text={spoken[stage]} />
+      </div>
+
+      {stage === 'think' && <>
+        <div className="learner-card flex flex-col overflow-hidden sm:flex-row">
+          <LessonArt theme={theme} className="w-full sm:w-56 shrink-0" />
+          <div className="space-y-3 p-5">
+            <p className="text-lg font-semibold leading-relaxed text-slate-900">{plan.problem ?? lesson?.description ?? title}</p>
+            {instructions && <p className="rounded-2xl bg-slate-100 p-3 text-base font-semibold text-slate-900"><span className="font-extrabold">From your teacher: </span>{instructions}</p>}
+          </div>
+        </div>
+        {showMedia && lesson && <AccessibleLessonMedia lesson={lesson} learnerFriendly />}
+        <StageQuiz lessonId={lessonId} stage="pre" title="What do you know already?" />
+      </>}
+
+      {stage === 'learn' && <>
+        <ol className="space-y-3" aria-label="Ideas">
+          {(plan.ideas ?? []).map((idea, n) => (
+            <li key={idea.title} className="learner-card flex items-start gap-4 p-5">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-teal-700 text-lg font-extrabold text-white" aria-hidden="true">{n + 1}</span>
+              <div><h3>{idea.title}</h3><p className="mt-1 text-base">{idea.body}</p></div>
+            </li>
+          ))}
+        </ol>
+        {!plan.ideas?.length && lesson?.description && <p className="learner-card p-5 text-base">{lesson.description}</p>}
+        {plan.expectedResult && <div className="learner-card p-5">
+          <h3>When it works, you will see</h3>
+          <p className="mt-2 whitespace-pre-line rounded-2xl bg-slate-900 p-3 text-base font-semibold !text-white">{plan.expectedResult}</p>
+        </div>}
+        {isProject && !!plan.requirements?.length && <div className="learner-card p-5">
+          <h3>Your project is done when it has</h3>
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-base text-slate-800">{plan.requirements.map((requirement) => <li key={requirement}>{requirement}</li>)}</ul>
+        </div>}
+        <StageQuiz lessonId={lessonId} stage="mid" title="Quick check" />
+      </>}
+
+      {stage === 'build' && <>
+        <StepChecklist key={assignmentId} steps={plan.steps} />
+        <LessonBuild work={work} level={plan.level} />
+        <HintBox hints={buildHints(title, plan)} />
+      </>}
+
+      {stage === 'check' && <StageQuiz lessonId={lessonId} stage="end" title="Final check" />}
+
+      {stage === 'send' && <>
+        <LessonSend work={work} submissions={submissions} reviews={reviews} />
+        {!!submissions.length && next && next.state !== 'locked' && <NextLesson item={next} />}
+      </>}
+    </section>
+
+    <div className="flex items-center justify-between gap-3 border-t-2 border-slate-200 pt-5">
+      {index > 0
+        ? <button type="button" className="btn-secondary" onClick={() => go(stages[index - 1].id)}><span aria-hidden="true">← </span>Back</button>
+        : <span />}
+      {index < stages.length - 1 && <button type="button" className="btn-play" onClick={() => go(stages[index + 1].id)}>
+        Next<span className="sr-only">: {stages[index + 1].label}</span><span aria-hidden="true"> →</span></button>}
+    </div>
+  </>;
+}
+
+function usePath() {
+  const lessons = useQuery({ queryKey: ['blockly-lessons'], queryFn: fetchBlocklyLessons });
+  const projects = useQuery({ queryKey: ['blockly-projects'], queryFn: fetchBlocklyProjects });
+  const assignments = useQuery({ queryKey: ['learning-assignments'], queryFn: () => fetchAssignments() });
+  const submissions = useQuery({ queryKey: ['learning-submissions'], queryFn: () => fetchSubmissions() });
+  return buildPath({ lessons: lessons.data, projects: projects.data, assignments: assignments.data, submissions: submissions.data });
+}
+
+function NextLesson({ item }: { item: ReturnType<typeof buildPath>[number] }) {
+  return (
+    <div className="learner-card flex flex-wrap items-center justify-between gap-3 p-5">
+      <p className="text-base font-extrabold text-slate-900"><span className="font-semibold text-slate-600">Next: </span>{learnerTitle(item.lesson.title)}</p>
+      <Link className="btn-play" to="/dashboard">Go<span className="sr-only"> to the next lesson</span><span aria-hidden="true"> →</span></Link>
+    </div>
   );
 }
 
 function StepChecklist({ steps }: { steps: string[] }) {
   const [done, setDone] = useState<Set<number>>(new Set());
-  const percent = steps.length ? Math.round((done.size / steps.length) * 100) : 0;
   function toggle(index: number) {
     setDone((current) => { const next = new Set(current); if (next.has(index)) next.delete(index); else next.add(index); return next; });
   }
   return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-3">
-        <div className="h-3 flex-1 overflow-hidden rounded-full bg-slate-200" role="progressbar" aria-label="Steps done" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent}>
-          <div className="h-full rounded-full bg-gradient-to-r from-sky-400 to-emerald-400 transition-all duration-500" style={{ width: `${percent}%` }} />
-        </div>
-        <p className="text-sm font-extrabold text-slate-700" role="status">{done.size}/{steps.length}<span className="sr-only"> steps done</span>{done.size === steps.length && steps.length > 0 ? <> <span aria-hidden="true">🎉</span><span className="sr-only">, all finished!</span></> : ''}</p>
+    <div className="learner-card space-y-3 p-5">
+      <div className="flex items-center justify-between gap-3">
+        <h3>Steps</h3>
+        <p className="text-sm font-extrabold text-slate-700" role="status">{done.size} of {steps.length}<span className="sr-only"> steps ticked</span></p>
       </div>
-      {done.size === steps.length && steps.length > 0 && (
-        <div role="status" aria-live="polite" className="learner-card flex items-center gap-3 border-emerald-300 bg-emerald-50 p-4 text-emerald-950">
-          <span className="text-3xl" aria-hidden="true">✅</span>
-          <div><p className="font-extrabold">All steps complete!</p><p className="text-sm font-semibold">Great work. You can now test your project and send it to your teacher.</p></div>
-        </div>
-      )}
-      <ol className="grid gap-3 sm:grid-cols-2" aria-label="Steps">
+      <ol className="space-y-2">
         {steps.map((step, index) => (
-          <li key={index} className={`learner-card flex items-start gap-3 p-4 transition-colors ${done.has(index) ? 'border-emerald-300 bg-emerald-50' : ''}`}>
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-slate-900 text-lg font-extrabold text-white" aria-hidden="true">{index + 1}</span>
-            <StepIcon kind={stepKindFor(step)} />
-            <label className="flex flex-1 cursor-pointer items-start gap-3 pt-1.5">
-              <span className="flex-1 text-base font-semibold text-slate-800"><span className="sr-only">Step {index + 1}: </span>{step}</span>
-              <input type="checkbox" className="mt-1 h-6 w-6 shrink-0 rounded-md border-2 border-slate-400 text-emerald-600 focus:ring-emerald-400" checked={done.has(index)} onChange={() => toggle(index)} />
+          <li key={index}>
+            <label className={`flex cursor-pointer items-start gap-3 rounded-2xl p-3 ${done.has(index) ? 'bg-teal-50' : 'bg-slate-50'}`}>
+              <input type="checkbox" className="mt-0.5 h-6 w-6 shrink-0 rounded-md border-2 border-slate-400 text-teal-700 focus:ring-teal-500" checked={done.has(index)} onChange={() => toggle(index)} />
+              <span className="text-base font-semibold text-slate-900"><span className="font-extrabold">{index + 1}. </span>{step}</span>
             </label>
           </li>
         ))}
@@ -178,37 +274,20 @@ function StepChecklist({ steps }: { steps: string[] }) {
   );
 }
 
-function HintBox({ hints, level }: { hints: string[]; level: LearningLevel }) {
+function HintBox({ hints }: { hints: string[] }) {
   const [shown, setShown] = useState(0);
-  const available = drawers.filter((drawer) => !drawer.from || levelRank[level] >= levelRank[drawer.from]);
   return (
-    <section className="learner-card border-violet-200 bg-gradient-to-br from-violet-50 to-fuchsia-50 p-5 space-y-4" aria-label="Help and hints">
-      <div className="flex items-center gap-3">
-        <Mascot size={56} mood="think" />
-        <div>
-          <h2><span aria-hidden="true">💡 </span>Hints</h2>
-          <p className="sr-only">Everyone gets stuck sometimes. Hints open one at a time, so give each one a go before the next.</p>
-        </div>
-      </div>
-      <ol className="space-y-2" aria-label="Hints" aria-live="polite">
+    <section className="space-y-3" aria-label="Hints">
+      <ol className="space-y-2" aria-live="polite">
         {hints.slice(0, shown).map((hint, index) => (
-          <li key={index} className="learner-pop flex items-start gap-3 rounded-2xl bg-white p-3 text-sm font-semibold text-slate-800">
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-violet-600 text-xs font-extrabold text-white" aria-hidden="true">{index + 1}</span>{hint}
+          <li key={index} className="learner-pop flex items-start gap-3 rounded-2xl bg-amber-50 p-3 text-base font-semibold text-slate-900">
+            <span aria-hidden="true">💡</span><span><span className="sr-only">Hint {index + 1}: </span>{hint}</span>
           </li>
         ))}
       </ol>
       {shown < hints.length
-        ? <button type="button" className="btn-primary" onClick={() => setShown(shown + 1)}><span aria-hidden="true">💡 </span>Hint<span className="sr-only"> {shown + 1} of {hints.length}</span> <span aria-hidden="true">({hints.length - shown})</span></button>
-        : <p role="status" className="text-sm font-bold text-violet-900"><span aria-hidden="true">🙌 </span>Ask your teacher<span className="sr-only">. That's all the hints, and you've done great to get this far</span>.</p>}
-      <details className="text-sm text-slate-700">
-        <summary className="cursor-pointer font-extrabold text-slate-900"><span aria-hidden="true">🧰 </span>Blocks</summary>
-        <ul className="mt-3 grid gap-2 sm:grid-cols-2">
-          {available.map((drawer) => <li key={drawer.name} className="flex items-start gap-2 rounded-2xl bg-white p-3">
-            <span className="text-xl" aria-hidden="true">{drawer.emoji}</span>
-            <span><span className="font-extrabold text-slate-900">{drawer.name}</span><br />{drawer.what}</span>
-          </li>)}
-        </ul>
-      </details>
+        ? <button type="button" className="btn-secondary" onClick={() => setShown(shown + 1)}><span aria-hidden="true">💡 </span>{shown ? 'Another hint' : 'I need a hint'}<span className="sr-only">, {hints.length - shown} left</span></button>
+        : <p role="status" className="text-base font-bold text-slate-800">That's all the hints. Ask your teacher or a friend.</p>}
     </section>
   );
 }
