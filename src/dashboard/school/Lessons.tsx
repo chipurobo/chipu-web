@@ -11,6 +11,7 @@ import { BookOpen, Laptop, MonitorPlay, FolderKanban, ArrowRight, GraduationCap,
 import { fetchLearningStudents } from '../../lib/learningQueries';
 import { AssignLessonForm } from '../learning/AssignLessonForm';
 import { learningPathways } from '../../lib/learningFramework';
+import { levelLook } from '../../lib/learnerCopy';
 import { hasUsableLearningPlan } from '../../lib/learningRecords';
 import type { Lesson, LearningNeed } from '../../lib/database.types';
 import { SkeletonCards } from '../components/Skeletons';
@@ -229,7 +230,7 @@ export function SchoolLessons() {
                       {!isTeacher && <span className={`${badge}`}>{STAGE_KIND_LABEL[s.kind]}</span>}
                       {!isTeacher && <span className="text-xs text-gray-500">{s.points} pt{s.points === 1 ? '' : 's'}</span>}
                       {!isTeacher && <span className="badge-gray">{LEVEL_LABEL[s.level]}</span>}
-                      {s.learning_plan && <span className="badge-teal">{s.learning_plan.activityKind === 'capstone' ? '🏗️ Big project' : 'Coding lesson'}</span>}
+                      {s.learning_plan && <span className="badge-teal">Coding club · {levelLook[s.learning_plan.level]?.title}{s.learning_plan.activityKind === 'capstone' ? ' · 🏗️ Big project' : ''}</span>}
                       {!isTeacher && s.required_for_certificate && (
                         <span className="badge-amber inline-flex items-center">
                           <GraduationCap className="h-3 w-3 mr-1" aria-hidden="true" />
