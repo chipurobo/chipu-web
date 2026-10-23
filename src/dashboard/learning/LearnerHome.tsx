@@ -8,7 +8,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../lib/auth';
 import { fetchAssignments, fetchBlocklyLessons, fetchBlocklyProjects, fetchEvidence, fetchSubmissions, startBlocklyLesson } from '../../lib/learningQueries';
 import { fetchQuizAttempts } from '../../lib/learningOutcomes';
-import { artThemeFor, computeStats, firstName, learnerTitle } from '../../lib/learnerCopy';
+import { artThemeFor, computeStats, firstName, learnerTitle, levelLook } from '../../lib/learnerCopy';
 import { buildPath, nextUp } from '../../lib/learnerPath';
 import { LearnerPage, FriendlyAlert, Loading, EmptyNote } from './ui/LearnerKit';
 import { LessonArt, Mascot } from './ui/LearnerArt';
@@ -55,7 +55,7 @@ export function LearnerHome() {
           <LessonArt theme={artThemeFor(title, { capstone: item?.project })} className="w-full max-h-56" />
           <div className="space-y-4 p-6">
             <p className="text-sm font-extrabold uppercase tracking-wide text-slate-600">
-              {teacher ? 'From your teacher' : item?.project ? 'Big project' : `Lesson ${item?.number} of ${path.length}`}
+              {teacher ? 'From your teacher' : <>{item && <>{levelLook[item.level].title} · </>}{item?.project ? 'Big project' : `Lesson ${item?.number} of ${path.length}`}</>}
             </p>
             <h2 id="next-heading" className="!text-3xl">{title}</h2>
             {teacher?.due_date && <p className="text-base font-semibold text-slate-700">Due {teacher.due_date}</p>}

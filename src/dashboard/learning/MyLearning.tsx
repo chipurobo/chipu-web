@@ -1,13 +1,14 @@
 /**
- * The lesson path: one course, in order, one line per lesson. There are no
- * course levels (CBC has none). Done and open lessons can be opened; the next
- * two locked lessons are shown, and the rest fold into one line so the page
- * stays short. Work a teacher set outside the path is listed on top.
+ * The coding-club path: lessons in order, grouped by the club levels
+ * (Beginner, Intermediate, Expert), one line per lesson. Done and open
+ * lessons can be opened; in the current level the next two locked lessons are
+ * shown and the rest fold into one line, and a level that is still fully
+ * locked is a single line. Work a teacher set outside the path is listed on top.
  */
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchAssignments, fetchBlocklyLessons, fetchBlocklyProjects, fetchEvidence, fetchSubmissions, startBlocklyLesson } from '../../lib/learningQueries';
-import { learnerTitle } from '../../lib/learnerCopy';
+import { learnerTitle, levelLook, levelOrder } from '../../lib/learnerCopy';
 import { buildPath, type PathItem } from '../../lib/learnerPath';
 import { LearnerPage, FriendlyAlert, Loading } from './ui/LearnerKit';
 
@@ -32,11 +33,6 @@ export function MyLearning() {
   const done = path.filter((item) => item.state === 'done').length;
   const nowId = path.find((item) => item.state === 'open')?.lesson.id;
   const percent = path.length ? Math.round((done / path.length) * 100) : 0;
-  // Everything up to two locked lessons is listed; later ones fold away.
-  const firstLocked = path.findIndex((item) => item.state === 'locked');
-  const cut = firstLocked < 0 ? path.length : firstLocked + 2;
-  const shown = path.slice(0, cut);
-  const later = path.slice(cut);
 
   return (
     <LearnerPage className="max-w-3xl">
@@ -66,22 +62,40 @@ export function MyLearning() {
         </section>
       )}
 
-      {!loading && !error && !!path.length && (
-        <section aria-labelledby="path-heading" className="space-y-2">
-          <h2 id="path-heading" className="sr-only">All lessons, in order</h2>
-          <ol className="space-y-2">
-            {shown.map((item) => <PathRow key={item.lesson.id} item={item} now={item.lesson.id === nowId} total={path.length}
-              starting={start.isPending && start.variables === item.lesson.id} disabled={start.isPending}
-              onStart={() => start.mutate(item.lesson.id)} />)}
-          </ol>
-          {!!later.length && (
-            <p className="flex items-center gap-3 rounded-3xl border-2 border-dashed border-slate-300 p-4 text-base font-semibold text-slate-700">
-              <span aria-hidden="true" className="text-2xl">🔒</span>
-              {later.filter((item) => !item.project).length} more lessons{later.some((item) => item.project) ? ` and ${later.filter((item) => item.project).length} big projects` : ''}. They open one at a time.
-            </p>
-          )}
-        </section>
-      )}
+      {!loading && !error && levelOrder.map((level) => {
+        const items = path.filter((item) => item.level === level);
+        if (!items.length) return null;
+        const look = levelLook[level];
+        // A level that is still fully locked is one line, not a wall of padlocks.
+        if (items.every((item) => item.state === 'locked')) return (
+          <section key={level} aria-labelledby={`level-${level}`} className="flex items-center gap-3 rounded-3xl border-2 border-dashed border-slate-300 p-4">
+            <span aria-hidden="true" className="text-2xl">🔒</span>
+            <div>
+              <h2 id={`level-${level}`} className="!text-lg"><span aria-hidden="true">{look.emoji} </span>{look.title}</h2>
+              <p className="text-base">{countLabel(items)}. Opens when you finish {learnerTitle(items[0].after ?? '')}.</p>
+            </div>
+          </section>
+        );
+        // Up to two locked lessons are listed; later ones in this level fold away.
+        const firstLocked = items.findIndex((item) => item.state === 'locked');
+        const cut = firstLocked < 0 ? items.length : firstLocked + 2;
+        const later = items.slice(cut);
+        return (
+          <section key={level} aria-labelledby={`level-${level}`} className="space-y-2">
+            <h2 id={`level-${level}`}><span aria-hidden="true">{look.emoji} </span>{look.title}</h2>
+            <ol className="space-y-2">
+              {items.slice(0, cut).map((item) => <PathRow key={item.lesson.id} item={item} now={item.lesson.id === nowId} total={path.length}
+                starting={start.isPending && start.variables === item.lesson.id} disabled={start.isPending}
+                onStart={() => start.mutate(item.lesson.id)} />)}
+            </ol>
+            {!!later.length && (
+              <p className="flex items-center gap-3 rounded-3xl border-2 border-dashed border-slate-300 p-4 text-base font-semibold text-slate-700">
+                <span aria-hidden="true" className="text-2xl">🔒</span>{countLabel(later, 'more ')}. They open one at a time.
+              </p>
+            )}
+          </section>
+        );
+      })}
     </LearnerPage>
   );
 }
@@ -114,4 +128,12 @@ function PathRow({ item, now, total, starting, disabled, onStart }: {
       {marker}{text}<span className="text-base font-extrabold text-teal-800">{starting ? 'Starting…' : <>Start<span aria-hidden="true"> →</span></>}</span>
     </button>
   </li>;
+}
+
+/** "7 lessons and a big project", "2 more lessons", … */
+function countLabel(items: PathItem[], more = '') {
+  const lessons = items.filter((item) => !item.project).length;
+  const projects = items.length - lessons;
+  const parts = [lessons ? `${lessons} ${more}lesson${lessons === 1 ? '' : 's'}` : '', projects ? (projects === 1 ? 'a big project' : `${projects} big projects`) : ''].filter(Boolean);
+  return parts.join(' and ').replace(/^./, (letter) => letter.toUpperCase());
 }
