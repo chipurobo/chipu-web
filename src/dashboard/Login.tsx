@@ -38,6 +38,9 @@ function useSignIn(accepted: UserRole[], wrongPageMessage: string, failedMessage
       if (account.role === 'learner') {
         try { sessionStorage.setItem('chipurobo:learner-welcome', '1'); } catch { /* private mode */ }
       }
+      if (account.role === 'learner') {
+        try { sessionStorage.setItem('chipurobo:learner-welcome', '1'); } catch { /* private mode */ }
+      }
       navigate('/dashboard', { replace: true });
       return null;
     } catch {

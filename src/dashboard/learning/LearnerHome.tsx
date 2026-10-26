@@ -3,7 +3,7 @@
  * attention. Work a teacher set comes first; otherwise it is the next open
  * lesson on the path.
  */
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../lib/auth';
@@ -44,26 +44,17 @@ export function LearnerHome() {
     try { return sessionStorage.getItem('chipurobo:learner-welcome') === '1'; } catch { return false; }
   });
   const [showWelcome, setShowWelcome] = useState(false);
-  const [announced, setAnnounced] = useState(false);
-  const heading = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
     if (!welcomePending) return;
     try { sessionStorage.removeItem('chipurobo:learner-welcome'); } catch { /* private mode */ }
-    // Signing in removes the button that had focus. Start the learner on
-    // their greeting ("Hi, Amina!, heading level 1"), then populate an
-    // already-mounted live region once that has been read, so screen readers
-    // announce the short welcome once without talking over the greeting.
-    heading.current?.focus();
-    const timer = window.setTimeout(() => setShowWelcome(true), 700);
-    // Empty the live region once it has been heard, so reading on does not
-    // hear the welcome twice (it is also on screen).
-    const clear = window.setTimeout(() => setAnnounced(true), 8000);
-    return () => { window.clearTimeout(timer); window.clearTimeout(clear); };
+    // Populate an already-mounted live region after navigation so screen
+    // readers reliably announce the short orientation once.
+    const timer = window.setTimeout(() => setShowWelcome(true), 150);
+    return () => window.clearTimeout(timer);
   }, [welcomePending]);
 
-  const welcomeText = 'Your next lesson is ready. Follow each step, then try a short quiz. You’ve got this!';
-  const welcomeSpoken = `Welcome to ChipuRobo. ${welcomeText}`;
+  const welcomeText = 'Start your lesson. Follow each step. Finish the short assessment.';
 
   return (
     <LearnerPage className="max-w-3xl">
@@ -76,7 +67,7 @@ export function LearnerHome() {
       </header>
 
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
-        {showWelcome && !announced ? welcomeSpoken : ''}
+        {showWelcome ? `Welcome to ChipuRobo. ${welcomeText}` : ''}
       </div>
       {showWelcome && (
         <section aria-labelledby="learner-welcome-heading" className="learner-card flex items-center gap-4 bg-teal-50 p-4">
@@ -84,7 +75,7 @@ export function LearnerHome() {
             <h2 id="learner-welcome-heading" className="text-lg">Welcome!</h2>
             <p className="mt-1 text-base font-semibold text-slate-900">{welcomeText}</p>
           </div>
-          <ReadAloud text={welcomeSpoken} label="Read welcome aloud" />
+          <ReadAloud text={welcomeText} label="Read welcome aloud" />
           <button type="button" className="btn-primary shrink-0" onClick={() => setShowWelcome(false)}>Got it</button>
         </section>
       )}
