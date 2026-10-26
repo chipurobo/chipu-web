@@ -120,6 +120,7 @@ function DashboardShell() {
   const [routeMessage, setRouteMessage] = useState('');
   const drawerRef = useRef<HTMLElement | null>(null);
   const hamburgerRef = useRef<HTMLButtonElement | null>(null);
+  const previousLearnerPath = useRef<string | null>(null);
 
   // Two labels for the role:
   //   • shortLabel — pixel chip in the brand corner; must fit a 60px column
@@ -144,13 +145,36 @@ function DashboardShell() {
   // Auto-close the drawer on route change.
   useEffect(() => { setMobileOpen(false); }, [location.pathname]);
 
-  // Announce SPA route changes to screen readers + update document title.
-  // The aria-live region downstream picks up the change after a tick so
-  // assistive tech reliably hears the new title even on fast nav.
+  // Update the browser title on every SPA route change. Learner pages move
+  // focus to the new page heading, which gives VoiceOver, NVDA and JAWS one
+  // concise announcement and a useful place to continue reading. Operational
+  // dashboards retain the live-region announcement because their page shells
+  // and headings vary more widely.
   useEffect(() => {
     const title = getDashboardPageTitle(location.pathname, isLearner);
     document.title = `${title} · ChipuRobo`;
-    const t = setTimeout(() => setRouteMessage(`Navigated to ${title}`), 100);
+    setRouteMessage('');
+    const t = setTimeout(() => {
+      if (isLearner) {
+        const previousPath = previousLearnerPath.current;
+        previousLearnerPath.current = location.pathname;
+        // Keep the skip link first on an initial page load. Focus only moves
+        // after an in-app navigation to a learner destination; lesson
+        // workspaces manage their own, more specific heading focus.
+        if (previousPath === null || previousPath === location.pathname || !LEARNER_PAGE_TITLES[location.pathname]) return;
+        const main = document.getElementById('dashboard-main');
+        const heading = main?.querySelector<HTMLElement>('h1');
+        if (heading) {
+          heading.tabIndex = -1;
+          heading.focus();
+        } else {
+          main?.focus();
+        }
+        return;
+      }
+      previousLearnerPath.current = null;
+      setRouteMessage(`Navigated to ${title}`);
+    }, 100);
     return () => clearTimeout(t);
   }, [location.pathname, isLearner]);
 
@@ -214,7 +238,7 @@ function DashboardShell() {
   };
 
   return (
-    <div className="admin-zone min-h-screen bg-warm-50 md:flex">
+    <div className={`admin-zone min-h-screen bg-warm-50 ${isLearner ? 'block' : 'md:flex'}`}>
       {/* Skip link — keyboard/screen-reader users tab here first and
           jump straight past the sidebar nav to the page content */}
       <a
@@ -224,8 +248,8 @@ function DashboardShell() {
         Skip to main content
       </a>
 
-      {/* Live region for SPA route announcements. Hidden visually,
-          read by NVDA/JAWS/VoiceOver on every navigation. */}
+      {/* Live region for operational-dashboard route announcements. Learner
+          routes focus their new h1 instead, which avoids duplicate speech. */}
       <div
         id="dashboard-route-announcer"
         role="status"
@@ -236,6 +260,9 @@ function DashboardShell() {
         {routeMessage}
       </div>
 
+      {isLearner ? (
+        <LearnerHeader onSignOut={handleSignOut} />
+      ) : <>
       {/* ───── Mobile top bar (md:hidden) ───── */}
       <div className="md:hidden sticky top-0 z-30 flex items-center gap-3 border-b border-warm-200 bg-white px-3 py-2">
         <button
@@ -315,14 +342,6 @@ function DashboardShell() {
         </div>
 
         <nav aria-label="Primary" className="flex-1 py-4 px-3 space-y-0.5 text-sm overflow-y-auto">
-          {isLearner ? (
-            <>
-              <SidebarLink to="/dashboard" end icon={Home} tone="text-teal-700">Home</SidebarLink>
-              <SidebarLink to="/dashboard/my-learning" icon={Puzzle} tone="text-teal-700">Lessons</SidebarLink>
-              <SidebarLink to="/dashboard/my-progress" icon={Star} tone="text-teal-700">My stars</SidebarLink>
-              <SidebarLink to="/dashboard/report-concern" icon={Flag} tone="text-teal-700">Report a concern</SidebarLink>
-            </>
-          ) : <>
           <SidebarLink to="/dashboard" end icon={Home}>
             {isTeacher ? 'My class' : 'Overview'}
           </SidebarLink>
@@ -334,8 +353,7 @@ function DashboardShell() {
           <SidebarLink to="/dashboard/portfolio" icon={FolderKanban}>{isTeacher ? 'Portfolios' : 'Learner portfolios'}</SidebarLink>
           <SidebarLink to="/dashboard/learning-reports" icon={ClipboardList}>{isTeacher ? 'Reports' : 'Learning reports'}</SidebarLink>
           {isTeacher && <SidebarLink to="/dashboard/report-concern" icon={Flag} tone="text-terracotta-600">Report a concern</SidebarLink>}
-          </>}
-          {isLearner || isTeacher ? null : isAdmin ? (
+          {isTeacher ? null : isAdmin ? (
             <>
               {/* ─── Learning group ───
                   Lessons are the curriculum and stand alone. A workshop is
@@ -467,6 +485,7 @@ function DashboardShell() {
           </button>
         </div>
       </aside>
+      </>}
 
       {/* ───── Main ───── */}
       <main
@@ -477,6 +496,89 @@ function DashboardShell() {
         <Outlet />
       </main>
     </div>
+  );
+}
+
+/**
+ * Learners use one compact header instead of the full-height operations
+ * sidebar. The four destinations here are the only persistent choices they
+ * need; quizzes, projects and the showcase remain large, visual cards on the
+ * home screen. Labels stay visible and each link has a clear accessible name.
+ */
+function LearnerHeader({ onSignOut }: { onSignOut: () => void | Promise<void> }) {
+  return (
+    <header className="sticky top-0 z-30 border-b border-sky-100 bg-white/95 shadow-sm backdrop-blur">
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-2 px-3 py-2 sm:flex-nowrap sm:px-6">
+        <Link
+          to="/dashboard"
+          className="flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-1 text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+          aria-label="ChipuRobo learner home"
+        >
+          <picture>
+            <source srcSet="/img/logo.webp" type="image/webp" />
+            <img src="/img/logo.png" alt="" width={30} height={30} className="h-8 w-8 pixel-crisp" />
+          </picture>
+          <span className="hidden font-pixel text-[0.62rem] tracking-wider sm:inline">
+            ChipuRobo<span className="text-teal-500" aria-hidden="true">_</span>
+          </span>
+        </Link>
+
+        <nav aria-label="Learner navigation" className="order-3 w-full sm:order-none sm:ml-auto sm:w-auto">
+          <ul className="flex list-none items-center gap-1 rounded-2xl bg-sky-50 p-1">
+            <li className="flex flex-1 sm:flex-none"><LearnerNavLink to="/dashboard" end icon={Home}>Home</LearnerNavLink></li>
+            <li className="flex flex-1 sm:flex-none"><LearnerNavLink to="/dashboard/my-learning" icon={Puzzle} accessibleLabel="Lessons">
+              <span className="sm:hidden">Learn</span><span className="hidden sm:inline">Lessons</span>
+            </LearnerNavLink></li>
+            <li className="flex flex-1 sm:flex-none"><LearnerNavLink to="/dashboard/my-progress" icon={Star} accessibleLabel="My stars">
+              <span className="sm:hidden">Stars</span><span className="hidden sm:inline">My stars</span>
+            </LearnerNavLink></li>
+            <li className="flex flex-1 sm:flex-none"><LearnerNavLink to="/dashboard/report-concern" icon={Flag} accessibleLabel="Report a concern">Report</LearnerNavLink></li>
+          </ul>
+        </nav>
+
+        <button
+          type="button"
+          onClick={onSignOut}
+          className="ml-auto inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 sm:ml-1"
+          aria-label="Sign out"
+          title="Sign out"
+        >
+          <LogOut className="h-5 w-5" aria-hidden="true" />
+        </button>
+      </div>
+    </header>
+  );
+}
+
+function LearnerNavLink({
+  to,
+  icon: Icon,
+  children,
+  end,
+  accessibleLabel,
+}: {
+  to: string;
+  icon: typeof Home;
+  children: React.ReactNode;
+  end?: boolean;
+  accessibleLabel?: string;
+}) {
+  return (
+    <NavLink
+      to={to}
+      end={end}
+      aria-label={accessibleLabel}
+      className={({ isActive }) =>
+        `flex min-h-10 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-xl px-2 text-xs font-bold transition-colors sm:flex-none sm:px-3 sm:text-sm ${
+          isActive
+            ? 'bg-white text-slate-900 shadow-sm ring-1 ring-sky-200'
+            : 'text-slate-600 hover:bg-white/70 hover:text-slate-900'
+        }`
+      }
+    >
+      <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+      <span className="truncate">{children}</span>
+    </NavLink>
   );
 }
 

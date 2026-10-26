@@ -709,7 +709,9 @@ export async function fetchCurriculumLessons(): Promise<Lesson[]> {
 
 export async function fetchAllLessonsAdmin(): Promise<Lesson[]> {
   return unwrap(
-    await supabase.from('lessons').select('*').order('position'),
+    await supabase.from('lessons').select('*')
+      .neq('review_status', 'withdrawn')
+      .order('position'),
   );
 }
 

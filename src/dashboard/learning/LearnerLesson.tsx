@@ -25,7 +25,7 @@ const stages = [
   { id: 'think', emoji: '🤔', label: 'Think' },
   { id: 'learn', emoji: '📖', label: 'Learn' },
   { id: 'build', emoji: '🧩', label: 'Build' },
-  { id: 'check', emoji: '🏁', label: 'Check' },
+  { id: 'check', emoji: '✅', label: 'Assess' },
   { id: 'send', emoji: '📬', label: 'Send' },
 ] as const;
 type StageId = (typeof stages)[number]['id'];
@@ -59,6 +59,7 @@ function buildHints(title: string, plan: LessonLearningPlan): string[] {
 }
 
 const stageKey = (assignmentId: string) => `chipurobo:lesson-stage:${assignmentId}`;
+const introKey = (assignmentId: string) => `chipurobo:lesson-intro:${assignmentId}`;
 
 export function LearnerLesson() {
   const { assignmentId } = useParams();
@@ -108,13 +109,20 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, lesso
   lesson: Awaited<ReturnType<typeof fetchLessonById>> | null;
   submissions: Parameters<typeof LessonSend>[0]['submissions']; reviews: Parameters<typeof LessonSend>[0]['reviews'];
 }) {
+  const introWasCompleted = () => Boolean(
+    submissions.length
+    || localStorage.getItem(introKey(assignmentId))
+    || localStorage.getItem(stageKey(assignmentId)),
+  );
+  const [introCompleted, setIntroCompleted] = useState(introWasCompleted);
+  const [showIntro, setShowIntro] = useState(() => !introWasCompleted());
   const [stage, setStage] = useState<StageId>(() => {
     const saved = localStorage.getItem(stageKey(assignmentId)) as StageId | null;
     if (saved && stages.some((item) => item.id === saved)) return saved;
     return submissions.length ? 'send' : 'think';
   });
   const heading = useRef<HTMLHeadingElement>(null);
-  const firstRender = useRef(true);
+  const introHeading = useRef<HTMLHeadingElement>(null);
   const work = useLessonWork(assignmentId);
   const path = usePath();
   const here = path.findIndex((item) => item.lesson.id === lessonId);
@@ -129,31 +137,88 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, lesso
   const showMedia = !!lesson && (!generalVideo || here === 0);
 
   useEffect(() => {
+    if (showIntro) {
+      introHeading.current?.focus();
+      window.scrollTo?.({ top: 0 });
+      return;
+    }
     localStorage.setItem(stageKey(assignmentId), stage);
     // Moving to a new stage puts focus on its heading, so screen readers start
     // reading the new stage and keyboard users are not left at the bottom.
-    if (firstRender.current) { firstRender.current = false; heading.current?.focus(); return; }
     heading.current?.focus();
     window.scrollTo?.({ top: 0 });
-  }, [stage, assignmentId]);
+  }, [stage, assignmentId, showIntro]);
 
   function go(to: StageId) { if (stage === 'build') work.saveIfChanged(); setStage(to); }
+
+  function finishIntro() {
+    localStorage.setItem(introKey(assignmentId), 'done');
+    setIntroCompleted(true);
+    setShowIntro(false);
+  }
 
   const spoken: Record<StageId, string> = {
     think: [title, plan.problem ?? '', instructions].filter(Boolean).join('. '),
     learn: [...(plan.ideas ?? []).map((idea) => `${idea.title}. ${idea.body}`), plan.expectedResult ? `When it works, you will see: ${plan.expectedResult}` : ''].filter(Boolean).join('. '),
     build: plan.steps.map((step, n) => `Step ${n + 1}. ${step}`).join('. '),
-    check: 'Final check. Answer each question, then check your answers.',
+    check: 'Short assessment. Answer a few quick questions.',
     send: 'Say what you made, then press Send. Your teacher will reply here.',
   };
+
+  const introSteps = [
+    'Learn the idea.',
+    'Build and test it.',
+    'Take a short assessment.',
+    'Send your work.',
+  ];
+  const introSpoken = [
+    `Before you start ${title}.`,
+    plan.problem ?? lesson?.description ?? title,
+    instructions ? `From your teacher: ${instructions}` : '',
+    ...introSteps.map((step, number) => `Step ${number + 1}. ${step}`),
+  ].filter(Boolean).join(' ');
 
   return <>
     <div className="flex items-center gap-3">
       <Link to="/dashboard/my-learning" className="btn-secondary !px-3" title="All lessons">
         <span aria-hidden="true">←</span><span className="sr-only">All lessons</span>
       </Link>
-      <h1 className="learner-title !text-2xl sm:!text-3xl">{learnerTitle(title)}</h1>
+      <h1 className="learner-title min-w-0 flex-1 !text-2xl sm:!text-3xl">{learnerTitle(title)}</h1>
+      {!showIntro && <button type="button" className="btn-secondary !px-3" onClick={() => setShowIntro(true)}>
+        <span aria-hidden="true">📋 </span>Instructions
+      </button>}
     </div>
+
+    {showIntro ? <section aria-labelledby="lesson-intro-heading" className="learner-card space-y-5 overflow-hidden p-5 sm:p-7">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-sm font-extrabold uppercase tracking-wide text-teal-700">Get ready</p>
+          <h2 id="lesson-intro-heading" ref={introHeading} tabIndex={-1} className="mt-1 focus:outline-none">Before you start</h2>
+        </div>
+        <ReadAloud text={introSpoken} />
+      </div>
+
+      <div className="rounded-2xl bg-teal-50 p-4">
+        <h3 className="text-base">Your mission</h3>
+        <p className="mt-1 text-base font-semibold leading-relaxed text-slate-900">{plan.problem ?? lesson?.description ?? title}</p>
+      </div>
+
+      {instructions && <div className="rounded-2xl bg-amber-50 p-4">
+        <h3 className="text-base">From your teacher</h3>
+        <p className="mt-1 text-base font-semibold text-slate-900">{instructions}</p>
+      </div>}
+
+      <ol className="grid gap-3 sm:grid-cols-2" aria-label="What to do in this lesson">
+        {introSteps.map((step, number) => <li key={step} className="flex items-start gap-3 rounded-2xl bg-slate-50 p-3">
+          <span aria-hidden="true" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-teal-700 font-extrabold text-white">{number + 1}</span>
+          <span className="pt-1 text-base font-semibold text-slate-900"><span className="sr-only">Step {number + 1}: </span>{step}</span>
+        </li>)}
+      </ol>
+
+      <button type="button" className="btn-play w-full justify-center sm:w-auto" onClick={finishIntro}>
+        {introCompleted ? 'Back to lesson' : 'Start lesson'}<span aria-hidden="true"> →</span>
+      </button>
+    </section> : <>
 
     <nav aria-label="Lesson steps">
       <ol className="grid grid-cols-5 gap-1.5 sm:gap-2">
@@ -214,7 +279,7 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, lesso
         <HintBox hints={buildHints(title, plan)} />
       </>}
 
-      {stage === 'check' && <StageQuiz lessonId={lessonId} stage="end" title="Final check" />}
+      {stage === 'check' && <StageQuiz lessonId={lessonId} stage="end" title="Short assessment" />}
 
       {stage === 'send' && <>
         <LessonSend work={work} submissions={submissions} reviews={reviews} />
@@ -229,6 +294,7 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, lesso
       {index < stages.length - 1 && <button type="button" className="btn-play" onClick={() => go(stages[index + 1].id)}>
         Next<span className="sr-only">: {stages[index + 1].label}</span><span aria-hidden="true"> →</span></button>}
     </div>
+    </>}
   </>;
 }
 

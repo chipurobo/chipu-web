@@ -8,7 +8,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchAssignments, fetchBlocklyLessons, fetchBlocklyProjects, fetchEvidence, fetchSubmissions, startBlocklyLesson } from '../../lib/learningQueries';
-import { learnerTitle, levelLook, levelOrder } from '../../lib/learnerCopy';
+import { learnerTitle, pathwayLook } from '../../lib/learnerCopy';
 import { buildPath, type PathItem } from '../../lib/learnerPath';
 import { LearnerPage, FriendlyAlert, Loading } from './ui/LearnerKit';
 
@@ -103,29 +103,38 @@ export function MyLearning() {
 function PathRow({ item, now, total, starting, disabled, onStart }: {
   item: PathItem; now: boolean; total: number; starting: boolean; disabled: boolean; onStart: () => void;
 }) {
-  const label = <>
-    <span className="sr-only">{item.project ? 'Big project' : `Lesson ${item.number} of ${total}`}: </span>{learnerTitle(item.lesson.title)}
-    <span className="sr-only">{item.state === 'done' ? '. Done' : item.state === 'locked' ? `. Locked. Finish ${item.after} first` : ''}</span>
-  </>;
+  const pathway = pathwayLook[item.lesson.learning_plan?.pathwayId ?? ''];
+  const titleId = `lesson-${item.lesson.id}-title`;
+  const detailsId = `lesson-${item.lesson.id}-details`;
+  const actionId = `lesson-${item.lesson.id}-action`;
   const marker = <span aria-hidden="true" className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-base font-extrabold ${
     item.state === 'done' ? 'bg-teal-700 text-white' : now ? 'bg-amber-400 text-slate-900' : item.state === 'locked' ? 'bg-slate-100 text-slate-500' : 'bg-white text-slate-800 border-2 border-slate-300'}`}>
     {item.state === 'done' ? '✓' : item.state === 'locked' ? '🔒' : item.project ? '★' : item.number}
   </span>;
-  const text = <span className={`flex-1 text-base font-extrabold ${item.state === 'locked' ? 'text-slate-600' : 'text-slate-900'}`}>
-    {item.project && <span aria-hidden="true">Big project: </span>}{label}
+  const text = <span className="min-w-0 flex-1">
+    <span id={titleId} className={`block text-base font-extrabold ${item.state === 'locked' ? 'text-slate-600' : 'text-slate-900'}`}>
+      <span className="sr-only">{item.project ? 'Project' : `Lesson ${item.number} of ${total}`}. </span>
+      {learnerTitle(item.lesson.title)}
+    </span>
+    <span id={detailsId} className="mt-1 block text-sm font-semibold leading-snug text-slate-700">
+      {pathway && <><span aria-hidden="true">{pathway.emoji} </span>{pathway.label}</>}
+      {pathway && item.lesson.description && <span aria-hidden="true"> · </span>}
+      {item.lesson.description}
+      <span className="sr-only">{item.state === 'done' ? '. Done' : item.state === 'locked' ? `. Locked. Finish ${item.after} first` : now ? '. Ready to start' : ''}</span>
+    </span>
   </span>;
 
-  if (item.state === 'locked') return <li className="flex items-center gap-3 rounded-3xl px-4 py-3">{marker}{text}</li>;
+  if (item.state === 'locked') return <li aria-labelledby={`${titleId} ${detailsId}`} className="flex items-center gap-3 rounded-3xl px-4 py-3">{marker}{text}</li>;
   if (item.assignmentId) return <li>
-    <Link to={`/dashboard/assignments/${item.assignmentId}`} aria-current={now ? 'step' : undefined}
+    <Link to={`/dashboard/assignments/${item.assignmentId}`} aria-current={now ? 'step' : undefined} aria-labelledby={`${titleId} ${detailsId} ${actionId}`}
       className={`learner-card learner-card-hover flex items-center gap-3 px-4 py-3 ${now ? '!border-teal-700' : ''}`}>
-      {marker}{text}<span aria-hidden="true" className="text-slate-500">→</span>
+      {marker}{text}<span id={actionId} className="sr-only">Open lesson</span><span aria-hidden="true" className="text-slate-500">→</span>
     </Link>
   </li>;
   return <li>
-    <button type="button" onClick={onStart} disabled={disabled} aria-current={now ? 'step' : undefined}
+    <button type="button" onClick={onStart} disabled={disabled} aria-current={now ? 'step' : undefined} aria-labelledby={`${titleId} ${detailsId} ${actionId}`}
       className={`learner-card learner-card-hover flex w-full items-center gap-3 px-4 py-3 text-left focus:outline-none focus-visible:ring-4 focus-visible:ring-slate-900 ${now ? '!border-teal-700' : ''}`}>
-      {marker}{text}<span className="text-base font-extrabold text-teal-800">{starting ? 'Starting…' : <>Start<span aria-hidden="true"> →</span></>}</span>
+      {marker}{text}<span id={actionId} className="text-base font-extrabold text-teal-800"><span aria-hidden="true">{starting ? 'Starting…' : 'Start →'}</span><span className="sr-only">{starting ? 'Starting lesson' : 'Start lesson'}</span></span>
     </button>
   </li>;
 }
