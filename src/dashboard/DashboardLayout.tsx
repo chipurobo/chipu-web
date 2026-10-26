@@ -1,11 +1,13 @@
 import { trackLearningActivity } from '../lib/learningOutcomes';
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { loginPathForRole } from '../lib/loginPaths';
 import { useAuth } from '../lib/auth';
 import { NotificationsProvider, NotificationToaster } from '../lib/notifications';
 import { useOrderRealtime, type OrderCounts } from '../lib/useOrderRealtime';
 import { useQuery } from '@tanstack/react-query';
 import { fetchPendingBookingCount } from '../lib/gql/queries';
+import { fetchAssignment } from '../lib/learningQueries';
 import {
   LogOut, Home, School, Package, ClipboardList, Users, Boxes, Wrench, Send, Menu, X,
   Award, Layers, FolderKanban, BookOpen, CalendarDays, ListChecks, ShieldAlert,
@@ -233,8 +235,9 @@ function DashboardShell() {
   }, [mobileOpen]);
 
   const handleSignOut = async () => {
+    const loginPath = loginPathForRole(profile?.role);
     await signOut();
-    navigate('/dashboard/login', { replace: true });
+    navigate(loginPath, { replace: true });
   };
 
   return (
@@ -506,6 +509,12 @@ function DashboardShell() {
  * home screen. Labels stay visible and each link has a clear accessible name.
  */
 function LearnerHeader({ onSignOut }: { onSignOut: () => void | Promise<void> }) {
+  // Reporting from inside a lesson records which lesson it was, so the
+  // safeguarding lead has the context without the learner typing anything.
+  const assignmentId = useLocation().pathname.match(/^\/dashboard\/assignments\/([^/]+)$/)?.[1];
+  const assignment = useQuery({ queryKey: ['learning-assignment', assignmentId], queryFn: () => fetchAssignment(assignmentId!), enabled: !!assignmentId });
+  const lessonId = assignmentId ? assignment.data?.lesson_id : undefined;
+  const reportHref = lessonId ? `/dashboard/report-concern?lessonId=${encodeURIComponent(lessonId)}` : '/dashboard/report-concern';
   return (
     <header className="sticky top-0 z-30 border-b border-sky-100 bg-white/95 shadow-sm backdrop-blur">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-2 px-3 py-2 sm:flex-nowrap sm:px-6">
@@ -532,7 +541,7 @@ function LearnerHeader({ onSignOut }: { onSignOut: () => void | Promise<void> })
             <li className="flex flex-1 sm:flex-none"><LearnerNavLink to="/dashboard/my-progress" icon={Star} accessibleLabel="My stars">
               <span className="sm:hidden">Stars</span><span className="hidden sm:inline">My stars</span>
             </LearnerNavLink></li>
-            <li className="flex flex-1 sm:flex-none"><LearnerNavLink to="/dashboard/report-concern" icon={Flag} accessibleLabel="Report a concern">Report</LearnerNavLink></li>
+            <li className="flex flex-1 sm:flex-none"><LearnerNavLink to={reportHref} icon={Flag} accessibleLabel="Report a concern">Report</LearnerNavLink></li>
           </ul>
         </nav>
 

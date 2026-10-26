@@ -77,7 +77,7 @@ export function MyLearning() {
           {!!later.length && (
             <p className="flex items-center gap-3 rounded-3xl border-2 border-dashed border-slate-300 p-4 text-base font-semibold text-slate-700">
               <span aria-hidden="true" className="text-2xl">🔒</span>
-              {later.filter((item) => !item.project).length} more lessons{later.some((item) => item.project) ? ` and ${later.filter((item) => item.project).length} big projects` : ''}. They open one at a time.
+              {laterSummary(later)} They open one at a time.
             </p>
           )}
         </section>
@@ -92,35 +92,59 @@ function PathRow({ item, now, total, starting, disabled, onStart }: {
   const pathway = pathwayLook[item.lesson.learning_plan?.pathwayId ?? ''];
   const titleId = `lesson-${item.lesson.id}-title`;
   const detailsId = `lesson-${item.lesson.id}-details`;
-  const actionId = `lesson-${item.lesson.id}-action`;
   const marker = <span aria-hidden="true" className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-base font-extrabold ${
     item.state === 'done' ? 'bg-teal-700 text-white' : now ? 'bg-amber-400 text-slate-900' : item.state === 'locked' ? 'bg-slate-100 text-slate-500' : 'bg-white text-slate-800 border-2 border-slate-300'}`}>
     {item.state === 'done' ? '✓' : item.state === 'locked' ? '🔒' : item.project ? '★' : item.number}
   </span>;
+  const status = item.state === 'done' ? 'Done.' : item.state === 'locked' ? `Locked. Finish ${item.after} first.` : now ? 'Ready to start.' : '';
   const text = <span className="min-w-0 flex-1">
     <span id={titleId} className={`block text-base font-extrabold ${item.state === 'locked' ? 'text-slate-600' : 'text-slate-900'}`}>
-      <span className="sr-only">{item.project ? 'Project' : `Lesson ${item.number} of ${total}`}. </span>
+      <span className="sr-only">{item.project ? 'Big project' : `Lesson ${item.number} of ${total}`}: </span>
       {learnerTitle(item.lesson.title)}
     </span>
     <span id={detailsId} className="mt-1 block text-sm font-semibold leading-snug text-slate-700">
       {pathway && <><span aria-hidden="true">{pathway.emoji} </span>{pathway.label}</>}
       {pathway && item.lesson.description && <span aria-hidden="true"> · </span>}
       {item.lesson.description}
-      <span className="sr-only">{item.state === 'done' ? '. Done' : item.state === 'locked' ? `. Locked. Finish ${item.after} first` : now ? '. Ready to start' : ''}</span>
+      <span className="sr-only"> {status}</span>
     </span>
   </span>;
+  // One clean sentence per part, so VoiceOver, NVDA and JAWS read the card as
+  // "Lesson 1 of 4: Light it up. Creative coding. Plan and test a sequence.
+  // Ready to start. Start lesson." rather than run-together fragments.
+  const name = (action: string) => [
+    `${item.project ? 'Big project' : `Lesson ${item.number} of ${total}`}: ${learnerTitle(item.lesson.title)}`,
+    pathway?.label, item.lesson.description, status, action,
+  ].filter(Boolean).map((part) => sentence(part!)).join(' ');
 
-  if (item.state === 'locked') return <li aria-labelledby={`${titleId} ${detailsId}`} className="flex items-center gap-3 rounded-3xl px-4 py-3">{marker}{text}</li>;
+  if (item.state === 'locked') return <li className="flex items-center gap-3 rounded-3xl px-4 py-3">{marker}{text}</li>;
   if (item.assignmentId) return <li>
-    <Link to={`/dashboard/assignments/${item.assignmentId}`} aria-current={now ? 'step' : undefined} aria-labelledby={`${titleId} ${detailsId} ${actionId}`}
+    <Link to={`/dashboard/assignments/${item.assignmentId}`} aria-current={now ? 'step' : undefined} aria-label={name('Open lesson')}
       className={`learner-card learner-card-hover flex items-center gap-3 px-4 py-3 ${now ? '!border-teal-700' : ''}`}>
-      {marker}{text}<span id={actionId} className="sr-only">Open lesson</span><span aria-hidden="true" className="text-slate-500">→</span>
+      {marker}{text}<span aria-hidden="true" className="text-slate-500">→</span>
     </Link>
   </li>;
   return <li>
-    <button type="button" onClick={onStart} disabled={disabled} aria-current={now ? 'step' : undefined} aria-labelledby={`${titleId} ${detailsId} ${actionId}`}
+    <button type="button" onClick={onStart} disabled={disabled} aria-current={now ? 'step' : undefined} aria-label={name(starting ? 'Starting lesson' : 'Start lesson')}
       className={`learner-card learner-card-hover flex w-full items-center gap-3 px-4 py-3 text-left focus:outline-none focus-visible:ring-4 focus-visible:ring-slate-900 ${now ? '!border-teal-700' : ''}`}>
-      {marker}{text}<span id={actionId} className="text-base font-extrabold text-teal-800"><span aria-hidden="true">{starting ? 'Starting…' : 'Start →'}</span><span className="sr-only">{starting ? 'Starting lesson' : 'Start lesson'}</span></span>
+      {marker}{text}<span className="text-base font-extrabold text-teal-800" aria-hidden="true">{starting ? 'Starting…' : 'Start →'}</span>
     </button>
   </li>;
+}
+
+/** "Add a period" → "Add a period."; leaves "Ready?" and "Done." alone. */
+function sentence(text: string): string {
+  const trimmed = text.trim();
+  return /[.!?]$/.test(trimmed) ? trimmed : `${trimmed}.`;
+}
+
+/** "3 more lessons and 1 big project." Leaves out a part that is zero. */
+function laterSummary(later: PathItem[]): string {
+  const lessons = later.filter((item) => !item.project).length;
+  const projects = later.length - lessons;
+  const parts = [
+    lessons ? `${lessons} more ${lessons === 1 ? 'lesson' : 'lessons'}` : '',
+    projects ? `${projects} big ${projects === 1 ? 'project' : 'projects'}` : '',
+  ].filter(Boolean);
+  return `${parts.join(' and ')}.`;
 }

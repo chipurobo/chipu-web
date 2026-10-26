@@ -16,7 +16,7 @@ export function LessonPlanFields({ value, onChange, id }: {
   return (
     <fieldset className="learning-zone border border-warm-200 rounded-lg p-4 space-y-4 min-w-0">
       <legend className="text-sm font-semibold px-1">Learning outcomes</legend>
-      <p className="text-sm text-gray-600">Choose a learning level, competencies and the evidence to collect.</p>
+      <p className="text-sm text-gray-600">Choose a learning pathway, competencies and the evidence to collect.</p>
       <div className="grid sm:grid-cols-2 gap-4">
         <div>
           <label className="field-label" htmlFor={`${id}-pathway`}>Learning pathway</label>

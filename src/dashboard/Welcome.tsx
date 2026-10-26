@@ -56,7 +56,7 @@ export function Welcome() {
 
   const finish = () => {
     try { localStorage.setItem(STORAGE_KEY, '1'); } catch { /* private mode */ }
-    navigate('/dashboard/login');
+    navigate('/dashboard/teacher');
   };
   const next = () => (step < last ? setStep((s) => s + 1) : finish());
 
