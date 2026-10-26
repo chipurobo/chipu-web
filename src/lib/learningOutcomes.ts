@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
-import type { LearningLevel } from './learningFramework';
+import type { CompetencyId, LearningLevel } from './learningFramework';
+import type { ReviewBand } from './learningRecords';
 export interface QuizQuestion {
   id: string;
   prompt: string;
@@ -12,9 +13,12 @@ export interface LearningQuiz {
   title: string;
   level: LearningLevel;
   lesson_id: string | null;
+  /** Where the check sits inside its lesson; null for level practice quizzes. */
+  stage: QuizStage | null;
   pass_percent: number;
   questions: QuizQuestion[];
 }
+export type QuizStage = 'pre' | 'mid' | 'end';
 export interface QuizAttempt {
   id: string;
   student_id: string;
@@ -39,21 +43,22 @@ export interface PortfolioItem {
   reflection: string;
   created_at: string;
 }
-export interface ProgressionDecision {
+/** CBC end-of-course assessment: one overall performance level and a comment. */
+export interface CbcAssessment {
   id: string;
   student_id: string;
-  level: LearningLevel;
-  outcome: 'awarded' | 'deferred' | 'revoked';
-  reason: string;
+  performance_level: ReviewBand;
+  comment: string;
   decided_at: string;
-  policy_id: string;
+  summary_snapshot: CbcSummary;
 }
-export interface ProgressionReadiness {
-  ready: boolean;
-  missing_competencies: string[];
-  quiz_attempt_id: string | null;
-  capstone_review_id: string | null;
-  previous_level_awarded: boolean;
+/** What the teacher sees before deciding. The suggestion is a guide only. */
+export interface CbcSummary {
+  skills: Partial<Record<CompetencyId, ReviewBand>>;
+  suggested_level: ReviewBand | null;
+  lessons_sent: number;
+  projects_sent: number;
+  final_checks_passed: number;
 }
 export interface PilotReport {
   from: string;
@@ -81,6 +86,7 @@ export const publishQuiz = (input: {
   title: string;
   level: LearningLevel;
   lesson: string;
+  stage?: QuizStage | '';
   pass: number;
   questions: QuizQuestion[];
   solutions: Record<string, { correct: number; explanation: string }>;
@@ -93,6 +99,7 @@ export const publishQuiz = (input: {
     p_pass_percent: input.pass,
     p_questions: input.questions,
     p_solutions: input.solutions,
+    p_stage: input.stage || null,
   });
 export const fetchPortfolio = () => rows<PortfolioItem>('learning_portfolio_items', 'created_at');
 export const savePortfolio = (submission: string, title: string, reflection: string) =>
@@ -103,25 +110,12 @@ export const savePortfolio = (submission: string, title: string, reflection: str
   });
 export const removePortfolio = (item: string) =>
   rpc<void>('remove_learning_portfolio_item', { p_item_id: item });
-export const fetchDecisions = () =>
-  rows<ProgressionDecision>('learning_progression_decisions', 'decided_at');
-export const fetchReadiness = (student: string, level: LearningLevel) =>
-  rpc<ProgressionReadiness>('learning_progression_readiness', {
-    p_student_id: student,
-    p_level: level,
-  });
-export const decideProgression = (
-  student: string,
-  level: LearningLevel,
-  outcome: string,
-  reason: string,
-) =>
-  rpc<string>('record_learning_progression', {
-    p_student_id: student,
-    p_level: level,
-    p_outcome: outcome,
-    p_reason: reason,
-  });
+export const fetchCbcAssessments = () =>
+  rows<CbcAssessment>('learning_cbc_assessments', 'decided_at');
+export const fetchCbcSummary = (student: string) =>
+  rpc<CbcSummary>('learning_cbc_summary', { p_student_id: student });
+export const recordCbcAssessment = (student: string, level: ReviewBand, comment: string) =>
+  rpc<string>('record_cbc_assessment', { p_student_id: student, p_level: level, p_comment: comment });
 export const fetchPilotReport = (school: string, from: string, to: string) =>
   rpc<PilotReport>('learning_pilot_report', { p_school_id: school, p_from: from, p_to: to });
 export const observeTask = (student: string, task: string, independent: boolean, barrier: string) =>

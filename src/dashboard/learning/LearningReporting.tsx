@@ -22,7 +22,11 @@ const labels: Record<string, string> = {
   learners_submitting: 'Learners who sent work',
   project_artifacts: 'Projects sent',
   evidence_reviews: 'Reviews you gave',
-  level_awards: 'Levels awarded',
+  cbc_assessments: 'CBC assessments',
+  cbc_exceeding: 'Exceeding expectations (EE)',
+  cbc_meeting: 'Meeting expectations (ME)',
+  cbc_approaching: 'Approaching expectations (AE)',
+  cbc_below: 'Below expectations (BE)',
   teacher_logins: 'Teacher sign-ins',
   resource_opens: 'Lessons opened',
   attendance_present: 'Present',
@@ -33,7 +37,8 @@ const labels: Record<string, string> = {
 };
 const groups: { title: string; emoji: string; keys: string[] }[] = [
   { title: 'Learners', emoji: '🧑‍🎓', keys: ['enrolled_learners', 'learners_with_accounts', 'active_learners', 'retained_learners'] },
-  { title: 'Learning', emoji: '🧩', keys: ['resource_opens', 'submissions', 'learners_submitting', 'project_artifacts', 'evidence_reviews', 'level_awards'] },
+  { title: 'Learning', emoji: '🧩', keys: ['resource_opens', 'submissions', 'learners_submitting', 'project_artifacts', 'evidence_reviews'] },
+  { title: 'CBC performance levels', emoji: '🎯', keys: ['cbc_assessments', 'cbc_exceeding', 'cbc_meeting', 'cbc_approaching', 'cbc_below'] },
   { title: 'Quizzes', emoji: '🧠', keys: ['quiz_attempts', 'passed_quiz_attempts', 'learners_passing_quizzes'] },
   { title: 'Attendance and observations', emoji: '📋', keys: ['attendance_recorded', 'attendance_present', 'observed_tasks', 'independent_tasks', 'tasks_with_barriers', 'teacher_logins'] },
 ];

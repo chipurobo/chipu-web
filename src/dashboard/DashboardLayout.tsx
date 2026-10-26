@@ -57,7 +57,7 @@ const LEARNER_PAGE_TITLES: Record<string, string> = {
   '/dashboard/my-learning': 'Lessons',
   '/dashboard/quizzes': 'Quizzes',
   '/dashboard/my-projects': 'Projects',
-  '/dashboard/my-progress': 'Journey',
+  '/dashboard/my-progress': 'My stars',
   '/dashboard/portfolio': 'Showcase',
   '/dashboard/report-concern': 'Report a concern',
 };
@@ -444,13 +444,13 @@ function DashboardShell() {
           <p className="text-xs text-gray-500 truncate">
             {school?.name ?? (isAdmin ? 'ChipuRobo admin' : '—')}
           </p>
-          <span className={`mt-2 inline-block px-2 py-0.5 rounded-full text-[0.65rem] font-medium uppercase tracking-wide ${
+          {!isLearner && <span className={`mt-2 inline-block px-2 py-0.5 rounded-full text-[0.65rem] font-medium uppercase tracking-wide ${
             isAdmin       ? 'bg-terracotta-100 text-terracotta-700' :
             isMakerSpace  ? 'bg-indigo-100 text-indigo-700' :
                             'bg-teal-100 text-teal-700'
           }`}>
             {roleLabel}
-          </span>
+          </span>}
           <button
             type="button"
             onClick={handleSignOut}

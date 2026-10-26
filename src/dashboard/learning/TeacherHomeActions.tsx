@@ -3,15 +3,12 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../../lib/auth';
 import { fetchCurriculumLessons } from '../../lib/gql/queries';
-import { learningLevels, type LearningLevel } from '../../lib/learningFramework';
 import { hasUsableLearningPlan } from '../../lib/learningRecords';
 import type { Lesson } from '../../lib/database.types';
 import { AssignLessonForm } from './AssignLessonForm';
-import { LevelChip } from './ui/LearnerKit';
 
 export function TeacherHomeActions() {
   const { school } = useAuth();
-  const [level, setLevel] = useState<LearningLevel | 'all'>('all');
   const [assignFor, setAssignFor] = useState<Lesson | null>(null);
   const lessons = useQuery({
     queryKey: ['lessons', 'school', school?.id],
@@ -20,8 +17,7 @@ export function TeacherHomeActions() {
   });
   const error = lessons.error;
   const visibleLessons = lessons.data
-    ?.filter((lesson) => hasUsableLearningPlan(lesson.learning_plan)
-      && (level === 'all' || lesson.learning_plan?.level === level))
+    ?.filter((lesson) => hasUsableLearningPlan(lesson.learning_plan))
     .slice(0, 6);
   const closeAssign = () => {
     const lessonId = assignFor?.id;
@@ -39,20 +35,12 @@ export function TeacherHomeActions() {
       <details id="assign-lesson" className="learner-card scroll-mt-4 overflow-hidden">
         <summary className="cursor-pointer px-5 py-4 text-lg font-extrabold text-slate-900"><span aria-hidden="true">➕ </span>Assign lesson</summary>
         <div className="space-y-4 border-t border-slate-200 p-5">
-          <label className="block max-w-xs text-sm font-extrabold text-slate-800">
-            Level
-            <select className="field-select mt-1" value={level} onChange={(event) => setLevel(event.target.value as LearningLevel | 'all')}>
-              <option value="all">All</option>
-              {learningLevels.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}
-            </select>
-          </label>
           {lessons.isPending && <p role="status">Loading…</p>}
           <ul className="divide-y divide-slate-200">
             {visibleLessons?.map((lesson) => (
               <li key={lesson.id} className="py-4">
                 <article className="space-y-3" aria-label={lesson.title}>
                   <div className="flex items-center gap-3">
-                    <LevelChip level={lesson.learning_plan?.level} />
                     <h3>{lesson.title}</h3>
                     {lesson.description && <p className="sr-only">{lesson.description}</p>}
                   </div>

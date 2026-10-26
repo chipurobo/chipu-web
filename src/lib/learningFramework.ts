@@ -41,7 +41,7 @@ export const learningFramework = {
   status: 'draft',
   title: 'Coding and robotics',
   reviewNote:
-    'KICD Grade 10 reference with a draft ChipuRobo Beginner, Intermediate and Expert mapping. Choosing a level does not award it.',
+    'KICD reference with a draft ChipuRobo mapping. Work is rated on the CBC performance levels (EE, ME, AE, BE); there are no course levels.',
   referenceGrade: 10,
   application:
     'Grade 10 is the common reference, including for younger learners. Teachers adapt task complexity and delivery to each learner.',
@@ -184,32 +184,51 @@ export const learningPathways = [
   },
 ] as const;
 
+/**
+ * CBC performance levels, highest first, the same four-point scale schools use
+ * for every learning area. 'not-observed' means the skill was not rated.
+ */
 export const evidenceRubric = [
   {
     id: 'not-observed',
-    title: 'Not yet observed',
-    description:
-      'There is not enough evidence to make a decision. Provide another opportunity to demonstrate the outcome.',
+    short: '—',
+    points: 0,
+    title: 'Not yet assessed',
+    description: 'There is not enough evidence yet. Give the learner another chance to show this skill.',
   },
   {
-    id: 'developing',
-    title: 'Developing',
-    description:
-      'Some parts of the outcome are demonstrated. Identify the specific skill that needs further practice.',
+    id: 'exceeding',
+    short: 'EE',
+    points: 4,
+    title: 'Exceeding expectations',
+    description: 'Goes beyond the expected outcome: uses the skill in a new situation and explains choices.',
   },
   {
-    id: 'demonstrated',
-    title: 'Demonstrated',
-    description:
-      'The work and the learner’s explanation show the expected outcome for this activity and level.',
+    id: 'meeting',
+    short: 'ME',
+    points: 3,
+    title: 'Meeting expectations',
+    description: 'The work and the learner’s explanation show the expected outcome.',
   },
   {
-    id: 'extending',
-    title: 'Extending',
-    description:
-      'The learner applies the skill to a new situation and explains the choices and limitations.',
+    id: 'approaching',
+    short: 'AE',
+    points: 2,
+    title: 'Approaching expectations',
+    description: 'Shows part of the outcome. Name the skill that needs more practice.',
+  },
+  {
+    id: 'below',
+    short: 'BE',
+    points: 1,
+    title: 'Below expectations',
+    description: 'Needs a lot of support to show the outcome. Plan another guided attempt.',
   },
 ] as const;
+
+/** The four CBC levels without "not yet assessed", highest first. */
+export const cbcLevels = evidenceRubric.filter((level) => level.id !== 'not-observed') as unknown as
+  { id: 'exceeding' | 'meeting' | 'approaching' | 'below'; short: string; points: number; title: string; description: string }[];
 
 export const inclusiveLearningSupports = [
   'Use a screen reader and keyboard with text instructions. Describe visual information and provide readable code or a tactile model where needed.',

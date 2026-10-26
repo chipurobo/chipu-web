@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { TeacherHomeActions } from './learning/TeacherHomeActions';
 import { TeacherClassBoard } from './learning/TeacherClassBoard';
-import { MyLearning } from './learning/MyLearning';
+import { LearnerHome } from './learning/LearnerHome';
 import { Hero, LearnerPage } from './learning/ui/LearnerKit';
 import { useAuth } from '../lib/auth';
 import { School, Package, ClipboardList, Users, Boxes, Wrench, Send, BookOpen } from 'lucide-react';
@@ -13,7 +13,7 @@ import { School, Package, ClipboardList, Users, Boxes, Wrench, Send, BookOpen } 
  */
 export function DashboardHome() {
   const { profile, school } = useAuth();
-  if (profile?.role === 'learner') return <MyLearning />;
+  if (profile?.role === 'learner') return <LearnerHome />;
   const isTeacher = profile?.role === 'teacher';
   if (isTeacher) return <TeacherDashboard name={profile.full_name} schoolName={school?.name} />;
   const isAdmin = profile?.role === 'admin';
@@ -37,7 +37,7 @@ export function DashboardHome() {
         {isAdmin && (
           <>
             <Tile to="/dashboard/admin/lessons" icon={BookOpen}
-                  title="Plan lessons" body="Create activities and set pathways, levels and competency outcomes." />
+                  title="Plan lessons" body="Create activities and set pathways and competency outcomes." />
             <Tile to="/dashboard/admin/learning-accounts" icon={Users} title="Learning accounts" body="Create teacher and learner logins and assign teaching groups." />
             <Tile to="/dashboard/admin/schools" icon={School}
                   title="Schools" body="Review every onboarded code club." />
@@ -57,7 +57,7 @@ export function DashboardHome() {
             <Tile to="/dashboard/school/lessons" icon={BookOpen}
                   title="Lessons" body="Assign learning activities and review student evidence." />
             <Tile to="/dashboard/school/progress" icon={BookOpen}
-                  title="Learner progress" body="Review evidence across Beginner, Intermediate and Expert." />
+                  title="Learner progress" body="Review skills on the CBC performance levels (EE, ME, AE, BE)." />
             <Tile to="/dashboard/school/orders" icon={ClipboardList}
                   title={isMakerSpace ? 'Orders to fulfil' : 'My orders'}
                   body={isMakerSpace
