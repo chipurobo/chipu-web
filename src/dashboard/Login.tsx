@@ -1,4 +1,4 @@
-import { useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, ArrowRight, Blocks, Eye, EyeOff, Lightbulb, Loader2, Sparkles } from 'lucide-react';
@@ -144,6 +144,8 @@ function LoginShell({ title, form, onSubmit, canSubmit, children }: {
 }) {
   const { sessionExpired } = useAuth();
   const { submitting, error, errorRef } = form;
+  // The page title is the first thing a screen reader says on arrival.
+  useEffect(() => { document.title = `${title} · ChipuRobo`; }, [title]);
 
   return (
     <div className="login-page">
@@ -151,15 +153,15 @@ function LoginShell({ title, form, onSubmit, canSubmit, children }: {
       <header className="login-header">
         <Link to="/" className="login-brand" aria-label="ChipuRobo home">
           <img src="/img/logo.webp" alt="" width={42} height={42} />
-          <span>ChipuRobo<span className="login-brand-dot">.</span></span>
+          <span>ChipuRobo<span className="login-brand-dot" aria-hidden="true">.</span></span>
         </Link>
         <Link to="/" className="login-back"><ArrowLeft size={16} aria-hidden="true" /> Back to website</Link>
       </header>
 
       <main className="login-main">
         <section className="login-welcome" aria-labelledby="login-welcome-title">
-          <span className="login-eyebrow"><span aria-hidden="true" /> A SPACE FOR CURIOUS MINDS</span>
-          <h2 id="login-welcome-title">Little ideas.<br /><span>Big possibilities.</span></h2>
+          <span className="login-eyebrow"><span aria-hidden="true" /> A space for curious minds</span>
+          <h2 id="login-welcome-title">Little ideas.<br />{' '}<span>Big possibilities.</span></h2>
           <div className="login-art" role="img" aria-label="A friendly robot surrounded by building blocks, a light bulb and a star.">
             <div aria-hidden="true" className="login-art-scene">
               <div className="login-art-orbit" />
@@ -179,9 +181,10 @@ function LoginShell({ title, form, onSubmit, canSubmit, children }: {
           <h1 id="login-title">{title}</h1>
           {sessionExpired && <div role="status" className="login-notice">Your session ended. Please sign in again.</div>}
 
-          <form id="login-form" tabIndex={-1} onSubmit={onSubmit} aria-labelledby="login-title" aria-busy={submitting}>
-            <fieldset className="login-fields" disabled={submitting}>
-              <legend className="sr-only">{title}</legend>
+          <form id="login-form" tabIndex={-1} onSubmit={onSubmit} aria-busy={submitting}>
+            {/* Only here to disable every field while signing in. The heading
+                already names the form, so it is not announced as a group. */}
+            <fieldset className="login-fields" role="none" disabled={submitting}>
               {children}
             </fieldset>
             {error && <div id="login-error" ref={errorRef} tabIndex={-1} role="alert" className="login-error">{error}</div>}

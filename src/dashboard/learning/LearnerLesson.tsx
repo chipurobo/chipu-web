@@ -157,12 +157,15 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, lesso
     setShowIntro(false);
   }
 
+  // What the read-aloud button says. Written to be heard, not read: short
+  // sentences, "first, next, last" instead of numbers, and a little cheer.
+  const steps = plan.steps.map((step, n) => `${n === 0 ? 'First' : n === plan.steps.length - 1 ? 'Last' : 'Next'}, ${lowerFirst(step)}`);
   const spoken: Record<StageId, string> = {
-    think: [title, plan.problem ?? '', instructions].filter(Boolean).join('. '),
-    learn: [...(plan.ideas ?? []).map((idea) => `${idea.title}. ${idea.body}`), plan.expectedResult ? `When it works, you will see: ${plan.expectedResult}` : ''].filter(Boolean).join('. '),
-    build: plan.steps.map((step, n) => `Step ${n + 1}. ${step}`).join('. '),
-    check: 'Short assessment. Answer a few quick questions.',
-    send: 'Say what you made, then press Send. Your teacher will reply here.',
+    think: [`Let's think about ${title}.`, plan.problem ? `Here's your mission. ${plan.problem}` : '', instructions ? `Your teacher says: ${instructions}` : '', 'What do you know already? Have a go. It is fine to guess!'].filter(Boolean).join(' '),
+    learn: [`Here's the big idea.`, ...(plan.ideas ?? []).map((idea) => `${idea.title}. ${idea.body}`), plan.expectedResult ? `When it works, you will see this. ${plan.expectedResult}` : ''].filter(Boolean).join(' '),
+    build: [`Time to build!`, ...steps, 'Test it as you go. Mistakes help you learn!'].join(' '),
+    check: 'Quiz time! Answer a few quick questions. Take your time. You can always try again.',
+    send: 'Great work! Tell your teacher what you made, then press Send. Your teacher will reply here.',
   };
 
   const introSteps = [
@@ -172,10 +175,11 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, lesso
     'Send your work.',
   ];
   const introSpoken = [
-    `Before you start ${title}.`,
-    plan.problem ?? lesson?.description ?? title,
-    instructions ? `From your teacher: ${instructions}` : '',
-    ...introSteps.map((step, number) => `Step ${number + 1}. ${step}`),
+    `Let's get ready for ${title}!`,
+    `Here's your mission. ${plan.problem ?? lesson?.description ?? title}`,
+    instructions ? `Your teacher says: ${instructions}` : '',
+    'Here is the plan. First, learn the idea. Next, build it and test it. Then, try a short quiz. Last, send your work to your teacher.',
+    'Ready? Press Start lesson when you are. You have got this!',
   ].filter(Boolean).join(' ');
 
   return <>
@@ -324,13 +328,13 @@ function StepChecklist({ steps }: { steps: string[] }) {
     <div className="learner-card space-y-3 p-5">
       <div className="flex items-center justify-between gap-3">
         <h3>Steps</h3>
-        <p className="text-sm font-extrabold text-slate-700" role="status">{done.size} of {steps.length}<span className="sr-only"> steps ticked</span></p>
+        <p className="text-sm font-extrabold text-slate-700" role="status">{done.size} of {steps.length}<span className="sr-only"> steps done</span></p>
       </div>
       <ol className="space-y-2">
         {steps.map((step, index) => (
           <li key={index}>
             <label className={`flex cursor-pointer items-start gap-3 rounded-2xl p-3 ${done.has(index) ? 'bg-teal-50' : 'bg-slate-50'}`}>
-              <input type="checkbox" className="mt-0.5 h-6 w-6 shrink-0 rounded-md border-2 border-slate-400 text-teal-700 focus:ring-teal-500" checked={done.has(index)} onChange={() => toggle(index)} />
+              <input type="checkbox" aria-label={`Step ${index + 1}: ${step}`} className="mt-0.5 h-6 w-6 shrink-0 rounded-md border-2 border-slate-400 text-teal-700 focus:ring-teal-500" checked={done.has(index)} onChange={() => toggle(index)} />
               <span className="text-base font-semibold text-slate-900"><span className="font-extrabold">{index + 1}. </span>{step}</span>
             </label>
           </li>
@@ -352,8 +356,15 @@ function HintBox({ hints }: { hints: string[] }) {
         ))}
       </ol>
       {shown < hints.length
-        ? <button type="button" className="btn-secondary" onClick={() => setShown(shown + 1)}><span aria-hidden="true">💡 </span>{shown ? 'Another hint' : 'I need a hint'}<span className="sr-only">, {hints.length - shown} left</span></button>
+        ? <button type="button" className="btn-secondary" onClick={() => setShown(shown + 1)}
+          aria-label={`${shown ? 'Another hint' : 'I need a hint'}. ${hints.length - shown === 1 ? 'One hint' : `${hints.length - shown} hints`} left.`}>
+          <span aria-hidden="true">💡 </span>{shown ? 'Another hint' : 'I need a hint'}</button>
         : <p role="status" className="text-base font-bold text-slate-800">That's all the hints. Ask your teacher or a friend.</p>}
     </section>
   );
+}
+
+/** "Drag a block" → "drag a block", so it reads naturally after "First, ". */
+function lowerFirst(text: string): string {
+  return /^[A-Z][a-z]/.test(text) ? text[0].toLowerCase() + text.slice(1) : text;
 }

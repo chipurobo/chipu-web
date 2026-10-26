@@ -23,7 +23,7 @@ export function MyProgress() {
       {!loading && !error && <>
         <XpBar stats={stats} />
         <section aria-labelledby="badges-heading" className="space-y-3">
-          <h2 id="badges-heading">Badges <span className="text-base font-bold text-slate-600">{stats.badges.filter((badge) => badge.earned).length} of {stats.badges.length}</span></h2>
+          <h2 id="badges-heading">Badges <span className="text-base font-bold text-slate-600"><span className="sr-only">, you have </span>{stats.badges.filter((badge) => badge.earned).length} of {stats.badges.length}</span></h2>
           <BadgeGrid badges={stats.badges} />
         </section>
         <Link to="/dashboard/portfolio" className="learner-card learner-card-hover flex items-center justify-between gap-3 p-5">

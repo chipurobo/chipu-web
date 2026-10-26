@@ -7,6 +7,7 @@ import type { LearningLevel, CompetencyId } from '../../../lib/learningFramework
 import type { ReviewBand } from '../../../lib/learningRecords';
 import { levelLook, skillLook, ratingLook, statusLook, stepKindFor, friendlyError, type ActivityStatus, type Badge, type LearnerStats } from '../../../lib/learnerCopy';
 import { Mascot, StepIcon } from './LearnerArt';
+import { speak } from '../../../lib/speech';
 
 export function LearnerPage({ children, className = '' }: { children: ReactNode; className?: string }) {
   return <div className={`learning-zone learner-zone px-4 sm:px-6 lg:px-10 py-6 sm:py-8 space-y-8 max-w-6xl ${className}`}>{children}</div>;
@@ -77,8 +78,8 @@ export function XpBar({ stats }: { stats: LearnerStats }) {
       </div>
       <div className="flex-1">
         <div className="mb-1 flex items-baseline justify-between text-sm font-bold text-slate-700">
-          <span><span aria-hidden="true">⭐ </span>{stats.xp}<span className="sr-only"> points</span></span>
-          {stats.nextRank ? <span>{stats.nextRank.min - stats.xp} <span aria-hidden="true">→ {stats.nextRank.emoji}</span><span className="sr-only">more to reach {stats.nextRank.title}</span></span> : <span aria-hidden="true">🏆</span>}
+          <span><span aria-hidden="true">⭐ </span>{stats.xp}<span className="sr-only"> stars</span></span>
+          {stats.nextRank ? <span>{stats.nextRank.min - stats.xp} <span aria-hidden="true">→ {stats.nextRank.emoji}</span><span className="sr-only">more stars to reach {stats.nextRank.title}</span></span> : <span aria-hidden="true">🏆</span>}
         </div>
         <div className="h-4 w-full overflow-hidden rounded-full bg-slate-200" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent} aria-label={`Progress to ${stats.nextRank?.title ?? 'top rank'}`}>
           <div className="h-full rounded-full bg-amber-400 transition-all duration-700" style={{ width: `${Math.max(4, percent)}%` }} />
@@ -104,8 +105,8 @@ export function BadgeGrid({ badges }: { badges: Badge[] }) {
         <li key={badge.id} className={`learner-card flex flex-col items-center p-4 text-center ${badge.earned ? '' : 'border-dashed bg-slate-50'}`}>
           {/* Locked badges dim the icon only; the words keep full contrast so they stay readable. */}
           <span className={`flex h-14 w-14 items-center justify-center rounded-full text-3xl ${badge.earned ? 'bg-amber-100' : 'bg-slate-200 opacity-70 grayscale'}`} aria-hidden="true">{badge.earned ? badge.emoji : '🔒'}</span>
-          <p className="mt-2 font-extrabold text-slate-900"><span className="sr-only">{badge.earned ? 'Earned badge: ' : 'Locked badge: '}</span>{badge.title}</p>
-          <p className="sr-only">{badge.earned ? 'You got it!' : `To earn it: ${badge.hint}`}</p>
+          <p className="mt-2 font-extrabold text-slate-900"><span className="sr-only">{badge.earned ? 'Badge earned: ' : 'Badge to earn: '}</span>{badge.title}</p>
+          <p className="sr-only">{badge.earned ? 'You got it!' : `How to get it: ${badge.hint}`}</p>
         </li>
       ))}
     </ul>
@@ -177,7 +178,8 @@ export function Cheer({ title, body, emoji = '🎉' }: { title: string; body?: s
 }
 
 /**
- * Reads a passage out loud with the browser's own voice. A second way to take
+ * Reads a passage out loud in the most natural voice the device has (see
+ * lib/speech.ts). A second way to take
  * in the mission for learners with low vision, tired eyes or a reading
  * difficulty who are not using a full screen reader. Hidden when the browser
  * cannot speak.
@@ -185,23 +187,19 @@ export function Cheer({ title, body, emoji = '🎉' }: { title: string; body?: s
 export function ReadAloud({ text, label = 'Read this to me' }: { text: string; label?: string }) {
   const [speaking, setSpeaking] = useState(false);
   const supported = typeof window !== 'undefined' && 'speechSynthesis' in window;
-  const utterance = useRef<SpeechSynthesisUtterance | null>(null);
-  useEffect(() => () => { if (supported) window.speechSynthesis.cancel(); }, [supported]);
+  const stop = useRef<(() => void) | null>(null);
+  useEffect(() => () => stop.current?.(), []);
   if (!supported) return null;
   function toggle() {
-    if (speaking) { window.speechSynthesis.cancel(); setSpeaking(false); return; }
-    const next = new SpeechSynthesisUtterance(text);
-    next.rate = 0.95;
-    next.onend = () => setSpeaking(false);
-    next.onerror = () => setSpeaking(false);
-    utterance.current = next;
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(next);
+    if (speaking) { stop.current?.(); return; }
     setSpeaking(true);
+    stop.current = speak(text, () => { stop.current = null; setSpeaking(false); });
   }
+  // The name stays the same while reading; aria-pressed says whether it is
+  // on. Changing both makes screen readers say "Stop reading, selected".
   return (
     <button type="button" className="btn-secondary" onClick={toggle} aria-pressed={speaking} title={speaking ? 'Stop reading' : label}>
-      <span aria-hidden="true" className="text-xl">{speaking ? '⏹' : '🔊'}</span><span className="sr-only">{speaking ? 'Stop reading' : label}</span>
+      <span aria-hidden="true" className="text-xl">{speaking ? '⏹' : '🔊'}</span><span className="sr-only">{label}</span>
     </button>
   );
 }

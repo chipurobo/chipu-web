@@ -49,18 +49,18 @@ const palette = {
 } as const;
 
 const artLabels: Record<ArtTheme, string> = {
-  loop: 'Picture: an arrow going round in a circle, three times',
-  decision: 'Picture: a signpost with a yes path and a no path',
-  variable: 'Picture: a labelled box called score holding the number 42',
-  print: 'Picture: a speech bubble with lines of text',
-  list: 'Picture: a list of three items',
-  function: 'Picture: two gears turning together',
-  robot: 'Picture: a friendly robot with a light on its head',
-  plan: 'Picture: three numbered steps in order',
-  design: 'Picture: a glowing light bulb',
-  story: 'Picture: two speech bubbles saying hi and hello',
-  number: 'Picture: the sum seven plus five',
-  project: 'Picture: a big gold star',
+  loop: 'An arrow going round in a circle, three times',
+  decision: 'A signpost with a yes path and a no path',
+  variable: 'A labelled box called score holding the number 42',
+  print: 'A speech bubble with lines of text',
+  list: 'A list of three items',
+  function: 'Two gears turning together',
+  robot: 'A friendly robot with a light on its head',
+  plan: 'Three numbered steps in order',
+  design: 'A glowing light bulb',
+  story: 'Two speech bubbles saying hi and hello',
+  number: 'The sum seven plus five',
+  project: 'A big gold star',
 };
 
 /** A picture for a lesson card. `theme` comes from artThemeFor(). Screen
