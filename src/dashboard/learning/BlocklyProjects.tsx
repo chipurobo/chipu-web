@@ -1,13 +1,14 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { fetchAssignments, fetchBlocklyProjects, startBlocklyLesson } from '../../lib/learningQueries';
+import { fetchAssignments, startBlocklyLesson } from '../../lib/learningQueries';
+import { useLearnerCourse } from './useLearnerCourse';
 import { LearnerPage, Hero, FriendlyAlert, Loading, EmptyNote } from './ui/LearnerKit';
 import { LessonArt } from './ui/LearnerArt';
 
 export function BlocklyProjects() {
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const projects = useQuery({ queryKey: ['blockly-projects'], queryFn: fetchBlocklyProjects });
+  const { projects } = useLearnerCourse();
   const assignments = useQuery({ queryKey: ['learning-assignments'], queryFn: () => fetchAssignments() });
   const start = useMutation({ mutationFn: startBlocklyLesson, onSuccess: (id) => {
     void qc.invalidateQueries({ queryKey: ['learning-assignments'] }); navigate(`/dashboard/assignments/${id}`);

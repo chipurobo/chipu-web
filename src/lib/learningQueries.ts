@@ -1,6 +1,6 @@
 import { supabase } from './supabase';
 import type { AssignmentRecipient, CompetencyEvidence, LearningAssignment, LearningAccount, LearningSubmission, ReviewBand } from './learningRecords';
-import type { ClubMember, Lesson } from './database.types';
+import type { ClubMember, LearningCourse, Lesson } from './database.types';
 import type { CompetencyId } from './learningFramework';
 import type { BlocklyProgram } from './blocklyProgram';
 
@@ -67,14 +67,30 @@ export async function fetchLearningProgram(assignmentId: string): Promise<Blockl
   return row as BlocklyProgram | null;
 }
 
-export async function fetchBlocklyLessons(): Promise<Lesson[]> {
-  return unwrap(await supabase.from('lessons').select('*').eq('is_active', true)
-    .eq('kind', 'lesson').eq('learning_plan->>delivery', 'blockly').order('position'));
+/**
+ * The signed-in learner's course: 'club' for coding-club members, 'classroom'
+ * for CBC classroom learners. Null for staff, and on a database without the
+ * courses migration, in which case every active lesson is shown as before.
+ */
+export async function fetchMyLearningCourse(): Promise<LearningCourse | null> {
+  const { data, error } = await supabase.rpc('my_learning_course');
+  if (error) return null;
+  return (data as LearningCourse | null) ?? null;
 }
 
-export async function fetchBlocklyProjects(): Promise<Lesson[]> {
-  return unwrap(await supabase.from('lessons').select('*').eq('is_active', true)
-    .eq('kind', 'project').eq('learning_plan->>activityKind', 'capstone').eq('learning_plan->>delivery', 'blockly').order('position'));
+/** Active Blockly lessons, limited to one course when it is given. */
+export async function fetchBlocklyLessons(course: LearningCourse | null = null): Promise<Lesson[]> {
+  let query = supabase.from('lessons').select('*').eq('is_active', true)
+    .eq('kind', 'lesson').eq('learning_plan->>delivery', 'blockly');
+  if (course) query = query.in('course', [course, 'both']);
+  return unwrap(await query.order('position'));
+}
+
+export async function fetchBlocklyProjects(course: LearningCourse | null = null): Promise<Lesson[]> {
+  let query = supabase.from('lessons').select('*').eq('is_active', true)
+    .eq('kind', 'project').eq('learning_plan->>activityKind', 'capstone').eq('learning_plan->>delivery', 'blockly');
+  if (course) query = query.in('course', [course, 'both']);
+  return unwrap(await query.order('position'));
 }
 
 export async function startBlocklyLesson(lessonId: string): Promise<string> {

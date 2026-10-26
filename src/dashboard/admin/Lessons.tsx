@@ -332,7 +332,12 @@ export function AdminLessons() {
                         aria-label="Required for certificate" />
                     )}
                   </th>
-                  <td className="text-sm text-gray-600">{KIND_LABEL[l.kind]}</td>
+                  <td className="text-sm text-gray-600">
+                    {KIND_LABEL[l.kind]}
+                    {l.learning_plan?.delivery === 'blockly' && l.course && (
+                      <span className="block text-xs">{l.course === 'classroom' ? 'Classroom' : l.course === 'club' ? 'Coding club' : 'Classroom and club'}</span>
+                    )}
+                  </td>
                   <td><span className="badge-gray">{LEVEL_LABEL[l.level]}</span></td>
                   <td className="text-sm">
                     {safeHttpUrl(l.resource_url) ? (

@@ -168,6 +168,10 @@ export type LessonReviewStatus =
   | 'needs_revision'
   | 'withdrawn';
 
+/** CBC classroom learners follow grades; coding-club learners follow Beginner, Intermediate and Expert. */
+export type LessonCourse = 'classroom' | 'club' | 'both';
+export type LearningCourse = Exclude<LessonCourse, 'both'>;
+
 export interface Lesson {
   learning_plan: LessonLearningPlan | null;
   id: string;
@@ -195,6 +199,8 @@ export interface Lesson {
   maximum_grade: number | null;
   learning_needs: LearningNeed[];
   review_status: LessonReviewStatus;
+  /** Which learners see a Blockly lesson. Older databases without the column behave as 'both'. */
+  course?: LessonCourse;
   review_notes: string | null;
   approved_at: string | null;
   approved_by: string | null;
