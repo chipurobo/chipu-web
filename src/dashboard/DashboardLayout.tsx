@@ -120,6 +120,7 @@ function DashboardShell() {
   const [routeMessage, setRouteMessage] = useState('');
   const drawerRef = useRef<HTMLElement | null>(null);
   const hamburgerRef = useRef<HTMLButtonElement | null>(null);
+  const previousLearnerPath = useRef<string | null>(null);
 
   // Two labels for the role:
   //   • shortLabel — pixel chip in the brand corner; must fit a 60px column
@@ -144,13 +145,36 @@ function DashboardShell() {
   // Auto-close the drawer on route change.
   useEffect(() => { setMobileOpen(false); }, [location.pathname]);
 
-  // Announce SPA route changes to screen readers + update document title.
-  // The aria-live region downstream picks up the change after a tick so
-  // assistive tech reliably hears the new title even on fast nav.
+  // Update the browser title on every SPA route change. Learner pages move
+  // focus to the new page heading, which gives VoiceOver, NVDA and JAWS one
+  // concise announcement and a useful place to continue reading. Operational
+  // dashboards retain the live-region announcement because their page shells
+  // and headings vary more widely.
   useEffect(() => {
     const title = getDashboardPageTitle(location.pathname, isLearner);
     document.title = `${title} · ChipuRobo`;
-    const t = setTimeout(() => setRouteMessage(`Navigated to ${title}`), 100);
+    setRouteMessage('');
+    const t = setTimeout(() => {
+      if (isLearner) {
+        const previousPath = previousLearnerPath.current;
+        previousLearnerPath.current = location.pathname;
+        // Keep the skip link first on an initial page load. Focus only moves
+        // after an in-app navigation to a learner destination; lesson
+        // workspaces manage their own, more specific heading focus.
+        if (previousPath === null || previousPath === location.pathname || !LEARNER_PAGE_TITLES[location.pathname]) return;
+        const main = document.getElementById('dashboard-main');
+        const heading = main?.querySelector<HTMLElement>('h1');
+        if (heading) {
+          heading.tabIndex = -1;
+          heading.focus();
+        } else {
+          main?.focus();
+        }
+        return;
+      }
+      previousLearnerPath.current = null;
+      setRouteMessage(`Navigated to ${title}`);
+    }, 100);
     return () => clearTimeout(t);
   }, [location.pathname, isLearner]);
 
@@ -224,8 +248,8 @@ function DashboardShell() {
         Skip to main content
       </a>
 
-      {/* Live region for SPA route announcements. Hidden visually,
-          read by NVDA/JAWS/VoiceOver on every navigation. */}
+      {/* Live region for operational-dashboard route announcements. Learner
+          routes focus their new h1 instead, which avoids duplicate speech. */}
       <div
         id="dashboard-route-announcer"
         role="status"
@@ -500,16 +524,16 @@ function LearnerHeader({ onSignOut }: { onSignOut: () => void | Promise<void> })
         </Link>
 
         <nav aria-label="Learner navigation" className="order-3 w-full sm:order-none sm:ml-auto sm:w-auto">
-          <div className="flex items-center gap-1 rounded-2xl bg-sky-50 p-1">
-            <LearnerNavLink to="/dashboard" end icon={Home}>Home</LearnerNavLink>
-            <LearnerNavLink to="/dashboard/my-learning" icon={Puzzle} accessibleLabel="Lessons">
+          <ul className="flex list-none items-center gap-1 rounded-2xl bg-sky-50 p-1">
+            <li className="flex flex-1 sm:flex-none"><LearnerNavLink to="/dashboard" end icon={Home}>Home</LearnerNavLink></li>
+            <li className="flex flex-1 sm:flex-none"><LearnerNavLink to="/dashboard/my-learning" icon={Puzzle} accessibleLabel="Lessons">
               <span className="sm:hidden">Learn</span><span className="hidden sm:inline">Lessons</span>
-            </LearnerNavLink>
-            <LearnerNavLink to="/dashboard/my-progress" icon={Star} accessibleLabel="My stars">
+            </LearnerNavLink></li>
+            <li className="flex flex-1 sm:flex-none"><LearnerNavLink to="/dashboard/my-progress" icon={Star} accessibleLabel="My stars">
               <span className="sm:hidden">Stars</span><span className="hidden sm:inline">My stars</span>
-            </LearnerNavLink>
-            <LearnerNavLink to="/dashboard/report-concern" icon={Flag} accessibleLabel="Report a concern">Report</LearnerNavLink>
-          </div>
+            </LearnerNavLink></li>
+            <li className="flex flex-1 sm:flex-none"><LearnerNavLink to="/dashboard/report-concern" icon={Flag} accessibleLabel="Report a concern">Report</LearnerNavLink></li>
+          </ul>
         </nav>
 
         <button

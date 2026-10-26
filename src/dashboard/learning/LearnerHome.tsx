@@ -3,6 +3,7 @@
  * attention. Work a teacher set comes first; otherwise it is the next open
  * lesson on the path.
  */
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../lib/auth';
@@ -10,7 +11,7 @@ import { fetchAssignments, fetchBlocklyLessons, fetchBlocklyProjects, fetchEvide
 import { fetchQuizAttempts } from '../../lib/learningOutcomes';
 import { artThemeFor, computeStats, firstName, learnerTitle, pathwayLook } from '../../lib/learnerCopy';
 import { buildPath, nextUp } from '../../lib/learnerPath';
-import { LearnerPage, FriendlyAlert, Loading, EmptyNote } from './ui/LearnerKit';
+import { LearnerPage, FriendlyAlert, Loading, EmptyNote, ReadAloud } from './ui/LearnerKit';
 import { LessonArt, Mascot } from './ui/LearnerArt';
 
 export function LearnerHome() {
@@ -39,6 +40,21 @@ export function LearnerHome() {
   const description = item?.lesson.description ?? nextPlan?.problem;
   const assignmentId = teacher?.id ?? item?.assignmentId;
   const started = !!assignmentId && !!assignments.data?.some((assignment) => assignment.id === assignmentId);
+  const [welcomePending] = useState(() => {
+    try { return sessionStorage.getItem('chipurobo:learner-welcome') === '1'; } catch { return false; }
+  });
+  const [showWelcome, setShowWelcome] = useState(false);
+
+  useEffect(() => {
+    if (!welcomePending) return;
+    try { sessionStorage.removeItem('chipurobo:learner-welcome'); } catch { /* private mode */ }
+    // Populate an already-mounted live region after navigation so screen
+    // readers reliably announce the short orientation once.
+    const timer = window.setTimeout(() => setShowWelcome(true), 150);
+    return () => window.clearTimeout(timer);
+  }, [welcomePending]);
+
+  const welcomeText = 'Start your lesson. Follow each step. Finish the short assessment.';
 
   return (
     <LearnerPage className="max-w-3xl">
@@ -49,6 +65,20 @@ export function LearnerHome() {
           <span aria-hidden="true">⭐</span> {stats.xp}<span className="sr-only"> stars. See my stars and badges</span>
         </Link>
       </header>
+
+      <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {showWelcome ? `Welcome to ChipuRobo. ${welcomeText}` : ''}
+      </div>
+      {showWelcome && (
+        <section aria-labelledby="learner-welcome-heading" className="learner-card flex items-center gap-4 bg-teal-50 p-4">
+          <div className="min-w-0 flex-1">
+            <h2 id="learner-welcome-heading" className="text-lg">Welcome!</h2>
+            <p className="mt-1 text-base font-semibold text-slate-900">{welcomeText}</p>
+          </div>
+          <ReadAloud text={welcomeText} label="Read welcome aloud" />
+          <button type="button" className="btn-primary shrink-0" onClick={() => setShowWelcome(false)}>Got it</button>
+        </section>
+      )}
 
       <FriendlyAlert error={error ?? start.error} />
       {loading && <Loading>Finding your next lesson</Loading>}
