@@ -85,7 +85,7 @@ export function AccessibleLessonMedia({
       )}
 
       <details className="rounded-xl border border-slate-200 bg-white p-4" open>
-        <summary className="cursor-pointer font-extrabold text-slate-900">{learnerFriendly ? 'Words in the video' : 'Transcript'}</summary>
+        <summary className="cursor-pointer font-extrabold text-slate-900">{learnerFriendly ? (isVideo ? 'Words in the video' : 'Words in the audio') : 'Transcript'}</summary>
         <p className={`mt-3 whitespace-pre-wrap leading-7 text-slate-800 ${learnerFriendly ? 'text-base' : 'text-sm'}`}>
           {transcript}
         </p>
