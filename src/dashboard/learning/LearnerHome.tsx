@@ -12,7 +12,7 @@ import { useLearnerCourse } from './useLearnerCourse';
 import { fetchQuizAttempts } from '../../lib/learningOutcomes';
 import { artThemeFor, computeStats, firstName, learnerTitle, levelLook, pathwayLook } from '../../lib/learnerCopy';
 import { buildPath, nextUp } from '../../lib/learnerPath';
-import { LearnerPage, FriendlyAlert, Loading, EmptyNote, ReadAloud } from './ui/LearnerKit';
+import { LearnerPage, FriendlyAlert, Loading, EmptyNote } from './ui/LearnerKit';
 import { LessonArt, Mascot } from './ui/LearnerArt';
 
 export function LearnerHome() {
@@ -43,58 +43,39 @@ export function LearnerHome() {
   const [welcomePending] = useState(() => {
     try { return sessionStorage.getItem('chipurobo:learner-welcome') === '1'; } catch { return false; }
   });
-  const [showWelcome, setShowWelcome] = useState(false);
-  const [announced, setAnnounced] = useState(false);
-  const heading = useRef<HTMLHeadingElement>(null);
+  const [showWelcome, setShowWelcome] = useState(welcomePending);
+  const welcomeHeading = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
     if (!welcomePending) return;
     try { sessionStorage.removeItem('chipurobo:learner-welcome'); } catch { /* private mode */ }
-    // Signing in removes the button that had focus. Start the learner on
-    // their greeting ("Hi, Amina!, heading level 1"), then populate an
-    // already-mounted live region once that has been read, so screen readers
-    // announce the short welcome once without talking over the greeting.
-    heading.current?.focus();
-    const timer = window.setTimeout(() => setShowWelcome(true), 700);
-    // Empty the live region once it has been heard, so reading on does not
-    // hear the welcome twice (it is also on screen).
-    const clear = window.setTimeout(() => setAnnounced(true), 8000);
-    return () => { window.clearTimeout(timer); window.clearTimeout(clear); };
+    // Signing in removes the button that had focus. Start screen readers on
+    // the welcome ("Welcome!, heading level 2"); reading on gives the one
+    // direction and Got it, each said once.
+    welcomeHeading.current?.focus();
   }, [welcomePending]);
 
-  // Exact first directions, naming this learner's lesson and its button.
+  // One short direction, naming the real button.
   const openLabel = started ? (teacher ? 'Open' : 'Continue') : 'Start';
-  const welcomeSteps = title
-    ? [`Press ${openLabel} on “${title}” below.`, 'Read “Before you start”, then press Start lesson.', 'Do the 5 steps: Think, Learn, Build, Assess and Send. Press Next after each one.']
-    : ['Ask your teacher which lesson to do today.'];
-  const welcomeSpoken = `Welcome to ChipuRobo. Here is what to do. ${welcomeSteps.map((step, n) => `${n + 1}. ${step}`).join(' ')} You’ve got this!`;
+  const welcomeText = title ? `Press ${openLabel} to begin.` : 'Ask your teacher what to do today.';
 
   return (
     <LearnerPage className="max-w-3xl">
       <header className="flex items-center gap-4">
         <Mascot size={56} mood="happy" className="shrink-0" />
-        <h1 ref={heading} tabIndex={-1} className="learner-title flex-1 focus:outline-none">Hi, {firstName(profile?.full_name)}! <span aria-hidden="true">👋</span></h1>
+        <h1 className="learner-title flex-1">Hi, {firstName(profile?.full_name)}! <span aria-hidden="true">👋</span></h1>
         <Link to="/dashboard/my-progress" className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-4 py-2 text-base font-extrabold text-slate-900 hover:bg-amber-200 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-slate-900">
           <span aria-hidden="true">⭐</span> {stats.xp}<span className="sr-only"> stars. See my stars and badges</span>
         </Link>
       </header>
 
-      <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
-        {showWelcome && !loading && !announced ? welcomeSpoken : ''}
-      </div>
       {showWelcome && (
-        <section aria-labelledby="learner-welcome-heading" className="learner-card space-y-3 bg-teal-50 p-5">
-          <div className="flex items-center justify-between gap-3">
-            <h2 id="learner-welcome-heading" className="text-lg">Welcome! Here is what to do</h2>
-            <ReadAloud text={welcomeSpoken} label="Read welcome aloud" />
+        <section aria-labelledby="learner-welcome-heading" className="learner-card flex flex-wrap items-center gap-4 bg-teal-50 p-5">
+          <div className="min-w-0 flex-1">
+            <h2 id="learner-welcome-heading" ref={welcomeHeading} tabIndex={-1} className="text-lg focus:outline-none">Welcome!</h2>
+            <p className="mt-1 text-base font-semibold text-slate-900">{welcomeText}</p>
           </div>
-          <ol className="space-y-2" aria-label="What to do first">
-            {welcomeSteps.map((step, n) => <li key={step} className="flex items-start gap-3">
-              <span aria-hidden="true" className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-700 text-sm font-extrabold text-white">{n + 1}</span>
-              <span className="pt-0.5 text-base font-semibold text-slate-900"><span className="sr-only">Step {n + 1}: </span>{step}</span>
-            </li>)}
-          </ol>
-          <button type="button" className="btn-primary" onClick={() => setShowWelcome(false)}>Got it</button>
+          <button type="button" className="btn-primary shrink-0" onClick={() => setShowWelcome(false)}>Got it</button>
         </section>
       )}
 
