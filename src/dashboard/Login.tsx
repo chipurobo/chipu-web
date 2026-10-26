@@ -197,41 +197,28 @@ export function Login() {
   );
 }
 
-/**
- * School finder for learners. A long dropdown is hard to use with a screen
- * reader, so learners type part of the name and pick from a short list of
- * radio buttons instead. The number of matches is announced as they type.
- */
+/** School dropdown for learners. Nobody should have to type or spell a school name. */
 function SchoolPicker({ schools, loading, failed, onRetry, value, onChange }: {
   schools: SchoolLoginOption[]; loading: boolean; failed: boolean; onRetry: () => void;
   value: string; onChange: (code: string) => void;
 }) {
-  const [query, setQuery] = useState('');
-  const chosen = schools.find((school) => school.code === value);
-  const words = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
-  const matches = schools.filter((school) => words.every((word) => `${school.name} ${school.code}`.toLowerCase().includes(word)));
-  // Radio buttons select as the arrow keys move, so the list must stay put
-  // after a choice. The chosen school stays listed even if the search changes.
-  const shown = words.length || schools.length <= 6 ? matches.slice(0, 6) : [];
-  const listed = chosen && !shown.includes(chosen) ? [chosen, ...shown] : shown;
-
   return (
     <div className="login-field">
       <label htmlFor="school">School</label>
-      <input id="school" type="search" className="login-input" autoComplete="off" spellCheck={false} disabled={loading || failed}
-        placeholder={loading ? 'Loading schools…' : 'Type your school’s name'} aria-describedby="school-count"
-        value={query} onChange={(e) => setQuery(e.target.value)} />
-      <p id="school-count" role="status" className="login-field-help">
-        {failed ? '' : !words.length ? 'Type a few letters, then pick your school.' : matches.length === 0 ? 'No school found. Try fewer letters.' : matches.length === 1 ? '1 school found.' : `${matches.length} schools found${matches.length > 6 ? '. Type more to see yours.' : '.'}`}
-      </p>
+      <select
+        id="school"
+        className="login-input"
+        required
+        disabled={loading || failed}
+        value={value}
+        aria-describedby="school-help"
+        onChange={(event) => onChange(event.target.value)}
+      >
+        <option value="">{loading ? 'Loading schools…' : 'Choose your school'}</option>
+        {schools.map((school) => <option key={school.id} value={school.code}>{school.name}</option>)}
+      </select>
+      <p id="school-help" className="login-field-help">Pick your school from the list.</p>
       {failed && <div id="school-error" role="alert" className="login-school-error">We couldn’t load the schools. Check your connection. <button type="button" onClick={onRetry}>Try again</button></div>}
-      {!!listed.length && <fieldset className="login-school-list">
-        <legend className="sr-only">Pick your school</legend>
-        {listed.map((school) => <label key={school.id} className="login-school-option">
-          <input type="radio" name="school" value={school.code} checked={school.code === value} onChange={() => onChange(school.code)} />
-          <span>{school.name}</span>{school.code === value && <Check size={18} aria-hidden="true" />}
-        </label>)}
-      </fieldset>}
     </div>
   );
 }
