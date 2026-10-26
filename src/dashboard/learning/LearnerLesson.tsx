@@ -25,7 +25,7 @@ const stages = [
   { id: 'think', emoji: '🤔', label: 'Think' },
   { id: 'learn', emoji: '📖', label: 'Learn' },
   { id: 'build', emoji: '🧩', label: 'Build' },
-  { id: 'check', emoji: '🏁', label: 'Check' },
+  { id: 'check', emoji: '✅', label: 'Assess' },
   { id: 'send', emoji: '📬', label: 'Send' },
 ] as const;
 type StageId = (typeof stages)[number]['id'];
@@ -161,15 +161,15 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, lesso
     think: [title, plan.problem ?? '', instructions].filter(Boolean).join('. '),
     learn: [...(plan.ideas ?? []).map((idea) => `${idea.title}. ${idea.body}`), plan.expectedResult ? `When it works, you will see: ${plan.expectedResult}` : ''].filter(Boolean).join('. '),
     build: plan.steps.map((step, n) => `Step ${n + 1}. ${step}`).join('. '),
-    check: 'Final check. Answer each question, then check your answers.',
+    check: 'Short assessment. Answer a few quick questions.',
     send: 'Say what you made, then press Send. Your teacher will reply here.',
   };
 
   const introSteps = [
-    'Read or listen to your mission.',
-    'Work one step at a time.',
-    'Run your program and fix any problems.',
-    'Send your work to your teacher.',
+    'Learn the idea.',
+    'Build and test it.',
+    'Take a short assessment.',
+    'Send your work.',
   ];
   const introSpoken = [
     `Before you start ${title}.`,
@@ -279,7 +279,7 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, lesso
         <HintBox hints={buildHints(title, plan)} />
       </>}
 
-      {stage === 'check' && <StageQuiz lessonId={lessonId} stage="end" title="Final check" />}
+      {stage === 'check' && <StageQuiz lessonId={lessonId} stage="end" title="Short assessment" />}
 
       {stage === 'send' && <>
         <LessonSend work={work} submissions={submissions} reviews={reviews} />
