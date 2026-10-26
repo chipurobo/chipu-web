@@ -8,7 +8,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../lib/auth';
 import { fetchAssignments, fetchBlocklyLessons, fetchBlocklyProjects, fetchEvidence, fetchSubmissions, startBlocklyLesson } from '../../lib/learningQueries';
 import { fetchQuizAttempts } from '../../lib/learningOutcomes';
-import { artThemeFor, computeStats, firstName, learnerTitle } from '../../lib/learnerCopy';
+import { artThemeFor, computeStats, firstName, learnerTitle, pathwayLook } from '../../lib/learnerCopy';
 import { buildPath, nextUp } from '../../lib/learnerPath';
 import { LearnerPage, FriendlyAlert, Loading, EmptyNote } from './ui/LearnerKit';
 import { LessonArt, Mascot } from './ui/LearnerArt';
@@ -34,6 +34,9 @@ export function LearnerHome() {
   const stats = computeStats({ assignments: assignments.data, submissions: submissions.data, evidence: evidence.data, attempts: attempts.data });
   const rawTitle = item?.lesson.title ?? teacher?.title;
   const title = rawTitle && learnerTitle(rawTitle);
+  const nextPlan = teacher?.learning_plan ?? item?.lesson.learning_plan;
+  const pathway = nextPlan ? pathwayLook[nextPlan.pathwayId] : undefined;
+  const description = item?.lesson.description ?? nextPlan?.problem;
   const assignmentId = teacher?.id ?? item?.assignmentId;
   const started = !!assignmentId && !!assignments.data?.some((assignment) => assignment.id === assignmentId);
 
@@ -55,9 +58,10 @@ export function LearnerHome() {
           <LessonArt theme={artThemeFor(title, { capstone: item?.project })} className="w-full max-h-56" />
           <div className="space-y-4 p-6">
             <p className="text-sm font-extrabold uppercase tracking-wide text-slate-600">
-              {teacher ? 'From your teacher' : item?.project ? 'Big project' : `Lesson ${item?.number} of ${path.length}`}
+              {teacher ? 'From your teacher' : pathway ? <><span aria-hidden="true">{pathway.emoji} </span>{pathway.label}</> : item?.project ? 'Project' : `Lesson ${item?.number} of ${path.length}`}
             </p>
             <h2 id="next-heading" className="!text-3xl">{title}</h2>
+            {description && <p className="text-base font-semibold leading-relaxed text-slate-700">{description}</p>}
             {teacher?.due_date && <p className="text-base font-semibold text-slate-700">Due {teacher.due_date}</p>}
             {started
               ? <Link className="btn-play" to={`/dashboard/assignments/${assignmentId}`}>{teacher ? 'Open' : 'Continue'}<span className="sr-only"> {title}</span><span aria-hidden="true"> →</span></Link>
