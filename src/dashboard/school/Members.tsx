@@ -28,7 +28,7 @@ export function SchoolMembers() {
   // Add form
   const [addName, setAddName] = useState('');
   const [addGrade, setAddGrade] = useState('');
-  const [addInClub, setAddInClub] = useState(true);
+  const [addInClub, setAddInClub] = useState(false);
   const [addHasDisability, setAddHasDisability] = useState(false);
   const [addDisabilityNotes, setAddDisabilityNotes] = useState('');
 
@@ -61,7 +61,7 @@ export function SchoolMembers() {
     onSuccess: () => {
       setAddName('');
       setAddGrade('');
-      setAddInClub(true);
+      setAddInClub(false);
       setAddHasDisability(false);
       setAddDisabilityNotes('');
     },
