@@ -16,7 +16,7 @@ type ParsedRow = SheetRow & {
  * Bulk import students into club_members.
  *
  * The school lead drops a CSV/XLSX with at minimum a full_name column;
- * grade and in_club are optional (defaults: empty, true).
+ * grade and in_club are optional (defaults: empty, false — classroom course).
  */
 export function StudentBulkImport({
   schoolId, onClose, onAllDone,
@@ -69,7 +69,7 @@ export function StudentBulkImport({
       }
       const grade = (row.grade ?? row.class ?? '').trim() || null;
       // Default to "in the code club" if the column is absent (admin's common case).
-      const inClub = row.in_club === undefined ? true : parseBoolish(row.in_club);
+      const inClub = row.in_club === undefined ? false : parseBoolish(row.in_club);
       const hasDisability = parseBoolish(row.has_disability ?? row.disability ?? row.disabled);
       const disabilityNotes = hasDisability
         ? ((row.disability_notes ?? row.notes ?? '').trim() || null)
@@ -126,7 +126,7 @@ export function StudentBulkImport({
           Upload a CSV or Excel file with one student per row. Required column:{' '}
           <code className="text-xs bg-warm-100 px-1 rounded">full_name</code>. Optional:{' '}
           <code className="text-xs bg-warm-100 px-1 rounded">grade</code>,{' '}
-          <code className="text-xs bg-warm-100 px-1 rounded">in_club</code> (yes/no — defaults to yes),{' '}
+          <code className="text-xs bg-warm-100 px-1 rounded">in_club</code> (yes/no — defaults to no; yes puts the learner in the coding club),{' '}
           <code className="text-xs bg-warm-100 px-1 rounded">has_disability</code> (yes/no),{' '}
           <code className="text-xs bg-warm-100 px-1 rounded">disability_notes</code>.
         </p>
@@ -182,7 +182,7 @@ export function StudentBulkImport({
                     <td>{r.full_name ?? r.name ?? '—'}</td>
                     <td className="text-sm">{r.grade ?? r.class ?? '—'}</td>
                     <td className="text-sm">
-                      {r.in_club === undefined ? 'yes' : (parseBoolish(r.in_club) ? 'yes' : 'no')}
+                      {r.in_club === undefined ? 'no' : (parseBoolish(r.in_club) ? 'yes' : 'no')}
                     </td>
                     <td>
                       {r.__status === 'ok' && (

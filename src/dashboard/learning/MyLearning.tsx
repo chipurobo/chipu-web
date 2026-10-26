@@ -1,21 +1,23 @@
 /**
- * The lesson path: one course, in order, one line per lesson. There are no
- * course levels (CBC has none). Done and open lessons can be opened; the next
- * two locked lessons are shown, and the rest fold into one line so the page
- * stays short. Work a teacher set outside the path is listed on top.
+ * The lesson path, in order, one line per lesson. CBC classroom learners see
+ * one list (CBC follows grades, not levels); coding-club learners see it
+ * grouped by Beginner, Intermediate and Expert. Done and open lessons can be
+ * opened; the next two locked lessons are shown and the rest fold into one
+ * line so the page stays short. Work a teacher set outside the path is
+ * listed on top.
  */
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { fetchAssignments, fetchBlocklyLessons, fetchBlocklyProjects, fetchEvidence, fetchSubmissions, startBlocklyLesson } from '../../lib/learningQueries';
-import { learnerTitle, pathwayLook } from '../../lib/learnerCopy';
+import { fetchAssignments, fetchEvidence, fetchSubmissions, startBlocklyLesson } from '../../lib/learningQueries';
+import { useLearnerCourse } from './useLearnerCourse';
+import { learnerTitle, levelLook, levelOrder, pathwayLook } from '../../lib/learnerCopy';
 import { buildPath, type PathItem } from '../../lib/learnerPath';
 import { LearnerPage, FriendlyAlert, Loading } from './ui/LearnerKit';
 
 export function MyLearning() {
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const lessons = useQuery({ queryKey: ['blockly-lessons'], queryFn: fetchBlocklyLessons });
-  const projects = useQuery({ queryKey: ['blockly-projects'], queryFn: fetchBlocklyProjects });
+  const { course, lessons, projects } = useLearnerCourse();
   const assignments = useQuery({ queryKey: ['learning-assignments'], queryFn: () => fetchAssignments() });
   const submissions = useQuery({ queryKey: ['learning-submissions'], queryFn: () => fetchSubmissions() });
   const evidence = useQuery({ queryKey: ['competency-evidence'], queryFn: () => fetchEvidence() });
@@ -66,7 +68,38 @@ export function MyLearning() {
         </section>
       )}
 
-      {!loading && !error && !!path.length && (
+      {!loading && !error && !!path.length && course === 'club' && levelOrder.map((level) => {
+        // Coding clubs follow Beginner, Intermediate and Expert. A level that
+        // is still fully locked is one line, not a wall of padlocks.
+        const items = path.filter((item) => item.level === level);
+        if (!items.length) return null;
+        const look = levelLook[level];
+        if (items.every((item) => item.state === 'locked')) return (
+          <section key={level} aria-labelledby={`level-${level}`} className="flex items-center gap-3 rounded-3xl border-2 border-dashed border-slate-300 p-4">
+            <span aria-hidden="true" className="text-2xl">🔒</span>
+            <div>
+              <h2 id={`level-${level}`} className="!text-lg"><span aria-hidden="true">{look.emoji} </span>{look.title}</h2>
+              <p className="text-base">{laterSummary(items, '')} Opens when you finish {learnerTitle(items[0].after ?? '')}.</p>
+            </div>
+          </section>
+        );
+        const firstLockedHere = items.findIndex((item) => item.state === 'locked');
+        const cutHere = firstLockedHere < 0 ? items.length : firstLockedHere + 2;
+        const laterHere = items.slice(cutHere);
+        return (
+          <section key={level} aria-labelledby={`level-${level}`} className="space-y-2">
+            <h2 id={`level-${level}`}><span aria-hidden="true">{look.emoji} </span>{look.title}</h2>
+            <ol className="space-y-2">
+              {items.slice(0, cutHere).map((item) => <PathRow key={item.lesson.id} item={item} now={item.lesson.id === nowId} total={path.length}
+                starting={start.isPending && start.variables === item.lesson.id} disabled={start.isPending}
+                onStart={() => start.mutate(item.lesson.id)} />)}
+            </ol>
+            {!!laterHere.length && <LaterNote items={laterHere} />}
+          </section>
+        );
+      })}
+
+      {!loading && !error && !!path.length && course !== 'club' && (
         <section aria-labelledby="path-heading" className="space-y-2">
           <h2 id="path-heading" className="sr-only">All lessons, in order</h2>
           <ol className="space-y-2">
@@ -74,12 +107,7 @@ export function MyLearning() {
               starting={start.isPending && start.variables === item.lesson.id} disabled={start.isPending}
               onStart={() => start.mutate(item.lesson.id)} />)}
           </ol>
-          {!!later.length && (
-            <p className="flex items-center gap-3 rounded-3xl border-2 border-dashed border-slate-300 p-4 text-base font-semibold text-slate-700">
-              <span aria-hidden="true" className="text-2xl">🔒</span>
-              {laterSummary(later)} They open one at a time.
-            </p>
-          )}
+          {!!later.length && <LaterNote items={later} />}
         </section>
       )}
     </LearnerPage>
@@ -139,12 +167,21 @@ function sentence(text: string): string {
 }
 
 /** "3 more lessons and 1 big project." Leaves out a part that is zero. */
-function laterSummary(later: PathItem[]): string {
+function laterSummary(later: PathItem[], more = 'more '): string {
   const lessons = later.filter((item) => !item.project).length;
   const projects = later.length - lessons;
   const parts = [
-    lessons ? `${lessons} more ${lessons === 1 ? 'lesson' : 'lessons'}` : '',
+    lessons ? `${lessons} ${more}${lessons === 1 ? 'lesson' : 'lessons'}` : '',
     projects ? `${projects} big ${projects === 1 ? 'project' : 'projects'}` : '',
   ].filter(Boolean);
-  return `${parts.join(' and ')}.`;
+  return `${parts.join(' and ').replace(/^./, (letter) => letter.toUpperCase())}.`;
+}
+
+function LaterNote({ items }: { items: PathItem[] }) {
+  return (
+    <p className="flex items-center gap-3 rounded-3xl border-2 border-dashed border-slate-300 p-4 text-base font-semibold text-slate-700">
+      <span aria-hidden="true" className="text-2xl">🔒</span>
+      {laterSummary(items)} They open one at a time.
+    </p>
+  );
 }

@@ -10,7 +10,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { trackLearningActivity } from '../../lib/learningOutcomes';
-import { fetchAssignment, fetchAssignments, fetchBlocklyLessons, fetchBlocklyProjects, fetchEvidence, fetchSubmissions } from '../../lib/learningQueries';
+import { fetchAssignment, fetchAssignments, fetchEvidence, fetchSubmissions } from '../../lib/learningQueries';
+import { useLearnerCourse } from './useLearnerCourse';
 import { fetchLessonById } from '../../lib/gql/queries';
 import type { LessonLearningPlan } from '../../lib/learningRecords';
 import { artThemeFor, learnerTitle, type ArtTheme } from '../../lib/learnerCopy';
@@ -303,8 +304,7 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, lesso
 }
 
 function usePath() {
-  const lessons = useQuery({ queryKey: ['blockly-lessons'], queryFn: fetchBlocklyLessons });
-  const projects = useQuery({ queryKey: ['blockly-projects'], queryFn: fetchBlocklyProjects });
+  const { lessons, projects } = useLearnerCourse();
   const assignments = useQuery({ queryKey: ['learning-assignments'], queryFn: () => fetchAssignments() });
   const submissions = useQuery({ queryKey: ['learning-submissions'], queryFn: () => fetchSubmissions() });
   return buildPath({ lessons: lessons.data, projects: projects.data, assignments: assignments.data, submissions: submissions.data });

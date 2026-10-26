@@ -7,9 +7,10 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../lib/auth';
-import { fetchAssignments, fetchBlocklyLessons, fetchBlocklyProjects, fetchEvidence, fetchSubmissions, startBlocklyLesson } from '../../lib/learningQueries';
+import { fetchAssignments, fetchEvidence, fetchSubmissions, startBlocklyLesson } from '../../lib/learningQueries';
+import { useLearnerCourse } from './useLearnerCourse';
 import { fetchQuizAttempts } from '../../lib/learningOutcomes';
-import { artThemeFor, computeStats, firstName, learnerTitle, pathwayLook } from '../../lib/learnerCopy';
+import { artThemeFor, computeStats, firstName, learnerTitle, levelLook, pathwayLook } from '../../lib/learnerCopy';
 import { buildPath, nextUp } from '../../lib/learnerPath';
 import { LearnerPage, FriendlyAlert, Loading, EmptyNote, ReadAloud } from './ui/LearnerKit';
 import { LessonArt, Mascot } from './ui/LearnerArt';
@@ -18,8 +19,7 @@ export function LearnerHome() {
   const { profile } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const lessons = useQuery({ queryKey: ['blockly-lessons'], queryFn: fetchBlocklyLessons });
-  const projects = useQuery({ queryKey: ['blockly-projects'], queryFn: fetchBlocklyProjects });
+  const { course, lessons, projects } = useLearnerCourse();
   const assignments = useQuery({ queryKey: ['learning-assignments'], queryFn: () => fetchAssignments() });
   const submissions = useQuery({ queryKey: ['learning-submissions'], queryFn: () => fetchSubmissions() });
   const evidence = useQuery({ queryKey: ['competency-evidence'], queryFn: () => fetchEvidence() });
@@ -97,7 +97,9 @@ export function LearnerHome() {
           <LessonArt theme={artThemeFor(title, { capstone: item?.project })} className="w-full max-h-56" />
           <div className="space-y-4 p-6">
             <p className="text-sm font-extrabold uppercase tracking-wide text-slate-600">
-              {teacher ? 'From your teacher' : pathway ? <><span aria-hidden="true">{pathway.emoji} </span>{pathway.label}</> : item?.project ? 'Project' : `Lesson ${item?.number} of ${path.length}`}
+              {teacher ? 'From your teacher'
+                : course === 'club' && item ? `${levelLook[item.level].title} · ${item.project ? 'Big project' : `Lesson ${item.number} of ${path.length}`}`
+                : pathway ? <><span aria-hidden="true">{pathway.emoji} </span>{pathway.label}</> : item?.project ? 'Project' : `Lesson ${item?.number} of ${path.length}`}
             </p>
             <h2 id="next-heading" className="!text-3xl">{title}</h2>
             {description && <p className="text-base font-semibold leading-relaxed text-slate-700">{description}</p>}
