@@ -34,6 +34,8 @@ export function MyLearning() {
   const done = path.filter((item) => item.state === 'done').length;
   const nowId = path.find((item) => item.state === 'open')?.lesson.id;
   const percent = path.length ? Math.round((done / path.length) * 100) : 0;
+  // Levels only help when the club course actually has more than one.
+  const levelled = course === 'club' && new Set(path.map((item) => item.level)).size > 1;
   // Everything up to two locked lessons is listed; later ones fold away.
   const firstLocked = path.findIndex((item) => item.state === 'locked');
   const cut = firstLocked < 0 ? path.length : firstLocked + 2;
@@ -68,7 +70,7 @@ export function MyLearning() {
         </section>
       )}
 
-      {!loading && !error && !!path.length && course === 'club' && levelOrder.map((level) => {
+      {!loading && !error && !!path.length && levelled && levelOrder.map((level) => {
         // Coding clubs follow Beginner, Intermediate and Expert. A level that
         // is still fully locked is one line, not a wall of padlocks.
         const items = path.filter((item) => item.level === level);
@@ -99,7 +101,7 @@ export function MyLearning() {
         );
       })}
 
-      {!loading && !error && !!path.length && course !== 'club' && (
+      {!loading && !error && !!path.length && !levelled && (
         <section aria-labelledby="path-heading" className="space-y-2">
           <h2 id="path-heading" className="sr-only">All lessons, in order</h2>
           <ol className="space-y-2">

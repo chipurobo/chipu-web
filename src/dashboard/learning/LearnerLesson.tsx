@@ -6,10 +6,10 @@
  * press. Uses the same assignment, submission and feedback records as the
  * teacher view; hints are built from the lesson plan, so nothing new is stored.
  */
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { trackLearningActivity } from '../../lib/learningOutcomes';
+import { listQuizzes, trackLearningActivity } from '../../lib/learningOutcomes';
 import { fetchAssignment, fetchAssignments, fetchEvidence, fetchSubmissions } from '../../lib/learningQueries';
 import { useLearnerCourse } from './useLearnerCourse';
 import { fetchLessonById } from '../../lib/gql/queries';
@@ -123,6 +123,7 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, lesso
     return submissions.length ? 'send' : 'think';
   });
   const heading = useRef<HTMLHeadingElement>(null);
+  const quizzes = useQuery({ queryKey: ['learning-quizzes'], queryFn: listQuizzes });
   const introHeading = useRef<HTMLHeadingElement>(null);
   const work = useLessonWork(assignmentId);
   const path = usePath();
@@ -169,17 +170,17 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, lesso
     send: 'Great work! Tell your teacher what you made, then press Send. Your teacher will reply here.',
   };
 
-  const introSteps = [
-    'Learn the idea.',
-    'Build and test it.',
-    'Take a short assessment.',
-    'Send your work.',
-  ];
+  // Exact directions for this lesson, step by step, using the real button
+  // names. A check is only mentioned if this lesson has one.
+  const checks = new Set((quizzes.data ?? []).filter((quiz) => quiz.lesson_id === lessonId).map((quiz) => quiz.stage));
+  const introSteps = lessonDirections({ plan, checks, isProject });
   const introSpoken = [
     `Let's get ready for ${title}!`,
     `Here's your mission. ${plan.problem ?? lesson?.description ?? title}`,
     instructions ? `Your teacher says: ${instructions}` : '',
-    'Here is the plan. First, learn the idea. Next, build it and test it. Then, try a short quiz. Last, send your work to your teacher.',
+    `This lesson has ${introSteps.length} steps.`,
+    ...introSteps.map((step, number) => `${['First', 'Second', 'Third', 'Fourth', 'Last'][number] ?? 'Then'}, ${step.stage}. ${step.spoken}`),
+    'Stuck? Press I need a hint on the Build step, or ask your teacher.',
     'Ready? Press Start lesson when you are. You have got this!',
   ].filter(Boolean).join(' ');
 
@@ -213,12 +214,18 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, lesso
         <p className="mt-1 text-base font-semibold text-slate-900">{instructions}</p>
       </div>}
 
-      <ol className="grid gap-3 sm:grid-cols-2" aria-label="What to do in this lesson">
-        {introSteps.map((step, number) => <li key={step} className="flex items-start gap-3 rounded-2xl bg-slate-50 p-3">
-          <span aria-hidden="true" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-teal-700 font-extrabold text-white">{number + 1}</span>
-          <span className="pt-1 text-base font-semibold text-slate-900"><span className="sr-only">Step {number + 1}: </span>{step}</span>
-        </li>)}
-      </ol>
+      <div className="space-y-3">
+        <h3 className="text-base">What to do</h3>
+        <ol className="space-y-3" aria-label="What to do in this lesson">
+          {introSteps.map((step, number) => <li key={step.stage} className="flex items-start gap-3 rounded-2xl bg-slate-50 p-3">
+            <span aria-hidden="true" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-teal-700 font-extrabold text-white">{number + 1}</span>
+            <span className="pt-1 text-base text-slate-900">
+              <span className="sr-only">Step {number + 1}: </span><strong>{step.stage}.</strong> {step.shown}
+            </span>
+          </li>)}
+        </ol>
+        <p className="text-base text-slate-800"><span aria-hidden="true">💡 </span>Stuck? Press <strong>I need a hint</strong> on the Build step, or ask your teacher. Press <strong>Instructions</strong> at the top to see this again.</p>
+      </div>
 
       <button type="button" className="btn-play w-full justify-center sm:w-auto" onClick={finishIntro}>
         {introCompleted ? 'Back to lesson' : 'Start lesson'}<span aria-hidden="true"> →</span>
@@ -367,4 +374,50 @@ function HintBox({ hints }: { hints: string[] }) {
 /** "Drag a block" → "drag a block", so it reads naturally after "First, ". */
 function lowerFirst(text: string): string {
   return /^[A-Z][a-z]/.test(text) ? text[0].toLowerCase() + text.slice(1) : text;
+}
+
+interface Direction { stage: string; shown: ReactNode; spoken: string }
+
+/**
+ * Exact directions for the "Before you start" screen: one line per lesson
+ * step, saying what to read, answer and press, with the real button names.
+ */
+function lessonDirections({ plan, checks, isProject }: {
+  plan: LessonLearningPlan; checks: Set<string | null | undefined>; isProject: boolean;
+}): Direction[] {
+  const b = (label: string) => <strong>{label}</strong>;
+  const ideas = plan.ideas?.length ?? 0;
+  const steps = plan.steps.length;
+  const result = plan.expectedResult?.split('\n')[0];
+  return [
+    {
+      stage: 'Think',
+      shown: <>Read your mission.{checks.has('pre') && <> Answer “What do you know already?” and press {b('Check my answers')}.</>} Press {b('Next')}.</>,
+      spoken: `Read your mission.${checks.has('pre') ? ' Answer, what do you know already, and press Check my answers.' : ''} Press Next.`,
+    },
+    {
+      stage: 'Learn',
+      shown: <>Read {ideas === 1 ? 'the big idea' : ideas ? `the ${ideas} big ideas` : 'the big idea'}.{checks.has('mid') && <> Answer the {b('Quick check')}.</>} Press {b('Next')}.</>,
+      spoken: `Read ${ideas === 1 || !ideas ? 'the big idea' : `the ${ideas} big ideas`}.${checks.has('mid') ? ' Answer the quick check.' : ''} Press Next.`,
+    },
+    {
+      stage: 'Build',
+      shown: <>Follow the {steps === 1 ? 'step' : `${steps} steps`} with the blocks. Press {b('Run')}{result && <> until the screen shows “{result}”</>}. Press {b('Save')}, then {b('Next')}.</>,
+      spoken: `Follow the ${steps === 1 ? 'step' : `${steps} steps`} with the blocks. Press Run${result ? ` until the screen shows: ${result}.` : '.'} Press Save, then Next.`,
+    },
+    checks.has('end') ? {
+      stage: 'Assess',
+      shown: <>Answer the {b('Short assessment')} and press {b('Check my answers')}. Press {b('Next')}.</>,
+      spoken: 'Answer the short assessment and press Check my answers. Press Next.',
+    } : {
+      stage: 'Assess',
+      shown: <>There are no questions in this lesson. Press {b('Next')}.</>,
+      spoken: 'There are no questions in this lesson. Press Next.',
+    },
+    {
+      stage: 'Send',
+      shown: <>Write what you made{isProject ? ' and how it meets the project list' : ''}. Press {b('Send to my teacher')}.</>,
+      spoken: `Write what you made${isProject ? ' and how it meets the project list' : ''}. Press Send to my teacher.`,
+    },
+  ];
 }

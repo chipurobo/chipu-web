@@ -62,8 +62,12 @@ export function LearnerHome() {
     return () => { window.clearTimeout(timer); window.clearTimeout(clear); };
   }, [welcomePending]);
 
-  const welcomeText = 'Your next lesson is ready. Follow each step, then try a short quiz. You’ve got this!';
-  const welcomeSpoken = `Welcome to ChipuRobo. ${welcomeText}`;
+  // Exact first directions, naming this learner's lesson and its button.
+  const openLabel = started ? (teacher ? 'Open' : 'Continue') : 'Start';
+  const welcomeSteps = title
+    ? [`Press ${openLabel} on “${title}” below.`, 'Read “Before you start”, then press Start lesson.', 'Do the 5 steps: Think, Learn, Build, Assess and Send. Press Next after each one.']
+    : ['Ask your teacher which lesson to do today.'];
+  const welcomeSpoken = `Welcome to ChipuRobo. Here is what to do. ${welcomeSteps.map((step, n) => `${n + 1}. ${step}`).join(' ')} You’ve got this!`;
 
   return (
     <LearnerPage className="max-w-3xl">
@@ -76,16 +80,21 @@ export function LearnerHome() {
       </header>
 
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
-        {showWelcome && !announced ? welcomeSpoken : ''}
+        {showWelcome && !loading && !announced ? welcomeSpoken : ''}
       </div>
       {showWelcome && (
-        <section aria-labelledby="learner-welcome-heading" className="learner-card flex items-center gap-4 bg-teal-50 p-4">
-          <div className="min-w-0 flex-1">
-            <h2 id="learner-welcome-heading" className="text-lg">Welcome!</h2>
-            <p className="mt-1 text-base font-semibold text-slate-900">{welcomeText}</p>
+        <section aria-labelledby="learner-welcome-heading" className="learner-card space-y-3 bg-teal-50 p-5">
+          <div className="flex items-center justify-between gap-3">
+            <h2 id="learner-welcome-heading" className="text-lg">Welcome! Here is what to do</h2>
+            <ReadAloud text={welcomeSpoken} label="Read welcome aloud" />
           </div>
-          <ReadAloud text={welcomeSpoken} label="Read welcome aloud" />
-          <button type="button" className="btn-primary shrink-0" onClick={() => setShowWelcome(false)}>Got it</button>
+          <ol className="space-y-2" aria-label="What to do first">
+            {welcomeSteps.map((step, n) => <li key={step} className="flex items-start gap-3">
+              <span aria-hidden="true" className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-700 text-sm font-extrabold text-white">{n + 1}</span>
+              <span className="pt-0.5 text-base font-semibold text-slate-900"><span className="sr-only">Step {n + 1}: </span>{step}</span>
+            </li>)}
+          </ol>
+          <button type="button" className="btn-primary" onClick={() => setShowWelcome(false)}>Got it</button>
         </section>
       )}
 
@@ -98,7 +107,7 @@ export function LearnerHome() {
           <div className="space-y-4 p-6">
             <p className="text-sm font-extrabold uppercase tracking-wide text-slate-600">
               {teacher ? 'From your teacher'
-                : course === 'club' && item ? `${levelLook[item.level].title} · ${item.project ? 'Big project' : `Lesson ${item.number} of ${path.length}`}`
+                : course === 'club' && item && new Set(path.map((step) => step.level)).size > 1 ? `${levelLook[item.level].title} · ${item.project ? 'Big project' : `Lesson ${item.number} of ${path.length}`}`
                 : pathway ? <><span aria-hidden="true">{pathway.emoji} </span>{pathway.label}</> : item?.project ? 'Project' : `Lesson ${item?.number} of ${path.length}`}
             </p>
             <h2 id="next-heading" className="!text-3xl">{title}</h2>
