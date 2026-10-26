@@ -8,7 +8,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchAssignments, fetchBlocklyLessons, fetchBlocklyProjects, fetchEvidence, fetchSubmissions, startBlocklyLesson } from '../../lib/learningQueries';
-import { learnerTitle, pathwayLook } from '../../lib/learnerCopy';
+import { learnerTitle, levelLook, levelOrder, pathwayLook } from '../../lib/learnerCopy';
 import { buildPath, type PathItem } from '../../lib/learnerPath';
 import { LearnerPage, FriendlyAlert, Loading } from './ui/LearnerKit';
 
