@@ -1,6 +1,7 @@
 import { trackLearningActivity } from '../lib/learningOutcomes';
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { loginPathForRole } from '../lib/loginPaths';
 import { useAuth } from '../lib/auth';
 import { NotificationsProvider, NotificationToaster } from '../lib/notifications';
 import { useOrderRealtime, type OrderCounts } from '../lib/useOrderRealtime';
@@ -233,8 +234,9 @@ function DashboardShell() {
   }, [mobileOpen]);
 
   const handleSignOut = async () => {
+    const loginPath = loginPathForRole(profile?.role);
     await signOut();
-    navigate('/dashboard/login', { replace: true });
+    navigate(loginPath, { replace: true });
   };
 
   return (

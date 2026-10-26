@@ -18,7 +18,6 @@
 .login-eyebrow > span { width: 7px; height: 7px; border-radius: 50%; background: #a75a2d; }
 .login-welcome h2 { font-family: 'Inter', system-ui, sans-serif; font-size: clamp(36px, 3.7vw, 50px); font-weight: 750; line-height: 1.15; letter-spacing: -2px; word-spacing: normal; margin: 20px 0 18px; color: #243e35; }
 .login-welcome h2 span { color: #337560; }
-.login-welcome > p { font-size: 16px; line-height: 1.8; color: #5a6c62; }
 .login-art { position: relative; max-width: 450px; height: 312px; margin: 16px 0 6px; }
 .login-art-scene { position: relative; height: 100%; }
 .login-art-disc { position: absolute; left: 84px; top: 34px; width: 260px; height: 260px; border-radius: 50%; background: #e0ecdc; }
@@ -32,29 +31,8 @@
 .login-art-dot-one { left: 35px; bottom: 36px; }
 .login-art-dot-two { right: 4px; top: 144px; width: 7px; height: 7px; background: #699780; }
 .login-art-plus { position: absolute; left: 174px; top: 0; font-size: 27px; color: #6f9c88; }
-.login-welcome > .login-welcome-note { font-size: 12px; margin-top: 22px; color: #627467; }
 .login-card { background: #fff; border: 1px solid #e2e6dd; border-radius: 26px; padding: 34px; box-shadow: 0 8px 40px #233c2d06, 0 2px 4px #233c2d03; min-width: 0; }
-.login-card-heading { margin-bottom: 23px; }
-.login-card h1 { font-family: 'Inter', system-ui, sans-serif; font-size: 27px; font-weight: 750; letter-spacing: -0.9px; word-spacing: normal; line-height: 1.25; margin: 0 0 10px; color: #203d36; }
-.login-card-heading p { font-size: 13px; line-height: 1.6; color: #647269; }
-.login-roles { border: 0; margin: 0 0 18px; padding: 0; min-width: 0; }
-.login-roles legend { font-weight: 600; font-size: 13px; margin-bottom: 10px; }
-.login-role-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; }
-.login-role { position: relative; min-width: 0; cursor: pointer; display: flex; align-items: center; flex-direction: column; padding: 12px 4px 10px; border: 1px solid #dfe5dd; border-radius: 12px; background: #fff; transition: border-color 120ms, background 120ms; }
-.login-role:hover { background: #f6f8f3; border-color: #90ac9b; }
-.login-role.is-selected { background: #eff5eb; border: 2px solid #396850; padding: 11px 3px 9px; }
-.login-role input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
-.login-role:has(input:focus-visible) { outline: 3px solid #256a59; outline-offset: 3px; }
-.login-role-icon { display: flex; color: #667d70; margin-bottom: 8px; }
-.login-role.is-selected .login-role-icon { color: #2e634c; }
-.login-role-name { font-size: 13px; font-weight: 650; }
-.login-role-description { font-size: 11px; color: #5d7063; margin-top: 4px; white-space: nowrap; }
-.login-role-check { position: absolute; right: 6px; top: 6px; padding: 2px; width: 17px; height: 17px; color: white; background: #396850; border-radius: 50%; }
-.login-instructions { display: flex; align-items: flex-start; gap: 10px; padding: 11px 14px; background: #f5f7f1; border-radius: 10px; margin-bottom: 19px; }
-.login-instructions > svg { flex-shrink: 0; margin-top: 2px; color: #406b53; }
-.login-instructions p { font-size: 12px; line-height: 1.6; color: #566b59; }
-.login-instructions strong { display: block; color: #354f3d; font-size: 12px; font-weight: 650; }
-.login-instructions span { display: block; margin-top: 2px; }
+.login-card h1 { font-family: 'Inter', system-ui, sans-serif; font-size: 27px; font-weight: 750; letter-spacing: -0.9px; word-spacing: normal; line-height: 1.25; margin: 0 0 23px; color: #203d36; }
 .login-fields { border: 0; margin: 0; padding: 0; min-width: 0; }
 .login-field { margin-bottom: 16px; }
 .login-field > label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600; }
@@ -73,11 +51,6 @@
 .login-submit:hover { background: #1a4535; }
 .login-page button:disabled,
 .login-page select:disabled { cursor: not-allowed; opacity: 0.65; }
-.login-roles:disabled .login-role { cursor: not-allowed; opacity: 0.65; }
-.login-help { font-size: 12px; text-align: center; color: #687366; margin: 12px 0 0; line-height: 1.7; }
-.login-tour { display: flex; align-items: center; justify-content: center; gap: 9px; border-top: 1px solid #edf0e8; margin-top: 25px; padding-top: 19px; flex-wrap: wrap; font-size: 11px; color: #687366; }
-.login-tour a { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; min-height: 32px; }
-.login-footer { text-align: center; font-size: 11px; color: #6b786a; padding: 8px; }
 .login-notice { color: #6b4e11; background: #fff5d9; padding: 12px 14px; font-size: 13px; margin-bottom: 18px; border-radius: 8px; }
 .login-error, .login-school-error { color: #912f28; background: #fff1ed; border: 1px solid #edc4b8; border-radius: 8px; padding: 12px; margin-bottom: 14px; font-size: 13px; line-height: 1.6; }
 .login-school-error { margin-top: 8px; font-size: 12px; }
@@ -100,12 +73,8 @@
   .login-back { font-size: 11px; gap: 5px; }
   .login-card { padding: 27px 24px 20px; border-radius: 20px; }
   .login-card h1 { font-size: 25px; }
-  .login-card-heading { margin-bottom: 22px; }
-  .login-card-heading p { font-size: 12px; }
-  .login-role-description { font-size: 10px; }
   .login-page .login-input { font-size: 16px; }
   .login-page .login-admission { font-size: 21px; }
-  .login-footer { font-size: 10px; }
 }
 @media (max-width: 380px) {
   .login-page { padding: 16px 14px; }
@@ -113,13 +82,8 @@
   .login-brand { font-size: 20px; }
   .login-back { font-size: 10px; }
   .login-card h1 { font-size: 23px; }
-  .login-role-description { font-size: 10px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .login-spinner { animation: none; }
-  .login-role, .login-submit { transition: none; }
-}
-@media (forced-colors: active) {
-  .login-role.is-selected { border: 3px solid Highlight; }
-  .login-role:has(input:focus-visible) { outline-color: Highlight; }
+  .login-submit { transition: none; }
 }

@@ -99,7 +99,7 @@ export function ForgotPassword() {
           </form>
         )}
 
-        <Link to="/dashboard/login" className="text-sm text-teal-700 hover:text-teal-800 inline-flex items-center gap-1 mt-6">
+        <Link to="/dashboard/teacher" className="text-sm text-teal-700 hover:text-teal-800 inline-flex items-center gap-1 mt-6">
           <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
           Back to sign in
         </Link>

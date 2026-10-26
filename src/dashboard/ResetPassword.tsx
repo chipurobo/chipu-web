@@ -59,7 +59,7 @@ export function ResetPassword() {
     // password gets used at least once, rather than the person being carried
     // into the dashboard without ever typing it.
     await supabase.auth.signOut();
-    // Deliberately no automatic redirect. /dashboard/login bounces anyone who
+    // Deliberately no automatic redirect. /dashboard/teacher bounces anyone who
     // has not seen the welcome carousel straight into it, so an auto-navigate
     // lands people in a marketing carousel moments after a password reset.
     // They click when they are ready instead.
@@ -94,7 +94,7 @@ export function ResetPassword() {
             <p role="status" className="text-sm text-gray-700">
               Password changed. Sign in with your new password.
             </p>
-            <Link to="/dashboard/login" className="btn-primary mt-4 inline-flex">
+            <Link to="/dashboard/teacher" className="btn-primary mt-4 inline-flex">
               Go to sign in
             </Link>
           </>
@@ -135,7 +135,7 @@ export function ResetPassword() {
           </form>
         )}
 
-        <Link to="/dashboard/login" className="text-sm text-teal-700 hover:text-teal-800 inline-flex items-center gap-1 mt-6">
+        <Link to="/dashboard/teacher" className="text-sm text-teal-700 hover:text-teal-800 inline-flex items-center gap-1 mt-6">
           <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
           Back to sign in
         </Link>

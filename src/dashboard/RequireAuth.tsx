@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
+import { loginPathForPage } from '../lib/loginPaths';
 import type { UserRole } from '../lib/database.types';
 import type { ReactNode } from 'react';
 
@@ -12,7 +13,7 @@ interface Props {
 
 /**
  * Route guard. Shows nothing until auth state hydrates, then:
- *   • redirects to /dashboard/login if not signed in
+ *   • redirects to the learner or teacher sign-in if not signed in
  *   • redirects to /dashboard if signed in but lacks required role
  *   • renders children otherwise
  */
@@ -29,7 +30,7 @@ export function RequireAuth({ children, role, roles }: Props) {
   }
 
   if (!user) {
-    return <Navigate to="/dashboard/login" replace state={{ from: location.pathname }} />;
+    return <Navigate to={loginPathForPage(location.pathname)} replace state={{ from: location.pathname }} />;
   }
 
   if (!profile) return <div className="admin-zone p-6 text-sm space-y-4">

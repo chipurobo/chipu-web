@@ -33,7 +33,8 @@ import { trackPageView } from './lib/analytics';
 import { RequireAuth } from './dashboard/RequireAuth';
 import { DashboardLayout } from './dashboard/DashboardLayout';
 
-const DashLogin             = lazy(() => import('./dashboard/Login').then((m) => ({ default: m.Login })));
+const DashLearnerLogin      = lazy(() => import('./dashboard/Login').then((m) => ({ default: m.LearnerLogin })));
+const DashTeacherLogin      = lazy(() => import('./dashboard/Login').then((m) => ({ default: m.TeacherLogin })));
 const DashWelcome           = lazy(() => import('./dashboard/Welcome').then((m) => ({ default: m.Welcome })));
 const DashForgotPassword    = lazy(() => import('./dashboard/ForgotPassword').then((m) => ({ default: m.ForgotPassword })));
 const DashResetPassword     = lazy(() => import('./dashboard/ResetPassword').then((m) => ({ default: m.ResetPassword })));
@@ -128,13 +129,17 @@ function App() {
             {/* === Dashboard tree ===
                 Has its own layout (no public navbar/footer). The login + signup
                 pages render bare; everything else is gated by <RequireAuth>. */}
-            <Route path="/dashboard/login" element={<DashLogin />} />
+            {/* Learners and teachers each have their own sign-in link.
+                /dashboard/login is the old shared page, kept as a redirect. */}
+            <Route path="/dashboard/learner" element={<DashLearnerLogin />} />
+            <Route path="/dashboard/teacher" element={<DashTeacherLogin />} />
+            <Route path="/dashboard/login" element={<Navigate to="/dashboard/learner" replace />} />
             <Route path="/dashboard/welcome" element={<DashWelcome />} />
             {/* Password recovery. Both render bare, like login. */}
             <Route path="/dashboard/forgot-password" element={<DashForgotPassword />} />
             <Route path="/dashboard/reset-password" element={<DashResetPassword />} />
             {/* Legacy self-signup URL — redirect to login. */}
-            <Route path="/dashboard/register-club" element={<Navigate to="/dashboard/login" replace />} />
+            <Route path="/dashboard/register-club" element={<Navigate to="/dashboard/teacher" replace />} />
             <Route
               path="/dashboard"
               element={

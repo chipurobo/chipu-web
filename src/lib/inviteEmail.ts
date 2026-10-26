@@ -37,7 +37,7 @@ export interface InviteBody {
 }
 
 export function buildInvite({ school, loginEmail, password }: InviteInput): InviteBody {
-  const loginUrl = getDashboardPath('/dashboard/login');
+  const loginUrl = getDashboardPath('/dashboard/teacher');
 
   const text =
 `Hi,
