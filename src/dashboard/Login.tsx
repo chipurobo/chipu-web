@@ -83,6 +83,9 @@ export function Login() {
         showError('This account uses a different sign-in option. Choose Learner, Teacher or Admin above and try again.');
         return;
       }
+      if (account.role === 'learner') {
+        try { sessionStorage.setItem('chipurobo:learner-welcome', '1'); } catch { /* private mode */ }
+      }
       navigate('/dashboard', { replace: true });
     } catch {
       showError('We couldn’t connect. Check your internet connection and try again.');
