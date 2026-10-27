@@ -185,7 +185,7 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, lesso
 
   return <>
     <div className="flex items-center gap-3">
-      <Link to="/dashboard/my-learning" className="btn-secondary !px-3" title="All lessons">
+      <Link to="/dashboard/my-learning" className="btn-secondary !min-w-12 !px-3" title="All lessons">
         <span aria-hidden="true">←</span><span className="sr-only">All lessons</span>
       </Link>
       <h1 className="learner-title min-w-0 flex-1 !text-2xl sm:!text-3xl">{learnerTitle(title)}</h1>
@@ -231,9 +231,12 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, lesso
       <ol className="grid grid-cols-5 gap-1.5 sm:gap-2">
         {stages.map((item, n) => (
           <li key={item.id} aria-current={n === index ? 'step' : undefined}
-            className={`flex flex-col items-center gap-1 rounded-2xl px-1 py-2 text-xs font-extrabold sm:text-sm ${n === index ? 'bg-teal-700 text-white' : n < index ? 'bg-teal-50 text-teal-900' : 'bg-white text-slate-600 border-2 border-slate-200'}`}>
-            <span aria-hidden="true" className="text-lg">{n < index ? '✓' : item.emoji}</span>
-            <span><span className="sr-only">Step {n + 1}: </span>{item.label}<span className="sr-only">{n < index ? ', done' : n === index ? ', you are here' : ''}</span></span>
+            className={`flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl border-2 px-1 py-2 text-base font-extrabold ${n === index ? 'learner-current bg-teal-800 text-white' : n < index ? 'border-teal-800 bg-teal-50 text-teal-950' : 'border-slate-300 bg-white text-slate-800'}`}>
+            {/* Narrow screens and high zoom: a big number (or ✓). Wider: icon and name. */}
+            <span aria-hidden="true" className="text-xl leading-none sm:hidden">{n < index ? '✓' : n + 1}</span>
+            <span aria-hidden="true" className="hidden text-lg leading-none sm:inline">{n < index ? '✓' : item.emoji}</span>
+            <span className="sr-only">Step {n + 1}: {item.label}{n < index ? ', done' : n === index ? ', you are here' : ''}</span>
+            <span aria-hidden="true" className="hidden sm:inline">{item.label}</span>
           </li>
         ))}
       </ol>

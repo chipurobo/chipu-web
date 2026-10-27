@@ -64,7 +64,7 @@ export function LearnerHome() {
       <header className="flex items-center gap-4">
         <Mascot size={56} mood="happy" className="shrink-0" />
         <h1 className="learner-title flex-1">Hi, {firstName(profile?.full_name)}! <span aria-hidden="true">👋</span></h1>
-        <Link to="/dashboard/my-progress" className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-4 py-2 text-base font-extrabold text-slate-900 hover:bg-amber-200 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-slate-900">
+        <Link to="/dashboard/my-progress" className="inline-flex min-h-12 items-center gap-1 rounded-full bg-amber-100 px-4 py-2 text-base font-extrabold text-slate-900 hover:bg-amber-200 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-slate-900">
           <span aria-hidden="true">⭐</span> {stats.xp}<span className="sr-only"> stars. See my stars and badges</span>
         </Link>
       </header>
