@@ -76,7 +76,8 @@
 
  /* Focus styles for keyboard navigation */
  *:focus-visible {
- outline: 3px solid #10b981;
+ /* Dark, so it shows against white and light tints (3:1 or more). */
+ outline: 3px solid #0f172a;
  outline-offset: 2px;
  border-radius: 4px;
  }
@@ -962,27 +963,25 @@ h3.heading-display { font-size: clamp(1rem, 2vw, 1.5rem) !important; line-height
 .learner-card-hover {
   @apply transition-colors duration-150 hover:border-teal-600 focus-within:border-teal-600;
 }
-/* Any card that is itself a link shows a thick ring when focused by keyboard. */
-a.learner-card:focus-visible { @apply outline-none ring-4 ring-slate-900 ring-offset-2; }
+/* Any card that is itself a link shows the learner focus ring (below). */
 
 /* Chunky buttons with a pressable base, a pattern learners already know. */
 .learner-zone .btn-primary,
 .learner-zone .btn-secondary,
 .learner-zone .btn-play {
-  @apply inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-2.5 text-base font-extrabold
-         transition-all duration-100 focus:outline-none focus-visible:ring-4 focus-visible:ring-slate-900 focus-visible:ring-offset-2
-         disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl px-5 py-2.5 text-base font-extrabold
+         transition-all duration-100 disabled:opacity-50 disabled:cursor-not-allowed;
   border-bottom-width: 4px;
 }
 .learner-zone .btn-primary:active:not(:disabled),
 .learner-zone .btn-secondary:active:not(:disabled),
 .learner-zone .btn-play:active:not(:disabled) { transform: translateY(2px); border-bottom-width: 2px; }
 .learner-zone .btn-primary,
-.learner-zone .btn-play    { @apply bg-teal-700 text-white border-teal-900 hover:bg-teal-800; }
+.learner-zone .btn-play    { @apply bg-teal-800 text-white border-teal-950 hover:bg-teal-900; }
 .learner-zone .btn-play    { @apply text-lg px-7 py-3; }
 .learner-zone .btn-secondary { @apply bg-white text-slate-800 border-slate-300 border-2 border-b-4 hover:bg-slate-50; }
 
-.learner-zone .field-label { @apply block text-sm font-extrabold text-slate-800 mb-1.5; }
+.learner-zone .field-label { @apply block text-base font-extrabold text-slate-900 mb-1.5; }
 .learner-zone .field-input,
 .learner-zone .field-select {
   @apply w-full px-4 py-3 text-base bg-white border-2 border-slate-300 rounded-2xl
@@ -1003,8 +1002,7 @@ a.learner-card:focus-visible { @apply outline-none ring-4 ring-slate-900 ring-of
 .learner-pill input,
 .quiz-tile input,
 .choice-tile input { @apply absolute inset-0 h-full w-full cursor-pointer opacity-0 m-0; }
-.learner-pill:has(input:checked) { @apply border-teal-700 bg-teal-700 text-white; }
-.learner-pill:has(input:focus-visible) { @apply ring-4 ring-slate-900 ring-offset-2; }
+.learner-pill:has(input:checked) { @apply border-slate-900 bg-teal-800 text-white; }
 
 /* Answer and choice tiles: white until picked, teal when picked. The shape
    badge keeps answers apart without relying on colour. */
@@ -1014,9 +1012,7 @@ a.learner-card:focus-visible { @apply outline-none ring-4 ring-slate-900 ring-of
          cursor-pointer transition-colors duration-100 min-h-[4rem] hover:border-teal-600;
 }
 .quiz-tile:has(input:checked),
-.choice-tile:has(input:checked) { @apply border-teal-900 bg-teal-700 text-white; }
-.quiz-tile:has(input:focus-visible),
-.choice-tile:has(input:focus-visible) { @apply ring-4 ring-slate-900 ring-offset-2; }
+.choice-tile:has(input:checked) { @apply border-slate-900 bg-teal-800 text-white; }
 .quiz-tile .quiz-shape {
   @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-lg text-slate-700;
 }
@@ -1042,3 +1038,64 @@ a.learner-card:focus-visible { @apply outline-none ring-4 ring-slate-900 ring-of
 }
 .learner-pop { animation: learner-pop 0.5s cubic-bezier(0.2, 1.4, 0.4, 1); }
 @keyframes learner-pop { 0% { transform: scale(0.6); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+/* ============================================================================
+   Low vision first (learner screens)
+   ----------------------------------------------------------------------------
+   Designed for learners with low vision before anyone else:
+   - Text is never smaller than 16px and never set in small capitals.
+   - Actions are teal-800 on white (7.6:1, WCAG AAA); body text is slate-700
+     or darker.
+   - One focus ring on every control: a dark 4px ring with a white gap,
+     visible on light and dark backgrounds; the system highlight colour in
+     Windows high-contrast mode. Headings the page moves focus to (tabindex
+     -1) are announced by screen readers but not ringed.
+   - "You are here" and "chosen" are shown with a thick border as well as a
+     fill, so they survive high-contrast mode and colour blindness.
+   - Targets are at least 48px.
+   ============================================================================ */
+.learner-zone [class~='text-xs'],
+.learner-zone [class~='text-sm'],
+.learner-zone [class~='!text-sm'],
+.learner-zone [class*='sm:text-sm'],
+.learner-zone .badge-teal, .learner-zone .badge-gray, .learner-zone .badge-amber,
+.learner-header [class~='text-xs'],
+.learner-header [class~='text-sm'] { font-size: 1rem !important; line-height: 1.5rem !important; }
+.learner-zone [class~='uppercase'] { text-transform: none !important; letter-spacing: normal !important; }
+.learner-zone p, .learner-zone li { line-height: 1.6; }
+.learner-zone [class~='text-slate-500'], .learner-zone [class~='text-slate-600'],
+.learner-zone [class~='text-gray-500'], .learner-zone [class~='text-gray-600'] { color: #334155 !important; }
+
+.learner-zone :focus-visible:not([tabindex='-1']),
+.learner-header :focus-visible:not([tabindex='-1']),
+.learner-zone .quiz-tile:has(input:focus-visible),
+.learner-zone .choice-tile:has(input:focus-visible),
+.learner-zone .learner-pill:has(input:focus-visible) {
+  outline: 4px solid #0f172a !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 3px #ffffff !important;
+  border-radius: 1rem;
+}
+.learner-zone input[type='checkbox'], .learner-zone input[type='radio'] { width: 1.75rem; height: 1.75rem; }
+.learner-zone .quiz-tile input, .learner-zone .choice-tile input, .learner-zone .learner-pill input { width: 100%; height: 100%; }
+
+/* The current lesson step and the current page in the learner menu. */
+.learner-current { border: 3px solid #0f172a !important; }
+
+@media (prefers-contrast: more) {
+  .learner-zone, .learner-header { --tw-border-opacity: 1; }
+  .learner-zone .learner-card, .learner-zone .btn-secondary, .learner-zone .quiz-tile, .learner-zone .choice-tile,
+  .learner-zone .field-input, .learner-zone .field-select { border-color: #0f172a !important; }
+  .learner-zone p, .learner-zone li, .learner-zone span { color: #0f172a; }
+}
+
+@media (forced-colors: active) {
+  .learner-zone :focus-visible:not([tabindex='-1']), .learner-header :focus-visible:not([tabindex='-1']),
+  .learner-zone .quiz-tile:has(input:focus-visible), .learner-zone .choice-tile:has(input:focus-visible) {
+    outline-color: Highlight !important; box-shadow: none !important;
+  }
+  .learner-current { border-color: Highlight !important; forced-color-adjust: none; background: Highlight !important; color: HighlightText !important; }
+  .learner-current * { color: HighlightText !important; }
+  .learner-zone .quiz-tile:has(input:checked), .learner-zone .choice-tile:has(input:checked) { border: 4px solid Highlight !important; }
+  .learner-zone .btn-primary, .learner-zone .btn-play, .learner-zone .btn-secondary { border: 2px solid ButtonText !important; }
+}

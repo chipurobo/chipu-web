@@ -516,7 +516,7 @@ function LearnerHeader({ onSignOut }: { onSignOut: () => void | Promise<void> })
   const lessonId = assignmentId ? assignment.data?.lesson_id : undefined;
   const reportHref = lessonId ? `/dashboard/report-concern?lessonId=${encodeURIComponent(lessonId)}` : '/dashboard/report-concern';
   return (
-    <header className="sticky top-0 z-30 border-b border-sky-100 bg-white/95 shadow-sm backdrop-blur">
+    <header className="learner-header sticky top-0 z-30 border-b-2 border-slate-200 bg-white">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-2 px-3 py-2 sm:flex-nowrap sm:px-6">
         <Link
           to="/dashboard"
@@ -578,14 +578,17 @@ function LearnerNavLink({
       end={end}
       aria-label={accessibleLabel}
       className={({ isActive }) =>
-        `flex min-h-10 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-xl px-2 text-xs font-bold transition-colors sm:flex-none sm:px-3 sm:text-sm ${
+        // Low vision first: 16px labels, 48px+ targets, and the current page
+        // shown by a thick border as well as colour. On narrow screens (or at
+        // high zoom) the icon sits above the label so every word still fits.
+        `flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-xl border-2 px-1 text-base font-extrabold transition-colors sm:min-h-12 sm:flex-none sm:flex-row sm:gap-2 sm:px-4 ${
           isActive
-            ? 'bg-white text-slate-900 shadow-sm ring-1 ring-sky-200'
-            : 'text-slate-600 hover:bg-white/70 hover:text-slate-900'
+            ? 'learner-current bg-white text-slate-900'
+            : 'border-transparent text-slate-800 hover:bg-white hover:text-slate-900'
         }`
       }
     >
-      <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+      <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
       <span className="truncate">{children}</span>
     </NavLink>
   );

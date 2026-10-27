@@ -137,7 +137,7 @@ export function ReportIncident() {
   });
 
   return (
-    <div className="mx-auto max-w-4xl space-y-5">
+    <div className={`mx-auto max-w-4xl space-y-5 ${isLearner ? 'learner-zone' : ''}`}>
       <header className="rounded-2xl border border-terracotta-200 bg-gradient-to-br from-terracotta-50 to-white p-5 sm:p-6">
         <div className="flex items-start gap-4">
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-terracotta-100 text-terracotta-700">
@@ -200,7 +200,7 @@ export function ReportIncident() {
             {CONCERN_TYPES.map((type) => (
               <label
                 key={type.value}
-                className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+                className={isLearner ? 'choice-tile' : `flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
                   category === type.value
                     ? 'border-terracotta-500 bg-terracotta-50 text-gray-950 ring-2 ring-terracotta-100'
                     : 'border-gray-200 bg-white text-gray-800 hover:border-gray-300'
