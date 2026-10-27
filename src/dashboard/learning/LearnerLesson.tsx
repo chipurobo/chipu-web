@@ -159,17 +159,6 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, lesso
     setShowIntro(false);
   }
 
-  // What the read-aloud button says. Written to be heard, not read: short
-  // sentences, "first, next, last" instead of numbers, and a little cheer.
-  const steps = plan.steps.map((step, n) => `${n === 0 ? 'First' : n === plan.steps.length - 1 ? 'Last' : 'Next'}, ${lowerFirst(step)}`);
-  const spoken: Record<StageId, string> = {
-    think: [`Let's think about ${title}.`, plan.problem ? `Here's your mission. ${plan.problem}` : '', instructions ? `Your teacher says: ${instructions}` : '', 'What do you know already? Have a go. It is fine to guess!'].filter(Boolean).join(' '),
-    learn: [`Here's the big idea.`, ...(plan.ideas ?? []).map((idea) => `${idea.title}. ${idea.body}`), plan.expectedResult ? `When it works, you will see this. ${plan.expectedResult}` : ''].filter(Boolean).join(' '),
-    build: [`Time to build!`, ...steps, 'Test it as you go. Mistakes help you learn!'].join(' '),
-    check: 'Quiz time! Answer a few quick questions. Take your time. You can always try again.',
-    send: 'Great work! Tell your teacher what you made, then press Send. Your teacher will reply here.',
-  };
-
   // Exact directions for this lesson, step by step, using the real button
   // names. A check is only mentioned if this lesson has one.
   const checks = new Set((quizzes.data ?? []).filter((quiz) => quiz.lesson_id === lessonId).map((quiz) => quiz.stage));
@@ -184,15 +173,10 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, lesso
   ].filter(Boolean).join(' ');
 
   return <>
-    <div className="flex items-center gap-3">
-      <Link to="/dashboard/my-learning" className="btn-secondary !min-w-12 !px-3" title="All lessons">
-        <span aria-hidden="true">←</span><span className="sr-only">All lessons</span>
-      </Link>
-      <h1 className="learner-title min-w-0 flex-1 !text-2xl sm:!text-3xl">{learnerTitle(title)}</h1>
-      {!showIntro && <button type="button" className="btn-secondary !px-3" onClick={() => setShowIntro(true)}>
-        <span aria-hidden="true">📋 </span>Instructions
-      </button>}
-    </div>
+    {/* The lesson title is the page heading. It is shown before the lesson
+        starts; during the steps only screen readers hear it, so the screen
+        holds just the step and its Next button. */}
+    <h1 className={showIntro ? 'learner-title !text-2xl sm:!text-3xl' : 'sr-only'}>{learnerTitle(title)}</h1>
 
     {showIntro ? <section aria-labelledby="lesson-intro-heading" className="learner-card space-y-5 overflow-hidden p-5 sm:p-7">
       <div className="flex items-start justify-between gap-3">
@@ -227,28 +211,12 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, lesso
       </button>
     </section> : <>
 
-    <nav aria-label="Lesson steps">
-      <ol className="grid grid-cols-5 gap-1.5 sm:gap-2">
-        {stages.map((item, n) => (
-          <li key={item.id} aria-current={n === index ? 'step' : undefined}
-            className={`flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl border-2 px-1 py-2 text-base font-extrabold ${n === index ? 'learner-current bg-teal-800 text-white' : n < index ? 'border-teal-800 bg-teal-50 text-teal-950' : 'border-slate-300 bg-white text-slate-800'}`}>
-            {/* Narrow screens and high zoom: a big number (or ✓). Wider: icon and name. */}
-            <span aria-hidden="true" className="text-xl leading-none sm:hidden">{n < index ? '✓' : n + 1}</span>
-            <span aria-hidden="true" className="hidden text-lg leading-none sm:inline">{n < index ? '✓' : item.emoji}</span>
-            <span className="sr-only">Step {n + 1}: {item.label}{n < index ? ', done' : n === index ? ', you are here' : ''}</span>
-            <span aria-hidden="true" className="hidden sm:inline">{item.label}</span>
-          </li>
-        ))}
-      </ol>
-    </nav>
-
     <section aria-labelledby="stage-heading" className="space-y-5">
-      <div className="flex items-center justify-between gap-3">
-        <h2 id="stage-heading" ref={heading} tabIndex={-1} className="focus:outline-none">
-          <span className="sr-only">Step {index + 1} of {stages.length}: </span><span aria-hidden="true">{current.emoji} </span>{current.label}
-        </h2>
-        <ReadAloud key={stage} text={spoken[stage]} />
-      </div>
+      {/* One small line says where you are; the step name is the heading. */}
+      <h2 id="stage-heading" ref={heading} tabIndex={-1} className="focus:outline-none">
+        <span className="block text-base font-bold text-slate-700">Step {index + 1} of {stages.length}<span className="sr-only">:</span></span>
+        {current.label}
+      </h2>
 
       {stage === 'think' && <>
         <div className="learner-card flex flex-col overflow-hidden sm:flex-row">
@@ -369,10 +337,6 @@ function HintBox({ hints }: { hints: string[] }) {
   );
 }
 
-/** "Drag a block" → "drag a block", so it reads naturally after "First, ". */
-function lowerFirst(text: string): string {
-  return /^[A-Z][a-z]/.test(text) ? text[0].toLowerCase() + text.slice(1) : text;
-}
 
 /**
  * The "Before you start" list: one short, plain sentence per lesson step, so
