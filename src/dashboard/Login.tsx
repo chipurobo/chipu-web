@@ -199,26 +199,45 @@ function LoginShell({ title, form, onSubmit, canSubmit, children }: {
   );
 }
 
-/** School dropdown for learners. Nobody should have to type or spell a school name. */
+/**
+ * School finder for learners. A long dropdown is hard to use with JAWS and
+ * NVDA, so learners type a few letters from any part of the name ("lik",
+ * "deaf") and pick from a short list of radio buttons. Arrow keys move
+ * through the list and Space picks; the number of matches is read out.
+ */
 function SchoolPicker({ schools, loading, failed, onRetry, value, onChange }: {
   schools: SchoolLoginOption[]; loading: boolean; failed: boolean; onRetry: () => void;
   value: string; onChange: (code: string) => void;
 }) {
+  const [query, setQuery] = useState('');
+  const chosen = schools.find((school) => school.code === value);
+  const words = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const matches = schools.filter((school) => words.every((word) => `${school.name} ${school.code}`.toLowerCase().includes(word)));
+  const listed = words.length ? matches.slice(0, 6) : [];
+  // A school that no longer matches what was typed is no longer chosen, so
+  // Tab and Space can never land on an old choice by mistake.
+  useEffect(() => {
+    if (chosen && !listed.includes(chosen)) onChange('');
+  }, [chosen, listed, onChange]);
+  const count = !words.length ? 'Type a few letters of your school’s name.'
+    : matches.length === 0 ? 'No school found. Try fewer letters.'
+    : matches.length === 1 ? '1 school found. Press Tab, then Space to choose it.'
+    : `${matches.length} schools found.${matches.length > 6 ? ' Type more letters to see yours.' : ' Press Tab, then use the arrow keys.'}`;
   return (
     <div className="login-field">
       <label htmlFor="school">School</label>
-      <select
-        id="school"
-        className="login-input"
-        required
-        disabled={loading || failed}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-      >
-        <option value="">{loading ? 'Loading schools…' : 'Choose your school'}</option>
-        {schools.map((school) => <option key={school.id} value={school.code}>{school.name}</option>)}
-      </select>
+      <input id="school" type="search" className="login-input" autoComplete="off" spellCheck={false} disabled={loading || failed}
+        placeholder={loading ? 'Loading schools…' : 'Type part of your school’s name'} aria-describedby="school-count"
+        value={query} onChange={(event) => setQuery(event.target.value)} />
+      <p id="school-count" role="status" className="login-field-help">{failed ? '' : count}</p>
       {failed && <div id="school-error" role="alert" className="login-school-error">We couldn’t load the schools. Check your connection. <button type="button" onClick={onRetry}>Try again</button></div>}
+      {!!listed.length && <fieldset className="login-school-list">
+        <legend className="sr-only">Choose your school</legend>
+        {listed.map((school) => <label key={school.id} className="login-school-option">
+          <input type="radio" name="school" value={school.code} checked={school.code === value} onChange={() => onChange(school.code)} />
+          <span>{school.name}</span>
+        </label>)}
+      </fieldset>}
     </div>
   );
 }
