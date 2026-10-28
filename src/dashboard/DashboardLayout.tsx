@@ -11,7 +11,7 @@ import { fetchAssignment } from '../lib/learningQueries';
 import {
   LogOut, Home, School, Package, ClipboardList, Users, Boxes, Wrench, Send, Menu, X,
   Award, Layers, FolderKanban, BookOpen, CalendarDays, ListChecks, ShieldAlert,
-  Presentation, Trophy, Medal, Puzzle, Flag, Star,
+  Presentation, Trophy, Medal, Flag,
 } from 'lucide-react';
 
 // ----- Page titles for the SPA route announcer -----
@@ -518,11 +518,7 @@ function LearnerHeader({ onSignOut }: { onSignOut: () => void | Promise<void> })
   return (
     <header className="learner-header sticky top-0 z-30 border-b-2 border-slate-200 bg-white">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-2 px-3 py-2 sm:flex-nowrap sm:px-6">
-        <Link
-          to="/dashboard"
-          className="flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-1 text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
-          aria-label="ChipuRobo learner home"
-        >
+        <span className="flex min-h-11 shrink-0 items-center gap-2 px-1 text-slate-900">
           <picture>
             <source srcSet="/img/logo.webp" type="image/webp" />
             <img src="/img/logo.png" alt="" width={30} height={30} className="h-8 w-8 pixel-crisp" />
@@ -530,25 +526,21 @@ function LearnerHeader({ onSignOut }: { onSignOut: () => void | Promise<void> })
           <span className="hidden font-pixel text-[0.62rem] tracking-wider sm:inline">
             ChipuRobo<span className="text-teal-500" aria-hidden="true">_</span>
           </span>
-        </Link>
+        </span>
 
-        <nav aria-label="Learner navigation" className="order-3 w-full sm:order-none sm:ml-auto sm:w-auto">
-          <ul className="flex list-none items-center gap-1 rounded-2xl bg-sky-50 p-1">
-            <li className="flex flex-1 sm:flex-none"><LearnerNavLink to="/dashboard" end icon={Home}>Home</LearnerNavLink></li>
-            <li className="flex flex-1 sm:flex-none"><LearnerNavLink to="/dashboard/my-learning" icon={Puzzle} accessibleLabel="Lessons">
-              <span className="sm:hidden">Learn</span><span className="hidden sm:inline">Lessons</span>
-            </LearnerNavLink></li>
-            <li className="flex flex-1 sm:flex-none"><LearnerNavLink to="/dashboard/my-progress" icon={Star} accessibleLabel="My stars">
-              <span className="sm:hidden">Stars</span><span className="hidden sm:inline">My stars</span>
-            </LearnerNavLink></li>
-            <li className="flex flex-1 sm:flex-none"><LearnerNavLink to={reportHref} icon={Flag} accessibleLabel="Report a concern">Report</LearnerNavLink></li>
-          </ul>
-        </nav>
+        {/* No menu: learners move with Back and Next inside the lesson. Reporting
+            a concern and signing out stay one tap away. */}
+        <Link
+          to={reportHref}
+          className="ml-auto inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-base font-bold text-slate-800 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+        >
+          <Flag className="h-5 w-5" aria-hidden="true" />Report a concern
+        </Link>
 
         <button
           type="button"
           onClick={onSignOut}
-          className="ml-auto inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 sm:ml-1"
+          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
           aria-label="Sign out"
           title="Sign out"
         >
@@ -556,41 +548,6 @@ function LearnerHeader({ onSignOut }: { onSignOut: () => void | Promise<void> })
         </button>
       </div>
     </header>
-  );
-}
-
-function LearnerNavLink({
-  to,
-  icon: Icon,
-  children,
-  end,
-  accessibleLabel,
-}: {
-  to: string;
-  icon: typeof Home;
-  children: React.ReactNode;
-  end?: boolean;
-  accessibleLabel?: string;
-}) {
-  return (
-    <NavLink
-      to={to}
-      end={end}
-      aria-label={accessibleLabel}
-      className={({ isActive }) =>
-        // Low vision first: 16px labels, 48px+ targets, and the current page
-        // shown by a thick border as well as colour. On narrow screens (or at
-        // high zoom) the icon sits above the label so every word still fits.
-        `flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-xl border-2 px-1 text-base font-extrabold transition-colors sm:min-h-12 sm:flex-none sm:flex-row sm:gap-2 sm:px-4 ${
-          isActive
-            ? 'learner-current bg-white text-slate-900'
-            : 'border-transparent text-slate-800 hover:bg-white hover:text-slate-900'
-        }`
-      }
-    >
-      <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
-      <span className="truncate">{children}</span>
-    </NavLink>
   );
 }
 

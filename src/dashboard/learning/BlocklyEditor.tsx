@@ -25,8 +25,10 @@ function toolbox(level: LearningLevel): Blockly.utils.toolbox.ToolboxInfo {
   return { kind: 'categoryToolbox', contents };
 }
 
-export function BlocklyEditor({ initial, level = 'beginner', readOnly = false, onChange }: {
+export function BlocklyEditor({ initial, level = 'beginner', readOnly = false, drawers = true, onChange }: {
   initial?: BlocklyProgram | null; level?: LearningLevel; readOnly?: boolean;
+  /** false: no block drawers on the left; learners change the starter blocks only and cannot delete them. */
+  drawers?: boolean;
   onChange?: (program: BlocklyProgram, blockCount: number) => void;
 }) {
   const host = useRef<HTMLDivElement>(null);
@@ -50,14 +52,18 @@ export function BlocklyEditor({ initial, level = 'beginner', readOnly = false, o
   }
   useEffect(() => {
     if (!host.current) return;
-    const ws = Blockly.inject(host.current, { toolbox: readOnly ? undefined : toolbox(level), readOnly,
-      renderer: 'zelos', media: '/blockly-media/', maxBlocks: 200, sounds: false, trashcan: !readOnly, modalInputs: false,
+    const ws = Blockly.inject(host.current, { toolbox: readOnly || !drawers ? undefined : toolbox(level), readOnly,
+      renderer: 'zelos', media: '/blockly-media/', maxBlocks: 200, sounds: false, trashcan: !readOnly && drawers, modalInputs: false,
       horizontalLayout: host.current.clientWidth < 600,
       move: { scrollbars: true, drag: true, wheel: false }, zoom: { controls: true, wheel: false, startScale: 0.85 },
       grid: { spacing: 25, length: 3, colour: '#cbd5e1', snap: true } });
     workspace.current = ws;
     Blockly.Events.disable();
-    try { Blockly.serialization.workspaces.load(initialRef.current?.workspace ?? (readOnly ? {} : starterWorkspace), ws); }
+    try {
+      Blockly.serialization.workspaces.load(initialRef.current?.workspace ?? (readOnly ? {} : starterWorkspace), ws);
+      // Without drawers a deleted block could not come back, so blocks stay put.
+      if (!drawers && !readOnly) ws.getAllBlocks(false).forEach((block) => block.setDeletable(false));
+    }
     catch { setError("We couldn't open your saved blocks, but don't worry, they're still safe."); }
     finally { Blockly.Events.enable(); }
     function changed(event?: Blockly.Events.Abstract) {
@@ -75,7 +81,7 @@ export function BlocklyEditor({ initial, level = 'beginner', readOnly = false, o
     const observer = new ResizeObserver(() => Blockly.svgResize(ws));
     observer.observe(host.current);
     return () => { observer.disconnect(); stopWorker(); ws.removeChangeListener(changed); ws.dispose(); workspace.current = null; };
-  }, [level, readOnly]);
+  }, [level, readOnly, drawers]);
 
   function run() {
     stopWorker(); setRunning(true); setError(null); setOutput(''); outputRef.current = '';
@@ -93,9 +99,11 @@ export function BlocklyEditor({ initial, level = 'beginner', readOnly = false, o
   }
   return <section className="space-y-3 min-w-0" aria-label={readOnly ? 'Submitted Blockly program' : 'Blockly coding workspace'}>
     {!readOnly && <>
-      <p className="sr-only">Drag blocks out of the drawers, snap them together, then press Run. The print block shows words on the screen.</p>
+      <p className="sr-only">{drawers ? 'Drag blocks out of the drawers, snap them together, then press Run.' : 'Change the words in the blocks, then press Run.'} The print block shows words on the screen.</p>
       <details className="text-sm"><summary className="cursor-pointer underline"><span aria-hidden="true">⌨️ </span>Using the keyboard</summary>
-        <p className="mt-2">Tab to the workspace. Press T for the toolbox, arrow keys to navigate, Enter to add a block or edit a value, M to move a block, and Delete to remove it. Tab leaves the workspace.</p></details>
+        <p className="mt-2">{drawers
+          ? 'Tab to the workspace. Press T for the toolbox, arrow keys to navigate, Enter to add a block or edit a value, M to move a block, and Delete to remove it. Tab leaves the workspace.'
+          : 'Tab to the workspace. Use the arrow keys to reach the words in a block, press Enter to change them, then Enter again. Tab leaves the workspace.'}</p></details>
     </>}
     <div ref={host} className="blockly-editor h-[420px] sm:h-[480px] w-full border border-gray-400 rounded-md overflow-hidden" />
     {!readOnly && <div className="flex gap-3 flex-wrap">

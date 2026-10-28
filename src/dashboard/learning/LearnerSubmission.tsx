@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState, type FormEvent } from 'react';
+import { lazy, Suspense, useEffect, useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { LearningSubmission, CompetencyEvidence } from '../../lib/learningRecords';
 import { fetchLearningProgram, saveLearningProgram, submitLearningWork } from '../../lib/learningQueries';
@@ -33,19 +33,22 @@ export function useLessonWork(assignmentId: string) {
 export type LessonWork = ReturnType<typeof useLessonWork>;
 
 export function LessonBuild({ work, level }: { work: LessonWork; level: LearningLevel }) {
-  const { draft, save, program, blockCount, savedProgram } = work;
+  const { draft, save, program } = work;
+  // Blocks save on their own a moment after each change; there is no Save button.
+  const programJson = program ? JSON.stringify(program) : '';
+  useEffect(() => {
+    if (!work.unsaved) return;
+    const timer = setTimeout(() => work.saveIfChanged(), 1500);
+    return () => clearTimeout(timer);
+  }, [programJson]); // eslint-disable-line react-hooks/exhaustive-deps
+
   return (
     <div className="space-y-4">
       {draft.isPending && <Loading>Loading your saved blocks</Loading>}
       {draft.error && <p role="alert" className="learner-card border-rose-300 bg-rose-50 p-4 text-sm font-semibold text-rose-900"><span aria-hidden="true">😬 </span>Blocks didn't load. <button type="button" className="underline" onClick={() => void draft.refetch()}>Try again</button></p>}
       {!draft.isPending && !draft.error && <Suspense fallback={<Loading>Loading the block editor</Loading>}>
-        <BlocklyEditor initial={program ?? draft.data} level={level} onChange={work.update} />
+        <BlocklyEditor initial={program ?? draft.data} level={level} drawers={false} onChange={work.update} />
       </Suspense>}
-      <div className="flex flex-wrap items-center gap-3">
-        <button type="button" className="btn-secondary" disabled={!program || !blockCount || save.isPending || !!draft.error}
-          onClick={() => program && save.mutate(program)}><span aria-hidden="true">💾</span> {save.isPending ? 'Saving…' : 'Save'}</button>
-        {savedProgram && <p role="status" className="text-sm font-bold text-teal-800">{JSON.stringify(program) === savedProgram ? <><span aria-hidden="true">✅ </span>Saved<span className="sr-only">. Your blocks are saved.</span></> : <><span aria-hidden="true">✏️ </span>Not saved yet</>}</p>}
-      </div>
       <FriendlyAlert error={save.error} />
     </div>
   );
@@ -84,7 +87,7 @@ export function LessonSend({ work, submissions, reviews, onSent }: {
       <div><label htmlFor="my-reflection" className="field-label">What did you learn? <span className="font-normal text-slate-600">(you can skip this)</span></label>
         <textarea id="my-reflection" className="field-input" rows={2} maxLength={5000} value={reflection} onChange={(event) => setReflection(event.target.value)} /></div>
       <FriendlyAlert error={mutation.error} />
-      {mutation.isSuccess && <Cheer title="Sent!" body="Nice work. Your teacher will reply here. Your next lesson is open now." />}
+      {mutation.isSuccess && <Cheer title="Sent!" body="Nice work. Your teacher will reply here." />}
       <button type="submit" className="btn-play" disabled={mutation.isPending || !program || !hasBlocks || !text.trim()}>
         <span aria-hidden="true">🚀</span> {mutation.isPending ? 'Sending…' : 'Send'}<span className="sr-only"> to my teacher</span></button>
     </form>
