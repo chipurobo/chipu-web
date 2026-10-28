@@ -44,6 +44,9 @@ export function BlocklyEditor({ initial, level = 'beginner', readOnly = false, d
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [blockCount, setBlockCount] = useState(0);
+  // Every text field in the blocks, mirrored as an ordinary text box. With a
+  // screen reader or a keyboard this is the easy way to change the words.
+  const [words, setWords] = useState<{ blockId: string; name: string; value: string }[]>([]);
 
   function stopWorker() {
     worker.current?.terminate(); worker.current = null;
@@ -74,6 +77,9 @@ export function BlocklyEditor({ initial, level = 'beginner', readOnly = false, d
         if (event && worker.current) { stopWorker(); setRunning(false); }
         if (event) { outputRef.current = ''; setOutput(''); }
         setCode(generated); setBlockCount(count);
+        if (!drawers && !readOnly) setWords(ws.getAllBlocks(true).flatMap((block) => block.inputList.flatMap((input) => input.fieldRow)
+          .filter((field): field is Blockly.FieldTextInput => field instanceof Blockly.FieldTextInput && !!field.name)
+          .map((field) => ({ blockId: block.id, name: field.name!, value: String(field.getValue() ?? '') }))));
         callback.current?.({ workspace: Blockly.serialization.workspaces.save(ws), code: generated, output: outputRef.current }, count);
       } catch { setError("Hmm, one of your blocks isn't quite finished. Take a look and try again."); }
     }
@@ -100,12 +106,17 @@ export function BlocklyEditor({ initial, level = 'beginner', readOnly = false, d
   return <section className="space-y-3 min-w-0" aria-label={readOnly ? 'Submitted Blockly program' : 'Blockly coding workspace'}>
     {!readOnly && <>
       <p className="sr-only">{drawers ? 'Drag blocks out of the drawers, snap them together, then press Run.' : 'Change the words in the blocks, then press Run.'} The print block shows words on the screen.</p>
-      <details className="text-sm"><summary className="cursor-pointer underline"><span aria-hidden="true">⌨️ </span>Using the keyboard</summary>
-        <p className="mt-2">{drawers
-          ? 'Tab to the workspace. Press T for the toolbox, arrow keys to navigate, Enter to add a block or edit a value, M to move a block, and Delete to remove it. Tab leaves the workspace.'
-          : 'Tab to the workspace. Use the arrow keys to reach the words in a block, press Enter to change them, then Enter again. Tab leaves the workspace.'}</p></details>
+      {drawers && <details className="text-sm"><summary className="cursor-pointer underline"><span aria-hidden="true">⌨️ </span>Using the keyboard</summary>
+        <p className="mt-2">Tab to the workspace. Press T for the toolbox, arrow keys to navigate, Enter to add a block or edit a value, M to move a block, and Delete to remove it. Tab leaves the workspace.</p></details>}
     </>}
-    <div ref={host} className="blockly-editor h-[420px] sm:h-[480px] w-full border border-gray-400 rounded-md overflow-hidden" />
+    {!!words.length && <div className="learner-card space-y-4 p-5">
+      {words.map((word, n) => <label key={`${word.blockId}-${word.name}`} className="field-label !text-xl">
+        {words.length === 1 ? 'What should the computer say?' : `Words in block ${n + 1}`}
+        <input type="text" className="field-input mt-2 !text-2xl !font-bold" value={word.value} spellCheck={false}
+          onChange={(event) => workspace.current?.getBlockById(word.blockId)?.setFieldValue(event.target.value, word.name)} />
+      </label>)}
+    </div>}
+    <div ref={host} className={`blockly-editor ${drawers || readOnly ? "h-[420px] sm:h-[480px]" : "h-[200px]"} w-full border border-gray-400 rounded-md overflow-hidden`} />
     {!readOnly && <div className="flex gap-3 flex-wrap">
       <button type="button" className="btn-play" onClick={run} disabled={running || !blockCount}>{running ? 'Running…' : <><span aria-hidden="true">▶ </span>Run</>}</button>
       {running && <button type="button" className="btn-secondary" onClick={() => { stopWorker(); setRunning(false); setError('Stopped.'); }}>Stop program</button>}

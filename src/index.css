@@ -958,7 +958,8 @@ h3.heading-display { font-size: clamp(1rem, 2vw, 1.5rem) !important; line-height
   @apply rounded-3xl p-5 sm:p-6 space-y-5 bg-white border-2 border-slate-200;
 }
 .learner-card {
-  @apply bg-white rounded-3xl border-2 border-slate-200;
+  @apply bg-white rounded-[1.75rem] border-2 border-slate-200;
+  box-shadow: 0 6px 0 #e2e8f0;
 }
 .learner-card-hover {
   @apply transition-colors duration-150 hover:border-teal-600 focus-within:border-teal-600;
@@ -970,16 +971,20 @@ h3.heading-display { font-size: clamp(1rem, 2vw, 1.5rem) !important; line-height
 .learner-zone .btn-secondary,
 .learner-zone .btn-play {
   @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl px-5 py-2.5 text-base font-extrabold
-         transition-all duration-100 disabled:opacity-50 disabled:cursor-not-allowed;
+         transition-transform duration-100 disabled:opacity-50 disabled:cursor-not-allowed;
   border-bottom-width: 4px;
 }
 .learner-zone .btn-primary:active:not(:disabled),
 .learner-zone .btn-secondary:active:not(:disabled),
 .learner-zone .btn-play:active:not(:disabled) { transform: translateY(2px); border-bottom-width: 2px; }
 .learner-zone .btn-primary,
-.learner-zone .btn-play    { @apply bg-teal-800 text-white border-teal-950 hover:bg-teal-900; }
-.learner-zone .btn-play    { @apply text-lg px-7 py-3; }
-.learner-zone .btn-secondary { @apply bg-white text-slate-800 border-slate-300 border-2 border-b-4 hover:bg-slate-50; }
+.learner-zone .btn-play,
+.learner-zone .btn-secondary { @apply rounded-full; }
+/* Bright, bubbly buttons with dark text: more fun than white-on-dark and
+   higher contrast too (green 8.6:1, sky 8:1, both WCAG AAA). */
+.learner-zone .btn-play    { @apply text-lg px-8 py-3 text-green-950 hover:brightness-105; background: #4ade80; border-color: #15803d; }
+.learner-zone .btn-primary { @apply text-sky-950 hover:brightness-105; background: #7dd3fc; border-color: #0369a1; }
+.learner-zone .btn-secondary { @apply bg-white text-slate-900 border-slate-300 border-2 border-b-4 hover:bg-slate-50; }
 
 .learner-zone .field-label { @apply block text-base font-extrabold text-slate-900 mb-1.5; }
 .learner-zone .field-input,
@@ -1004,19 +1009,70 @@ h3.heading-display { font-size: clamp(1rem, 2vw, 1.5rem) !important; line-height
 .choice-tile input { @apply absolute inset-0 h-full w-full cursor-pointer opacity-0 m-0; }
 .learner-pill:has(input:checked) { @apply border-slate-900 bg-teal-800 text-white; }
 
-/* Answer and choice tiles: white until picked, teal when picked. The shape
-   badge keeps answers apart without relying on colour. */
+/* Answer and choice tiles: bubbly white tiles with a coloured shape badge;
+   picked = sunny yellow with a thick dark border. The shape keeps answers
+   apart without relying on colour. Text stays dark on every state. */
 .quiz-tile,
 .choice-tile {
-  @apply relative flex items-center gap-3 rounded-2xl border-2 border-b-4 border-slate-300 bg-white p-4 text-base font-extrabold text-slate-900
-         cursor-pointer transition-colors duration-100 min-h-[4rem] hover:border-teal-600;
+  @apply relative flex items-center gap-3 rounded-3xl border-2 border-b-[6px] border-slate-300 bg-white p-4 text-lg font-extrabold text-slate-900
+         cursor-pointer transition-transform duration-100 min-h-[4.25rem] hover:-translate-y-0.5;
 }
 .quiz-tile:has(input:checked),
-.choice-tile:has(input:checked) { @apply border-slate-900 bg-teal-800 text-white; }
+.choice-tile:has(input:checked) { @apply border-slate-900 bg-amber-200 text-slate-900; }
 .quiz-tile .quiz-shape {
-  @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-lg text-slate-700;
+  @apply flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-xl text-slate-900;
 }
-.quiz-tile:has(input:checked) .quiz-shape { @apply bg-white/20 text-white; }
+.quiz-tile:nth-child(4n+1) .quiz-shape { background: #f9a8d4; }
+.quiz-tile:nth-child(4n+2) .quiz-shape { background: #7dd3fc; }
+.quiz-tile:nth-child(4n+3) .quiz-shape { background: #fcd34d; }
+.quiz-tile:nth-child(4n+4) .quiz-shape { background: #c4b5fd; }
+
+/* ── Lesson player: bubbly and bright for Grade 4 and up ─────────────────
+   Every step has its own colour, used for soft backgrounds, borders and the
+   progress bubbles. Text on top is always slate-900. */
+.learner-player { position: relative; isolation: isolate; }
+.learner-player > * { position: relative; z-index: 1; }
+.learner-player > nav[aria-label='Back and next'] { position: sticky; z-index: 2; }
+.learner-player::before {
+  content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(circle at 8% 18%, #fde68a 0 3.5rem, transparent 3.6rem),
+    radial-gradient(circle at 92% 12%, #bae6fd 0 5rem, transparent 5.1rem),
+    radial-gradient(circle at 85% 78%, #fbcfe8 0 4rem, transparent 4.1rem),
+    radial-gradient(circle at 12% 88%, #ddd6fe 0 5.5rem, transparent 5.6rem),
+    radial-gradient(circle at 50% 45%, #dcfce7 0 2.5rem, transparent 2.6rem),
+    #f0f9ff;
+  opacity: 0.85;
+}
+.stage-welcome { --stage: #7c3aed; --stage-soft: #ede9fe; --stage-edge: #c4b5fd; }
+.stage-quiz    { --stage: #0284c7; --stage-soft: #e0f2fe; --stage-edge: #7dd3fc; }
+.stage-code    { --stage: #ea580c; --stage-soft: #ffedd5; --stage-edge: #fdba74; }
+.stage-final   { --stage: #db2777; --stage-soft: #fce7f3; --stage-edge: #f9a8d4; }
+.learner-player .learner-card { border-color: var(--stage-edge, #e2e8f0); box-shadow: 0 6px 0 var(--stage-edge, #e2e8f0); }
+
+.stage-banner { @apply flex items-end gap-3 sm:gap-4; }
+.speech-bubble {
+  @apply relative flex-1 rounded-[1.75rem] border-[3px] bg-white px-5 py-4;
+  border-color: var(--stage);
+  box-shadow: 0 6px 0 var(--stage-edge);
+}
+.speech-bubble::before {
+  content: ''; position: absolute; left: -14px; bottom: 18px; width: 22px; height: 22px;
+  background: #fff; border-left: 3px solid var(--stage); border-bottom: 3px solid var(--stage);
+  transform: rotate(45deg); border-radius: 0 0 0 6px;
+}
+.stage-pill { @apply inline-block rounded-full px-3 py-0.5 text-base font-extrabold text-slate-900; background: var(--stage-soft); }
+
+.mascot-float { animation: mascot-float 3s ease-in-out infinite; }
+@keyframes mascot-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+.stage-pop { animation: learner-pop 0.45s cubic-bezier(0.2, 1.4, 0.4, 1); }
+@media (prefers-reduced-motion: reduce) {
+  .mascot-float, .stage-pop, .learner-pop { animation: none; }
+  .quiz-tile, .choice-tile { transition: none; }
+}
+@media (forced-colors: active) {
+  .learner-player::before { display: none; }
+}
 
 /* Lesson path: a winding trail of lesson stops */
 .lesson-path { @apply relative grid gap-4 sm:grid-cols-2 lg:grid-cols-3; }
@@ -1099,3 +1155,9 @@ h3.heading-display { font-size: clamp(1rem, 2vw, 1.5rem) !important; line-height
   .learner-zone .quiz-tile:has(input:checked), .learner-zone .choice-tile:has(input:checked) { border: 4px solid Highlight !important; }
   .learner-zone .btn-primary, .learner-zone .btn-play, .learner-zone .btn-secondary { border: 2px solid ButtonText !important; }
 }
+
+/* A cheerful stripe under the learner header, in the four lesson-step colours. */
+.learner-header { border-bottom: 5px solid transparent !important; border-image: linear-gradient(90deg, #a78bfa, #38bdf8, #fb923c, #f472b6) 1 !important; }
+@media (forced-colors: active) { .learner-header { border-image: none !important; border-bottom-color: CanvasText !important; } }
+/* Big quiz questions and scores: the main thing on the screen. */
+.learner-zone h3.quiz-big { font-size: clamp(1.5rem, 4.5vw, 2rem) !important; line-height: 1.25 !important; }

@@ -9,8 +9,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { trackLearningActivity } from '../../lib/learningOutcomes';
-import { fetchAssignment, fetchAssignments, fetchEvidence, fetchSubmissions, startBlocklyLesson } from '../../lib/learningQueries';
+import { fetchQuizAttempts, listQuizzes, trackLearningActivity } from '../../lib/learningOutcomes';
+import { fetchAssignment, fetchAssignments, fetchEvidence, fetchSubmissions, startBlocklyLesson, submitLearningWork } from '../../lib/learningQueries';
 import { useLearnerCourse } from './useLearnerCourse';
 import { fetchLessonById } from '../../lib/gql/queries';
 import type { LessonLearningPlan } from '../../lib/learningRecords';
@@ -18,16 +18,18 @@ import { artThemeFor, learnerTitle } from '../../lib/learnerCopy';
 import { buildPath } from '../../lib/learnerPath';
 import { LearnerPage, FriendlyAlert, Loading } from './ui/LearnerKit';
 import { LessonArt } from './ui/LearnerArt';
-import { StageQuiz } from './ui/StageQuiz';
+import { QuizRunner, type BarProps } from './ui/QuizRunner';
 import { LessonBuild, LessonSend, useLessonWork } from './LearnerSubmission';
+import { Mascot } from './ui/LearnerArt';
 import { AccessibleLessonMedia } from './AccessibleLessonMedia';
 
+/** Four steps, like a Duolingo or Khan Academy Kids lesson: get ready, a
+ *  short quiz, code, and a final quiz. Robo says what to do on each one. */
 const stages = [
-  { id: 'think', emoji: '🤔', label: 'Think' },
-  { id: 'learn', emoji: '📖', label: 'Learn' },
-  { id: 'build', emoji: '🧩', label: 'Build' },
-  { id: 'check', emoji: '✅', label: 'Assess' },
-  { id: 'send', emoji: '📬', label: 'Send' },
+  { id: 'welcome', emoji: '👋', label: 'Welcome', say: "Hi! I'm Robo. Here is your mission." },
+  { id: 'quiz', emoji: '❓', label: 'Quick quiz', say: 'Two quick questions. Just try your best!' },
+  { id: 'code', emoji: '🧩', label: 'Code it', say: 'Change the words, then press Run!' },
+  { id: 'final', emoji: '🏆', label: 'Final quiz', say: 'Show me what you learned!' },
 ] as const;
 type StageId = (typeof stages)[number]['id'];
 
@@ -55,7 +57,7 @@ export function LearnerLesson() {
   const error = submissions.error ?? assignmentQuery.error ?? evidence.error;
 
   return (
-    <LearnerPage className="!space-y-5 max-w-4xl">
+    <LearnerPage className="learner-player !space-y-5 max-w-4xl">
       <FriendlyAlert error={error} />
       {assignmentQuery.isPending && <Loading>Opening your lesson</Loading>}
       {!assignmentQuery.isPending && !error && !assignment && <>
@@ -95,7 +97,7 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, lesso
   const [stage, setStage] = useState<StageId>(() => {
     const saved = localStorage.getItem(stageKey(assignmentId)) as StageId | null;
     if (saved && stages.some((item) => item.id === saved)) return saved;
-    return submissions.length ? 'send' : 'think';
+    return submissions.length ? 'final' : 'welcome';
   });
   const heading = useRef<HTMLHeadingElement>(null);
   const navigate = useNavigate();
@@ -113,10 +115,10 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, lesso
   const index = stages.findIndex((item) => item.id === stage);
   const current = stages[index];
   const theme = artThemeFor(title, { pathwayId: plan.pathwayId, capstone: isProject });
-  // The general "how to use your lesson" video belongs on the first lesson
-  // only; lesson-specific audio or video shows on its own lesson.
+  // Only a lesson's own audio or video is shown. The general "how to use your
+  // lesson" video describes the old lesson steps, so it is left out.
   const generalVideo = !lesson?.media_url || lesson.media_url.endsWith('/lesson-media/lesson-orientation.webm');
-  const showMedia = !!lesson && (!generalVideo || here === 0);
+  const showMedia = !!lesson && !generalVideo;
 
   useEffect(() => {
     localStorage.setItem(stageKey(assignmentId), stage);
@@ -126,7 +128,34 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, lesso
     window.scrollTo?.({ top: 0 });
   }, [stage, assignmentId]);
 
-  function go(to: StageId) { if (stage === 'build') work.saveIfChanged(); setStage(to); }
+  // Leaving the code step sends the program to the teacher, so there is no
+  // separate Send step or form. Unchanged programs are not sent twice.
+  const send = useMutation({
+    mutationFn: (program: NonNullable<typeof work.program>) => submitLearningWork({
+      assignmentId, text: `My program for "${learnerTitle(title)}"`, url: '', reflection: '', program }),
+    onSuccess: () => { void qc.invalidateQueries({ queryKey: ['learning-submissions'] }); void qc.invalidateQueries({ queryKey: ['learning-program', assignmentId] }); },
+  });
+  function go(to: StageId) {
+    if (stage === 'code') {
+      const program = work.program ?? work.draft.data ?? null;
+      const changed = !submissions.length || submissions[0].generated_code !== program?.code;
+      if (program?.code?.trim() && changed) send.mutate(program); else work.saveIfChanged();
+    }
+    setStage(to);
+  }
+  const goBack = index > 0
+    ? () => go(stages[index - 1].id)
+    : previous?.assignmentId
+      ? () => { localStorage.setItem(stageKey(previous.assignmentId!), 'final'); navigate(`/dashboard/assignments/${previous.assignmentId}`); }
+      : undefined;
+  const goNext = index < stages.length - 1
+    ? () => go(stages[index + 1].id)
+    : next && submissions.length > 0 ? () => openNext.mutate() : undefined;
+  const finalQuiz = useQuery({ queryKey: ['learning-quizzes'], queryFn: listQuizzes });
+  const attempts = useQuery({ queryKey: ['quiz-attempts'], queryFn: fetchQuizAttempts });
+  const finalId = finalQuiz.data?.find((quiz) => quiz.lesson_id === lessonId && quiz.stage === 'end')?.id;
+  const finished = !!finalId && !!attempts.data?.some((attempt) => attempt.quiz_id === finalId);
+  const latestReview = reviews[0];
 
 
   return <>
@@ -135,74 +164,57 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, lesso
     <h1 className="sr-only">{learnerTitle(title)}</h1>
 
 
-    <section aria-labelledby="stage-heading" className="space-y-5">
-      {/* One small line says where you are; the step name is the heading. */}
-      <h2 id="stage-heading" ref={heading} tabIndex={-1} className="focus:outline-none">
-        <span className="block text-base font-bold text-slate-700">Step {index + 1} of {stages.length}<span className="sr-only">:</span></span>
-        {current.label}
-      </h2>
+    <section aria-labelledby="stage-heading" className={`stage-${stage} space-y-6`}>
+      {/* Robo says what to do. The bubble is the step heading, so a screen
+          reader hears "Step 2 of 4, Quick quiz. Two quick questions…" in one go. */}
+      <div className="stage-banner">
+        <Mascot size={84} mood={stage === 'final' && finished ? 'cheer' : stage === 'code' ? 'think' : 'happy'} className="mascot-float shrink-0" />
+        <div className="speech-bubble">
+          <h2 id="stage-heading" ref={heading} tabIndex={-1} className="focus:outline-none">
+            <span className="stage-pill">Step {index + 1} of {stages.length}<span className="sr-only">:</span></span>
+            <span className="mt-1 block !text-3xl"><span aria-hidden="true">{current.emoji} </span>{current.label}<span className="sr-only">.</span></span>
+            <span className="mt-1 block text-lg font-bold text-slate-800">{current.say}</span>
+          </h2>
+        </div>
+      </div>
 
-      {stage === 'think' && <>
+      <div key={stage} className="stage-pop space-y-6">
+      {stage === 'welcome' && <>
         <div className="learner-card flex flex-col overflow-hidden sm:flex-row">
           <LessonArt theme={theme} className="w-full sm:w-56 shrink-0" />
           <div className="space-y-3 p-5">
-            <p className="text-lg font-semibold leading-relaxed text-slate-900">{plan.problem ?? lesson?.description ?? title}</p>
-            {instructions && <p className="rounded-2xl bg-slate-100 p-3 text-base font-semibold text-slate-900"><span className="font-extrabold">From your teacher: </span>{instructions}</p>}
+            <h3>Your mission</h3>
+            <p className="text-xl font-bold leading-relaxed text-slate-900">{plan.problem ?? lesson?.description ?? title}</p>
+            {instructions && <p className="rounded-2xl bg-amber-100 p-3 text-lg font-bold text-slate-900">Your teacher says: {instructions}</p>}
           </div>
         </div>
-        {showMedia && lesson && <AccessibleLessonMedia lesson={lesson} learnerFriendly />}
-        <StageQuiz lessonId={lessonId} stage="pre" title="What do you know already?" />
-      </>}
-
-      {stage === 'learn' && <>
-        <ol className="space-y-3" aria-label="Ideas">
-          {(plan.ideas ?? []).map((idea, n) => (
-            <li key={idea.title} className="learner-card flex items-start gap-4 p-5">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-teal-700 text-lg font-extrabold text-white" aria-hidden="true">{n + 1}</span>
-              <div><h3>{idea.title}</h3><p className="mt-1 text-base">{idea.body}</p></div>
-            </li>
-          ))}
-        </ol>
-        {!plan.ideas?.length && lesson?.description && <p className="learner-card p-5 text-base">{lesson.description}</p>}
         {plan.expectedResult && <div className="learner-card p-5">
-          <h3>When it works, you will see</h3>
-          <p className="mt-2 whitespace-pre-line rounded-2xl bg-slate-900 p-3 text-base font-semibold !text-white">{plan.expectedResult}</p>
+          <h3>When it works, the screen shows</h3>
+          <p className="mt-2 whitespace-pre-line rounded-2xl bg-slate-900 p-4 text-xl font-bold !text-white">{plan.expectedResult}</p>
         </div>}
-        {isProject && !!plan.requirements?.length && <div className="learner-card p-5">
-          <h3>Your project is done when it has</h3>
-          <ul className="mt-2 list-disc space-y-1 pl-5 text-base text-slate-800">{plan.requirements.map((requirement) => <li key={requirement}>{requirement}</li>)}</ul>
-        </div>}
-        <StageQuiz lessonId={lessonId} stage="mid" title="Quick check" />
+        {showMedia && lesson && <AccessibleLessonMedia lesson={lesson} learnerFriendly />}
       </>}
 
-      {stage === 'build' && <>
-        <StepChecklist key={assignmentId} steps={plan.steps} />
+      {stage === 'quiz' && <QuizRunner lessonId={lessonId} stage="pre" onBack={goBack} onDone={goNext ?? null} bar={(props) => <Bar {...props} />} />}
+
+      {stage === 'code' && <>
         <LessonBuild work={work} level={plan.level} />
         <HintBox hints={buildHints(plan)} />
       </>}
 
-      {stage === 'check' && <StageQuiz lessonId={lessonId} stage="end" title="Short assessment" />}
-
-      {stage === 'send' && <>
-        <LessonSend work={work} submissions={submissions} reviews={reviews} />
+      {stage === 'final' && <>
+        <QuizRunner lessonId={lessonId} stage="end" onBack={goBack} onDone={goNext ?? null} bar={(props) => <Bar {...props} />}
+          doneText={`🏆 You finished ${learnerTitle(title)}! Your teacher can see your program.`} />
+        {latestReview && <div className="learner-card space-y-2 p-5">
+          <h3>Your teacher said</h3>
+          <p className="whitespace-pre-wrap text-lg font-semibold text-slate-900">{latestReview.feedback}</p>
+        </div>}
       </>}
+      <FriendlyAlert error={send.error} />
+      </div>
     </section>
 
-    <nav aria-label="Back and next" className="sticky bottom-0 -mx-4 flex items-center justify-between gap-3 border-t-2 border-slate-200 bg-warm-50/95 px-4 py-4 sm:-mx-6 sm:px-6 lg:-mx-10 lg:px-10">
-      {index > 0
-        ? <button type="button" className="btn-secondary" onClick={() => go(stages[index - 1].id)}><span aria-hidden="true">← </span>Back</button>
-        : previous?.assignmentId
-          ? <button type="button" className="btn-secondary" onClick={() => { localStorage.setItem(stageKey(previous.assignmentId!), 'send'); navigate(`/dashboard/assignments/${previous.assignmentId}`); }}>
-              <span aria-hidden="true">← </span>Back<span className="sr-only"> to the last lesson</span></button>
-          : <span />}
-      {index < stages.length - 1
-        ? <button type="button" className="btn-play" onClick={() => go(stages[index + 1].id)}>
-            Next<span className="sr-only">: {stages[index + 1].label}</span><span aria-hidden="true"> →</span></button>
-        : next && submissions.length > 0
-          ? <button type="button" className="btn-play" disabled={openNext.isPending} onClick={() => openNext.mutate()}>
-              Next<span className="sr-only">: the next lesson</span><span aria-hidden="true"> →</span></button>
-          : <span />}
-    </nav>
+    {(stage === 'welcome' || stage === 'code') && <Bar back={goBack} next={goNext} />}
     <FriendlyAlert error={openNext.error} />
   </>;
 }
@@ -214,19 +226,6 @@ function usePath() {
   return buildPath({ lessons: lessons.data, projects: projects.data, assignments: assignments.data, submissions: submissions.data });
 }
 
-
-function StepChecklist({ steps }: { steps: string[] }) {
-  return (
-    <ol className="learner-card space-y-2 p-5" aria-label="Steps">
-      {steps.map((step, index) => (
-        <li key={index} className="flex items-start gap-3 text-base font-semibold text-slate-900">
-          <span aria-hidden="true" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-teal-700 font-extrabold text-white">{index + 1}</span>
-          <span className="pt-1">{step}</span>
-        </li>
-      ))}
-    </ol>
-  );
-}
 
 function HintBox({ hints }: { hints: string[] }) {
   const [shown, setShown] = useState(0);
@@ -248,3 +247,12 @@ function HintBox({ hints }: { hints: string[] }) {
   );
 }
 
+/** Back and Next: the only way to move around a lesson. */
+function Bar({ back, next, nextLabel = 'Next', nextDisabled }: BarProps) {
+  return (
+    <nav aria-label="Back and next" className="lesson-bar sticky bottom-0 z-10 -mx-4 flex items-center justify-between gap-3 border-t-[3px] border-slate-200 bg-white/95 px-4 py-4 sm:-mx-6 sm:px-6 lg:-mx-10 lg:px-10">
+      {back ? <button type="button" className="btn-secondary" onClick={back}><span aria-hidden="true">← </span>Back</button> : <span />}
+      {next && <button type="button" className="btn-play" disabled={nextDisabled} onClick={next}>{nextLabel}<span aria-hidden="true"> →</span></button>}
+    </nav>
+  );
+}
