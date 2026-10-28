@@ -1018,6 +1018,7 @@ h3.heading-display { font-size: clamp(1rem, 2vw, 1.5rem) !important; line-height
          cursor-pointer transition-transform duration-100 min-h-[4.25rem] hover:-translate-y-0.5;
 }
 .quiz-tile:has(input:checked),
+.quiz-tile[data-chosen],
 .choice-tile:has(input:checked) { @apply border-slate-900 bg-amber-200 text-slate-900; }
 .quiz-tile .quiz-shape {
   @apply flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-xl text-slate-900;

@@ -144,7 +144,7 @@ export function BlocklyEditor({ initial, level = 'beginner', readOnly = false, d
     </div>}
     {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
     {!readOnly && <p role="status" className="sr-only">{said}</p>}
-    <div><h3 className="text-base">{readOnly ? 'Output' : 'Your program shows'}</h3><pre className="bg-slate-900 text-white rounded-md p-3 text-base whitespace-pre-wrap break-words max-h-56 overflow-auto">{output || (readOnly ? '' : 'Press Run to see what it shows.')}</pre></div>
+    <div><h3 className="text-base">{readOnly ? 'Output' : 'Your program shows'}</h3><pre tabIndex={readOnly ? undefined : 0} className="bg-slate-900 text-white rounded-md p-3 text-base whitespace-pre-wrap break-words max-h-56 overflow-auto"><span className="sr-only">Your program shows: </span>{output || (readOnly ? '' : 'Press Run to see what it shows.')}</pre></div>
     {readOnly && <details className="text-sm"><summary className="cursor-pointer underline">Submitted JavaScript</summary><pre className="bg-gray-50 p-3 whitespace-pre-wrap break-words">{code || '…'}</pre></details>}
   </section>;
 }
