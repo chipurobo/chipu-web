@@ -167,13 +167,13 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, lesso
     <section aria-labelledby="stage-heading" className={`stage-${stage} space-y-6`}>
       {/* Robo says what to do. The bubble is the step heading, so a screen
           reader hears "Step 2 of 4, Quick quiz. Two quick questions…" in one go. */}
+      {/* Robo and one short line. Screen readers also hear the step number
+          and name, in one go, from the same heading. */}
       <div className="stage-banner">
-        <Mascot size={84} mood={stage === 'final' && finished ? 'cheer' : stage === 'code' ? 'think' : 'happy'} className="mascot-float shrink-0" />
+        <Mascot size={64} mood={stage === 'final' && finished ? 'cheer' : stage === 'code' ? 'think' : 'happy'} className="mascot-float shrink-0" />
         <div className="speech-bubble">
-          <h2 id="stage-heading" ref={heading} tabIndex={-1} className="focus:outline-none">
-            <span className="stage-pill">Step {index + 1} of {stages.length}<span className="sr-only">:</span></span>
-            <span className="mt-1 block !text-3xl"><span aria-hidden="true">{current.emoji} </span>{current.label}<span className="sr-only">.</span></span>
-            <span className="mt-1 block text-lg font-bold text-slate-800">{current.say}</span>
+          <h2 id="stage-heading" ref={heading} tabIndex={-1} className="!text-xl sm:!text-2xl focus:outline-none">
+            <span className="sr-only">Step {index + 1} of {stages.length}: {current.label}. </span>{current.say}
           </h2>
         </div>
       </div>

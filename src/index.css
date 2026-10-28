@@ -1042,7 +1042,7 @@ h3.heading-display { font-size: clamp(1rem, 2vw, 1.5rem) !important; line-height
     radial-gradient(circle at 12% 88%, #ddd6fe 0 5.5rem, transparent 5.6rem),
     radial-gradient(circle at 50% 45%, #dcfce7 0 2.5rem, transparent 2.6rem),
     #f0f9ff;
-  opacity: 0.85;
+  opacity: 0.4;
 }
 .stage-welcome { --stage: #7c3aed; --stage-soft: #ede9fe; --stage-edge: #c4b5fd; }
 .stage-quiz    { --stage: #0284c7; --stage-soft: #e0f2fe; --stage-edge: #7dd3fc; }
@@ -1050,15 +1050,14 @@ h3.heading-display { font-size: clamp(1rem, 2vw, 1.5rem) !important; line-height
 .stage-final   { --stage: #db2777; --stage-soft: #fce7f3; --stage-edge: #f9a8d4; }
 .learner-player .learner-card { border-color: var(--stage-edge, #e2e8f0); box-shadow: 0 6px 0 var(--stage-edge, #e2e8f0); }
 
-.stage-banner { @apply flex items-end gap-3 sm:gap-4; }
+.stage-banner { @apply flex items-center gap-3; }
 .speech-bubble {
-  @apply relative flex-1 rounded-[1.75rem] border-[3px] bg-white px-5 py-4;
+  @apply relative flex-1 rounded-3xl border-2 bg-white px-5 py-3;
   border-color: var(--stage);
-  box-shadow: 0 6px 0 var(--stage-edge);
 }
 .speech-bubble::before {
-  content: ''; position: absolute; left: -14px; bottom: 18px; width: 22px; height: 22px;
-  background: #fff; border-left: 3px solid var(--stage); border-bottom: 3px solid var(--stage);
+  content: ''; position: absolute; left: -9px; top: 50%; margin-top: -8px; width: 16px; height: 16px;
+  background: #fff; border-left: 2px solid var(--stage); border-bottom: 2px solid var(--stage);
   transform: rotate(45deg); border-radius: 0 0 0 6px;
 }
 .stage-pill { @apply inline-block rounded-full px-3 py-0.5 text-base font-extrabold text-slate-900; background: var(--stage-soft); }
@@ -1161,3 +1160,5 @@ h3.heading-display { font-size: clamp(1rem, 2vw, 1.5rem) !important; line-height
 @media (forced-colors: active) { .learner-header { border-image: none !important; border-bottom-color: CanvasText !important; } }
 /* Big quiz questions and scores: the main thing on the screen. */
 .learner-zone h3.quiz-big { font-size: clamp(1.5rem, 4.5vw, 2rem) !important; line-height: 1.25 !important; }
+/* The words a learner types for the computer to say: big and easy to read. */
+.learner-zone .say-input { font-size: 1.5rem !important; font-weight: 700; line-height: 2rem; }

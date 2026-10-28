@@ -109,13 +109,11 @@ export function BlocklyEditor({ initial, level = 'beginner', readOnly = false, d
       {drawers && <details className="text-sm"><summary className="cursor-pointer underline"><span aria-hidden="true">⌨️ </span>Using the keyboard</summary>
         <p className="mt-2">Tab to the workspace. Press T for the toolbox, arrow keys to navigate, Enter to add a block or edit a value, M to move a block, and Delete to remove it. Tab leaves the workspace.</p></details>}
     </>}
-    {!!words.length && <div className="learner-card space-y-4 p-5">
-      {words.map((word, n) => <label key={`${word.blockId}-${word.name}`} className="field-label !text-xl">
-        {words.length === 1 ? 'What should the computer say?' : `Words in block ${n + 1}`}
-        <input type="text" className="field-input mt-2 !text-2xl !font-bold" value={word.value} spellCheck={false}
-          onChange={(event) => workspace.current?.getBlockById(word.blockId)?.setFieldValue(event.target.value, word.name)} />
-      </label>)}
-    </div>}
+    {words.map((word, n) => <label key={`${word.blockId}-${word.name}`} className="field-label !text-xl">
+      {words.length === 1 ? 'What should the computer say?' : `Words in block ${n + 1}`}
+      <input type="text" className="field-input say-input mt-2" value={word.value} spellCheck={false}
+        onChange={(event) => workspace.current?.getBlockById(word.blockId)?.setFieldValue(event.target.value, word.name)} />
+    </label>)}
     <div ref={host} className={`blockly-editor ${drawers || readOnly ? "h-[420px] sm:h-[480px]" : "h-[200px]"} w-full border border-gray-400 rounded-md overflow-hidden`} />
     {!readOnly && <div className="flex gap-3 flex-wrap">
       <button type="button" className="btn-play" onClick={run} disabled={running || !blockCount}>{running ? 'Running…' : <><span aria-hidden="true">▶ </span>Run</>}</button>
