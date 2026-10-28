@@ -10,7 +10,7 @@ import { Mascot, StepIcon } from './LearnerArt';
 import { speak } from '../../../lib/speech';
 
 export function LearnerPage({ children, className = '' }: { children: ReactNode; className?: string }) {
-  return <div className={`learning-zone learner-zone px-4 sm:px-6 lg:px-10 py-6 sm:py-8 space-y-8 max-w-6xl ${className}`}>{children}</div>;
+  return <div className={`learning-zone learner-zone mx-auto w-full px-4 sm:px-6 lg:px-10 py-6 sm:py-8 space-y-8 max-w-6xl ${className}`}>{children}</div>;
 }
 
 export function Hero({ eyebrow, title, blurb, mood = 'happy', children }: {

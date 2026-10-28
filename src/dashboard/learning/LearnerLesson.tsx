@@ -190,7 +190,7 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, submi
           tiny sentences, and which keys to press. Pictures are for children
           with some sight; screen readers skip them. */}
       {stage === 'welcome' && <div className="learner-card space-y-5 p-6">
-        <h3 tabIndex={0} className="!text-2xl">Here is what we will do:</h3>
+        <h3 tabIndex={0} className="lesson-subhead">Here is what we will do:</h3>
         <ol className="space-y-4">
           {[
             { picture: '❓', words: `${numberWord(preCount)} quick questions. It's OK to guess!` },
@@ -275,7 +275,7 @@ function moveBetween(event: React.KeyboardEvent<HTMLElement>) {
 /** Back and Next: the only way to move around a lesson. */
 function Bar({ back, next, nextLabel = 'Next', nextDisabled }: BarProps) {
   return (
-    <nav aria-label="Back and next" onKeyDown={moveBetween} className="lesson-bar sticky bottom-0 z-10 -mx-4 flex items-center justify-between gap-3 border-t-[3px] border-slate-200 bg-white/95 px-4 py-4 sm:-mx-6 sm:px-6 lg:-mx-10 lg:px-10">
+    <nav aria-label="Back and next" onKeyDown={moveBetween} className="lesson-bar sticky bottom-3 z-10 flex items-center justify-between gap-3 rounded-full border-2 border-slate-200 bg-white/95 px-3 py-3 shadow-[0_4px_0_#e2e8f0]">
       {back ? <button type="button" className="btn-secondary" onClick={back}><span aria-hidden="true">← </span>Back</button> : <span />}
       {/* aria-disabled, never disabled: the button stays in the Tab order so
           JAWS and NVDA users can always find it. */}

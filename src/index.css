@@ -1169,3 +1169,11 @@ h3.heading-display { font-size: clamp(1rem, 2vw, 1.5rem) !important; line-height
    takes over Tab. On learner pages the spoken message on the blocks gives
    the directions instead. */
 .learner-zone .blocklyToast { display: none !important; }
+
+/* When Robo's line has focus, outline the whole speech bubble instead of
+   drawing a second box inside it. */
+.learner-zone .speech-bubble h2:focus-visible { outline: none !important; box-shadow: none !important; }
+.learner-zone .speech-bubble:has(h2:focus-visible) { outline: 4px solid #0f172a; outline-offset: 3px; box-shadow: 0 0 0 3px #ffffff; }
+@media (forced-colors: active) { .learner-zone .speech-bubble:has(h2:focus-visible) { outline-color: Highlight; box-shadow: none; } }
+/* Section headings inside a lesson step are as big as the lines under them. */
+.learner-zone h3.lesson-subhead { font-size: 1.5rem !important; line-height: 1.3 !important; }
