@@ -8,6 +8,11 @@ import { starterWorkspace, type BlocklyProgram } from '../../lib/blocklyProgram'
 
 const messages: Record<string, string> = {};
 for (const [key, value] of Object.entries(En)) if (typeof value === 'string') messages[key] = value;
+// Kid-friendly words for what Blockly says to screen readers. Our own
+// message (below) says what the blocks do and which keys to use, so
+// Blockly's technical hint ("Press ⌥ Shift A …") is left out.
+messages.SCREENREADER_HINT = '';
+messages.WORKSPACE_LABEL_1_STACK = 'Your blocks';
 Blockly.setLocale(messages);
 const category = (name: string, colour: string, types: string[]): Blockly.utils.toolbox.StaticCategoryInfo => ({ kind: 'category', name, colour,
   id: undefined, categorystyle: undefined, cssconfig: undefined, hidden: undefined,
@@ -64,7 +69,7 @@ export function BlocklyEditor({ initial, level = 'beginner', readOnly = false, d
     const ws = Blockly.inject(host.current, { toolbox: readOnly || !drawers ? undefined : toolbox(level), readOnly,
       renderer: 'zelos', media: '/blockly-media/', maxBlocks: 200, sounds: false, trashcan: !readOnly && drawers, modalInputs: false,
       horizontalLayout: host.current.clientWidth < 600,
-      move: { scrollbars: true, drag: true, wheel: false }, zoom: { controls: true, wheel: false, startScale: 0.85 },
+      move: { scrollbars: true, drag: true, wheel: false }, zoom: { controls: drawers || readOnly, wheel: false, startScale: 0.85 },
       grid: { spacing: 25, length: 3, colour: '#cbd5e1', snap: true } });
     workspace.current = ws;
     Blockly.Events.disable();
@@ -91,16 +96,9 @@ export function BlocklyEditor({ initial, level = 'beginner', readOnly = false, d
       } catch { setError("Hmm, one of your blocks isn't quite finished. Take a look and try again."); }
     }
     changed(); ws.addChangeListener(changed);
-    // Learners without drawers type in the text box; keep Tab and screen
-    // readers (JAWS, NVDA, VoiceOver) out of the Blockly canvas.
-    const hideCanvas = () => host.current?.querySelectorAll('[tabindex]').forEach((element) => {
-      if (element.getAttribute('tabindex') !== '-1') element.setAttribute('tabindex', '-1');
-    });
-    const tabGuard = !drawers && !readOnly ? new MutationObserver(hideCanvas) : null;
-    if (tabGuard && host.current) { hideCanvas(); tabGuard.observe(host.current, { subtree: true, attributes: true, attributeFilter: ['tabindex'], childList: true }); }
     const observer = new ResizeObserver(() => Blockly.svgResize(ws));
     observer.observe(host.current);
-    return () => { tabGuard?.disconnect(); observer.disconnect(); stopWorker(); ws.removeChangeListener(changed); ws.dispose(); workspace.current = null; };
+    return () => { observer.disconnect(); stopWorker(); ws.removeChangeListener(changed); ws.dispose(); workspace.current = null; };
   }, [level, readOnly, drawers]);
 
   function run() {
@@ -137,7 +135,13 @@ export function BlocklyEditor({ initial, level = 'beginner', readOnly = false, d
           workspace.current?.getBlockById(word.blockId)?.setFieldValue(value, word.name);
         }} />
     </label>)}
-    <div ref={host} aria-hidden={!drawers && !readOnly ? true : undefined} className={`blockly-editor ${drawers || readOnly ? "h-[420px] sm:h-[480px]" : "h-[200px]"} w-full border border-gray-400 rounded-md overflow-hidden`} />
+    {/* Tab reaches the blocks. When it lands there, a screen reader hears in
+        plain words what the blocks say and which keys to use. */}
+    <div ref={host} onFocus={(event) => {
+      if (drawers || readOnly || host.current?.contains(event.relatedTarget as Node | null)) return;
+      const say = workspace.current?.getTopBlocks(true).map((block) => block.toString().replace(/[“”"]/g, '').replace(/\s+/g, ' ').trim()).join('. ') || 'nothing yet';
+      setSaid(''); setTimeout(() => setSaid(`These are your blocks. They say: ${say}${/[.!?]$/.test(say) ? '' : '.'} To change the words, press Down, then Right, then Right, then Enter. Press Tab to go on.`), 50);
+    }} className={`blockly-editor ${drawers || readOnly ? "h-[420px] sm:h-[480px]" : "h-[200px]"} w-full border border-gray-400 rounded-md overflow-hidden`} />
     {!readOnly && <div className="flex gap-3 flex-wrap">
       <button type="button" className="btn-play" onClick={() => { if (!running && blockCount) run(); }} aria-disabled={running || !blockCount || undefined}>{running ? 'Running…' : <><span aria-hidden="true">▶ </span>Run</>}</button>
       {running && <button type="button" className="btn-secondary" onClick={() => { stopWorker(); setRunning(false); setError('Stopped.'); }}>Stop program</button>}

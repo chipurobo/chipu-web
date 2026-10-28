@@ -118,6 +118,20 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, submi
     window.scrollTo?.({ top: 0 });
   }, [stage, assignmentId]);
 
+  // As Tab moves through the lesson, the page scrolls so whatever has focus
+  // sits in the middle of the screen, clear of the header and the Back/Next
+  // bar (browsers alone can leave it hidden behind the sticky bar).
+  useEffect(() => {
+    const still = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const onFocus = (event: FocusEvent) => {
+      const target = event.target as Element | null;
+      if (!target || !(target instanceof Element) || target.closest('nav[aria-label="Back and next"], header')) return;
+      target.scrollIntoView({ block: 'center', inline: 'nearest', behavior: still ? 'auto' : 'smooth' });
+    };
+    document.addEventListener('focusin', onFocus);
+    return () => document.removeEventListener('focusin', onFocus);
+  }, []);
+
   // Leaving the code step sends the program to the teacher, so there is no
   // separate Send step or form. Unchanged programs are not sent twice.
   const send = useMutation({
