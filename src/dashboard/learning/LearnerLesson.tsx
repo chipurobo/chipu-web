@@ -231,13 +231,15 @@ function HintBox({ hints }: { hints: string[] }) {
   const [shown, setShown] = useState(0);
   return (
     <section className="space-y-3" aria-label="Hints">
-      <ol className="space-y-2" aria-live="polite">
+      {/* The live region is always there (so it is announced); the list only
+          appears once there is a hint in it. */}
+      <div aria-live="polite">{shown > 0 && <ol className="space-y-2">
         {hints.slice(0, shown).map((hint, index) => (
           <li key={index} className="learner-pop flex items-start gap-3 rounded-2xl bg-amber-50 p-3 text-base font-semibold text-slate-900">
             <span aria-hidden="true">💡</span><span><span className="sr-only">Hint {index + 1}: </span>{hint}</span>
           </li>
         ))}
-      </ol>
+      </ol>}</div>
       {shown < hints.length
         ? <button type="button" className="btn-secondary" onClick={() => setShown(shown + 1)}
           aria-label={`${shown ? 'Another hint' : 'I need a hint'}. ${hints.length - shown === 1 ? 'One hint' : `${hints.length - shown} hints`} left.`}>
@@ -247,12 +249,24 @@ function HintBox({ hints }: { hints: string[] }) {
   );
 }
 
+/** Left and Right arrows move between Back and Next, like a toolbar. */
+function moveBetween(event: React.KeyboardEvent<HTMLElement>) {
+  if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+  const buttons = Array.from(event.currentTarget.querySelectorAll('button'));
+  const at = buttons.indexOf(document.activeElement as HTMLButtonElement);
+  if (at < 0) return;
+  const to = buttons[at + (event.key === 'ArrowRight' ? 1 : -1)];
+  if (to) { event.preventDefault(); to.focus(); }
+}
+
 /** Back and Next: the only way to move around a lesson. */
 function Bar({ back, next, nextLabel = 'Next', nextDisabled }: BarProps) {
   return (
-    <nav aria-label="Back and next" className="lesson-bar sticky bottom-0 z-10 -mx-4 flex items-center justify-between gap-3 border-t-[3px] border-slate-200 bg-white/95 px-4 py-4 sm:-mx-6 sm:px-6 lg:-mx-10 lg:px-10">
+    <nav aria-label="Back and next" onKeyDown={moveBetween} className="lesson-bar sticky bottom-0 z-10 -mx-4 flex items-center justify-between gap-3 border-t-[3px] border-slate-200 bg-white/95 px-4 py-4 sm:-mx-6 sm:px-6 lg:-mx-10 lg:px-10">
       {back ? <button type="button" className="btn-secondary" onClick={back}><span aria-hidden="true">← </span>Back</button> : <span />}
-      {next && <button type="button" className="btn-play" disabled={nextDisabled} onClick={next}>{nextLabel}<span aria-hidden="true"> →</span></button>}
+      {/* aria-disabled, never disabled: the button stays in the Tab order so
+          JAWS and NVDA users can always find it. */}
+      {next && <button type="button" className="btn-play" aria-disabled={nextDisabled || undefined} onClick={() => { if (!nextDisabled) next(); }}>{nextLabel}<span aria-hidden="true"> →</span></button>}
     </nav>
   );
 }

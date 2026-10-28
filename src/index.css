@@ -1159,6 +1159,7 @@ h3.heading-display { font-size: clamp(1rem, 2vw, 1.5rem) !important; line-height
 .learner-header { border-bottom: 5px solid transparent !important; border-image: linear-gradient(90deg, #a78bfa, #38bdf8, #fb923c, #f472b6) 1 !important; }
 @media (forced-colors: active) { .learner-header { border-image: none !important; border-bottom-color: CanvasText !important; } }
 /* Big quiz questions and scores: the main thing on the screen. */
+.learner-zone .quiz-big { font-size: clamp(1.5rem, 4.5vw, 2rem); line-height: 1.25; font-weight: 800; color: #0f172a; }
 .learner-zone h3.quiz-big { font-size: clamp(1.5rem, 4.5vw, 2rem) !important; line-height: 1.25 !important; }
 /* The words a learner types for the computer to say: big and easy to read. */
 .learner-zone .say-input { font-size: 1.5rem !important; font-weight: 700; line-height: 2rem; }
