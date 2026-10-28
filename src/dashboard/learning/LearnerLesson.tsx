@@ -25,9 +25,9 @@ import { Mascot } from './ui/LearnerArt';
  *  short quiz, code, and a final quiz. Robo says what to do on each one. */
 const stages = [
   { id: 'welcome', emoji: '🔍', label: 'Discovery', say: '' },
-  { id: 'quiz', emoji: '❓', label: 'Quick quiz', say: 'Two quick questions. Just try your best!' },
+  { id: 'quiz', emoji: '❓', label: 'Quick quiz', say: "Let's play a guessing game!" },
   { id: 'code', emoji: '🧩', label: 'Code it', say: 'Change the words, then press Run!' },
-  { id: 'final', emoji: '🏆', label: 'Final quiz', say: 'Show me what you learned!' },
+  { id: 'final', emoji: '🏆', label: 'Final quiz', say: 'One more game! You can do it!' },
 ] as const;
 type StageId = (typeof stages)[number]['id'];
 
@@ -217,7 +217,7 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, submi
 
       {stage === 'final' && <>
         <QuizRunner lessonId={lessonId} stage="end" onBack={goBack} onDone={goNext ?? null} bar={(props) => <Bar {...props} />}
-          doneText={`You finished ${learnerTitle(title)}! Your teacher can see your program.`} />
+          doneText="Yay! You did it! Your teacher can see your work." />
         {latestReview && <div className="learner-card space-y-2 p-5">
           <h3>Your teacher said</h3>
           <p tabIndex={0} className="whitespace-pre-wrap text-lg font-semibold text-slate-900">{latestReview.feedback}</p>
