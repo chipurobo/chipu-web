@@ -14,19 +14,17 @@ import { fetchAssignment, fetchAssignments, fetchEvidence, fetchSubmissions, sta
 import { useLearnerCourse } from './useLearnerCourse';
 import { fetchLessonById } from '../../lib/gql/queries';
 import type { LessonLearningPlan } from '../../lib/learningRecords';
-import { artThemeFor, learnerTitle } from '../../lib/learnerCopy';
+import { learnerTitle } from '../../lib/learnerCopy';
 import { buildPath } from '../../lib/learnerPath';
 import { LearnerPage, FriendlyAlert, Loading } from './ui/LearnerKit';
-import { LessonArt } from './ui/LearnerArt';
 import { QuizRunner, type BarProps } from './ui/QuizRunner';
 import { LessonBuild, LessonSend, useLessonWork } from './LearnerSubmission';
 import { Mascot } from './ui/LearnerArt';
-import { AccessibleLessonMedia } from './AccessibleLessonMedia';
 
 /** Four steps, like a Duolingo or Khan Academy Kids lesson: get ready, a
  *  short quiz, code, and a final quiz. Robo says what to do on each one. */
 const stages = [
-  { id: 'welcome', emoji: '👋', label: 'Welcome', say: "Hi! I'm Robo. Here is your mission." },
+  { id: 'welcome', emoji: '🔍', label: 'Discovery', say: '' },
   { id: 'quiz', emoji: '❓', label: 'Quick quiz', say: 'Two quick questions. Just try your best!' },
   { id: 'code', emoji: '🧩', label: 'Code it', say: 'Change the words, then press Run!' },
   { id: 'final', emoji: '🏆', label: 'Final quiz', say: 'Show me what you learned!' },
@@ -89,16 +87,14 @@ function pickStageContent(plan: LessonLearningPlan | null | undefined): Partial<
   return fresh;
 }
 
-function LessonStages({ assignmentId, title, lessonId, instructions, plan, lesson, submissions, reviews }: {
+function LessonStages({ assignmentId, title, lessonId, instructions, plan, submissions, reviews }: {
   assignmentId: string; title: string; lessonId: string; instructions: string; plan: LessonLearningPlan;
   lesson: Awaited<ReturnType<typeof fetchLessonById>> | null;
   submissions: Parameters<typeof LessonSend>[0]['submissions']; reviews: Parameters<typeof LessonSend>[0]['reviews'];
 }) {
-  const [stage, setStage] = useState<StageId>(() => {
-    const saved = localStorage.getItem(stageKey(assignmentId)) as StageId | null;
-    if (saved && stages.some((item) => item.id === saved)) return saved;
-    return submissions.length ? 'final' : 'welcome';
-  });
+  // Every time the lesson opens (after signing in, too) it starts on
+  // Discovery, so learners always know what they are about to do.
+  const [stage, setStage] = useState<StageId>('welcome');
   const heading = useRef<HTMLHeadingElement>(null);
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -111,14 +107,8 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, lesso
     mutationFn: async () => next!.assignmentId ?? startBlocklyLesson(next!.lesson.id),
     onSuccess: (id) => { void qc.invalidateQueries({ queryKey: ['learning-assignments'] }); navigate(`/dashboard/assignments/${id}`); },
   });
-  const isProject = plan.activityKind === 'capstone';
   const index = stages.findIndex((item) => item.id === stage);
   const current = stages[index];
-  const theme = artThemeFor(title, { pathwayId: plan.pathwayId, capstone: isProject });
-  // Only a lesson's own audio or video is shown. The general "how to use your
-  // lesson" video describes the old lesson steps, so it is left out.
-  const generalVideo = !lesson?.media_url || lesson.media_url.endsWith('/lesson-media/lesson-orientation.webm');
-  const showMedia = !!lesson && !generalVideo;
 
   useEffect(() => {
     localStorage.setItem(stageKey(assignmentId), stage);
@@ -155,6 +145,9 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, lesso
   const attempts = useQuery({ queryKey: ['quiz-attempts'], queryFn: fetchQuizAttempts });
   const finalId = finalQuiz.data?.find((quiz) => quiz.lesson_id === lessonId && quiz.stage === 'end')?.id;
   const finished = !!finalId && !!attempts.data?.some((attempt) => attempt.quiz_id === finalId);
+  const lessonQuiz = (which: 'pre' | 'end') => finalQuiz.data?.find((quiz) => quiz.lesson_id === lessonId && quiz.stage === which);
+  const preCount = lessonQuiz('pre')?.questions.length ?? 2;
+  const endCount = lessonQuiz('end')?.questions.length ?? 3;
   const latestReview = reviews[0];
 
 
@@ -173,27 +166,33 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, lesso
         <Mascot size={64} mood={stage === 'final' && finished ? 'cheer' : stage === 'code' ? 'think' : 'happy'} className="mascot-float shrink-0" />
         <div className="speech-bubble">
           <h2 id="stage-heading" ref={heading} tabIndex={-1} className="!text-xl sm:!text-2xl focus:outline-none">
-            <span className="sr-only">Step {index + 1} of {stages.length}: {current.label}. </span>{current.say}
+            <span className="sr-only">Step {index + 1} of {stages.length}: {current.label}. </span>{stage === 'welcome' ? `Hi! I'm Robo. Today, we will make the computer ${learnerTitle(title).toLowerCase()}!` : current.say}
           </h2>
         </div>
       </div>
 
       <div key={stage} className="stage-pop space-y-6">
-      {stage === 'welcome' && <>
-        <div className="learner-card flex flex-col overflow-hidden sm:flex-row">
-          <LessonArt theme={theme} className="w-full sm:w-56 shrink-0" />
-          <div className="space-y-3 p-5">
-            <h3>Your mission</h3>
-            <p className="text-xl font-bold leading-relaxed text-slate-900">{plan.problem ?? lesson?.description ?? title}</p>
-            {instructions && <p className="rounded-2xl bg-amber-100 p-3 text-lg font-bold text-slate-900">Your teacher says: {instructions}</p>}
-          </div>
-        </div>
-        {plan.expectedResult && <div className="learner-card p-5">
-          <h3>When it works, the screen shows</h3>
-          <p className="mt-2 whitespace-pre-line rounded-2xl bg-slate-900 p-4 text-xl font-bold !text-white">{plan.expectedResult}</p>
-        </div>}
-        {showMedia && lesson && <AccessibleLessonMedia lesson={lesson} learnerFriendly />}
-      </>}
+      {/* Discovery, written for a blind child under 10: Robo talks to them,
+          tiny sentences, and which keys to press. Pictures are for children
+          with some sight; screen readers skip them. */}
+      {stage === 'welcome' && <div className="learner-card space-y-5 p-6">
+        <h3 className="!text-2xl">Here is what we will do:</h3>
+        <ol className="space-y-4">
+          {[
+            { picture: '❓', words: `${numberWord(preCount)} quick questions. It's OK to guess!` },
+            { picture: '💬', words: 'Make the computer talk. Type a word, then press Run.' },
+            { picture: '⭐', words: `${numberWord(endCount)} more questions. Then you are done!` },
+          ].map((step, n) => (
+            <li key={step.words} className="flex items-center gap-4 text-2xl font-bold text-slate-900">
+              <span aria-hidden="true" className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-3xl" style={{ background: 'var(--stage-soft)', border: '3px solid var(--stage)' }}>{step.picture}</span>
+              <span><span className="sr-only">{n + 1}. </span>{step.words}</span>
+            </li>
+          ))}
+        </ol>
+        <p className="rounded-2xl bg-amber-100 p-4 text-2xl font-bold !text-slate-900">To move, press Tab. To pick, press Space.</p>
+        <p className="text-2xl font-bold !text-slate-900">Press Next when you are ready.</p>
+      </div>}
+      {stage === 'welcome' && instructions && <p className="learner-card p-5 text-xl font-bold text-slate-900">Your teacher says: {instructions}</p>}
 
       {stage === 'quiz' && <QuizRunner lessonId={lessonId} stage="pre" onBack={goBack} onDone={goNext ?? null} bar={(props) => <Bar {...props} />} />}
 
@@ -269,4 +268,9 @@ function Bar({ back, next, nextLabel = 'Next', nextDisabled }: BarProps) {
       {next && <button type="button" className="btn-play" aria-disabled={nextDisabled || undefined} onClick={() => { if (!nextDisabled) next(); }}>{nextLabel}<span aria-hidden="true"> →</span></button>}
     </nav>
   );
+}
+
+/** Small counts as words a young child hears naturally: 2 → "Two". */
+function numberWord(n: number) {
+  return ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six'][n] ?? String(n);
 }
