@@ -71,7 +71,7 @@ export function QuizRunner({ lessonId, stage, onBack, onDone, doneText, bar }: {
   const question = quiz.questions[q];
   const goOn = () => {
     if (submit.isPending) return;
-    if (answers[question.id] === undefined) { setNudge('Pick an answer first.'); return; }
+    if (answers[question.id] === undefined) { setNudge('Pick one first!'); return; }
     if (q === quiz.questions.length - 1) submit.mutate(); else setQ(q + 1);
   };
   const last = q === quiz.questions.length - 1;
