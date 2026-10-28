@@ -494,7 +494,10 @@ function DashboardShell() {
       <main
         id="dashboard-main"
         tabIndex={-1}
-        className="flex-1 min-w-0 overflow-x-hidden focus:outline-none"
+        // overflow-x-clip, not -hidden, for learners: -hidden turns <main> into
+        // a scroll container, and the lesson's sticky Back/Next bar would then
+        // stick below the bottom of the screen.
+        className={`flex-1 min-w-0 ${isLearner ? 'overflow-x-clip' : 'overflow-x-hidden'} focus:outline-none`}
       >
         <Outlet />
       </main>
