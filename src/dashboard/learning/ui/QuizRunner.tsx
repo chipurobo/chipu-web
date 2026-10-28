@@ -28,8 +28,9 @@ export function QuizRunner({ lessonId, stage, onBack, onDone, doneText, bar }: {
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [again, setAgain] = useState(false);
   const [nudge, setNudge] = useState('');
+  const [picked, setPicked] = useState('');
   const focus = useRef<HTMLHeadingElement>(null);
-  const group = useRef<HTMLFieldSetElement>(null);
+  const group = useRef<HTMLParagraphElement>(null);
   const submit = useMutation({
     mutationFn: () => submitQuiz(quiz!.id, answers),
     onSuccess: async () => { await qc.invalidateQueries({ queryKey: ['quiz-attempts'] }); setAgain(false); setAnswers({}); setQ(0); },
@@ -43,6 +44,7 @@ export function QuizRunner({ lessonId, stage, onBack, onDone, doneText, bar }: {
   useEffect(() => {
     if (shown.current.q === q && shown.current.showResult === showResult) return;
     shown.current = { q, showResult };
+    setPicked('');
     (showResult ? focus.current : group.current)?.focus();
   }, [q, showResult]);
 
@@ -56,10 +58,10 @@ export function QuizRunner({ lessonId, stage, onBack, onDone, doneText, bar }: {
       <Confetti show={submit.isSuccess && stage === 'end'} />
       <div className="learner-card flex flex-col items-center gap-3 p-8 text-center">
         <p className="text-5xl tracking-widest" aria-hidden="true">{'⭐'.repeat(score)}{'☆'.repeat(total - score)}</p>
-        <h3 ref={focus} tabIndex={-1} className="quiz-big focus:outline-none">
+        <h3 ref={focus} tabIndex={0} className="quiz-big">
           {score === total ? 'Perfect! ' : 'Nice try! '}You got {score} of {total}!
         </h3>
-        {doneText && <p className="text-xl font-bold text-slate-900">{doneText}</p>}
+        {doneText && <p tabIndex={0} className="text-xl font-bold text-slate-900"><span aria-hidden="true">🏆 </span>{doneText}</p>}
         <button type="button" className="btn-secondary" onClick={() => setAgain(true)}>Try again</button>
       </div>
       {bar({ back: onBack, next: onDone ?? undefined })}
@@ -74,23 +76,27 @@ export function QuizRunner({ lessonId, stage, onBack, onDone, doneText, bar }: {
   };
   const last = q === quiz.questions.length - 1;
   return <>
-    {/* Focus goes to the group, so JAWS and NVDA read "Question 1 of 2: …,
-        grouping" once; each answer is read once, by its radio button. */}
-    <fieldset ref={group} tabIndex={-1} className="learner-card space-y-5 p-6 focus:outline-none">
+    {/* Tab reaches every part, in order: the question, then each answer.
+        Answers are plain buttons (NVDA says "button", not "radio button");
+        Space or Enter picks one and NVDA says "You picked: …". */}
+    <div className="learner-card space-y-5 p-6">
       <span className="stage-pill" aria-hidden="true">Question {q + 1} of {quiz.questions.length}</span>
-      <legend className="quiz-big float-left w-full"><span className="sr-only">Question {q + 1} of {quiz.questions.length}: </span>{question.prompt}</legend>
-      <div className="clear-both grid gap-3">
-        {question.choices.map((choice, n) => (
-          <label key={n} className="quiz-tile">
-            <input type="radio" aria-label={choice} name={`${quiz.id}-${question.id}`} checked={answers[question.id] === n}
-              onChange={() => { setNudge(''); setAnswers((current) => ({ ...current, [question.id]: n })); }}
-              onKeyDown={(event) => { if (event.key === 'Enter') { event.preventDefault(); goOn(); } }} />
-            <span className="quiz-shape" aria-hidden="true">{shapes[n % shapes.length]}</span>
-            <span aria-hidden="true">{choice}</span>
-          </label>
-        ))}
+      <p ref={group} tabIndex={0} className="quiz-big"><span className="sr-only">Question {q + 1} of {quiz.questions.length}: </span>{question.prompt}</p>
+      <div className="grid gap-3">
+        {question.choices.map((choice, n) => {
+          const chosen = answers[question.id] === n;
+          return (
+            <button key={n} type="button" className="quiz-tile w-full text-left" data-chosen={chosen || undefined}
+              onClick={() => { setNudge(''); setAnswers((current) => ({ ...current, [question.id]: n })); setPicked(''); setTimeout(() => setPicked(`You picked: ${choice}`), 50); }}>
+              <span className="quiz-shape" aria-hidden="true">{shapes[n % shapes.length]}</span>
+              <span>{choice}</span>
+              {chosen && <span className="sr-only">, your answer</span>}
+            </button>
+          );
+        })}
       </div>
-    </fieldset>
+    </div>
+    <p role="status" className="sr-only">{picked}</p>
     <FriendlyAlert error={submit.error} />
     {/* Next is never greyed out: a disabled button is skipped by Tab, so JAWS
         and NVDA users would not find it. Without an answer it says so. */}
