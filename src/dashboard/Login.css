@@ -6,12 +6,11 @@
 /* One strong focus ring on every sign-in control, the same as in lessons: a
    dark 4px ring with a white gap, visible on light and dark backgrounds. */
 .login-page :focus-visible,
-.login-page .login-input:focus-visible,
-.login-page .login-school-option:has(input:focus-visible) {
+.login-page .login-input:focus-visible {
   outline: 4px solid #0f172a !important; outline-offset: 3px !important; box-shadow: 0 0 0 3px #ffffff !important;
 }
 @media (forced-colors: active) {
-  .login-page :focus-visible, .login-page .login-school-option:has(input:focus-visible) { outline-color: Highlight !important; box-shadow: none !important; }
+  .login-page :focus-visible { outline-color: Highlight !important; box-shadow: none !important; }
 }
 .login-skip { position: absolute; left: 16px; top: -100px; z-index: 20; padding: 12px 20px; background: white; border-radius: 8px; }
 .login-skip:focus { top: 12px; }
@@ -97,12 +96,3 @@
   .login-submit { transition: none; }
 }
 
-/* School finder: a short list of big radio rows instead of a long dropdown. */
-.login-school-list { display: grid; gap: 8px; margin: 8px 0 0; border: 0; padding: 0; }
-.login-school-option { position: relative; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 12px 16px;
-  border: 2px solid #cbd5c8; border-radius: 12px; background: #fff; color: #0f172a; font-size: 17px; font-weight: 650; cursor: pointer; }
-.login-school-option:hover { background: #f6f8f3; border-color: #386b50; }
-.login-school-option input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
-.login-school-option:has(input:checked) { border: 3px solid #0f172a; background: #fde68a; }
-.login-school-option:has(input:checked)::after { content: '✓' / ''; margin-left: auto; font-size: 20px; }
-@media (forced-colors: active) { .login-school-option:has(input:checked) { border-color: Highlight; } }
