@@ -124,9 +124,18 @@ export function BlocklyEditor({ initial, level = 'beginner', readOnly = false, d
       {drawers && <details className="text-sm"><summary className="cursor-pointer underline"><span aria-hidden="true">⌨️ </span>Using the keyboard</summary>
         <p className="mt-2">Tab to the workspace. Press T for the toolbox, arrow keys to navigate, Enter to add a block or edit a value, M to move a block, and Delete to remove it. Tab leaves the workspace.</p></details>}
     </>}
-    {words.map((word, n) => <label key={`${word.blockId}-${word.name}`} className="field-label !text-xl">
-      {words.length === 1 ? 'What should the computer say?' : `Words in block ${n + 1}`}
-      <input type="text" className="field-input say-input mt-2" value={word.value} spellCheck={false}
+    {/* What to do, in kid words, right where the child types. The two short
+        lines are read together with the box, so a screen reader says what to
+        do as soon as the child lands on it. */}
+    {words.map((word, n) => <div key={`${word.blockId}-${word.name}`} className="space-y-2">
+      <label htmlFor={`say-${n}`} className="field-label !text-2xl">
+        {words.length === 1 ? 'What should the computer say?' : `Words in block ${n + 1}`}
+      </label>
+      <p id={`say-help-${n}`} className="text-xl font-bold !text-slate-900">
+        Type your own words. Try: Hi, I am Amina!{' '}<br />Then press Run.
+      </p>
+      <input id={`say-${n}`} type="text" className="field-input say-input" value={word.value} spellCheck={false}
+        aria-describedby={`say-help-${n}`}
         onChange={(event) => {
           // Show the typed words straight away; Blockly reports its change a
           // moment later, and waiting for it would drop fast keystrokes.
@@ -134,7 +143,7 @@ export function BlocklyEditor({ initial, level = 'beginner', readOnly = false, d
           setWords((current) => current.map((item) => item.blockId === word.blockId && item.name === word.name ? { ...item, value } : item));
           workspace.current?.getBlockById(word.blockId)?.setFieldValue(value, word.name);
         }} />
-    </label>)}
+    </div>)}
     {/* Tab reaches the blocks. When it lands there, a screen reader hears in
         plain words what the blocks say and which keys to use. */}
     <div ref={host} onFocus={(event) => {
