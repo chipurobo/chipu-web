@@ -124,18 +124,17 @@ export function BlocklyEditor({ initial, level = 'beginner', readOnly = false, d
       {drawers && <details className="text-sm"><summary className="cursor-pointer underline"><span aria-hidden="true">⌨️ </span>Using the keyboard</summary>
         <p className="mt-2">Tab to the workspace. Press T for the toolbox, arrow keys to navigate, Enter to add a block or edit a value, M to move a block, and Delete to remove it. Tab leaves the workspace.</p></details>}
     </>}
-    {/* What to do, in kid words, right where the child types. The two short
-        lines are read together with the box, so a screen reader says what to
-        do as soon as the child lands on it. */}
+    {/* What to do, in kid words, right where the child types. Tab stops on
+        the question, then the two short lines, then the box, so JAWS and
+        NVDA read each one in order and nothing is skipped. */}
     {words.map((word, n) => <div key={`${word.blockId}-${word.name}`} className="space-y-2">
-      <label htmlFor={`say-${n}`} className="field-label !text-2xl">
+      <label htmlFor={`say-${n}`} tabIndex={0} className="field-label !text-2xl">
         {words.length === 1 ? 'What should the computer say?' : `Words in block ${n + 1}`}
       </label>
-      <p id={`say-help-${n}`} className="text-xl font-bold !text-slate-900">
+      <p tabIndex={0} className="text-xl font-bold !text-slate-900">
         Type your own words. Try: Hi, I am Amina!{' '}<br />Then press Run.
       </p>
       <input id={`say-${n}`} type="text" className="field-input say-input" value={word.value} spellCheck={false}
-        aria-describedby={`say-help-${n}`}
         onChange={(event) => {
           // Show the typed words straight away; Blockly reports its change a
           // moment later, and waiting for it would drop fast keystrokes.
