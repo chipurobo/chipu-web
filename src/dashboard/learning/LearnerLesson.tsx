@@ -180,7 +180,7 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, submi
         <Mascot size={64} mood={stage === 'final' && finished ? 'cheer' : stage === 'code' ? 'think' : 'happy'} className="mascot-float shrink-0" />
         <div className="speech-bubble">
           <h2 id="stage-heading" ref={heading} tabIndex={0} className="!text-xl sm:!text-2xl">
-            <span className="sr-only">Step {index + 1} of {stages.length}: {current.label}. </span>{stage === 'welcome' ? `Hi! I'm Robo. Today, we will make the computer ${learnerTitle(title).toLowerCase()}!` : current.say}
+            <span className="sr-only">Step {index + 1} of {stages.length}{stage === 'welcome' ? '' : `: ${current.label}`}. </span>{stage === 'welcome' ? "Hi! I'm Robo! Let's make the computer say hi!" : current.say}
           </h2>
         </div>
       </div>
@@ -190,12 +190,12 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, submi
           tiny sentences, and which keys to press. Pictures are for children
           with some sight; screen readers skip them. */}
       {stage === 'welcome' && <div className="learner-card space-y-5 p-6">
-        <h3 tabIndex={0} className="lesson-subhead">Here is what we will do:</h3>
+        <h3 tabIndex={0} className="lesson-subhead">We will:</h3>
         <ol className="space-y-4">
           {[
-            { picture: '❓', words: `${numberWord(preCount)} quick questions. It's OK to guess!` },
-            { picture: '💬', words: 'Make the computer talk. Type a word, then press Run.' },
-            { picture: '⭐', words: `${numberWord(endCount)} more questions. Then you are done!` },
+            { picture: '❓', words: `Answer ${numberWord(preCount).toLowerCase()} questions. Just guess!` },
+            { picture: '💬', words: 'Make the computer talk!' },
+            { picture: '⭐', words: `Answer ${numberWord(endCount).toLowerCase()} more. Yay, all done!` },
           ].map((step, n) => (
             <li key={step.words} tabIndex={0} className="flex items-center gap-4 rounded-2xl text-2xl font-bold text-slate-900">
               <span aria-hidden="true" className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-3xl" style={{ background: 'var(--stage-soft)', border: '3px solid var(--stage)' }}>{step.picture}</span>
@@ -203,8 +203,8 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, submi
             </li>
           ))}
         </ol>
-        <p tabIndex={0} className="rounded-2xl bg-amber-100 p-4 text-2xl font-bold !text-slate-900">To move, press Tab. To pick, press Space.</p>
-        <p tabIndex={0} className="text-2xl font-bold !text-slate-900">Press Next when you are ready.</p>
+        <p tabIndex={0} className="rounded-2xl bg-amber-100 p-4 text-2xl font-bold !text-slate-900">Tab moves. Space picks.</p>
+        <p tabIndex={0} className="text-2xl font-bold !text-slate-900">Ready? Press Next!</p>
       </div>}
       {stage === 'welcome' && instructions && <p tabIndex={0} className="learner-card p-5 text-xl font-bold text-slate-900">Your teacher says: {instructions}</p>}
 
