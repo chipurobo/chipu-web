@@ -38,6 +38,12 @@ export function LessonPlanFields({ value, onChange, id }: {
         ))}
       </fieldset>
       <div>
+        <label className="field-label" htmlFor={`${id}-story`}>Short story before the quiz (one sentence per line)</label>
+        <p className="text-xs text-gray-600 mb-1">Its own page before the quiz. Tiny sentences a six-year-old understands, with a little surprise, telling the idea the quiz asks about. Start a line with an emoji to show a picture next to it.</p>
+        <textarea id={`${id}-story`} rows={5} className="field-input" maxLength={5000}
+          value={(value.story ?? []).join('\n')} onChange={(e) => onChange({ ...value, story: e.target.value.split('\n') })} />
+      </div>
+      <div>
         <label className="field-label" htmlFor={`${id}-steps`}>Activity steps (one per line)</label>
         <textarea id={`${id}-steps`} rows={4} className="field-input" required maxLength={10000}
           value={value.steps.join('\n')} onChange={(e) => onChange({ ...value, steps: e.target.value.split('\n') })} />

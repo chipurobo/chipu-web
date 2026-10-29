@@ -21,10 +21,12 @@ import { QuizRunner, type BarProps } from './ui/QuizRunner';
 import { LessonBuild, LessonSend, useLessonWork } from './LearnerSubmission';
 import { Mascot } from './ui/LearnerArt';
 
-/** Four steps, like a Duolingo or Khan Academy Kids lesson: get ready, a
- *  short quiz, code, and a final quiz. Robo says what to do on each one. */
+/** Five steps, like a Duolingo or Khan Academy Kids lesson: a short story,
+ *  get ready, a short quiz, code, and a final quiz. Robo says what to do on
+ *  each one. Lessons with nothing to tell skip the story. */
 const stages = [
-  { id: 'welcome', emoji: '🔍', label: 'Discovery', say: '' },
+  { id: 'story', emoji: '📖', label: 'Story', say: "Hi! I'm Robo! Story time!" },
+  { id: 'welcome', emoji: '🔍', label: 'Get ready', say: "Let's make the computer say hi!" },
   { id: 'quiz', emoji: '❓', label: 'Quick quiz', say: "Let's play a guessing game!" },
   { id: 'code', emoji: '🧩', label: 'Code it', say: 'Change the words, then press Run!' },
   { id: 'final', emoji: '🏆', label: 'Final quiz', say: 'One more game! You can do it!' },
@@ -43,6 +45,12 @@ function buildHints(plan: LessonLearningPlan): string[] {
 }
 
 const stageKey = (assignmentId: string) => `chipurobo:lesson-stage:${assignmentId}`;
+
+/** "🤖 Robo whispers…" → a picture for sighted children and the words for everyone. */
+function storyLine(line: string): { picture?: string; words: string } {
+  const match = line.match(/^(\p{Extended_Pictographic}\uFE0F?)\s*(.*)$/u);
+  return match ? { picture: match[1], words: match[2] } : { words: line };
+}
 
 export function LearnerLesson() {
   const { assignmentId } = useParams();
@@ -80,7 +88,7 @@ export function LearnerLesson() {
  */
 function pickStageContent(plan: LessonLearningPlan | null | undefined): Partial<LessonLearningPlan> {
   if (!plan) return {};
-  const fresh: Partial<LessonLearningPlan> = { problem: plan.problem, ideas: plan.ideas };
+  const fresh: Partial<LessonLearningPlan> = { problem: plan.problem, ideas: plan.ideas, story: plan.story };
   if (plan.steps?.length) fresh.steps = plan.steps;
   if (plan.expectedResult) fresh.expectedResult = plan.expectedResult;
   if (plan.requirements?.length) fresh.requirements = plan.requirements;
@@ -92,9 +100,13 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, submi
   lesson: Awaited<ReturnType<typeof fetchLessonById>> | null;
   submissions: Parameters<typeof LessonSend>[0]['submissions']; reviews: Parameters<typeof LessonSend>[0]['reviews'];
 }) {
-  // Every time the lesson opens (after signing in, too) it starts on
-  // Discovery, so learners always know what they are about to do.
-  const [stage, setStage] = useState<StageId>('welcome');
+  // The learning bit before the quiz: the lesson's short story, or its ideas
+  // when a lesson has no story yet, so no learner is quizzed cold.
+  const story: string[] = plan.story?.length ? plan.story : (plan.ideas ?? []).map((idea) => idea.body);
+  const steps = story.length ? stages : stages.filter((item) => item.id !== 'story');
+  // Every time the lesson opens (after signing in, too) it starts on the
+  // story, so learners always know what they are about to do.
+  const [stage, setStage] = useState<StageId>(steps[0].id);
   const heading = useRef<HTMLHeadingElement>(null);
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -107,8 +119,8 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, submi
     mutationFn: async () => next!.assignmentId ?? startBlocklyLesson(next!.lesson.id),
     onSuccess: (id) => { void qc.invalidateQueries({ queryKey: ['learning-assignments'] }); navigate(`/dashboard/assignments/${id}`); },
   });
-  const index = stages.findIndex((item) => item.id === stage);
-  const current = stages[index];
+  const index = steps.findIndex((item) => item.id === stage);
+  const current = steps[index];
 
   useEffect(() => {
     localStorage.setItem(stageKey(assignmentId), stage);
@@ -148,12 +160,12 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, submi
     setStage(to);
   }
   const goBack = index > 0
-    ? () => go(stages[index - 1].id)
+    ? () => go(steps[index - 1].id)
     : previous?.assignmentId
       ? () => { localStorage.setItem(stageKey(previous.assignmentId!), 'final'); navigate(`/dashboard/assignments/${previous.assignmentId}`); }
       : undefined;
-  const goNext = index < stages.length - 1
-    ? () => go(stages[index + 1].id)
+  const goNext = index < steps.length - 1
+    ? () => go(steps[index + 1].id)
     : next && submissions.length > 0 ? () => openNext.mutate() : undefined;
   const finalQuiz = useQuery({ queryKey: ['learning-quizzes'], queryFn: listQuizzes });
   const attempts = useQuery({ queryKey: ['quiz-attempts'], queryFn: fetchQuizAttempts });
@@ -180,7 +192,7 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, submi
         <Mascot size={64} mood={stage === 'final' && finished ? 'cheer' : stage === 'code' ? 'think' : 'happy'} className="mascot-float shrink-0" />
         <div className="speech-bubble">
           <h2 id="stage-heading" ref={heading} tabIndex={0} className="!text-xl sm:!text-2xl">
-            <span className="sr-only">Step {index + 1} of {stages.length}{stage === 'welcome' ? '' : `: ${current.label}`}. </span>{stage === 'welcome' ? "Hi! I'm Robo! Let's make the computer say hi!" : current.say}
+            <span className="sr-only">Step {index + 1} of {steps.length}{stage === 'story' ? '' : `: ${current.label}`}. </span>{current.say}
           </h2>
         </div>
       </div>
@@ -189,6 +201,19 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, submi
       {/* Discovery, written for a blind child under 10: Robo talks to them,
           tiny sentences, and which keys to press. Pictures are for children
           with some sight; screen readers skip them. */}
+      {/* The story, written for a child under 10: one line at a time, each a
+          Tab stop, with a picture when the line starts with one. Screen
+          readers hear the words only. */}
+      {stage === 'story' && <div className="learner-card space-y-4 p-6">
+        <h3 tabIndex={0} className="lesson-subhead">{plan.story?.length ? 'A short story' : 'Good to know'}</h3>
+        {story.map(storyLine).map(({ picture, words }, n) => (
+          <p key={n} tabIndex={0} className="flex items-center gap-4 text-2xl font-bold !text-slate-900">
+            {picture && <span aria-hidden="true" className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-3xl" style={{ background: 'var(--stage-soft)', border: '3px solid var(--stage)' }}>{picture}</span>}
+            <span>{words}</span>
+          </p>
+        ))}
+        <p tabIndex={0} className="text-2xl font-bold !text-slate-900">Press Next!</p>
+      </div>}
       {stage === 'welcome' && <div className="learner-card space-y-5 p-6">
         <h3 tabIndex={0} className="lesson-subhead">We will:</h3>
         <ol className="space-y-4">
@@ -227,7 +252,7 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, submi
       </div>
     </section>
 
-    {(stage === 'welcome' || stage === 'code') && <Bar back={goBack} next={goNext} />}
+    {(stage === 'story' || stage === 'welcome' || stage === 'code') && <Bar back={goBack} next={goNext} />}
     <FriendlyAlert error={openNext.error} />
   </>;
 }
