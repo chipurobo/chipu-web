@@ -18,6 +18,9 @@ export interface LessonLearningPlan {
   problem?: string;
   /** …and the short ideas to learn before building. */
   ideas?: { title: string; body: string }[];
+  /** A short story the learner reads (or hears) before the quiz: what we are
+   *  about to do, in words a small child understands, one sentence per line. */
+  story?: string[];
 }
 
 export function newLearningPlan(): LessonLearningPlan {
@@ -26,8 +29,9 @@ export function newLearningPlan(): LessonLearningPlan {
 }
 
 export function cleanLearningPlan(plan: LessonLearningPlan): LessonLearningPlan {
+  const story = plan.story?.map((line) => line.trim()).filter(Boolean);
   return { ...plan, steps: plan.steps.map((step) => step.trim()).filter(Boolean),
-    evidenceBrief: plan.evidenceBrief.trim() };
+    evidenceBrief: plan.evidenceBrief.trim(), ...(story?.length ? { story } : { story: undefined }) };
 }
 
 export function hasUsableLearningPlan(plan: LessonLearningPlan | null | undefined): plan is LessonLearningPlan {

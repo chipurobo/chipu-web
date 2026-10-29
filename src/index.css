@@ -1045,6 +1045,7 @@ h3.heading-display { font-size: clamp(1rem, 2vw, 1.5rem) !important; line-height
     #f0f9ff;
   opacity: 0.4;
 }
+.stage-story   { --stage: #16a34a; --stage-soft: #dcfce7; --stage-edge: #86efac; }
 .stage-welcome { --stage: #7c3aed; --stage-soft: #ede9fe; --stage-edge: #c4b5fd; }
 .stage-quiz    { --stage: #0284c7; --stage-soft: #e0f2fe; --stage-edge: #7dd3fc; }
 .stage-code    { --stage: #ea580c; --stage-soft: #ffedd5; --stage-edge: #fdba74; }
