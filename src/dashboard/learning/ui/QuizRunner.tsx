@@ -12,11 +12,13 @@ const shapes = ['▲', '◆', '●', '■', '★', '♥'];
 
 export interface BarProps { back?: () => void; next?: () => void; nextLabel?: string; nextDisabled?: boolean }
 
-export function QuizRunner({ lessonId, stage, onBack, onDone, doneText, bar }: {
+export function QuizRunner({ lessonId, stage, onBack, onDone, doneText, afterResult, bar }: {
   lessonId: string; stage: QuizStage;
   onBack?: () => void; onDone: (() => void) | null;
   /** Extra words under the score, e.g. on the last quiz of the lesson. */
   doneText?: string;
+  /** Anything else to show with the score, e.g. a question to talk over. */
+  afterResult?: ReactNode;
   bar: (props: BarProps) => ReactNode;
 }) {
   const qc = useQueryClient();
@@ -61,7 +63,17 @@ export function QuizRunner({ lessonId, stage, onBack, onDone, doneText, bar }: {
         <h3 ref={focus} tabIndex={0} className="quiz-big">
           {score === total ? 'Perfect! ' : 'Nice try! '}You got {score} of {total}!
         </h3>
+        {/* Why each answer is right or not, straight away: said in words as well
+            as colour, and each one a Tab stop. */}
+        <ol className="w-full space-y-3 text-left">
+          {latest.feedback.map((item, n) => <li key={item.id} tabIndex={0}
+            className={`rounded-2xl border-4 bg-white p-4 text-xl font-bold text-slate-900 ${item.correct ? 'border-teal-700' : 'border-amber-700'}`}>
+            <span className="block">Question {n + 1}: {latest.question_snapshot.questions.find((question) => question.id === item.id)?.prompt}</span>
+            <span className="mt-1 block"><span aria-hidden="true">{item.correct ? '✓ ' : '✗ '}</span>{item.correct ? 'Correct.' : 'Not quite.'} {item.explanation}</span>
+          </li>)}
+        </ol>
         {doneText && <p tabIndex={0} className="text-xl font-bold text-slate-900"><span aria-hidden="true">🏆 </span>{doneText}</p>}
+        {afterResult}
         <button type="button" className="btn-secondary" onClick={() => setAgain(true)}>Try again</button>
       </div>
       {bar({ back: onBack, next: onDone ?? undefined })}

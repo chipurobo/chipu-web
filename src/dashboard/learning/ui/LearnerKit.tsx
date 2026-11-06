@@ -129,7 +129,7 @@ export function StepCards({ steps }: { steps: string[] }) {
 
 export function FriendlyAlert({ error }: { error: { message: string } | null | undefined }) {
   if (!error) return null;
-  return <p role="alert" className="learner-card border-rose-300 bg-rose-50 p-4 text-sm font-semibold text-rose-900"><span aria-hidden="true">😬 </span>{friendlyError(error.message)}</p>;
+  return <p role="alert" className="learner-card border-rose-700 bg-rose-50 p-4 text-xl font-bold text-rose-900"><span aria-hidden="true">😬 </span>{friendlyError(error.message)}</p>;
 }
 
 export function Loading({ children }: { children: ReactNode }) {

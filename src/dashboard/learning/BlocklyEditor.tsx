@@ -14,6 +14,14 @@ for (const [key, value] of Object.entries(En)) if (typeof value === 'string') me
 messages.SCREENREADER_HINT = '';
 messages.WORKSPACE_LABEL_1_STACK = 'Your blocks';
 Blockly.setLocale(messages);
+// Low vision first: block colours dark enough for white words to stand out,
+// the same colours as the drawers.
+const blockStyle = (colourPrimary: string, colourSecondary: string) => ({ colourPrimary, colourSecondary, colourTertiary: '#0f172a', hat: '' });
+const highContrastBlocks = Blockly.Theme.defineTheme('chipurobo-high-contrast', { name: 'chipurobo-high-contrast', base: Blockly.Themes.Classic, blockStyles: {
+  text_blocks: blockStyle('#166534', '#14532d'), math_blocks: blockStyle('#1e40af', '#1e3a8a'), logic_blocks: blockStyle('#3730a3', '#312e81'),
+  loop_blocks: blockStyle('#854d0e', '#713f12'), variable_blocks: blockStyle('#9a3412', '#7c2d12'), list_blocks: blockStyle('#86198f', '#701a75'),
+  procedure_blocks: blockStyle('#6b21a8', '#581c87'),
+}, componentStyles: {}, fontStyle: {}, startHats: false });
 const category = (name: string, colour: string, types: string[]): Blockly.utils.toolbox.StaticCategoryInfo => ({ kind: 'category', name, colour,
   id: undefined, categorystyle: undefined, cssconfig: undefined, hidden: undefined,
   contents: types.map((type) => ({ kind: 'block', type })) });
@@ -66,10 +74,10 @@ export function BlocklyEditor({ initial, level = 'beginner', readOnly = false, d
   }
   useEffect(() => {
     if (!host.current) return;
-    const ws = Blockly.inject(host.current, { toolbox: readOnly || !drawers ? undefined : toolbox(level), readOnly,
+    const ws = Blockly.inject(host.current, { theme: highContrastBlocks, toolbox: readOnly || !drawers ? undefined : toolbox(level), readOnly,
       renderer: 'zelos', media: '/blockly-media/', maxBlocks: 200, sounds: false, trashcan: !readOnly && drawers, modalInputs: false,
       horizontalLayout: host.current.clientWidth < 600,
-      move: { scrollbars: true, drag: true, wheel: false }, zoom: { controls: drawers || readOnly, wheel: false, startScale: 0.85 },
+      move: { scrollbars: true, drag: true, wheel: false }, zoom: { controls: drawers || readOnly, wheel: false, startScale: drawers || readOnly ? 0.85 : 1.1 },
       grid: { spacing: 25, length: 3, colour: '#cbd5e1', snap: true } });
     workspace.current = ws;
     Blockly.Events.disable();
@@ -89,9 +97,12 @@ export function BlocklyEditor({ initial, level = 'beginner', readOnly = false, d
         if (edited && worker.current) { stopWorker(); setRunning(false); }
         if (edited) { ranCode.current = null; outputRef.current = ''; setOutput(''); setSaid(''); }
         setCode(generated); setBlockCount(count);
-        if (!drawers && !readOnly) setWords(ws.getAllBlocks(true).flatMap((block) => block.inputList.flatMap((input) => input.fieldRow)
-          .filter((field): field is Blockly.FieldTextInput => field instanceof Blockly.FieldTextInput && !!field.name)
-          .map((field) => ({ blockId: block.id, name: field.name!, value: String(field.getValue() ?? '') }))));
+        if (!drawers && !readOnly) {
+          const fields = ws.getAllBlocks(true).flatMap((block) => block.inputList.flatMap((input) => input.fieldRow)
+            .filter((field): field is Blockly.FieldTextInput => field instanceof Blockly.FieldTextInput && !!field.name)
+            .map((field) => ({ blockId: block.id, name: field.name!, value: String(field.getValue() ?? '') })));
+          setWords(fields);
+        }
         callback.current?.({ workspace: Blockly.serialization.workspaces.save(ws), code: generated, output: outputRef.current }, count);
       } catch { setError("Hmm, one of your blocks isn't quite finished. Take a look and try again."); }
     }
@@ -118,6 +129,22 @@ export function BlocklyEditor({ initial, level = 'beginner', readOnly = false, d
     timer.current = setTimeout(() => finish({ output: '', error: 'Your program ran for a long time, so we paused it. Check if a repeat never ends.' }), 3000);
     activeWorker.postMessage(program);
   }
+  const wordBoxes = words.map((word, n) => <div key={`${word.blockId}-${word.name}`} className="space-y-2">
+    <label htmlFor={`say-${n}`} tabIndex={0} className="field-label !text-2xl">
+      {words.length === 1 ? 'What should the computer say?' : `Words in block ${n + 1}`}
+    </label>
+    <p tabIndex={0} className="text-xl font-bold !text-slate-900">
+      Type your own words. Try: Hi, I am Amina!{' '}<br />Then press Run.
+    </p>
+    <input id={`say-${n}`} type="text" className="field-input say-input" value={word.value} spellCheck={false}
+      onChange={(event) => {
+        // Show the typed words straight away; Blockly reports its change a
+        // moment later, and waiting for it would drop fast keystrokes.
+        const value = event.target.value;
+        setWords((current) => current.map((item) => item.blockId === word.blockId && item.name === word.name ? { ...item, value } : item));
+        workspace.current?.getBlockById(word.blockId)?.setFieldValue(value, word.name);
+      }} />
+  </div>);
   return <section className="space-y-3 min-w-0" aria-label={readOnly ? 'Submitted Blockly program' : drawers ? 'Blockly coding workspace' : 'Your program'}>
     {!readOnly && <>
       <p className="sr-only">{drawers ? 'Drag blocks out of the drawers, snap them together, then press Run. The print block shows words on the screen.' : 'Type the words in the box, then press Run.'}</p>
@@ -127,36 +154,24 @@ export function BlocklyEditor({ initial, level = 'beginner', readOnly = false, d
     {/* What to do, in kid words, right where the child types. Tab stops on
         the question, then the two short lines, then the box, so JAWS and
         NVDA read each one in order and nothing is skipped. */}
-    {words.map((word, n) => <div key={`${word.blockId}-${word.name}`} className="space-y-2">
-      <label htmlFor={`say-${n}`} tabIndex={0} className="field-label !text-2xl">
-        {words.length === 1 ? 'What should the computer say?' : `Words in block ${n + 1}`}
-      </label>
-      <p tabIndex={0} className="text-xl font-bold !text-slate-900">
-        Type your own words. Try: Hi, I am Amina!{' '}<br />Then press Run.
-      </p>
-      <input id={`say-${n}`} type="text" className="field-input say-input" value={word.value} spellCheck={false}
-        onChange={(event) => {
-          // Show the typed words straight away; Blockly reports its change a
-          // moment later, and waiting for it would drop fast keystrokes.
-          const value = event.target.value;
-          setWords((current) => current.map((item) => item.blockId === word.blockId && item.name === word.name ? { ...item, value } : item));
-          workspace.current?.getBlockById(word.blockId)?.setFieldValue(value, word.name);
-        }} />
-    </div>)}
+    {wordBoxes}
     {/* Tab reaches the blocks. When it lands there, a screen reader hears in
         plain words what the blocks say and which keys to use. */}
     <div ref={host} onFocus={(event) => {
       if (drawers || readOnly || host.current?.contains(event.relatedTarget as Node | null)) return;
-      const say = workspace.current?.getTopBlocks(true).map((block) => block.toString().replace(/[“”"]/g, '').replace(/\s+/g, ' ').trim()).join('. ') || 'nothing yet';
-      setSaid(''); setTimeout(() => setSaid(`These are your blocks. They say: ${say}${/[.!?]$/.test(say) ? '' : '.'} To change the words, press Down, then Right, then Right, then Enter. Press Tab to go on.`), 50);
+      // Each block in order, top to bottom, not only the first of each stack.
+      const stack = (block: Blockly.Block): Blockly.Block[] => { const next = block.getNextBlock(); return next ? [block, ...stack(next)] : [block]; };
+      const say = workspace.current?.getTopBlocks(true).flatMap(stack).map((block) => block.toString().replace(/[“”"]/g, '').replace(/\s+/g, ' ').trim()).join('. ') || 'nothing yet';
+      const ending = say + (/[.!?]$/.test(say) ? '' : '.');
+      setSaid(''); setTimeout(() => setSaid(`These are your blocks. They say: ${ending} To change the words, press Down, then Right, then Right, then Enter. Press Tab to go on.`), 50);
     }} className={`blockly-editor ${drawers || readOnly ? "h-[420px] sm:h-[480px]" : "h-[200px]"} w-full border border-gray-400 rounded-md overflow-hidden`} />
     {!readOnly && <div className="flex gap-3 flex-wrap">
       <button type="button" className="btn-play" onClick={() => { if (!running && blockCount) run(); }} aria-disabled={running || !blockCount || undefined}>{running ? 'Running…' : <><span aria-hidden="true">▶ </span>Run</>}</button>
       {running && <button type="button" className="btn-secondary" onClick={() => { stopWorker(); setRunning(false); setError('Stopped.'); }}>Stop program</button>}
     </div>}
-    {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
+    {error && <p role="alert" className={readOnly ? 'text-sm text-red-700' : 'text-xl font-bold text-red-800'}>{error}</p>}
     {!readOnly && <p role="status" className="sr-only">{said}</p>}
-    <div><h3 className="text-base">{readOnly ? 'Output' : 'Your program shows'}</h3><pre tabIndex={readOnly ? undefined : 0} className="bg-slate-900 text-white rounded-md p-3 text-base whitespace-pre-wrap break-words max-h-56 overflow-auto"><span className="sr-only">Your program shows: </span>{output || (readOnly ? '' : 'Press Run to see what it shows.')}</pre></div>
+    <div><h3 className={readOnly ? 'text-base' : '!text-xl'}>{readOnly ? 'Output' : 'Your program shows'}</h3><pre tabIndex={readOnly ? undefined : 0} className={`bg-slate-900 text-white rounded-md p-3 ${readOnly ? 'text-base' : 'text-xl'} whitespace-pre-wrap break-words max-h-56 overflow-auto`}><span className="sr-only">Your program shows: </span>{output || (readOnly ? '' : 'Press Run to see what it shows.')}</pre></div>
     {readOnly && <details className="text-sm"><summary className="cursor-pointer underline">Submitted JavaScript</summary><pre className="bg-gray-50 p-3 whitespace-pre-wrap break-words">{code || '…'}</pre></details>}
   </section>;
 }

@@ -21,6 +21,27 @@ export interface LessonLearningPlan {
   /** A short story the learner reads (or hears) before the quiz: what we are
    *  about to do, in words a small child understands, one sentence per line. */
   story?: string[];
+  /** Heading above the story. */
+  storyHeading?: string;
+  /** Robo's line, and the step's name, for any step this lesson words itself. */
+  stepWords?: Partial<Record<'story' | 'welcome' | 'quiz' | 'activity' | 'history' | 'idea' | 'code' | 'final' | 'recap', { label?: string; say?: string }>>;
+  /** The "We will" list on the Get ready step. A line may start with a picture. */
+  weWill?: string[];
+  /** A line for learners who share a computer. */
+  together?: string;
+  /** What the final quiz says when it is finished. */
+  doneLine?: string;
+  /** A guided activity after the quick quiz: the lesson's mid-stage quiz, then
+   *  an optional question to talk over with a partner. */
+  activity?: { talk?: string };
+  /** A short text step before the blocks. A line may start with a picture. */
+  history?: { heading: string; lines: string[] };
+  /** A closing step: the short list of what was learned. */
+  recap?: string[];
+  /** A step that teaches a new idea: lines, then simple cards, then more lines. */
+  idea?: { heading: string; before: string[]; cards: string[]; after: string[] };
+  /** A lesson with no blocks step. Pressing Next on the final quiz records it as finished. */
+  noBlocks?: boolean;
 }
 
 export function newLearningPlan(): LessonLearningPlan {
