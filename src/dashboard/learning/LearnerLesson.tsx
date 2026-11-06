@@ -152,11 +152,29 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, lesso
       assignmentId, text: `My program for "${learnerTitle(title)}"`, url: '', reflection: '', program }),
     onSuccess: () => { void qc.invalidateQueries({ queryKey: ['learning-submissions'] }); void qc.invalidateQueries({ queryKey: ['learning-program', assignmentId] }); },
   });
+  // The error sits at the foot of the step, where the sticky Back/Next bar would
+  // cover it, so bring it into view. Focus stays on Next, ready to try again.
+  const sendError = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!send.error) return;
+    const still = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    sendError.current?.scrollIntoView({ block: 'center', behavior: still ? 'auto' : 'smooth' });
+  }, [send.error]);
   function go(to: StageId) {
     if (stage === 'code') {
+      if (send.isPending) return;
       const program = work.program ?? work.draft.data ?? null;
       const changed = !submissions.length || submissions[0].generated_code !== program?.code;
-      if (program?.code?.trim() && changed) send.mutate(program); else work.saveIfChanged();
+      if (program?.code?.trim() && changed) {
+        // Going forward waits for the send: if it fails, the learner stays here
+        // with the error showing and presses Next to try again. The final quiz
+        // can only be reached by this path, so it never follows unsent work.
+        if (steps.findIndex((item) => item.id === to) > index) {
+          send.mutate(program, { onSuccess: () => setStage(to) });
+          return;
+        }
+        send.mutate(program);
+      } else work.saveIfChanged();
     }
     setStage(to);
   }
@@ -258,17 +276,17 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, lesso
 
       {stage === 'final' && <>
         <QuizRunner lessonId={lessonId} stage="end" onBack={goBack} onDone={goNext ?? null} bar={(props) => <Bar {...props} />}
-          doneText="Yay! You did it! Your teacher can see your work." />
+          doneText={submissions.length ? 'Yay! You did it! Your teacher can see your work.' : 'Yay! You did it!'} />
         {latestReview && <div className="learner-card space-y-2 p-5">
           <h3>Your teacher said</h3>
           <p tabIndex={0} className="whitespace-pre-wrap text-lg font-semibold text-slate-900">{latestReview.feedback}</p>
         </div>}
       </>}
-      <FriendlyAlert error={send.error} />
+      {send.error && <div ref={sendError}><FriendlyAlert error={send.error} /></div>}
       </div>
     </section>
 
-    {(stage === 'story' || stage === 'welcome' || stage === 'code') && <Bar back={goBack} next={goNext} />}
+    {(stage === 'story' || stage === 'welcome' || stage === 'code') && <Bar back={goBack} next={goNext} nextLabel={send.isPending ? 'Sending…' : 'Next'} />}
     <FriendlyAlert error={openNext.error} />
   </>;
 }
