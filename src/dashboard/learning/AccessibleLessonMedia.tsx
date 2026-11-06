@@ -37,7 +37,7 @@ export function AccessibleLessonMedia({
         : 'card space-y-4 p-5'}
     >
       {learnerFriendly ? (
-        <h3><span aria-hidden="true">{isVideo ? '🎬 ' : '🎧 '}</span>{isVideo ? 'Watch' : 'Listen'}</h3>
+        <h3 tabIndex={0} className="lesson-subhead"><span aria-hidden="true">{isVideo ? '🎬 ' : '🎧 '}</span>{isVideo ? 'Watch' : 'Listen'}</h3>
       ) : (
         <div>
           <h2 className="text-lg font-extrabold text-slate-900">
@@ -86,7 +86,7 @@ export function AccessibleLessonMedia({
 
       <details className="rounded-xl border border-slate-200 bg-white p-4" open>
         <summary className="cursor-pointer font-extrabold text-slate-900">{learnerFriendly ? (isVideo ? 'Words in the video' : 'Words in the audio') : 'Transcript'}</summary>
-        <p className={`mt-3 whitespace-pre-wrap leading-7 text-slate-800 ${learnerFriendly ? 'text-base' : 'text-sm'}`}>
+        <p tabIndex={learnerFriendly ? 0 : undefined} className={`mt-3 whitespace-pre-wrap leading-7 ${learnerFriendly ? 'text-xl font-bold !text-slate-900' : 'text-sm text-slate-800'}`}>
           {transcript}
         </p>
       </details>

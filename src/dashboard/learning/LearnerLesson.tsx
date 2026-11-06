@@ -16,7 +16,8 @@ import { fetchLessonById } from '../../lib/gql/queries';
 import type { LessonLearningPlan } from '../../lib/learningRecords';
 import { learnerTitle } from '../../lib/learnerCopy';
 import { buildPath } from '../../lib/learnerPath';
-import { LearnerPage, FriendlyAlert, Loading } from './ui/LearnerKit';
+import { LearnerPage, FriendlyAlert, Loading, ReadAloud } from './ui/LearnerKit';
+import { AccessibleLessonMedia } from './AccessibleLessonMedia';
 import { QuizRunner, type BarProps } from './ui/QuizRunner';
 import { LessonBuild, LessonSend, useLessonWork } from './LearnerSubmission';
 import { Mascot } from './ui/LearnerArt';
@@ -28,8 +29,12 @@ const stages = [
   { id: 'story', emoji: '📖', label: 'Story', say: "Hi! I'm Robo! Story time!" },
   { id: 'welcome', emoji: '🔍', label: 'Get ready', say: "Let's make the computer say hi!" },
   { id: 'quiz', emoji: '❓', label: 'Quick quiz', say: "Let's play a guessing game!" },
+  { id: 'activity', emoji: '🔢', label: 'Try it', say: 'Have a go at this one.' },
+  { id: 'history', emoji: '📜', label: 'A short history', say: 'Here is how it began.' },
+  { id: 'idea', emoji: '🧩', label: 'A new idea', say: 'Here is something new.' },
   { id: 'code', emoji: '🧩', label: 'Code it', say: 'Change the words, then press Run!' },
   { id: 'final', emoji: '🏆', label: 'Final quiz', say: 'One more game! You can do it!' },
+  { id: 'recap', emoji: '🎉', label: 'What you learned', say: 'Here is what you learned.' },
 ] as const;
 type StageId = (typeof stages)[number]['id'];
 
@@ -65,12 +70,13 @@ export function LearnerLesson() {
   return (
     <LearnerPage className="learner-player !space-y-5 max-w-4xl">
       <FriendlyAlert error={error} />
-      {assignmentQuery.isPending && <Loading>Opening your lesson</Loading>}
+      {(assignmentQuery.isPending || lessonQuery.isLoading) && <Loading>Opening your lesson</Loading>}
       {!assignmentQuery.isPending && !error && !assignment && <>
         <h1 className="learner-title"><span aria-hidden="true">🔍 </span>Not found</h1>
         <Link to="/dashboard" className="btn-secondary">Back</Link>
       </>}
-      {assignment && submissions.isSuccess && <LessonStages key={assignment.id}
+      {/* Wait for the lesson itself: its story decides which step comes first. */}
+      {assignment && submissions.isSuccess && !lessonQuery.isLoading && <LessonStages key={assignment.id}
         assignmentId={assignment.id} title={lessonQuery.data?.title ?? assignment.title} lessonId={assignment.lesson_id}
         instructions={assignment.self_started ? '' : assignment.instructions}
         plan={{ ...assignment.learning_plan, ...pickStageContent(lessonQuery.data?.learning_plan) }}
@@ -88,14 +94,16 @@ export function LearnerLesson() {
  */
 function pickStageContent(plan: LessonLearningPlan | null | undefined): Partial<LessonLearningPlan> {
   if (!plan) return {};
-  const fresh: Partial<LessonLearningPlan> = { problem: plan.problem, ideas: plan.ideas, story: plan.story };
+  const fresh: Partial<LessonLearningPlan> = { problem: plan.problem, ideas: plan.ideas, story: plan.story,
+    storyHeading: plan.storyHeading, stepWords: plan.stepWords, weWill: plan.weWill, together: plan.together,
+    doneLine: plan.doneLine, activity: plan.activity, history: plan.history, idea: plan.idea, noBlocks: plan.noBlocks, recap: plan.recap };
   if (plan.steps?.length) fresh.steps = plan.steps;
   if (plan.expectedResult) fresh.expectedResult = plan.expectedResult;
   if (plan.requirements?.length) fresh.requirements = plan.requirements;
   return fresh;
 }
 
-function LessonStages({ assignmentId, title, lessonId, instructions, plan, submissions, reviews }: {
+function LessonStages({ assignmentId, title, lessonId, instructions, plan, lesson, submissions, reviews }: {
   assignmentId: string; title: string; lessonId: string; instructions: string; plan: LessonLearningPlan;
   lesson: Awaited<ReturnType<typeof fetchLessonById>> | null;
   submissions: Parameters<typeof LessonSend>[0]['submissions']; reviews: Parameters<typeof LessonSend>[0]['reviews'];
@@ -103,7 +111,13 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, submi
   // The learning bit before the quiz: the lesson's short story, or its ideas
   // when a lesson has no story yet, so no learner is quizzed cold.
   const story: string[] = plan.story?.length ? plan.story : (plan.ideas ?? []).map((idea) => idea.body);
-  const steps = story.length ? stages : stages.filter((item) => item.id !== 'story');
+  const recap = plan.recap ?? [];
+  // The story, activity, history, idea and recap steps appear only for lessons
+  // that have them, and a lesson can leave out the blocks step.
+  const steps = stages.filter((item) => (item.id !== 'story' || story.length > 0)
+    && (item.id !== 'activity' || !!plan.activity) && (item.id !== 'history' || !!plan.history?.lines.length)
+    && (item.id !== 'idea' || !!plan.idea) && (item.id !== 'code' || !plan.noBlocks) && (item.id !== 'recap' || recap.length > 0))
+    .map((item) => ({ id: item.id, label: plan.stepWords?.[item.id]?.label ?? item.label, say: plan.stepWords?.[item.id]?.say ?? item.say }));
   // Every time the lesson opens (after signing in, too) it starts on the
   // story, so learners always know what they are about to do.
   const [stage, setStage] = useState<StageId>(steps[0].id);
@@ -147,15 +161,39 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, submi
   // Leaving the code step sends the program to the teacher, so there is no
   // separate Send step or form. Unchanged programs are not sent twice.
   const send = useMutation({
-    mutationFn: (program: NonNullable<typeof work.program>) => submitLearningWork({
-      assignmentId, text: `My program for "${learnerTitle(title)}"`, url: '', reflection: '', program }),
+    mutationFn: (program: NonNullable<typeof work.program> | null) => submitLearningWork({
+      assignmentId, text: program ? `My program for "${learnerTitle(title)}"` : `Finished "${learnerTitle(title)}"`, url: '', reflection: '', program: program ?? undefined }),
     onSuccess: () => { void qc.invalidateQueries({ queryKey: ['learning-submissions'] }); void qc.invalidateQueries({ queryKey: ['learning-program', assignmentId] }); },
   });
+  // The error sits at the foot of the step, where the sticky Back/Next bar would
+  // cover it, so bring it into view. Focus stays on Next, ready to try again.
+  const sendError = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!send.error) return;
+    const still = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    sendError.current?.scrollIntoView({ block: 'center', behavior: still ? 'auto' : 'smooth' });
+  }, [send.error]);
   function go(to: StageId) {
+    if (send.isPending) return;
+    // With no blocks step, finishing the final quiz is what tells the teacher.
+    // As with sending blocks, the lesson moves on only once it has worked.
+    if (stage === 'final' && plan.noBlocks && !submissions.length && steps.findIndex((item) => item.id === to) > index) {
+      send.mutate(null, { onSuccess: () => setStage(to) });
+      return;
+    }
     if (stage === 'code') {
       const program = work.program ?? work.draft.data ?? null;
       const changed = !submissions.length || submissions[0].generated_code !== program?.code;
-      if (program?.code?.trim() && changed) send.mutate(program); else work.saveIfChanged();
+      if (program?.code?.trim() && changed) {
+        // Going forward waits for the send: if it fails, the learner stays here
+        // with the error showing and presses Next to try again. The final quiz
+        // can only be reached by this path, so it never follows unsent work.
+        if (steps.findIndex((item) => item.id === to) > index) {
+          send.mutate(program, { onSuccess: () => setStage(to) });
+          return;
+        }
+        send.mutate(program);
+      } else work.saveIfChanged();
     }
     setStage(to);
   }
@@ -175,7 +213,29 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, submi
   const preCount = lessonQuiz('pre')?.questions.length ?? 2;
   const endCount = lessonQuiz('end')?.questions.length ?? 3;
   const latestReview = reviews[0];
-
+  // Only a lesson's own audio or video shows. The general "how to use your
+  // lesson" video describes an older lesson flow, so it stays off for now.
+  const generalVideo = !lesson?.media_url || lesson.media_url.endsWith('/lesson-media/lesson-orientation.webm');
+  const showMedia = !!lesson && !generalVideo;
+  const welcomeSteps: { picture?: string; words: string }[] = plan.weWill?.map(storyLine) ?? [
+    { picture: '❓', words: `Answer ${numberWord(preCount).toLowerCase()} questions. Just guess!` },
+    { picture: '💬', words: 'Make the computer talk!' },
+    { picture: '⭐', words: `Answer ${numberWord(endCount).toLowerCase()} more. Yay, all done!` },
+  ];
+  // Read aloud says the same words the screen shows, for learners with low
+  // vision or a reading difficulty who are not using a screen reader.
+  const readAloudText = stage === 'recap'
+    ? [current.say, ...recap].join(' ')
+    : stage === 'idea' && plan.idea
+      ? [current.say, plan.idea.heading, ...plan.idea.before, ...plan.idea.cards.map((card, n) => `Block ${n + 1}: ${card}.`), ...plan.idea.after].join(' ')
+    : stage === 'history'
+      ? [current.say, plan.history?.heading ?? '', ...(plan.history?.lines ?? []).map((line) => storyLine(line).words)].filter(Boolean).join(' ')
+    : stage === 'story'
+    ? [current.say, ...story.map((line) => storyLine(line).words), 'Press Next!'].join(' ')
+    : stage === 'welcome'
+      ? [current.say, 'We will:', ...welcomeSteps.map((step) => step.words), 'Tab moves. Space picks.', plan.together ?? '',
+          instructions ? `Your teacher says: ${instructions}` : '', 'Ready? Press Next!'].filter(Boolean).join(' ')
+      : null;
 
   return <>
     {/* The lesson title is the page heading for screen readers; the screen
@@ -189,12 +249,14 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, submi
       {/* Robo and one short line. Screen readers also hear the step number
           and name, in one go, from the same heading. */}
       <div className="stage-banner">
-        <Mascot size={64} mood={stage === 'final' && finished ? 'cheer' : stage === 'code' ? 'think' : 'happy'} className="mascot-float shrink-0" />
+        <Mascot size={64} mood={(stage === 'final' && finished) || stage === 'recap' ? 'cheer' : stage === 'code' ? 'think' : 'happy'} className="mascot-float shrink-0" />
         <div className="speech-bubble">
           <h2 id="stage-heading" ref={heading} tabIndex={0} className="!text-xl sm:!text-2xl">
             <span className="sr-only">Step {index + 1} of {steps.length}{stage === 'story' ? '' : `: ${current.label}`}. </span>{current.say}
           </h2>
         </div>
+        {/* Keyed by step, so moving on stops the voice and it never reads the old step. */}
+        {readAloudText && <ReadAloud key={stage} text={readAloudText} />}
       </div>
 
       <div key={stage} className="stage-pop space-y-6">
@@ -205,7 +267,7 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, submi
           Tab stop, with a picture when the line starts with one. Screen
           readers hear the words only. */}
       {stage === 'story' && <div className="learner-card space-y-4 p-6">
-        <h3 tabIndex={0} className="lesson-subhead">{plan.story?.length ? 'A short story' : 'Good to know'}</h3>
+        <h3 tabIndex={0} className="lesson-subhead">{plan.storyHeading ?? (plan.story?.length ? 'A short story' : 'Good to know')}</h3>
         {story.map(storyLine).map(({ picture, words }, n) => (
           <p key={n} tabIndex={0} className="flex items-center gap-4 text-2xl font-bold !text-slate-900">
             {picture && <span aria-hidden="true" className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-3xl" style={{ background: 'var(--stage-soft)', border: '3px solid var(--stage)' }}>{picture}</span>}
@@ -217,23 +279,43 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, submi
       {stage === 'welcome' && <div className="learner-card space-y-5 p-6">
         <h3 tabIndex={0} className="lesson-subhead">We will:</h3>
         <ol className="space-y-4">
-          {[
-            { picture: '❓', words: `Answer ${numberWord(preCount).toLowerCase()} questions. Just guess!` },
-            { picture: '💬', words: 'Make the computer talk!' },
-            { picture: '⭐', words: `Answer ${numberWord(endCount).toLowerCase()} more. Yay, all done!` },
-          ].map((step, n) => (
+          {welcomeSteps.map((step, n) => (
             <li key={step.words} tabIndex={0} className="flex items-center gap-4 rounded-2xl text-2xl font-bold text-slate-900">
-              <span aria-hidden="true" className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-3xl" style={{ background: 'var(--stage-soft)', border: '3px solid var(--stage)' }}>{step.picture}</span>
+              {step.picture && <span aria-hidden="true" className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-3xl" style={{ background: 'var(--stage-soft)', border: '3px solid var(--stage)' }}>{step.picture}</span>}
               <span><span className="sr-only">{n + 1}. </span>{step.words}</span>
             </li>
           ))}
         </ol>
         <p tabIndex={0} className="rounded-2xl bg-amber-100 p-4 text-2xl font-bold !text-slate-900">Tab moves. Space picks.</p>
+        {plan.together && <p tabIndex={0} className="text-2xl font-bold !text-slate-900">{plan.together}</p>}
         <p tabIndex={0} className="text-2xl font-bold !text-slate-900">Ready? Press Next!</p>
       </div>}
       {stage === 'welcome' && instructions && <p tabIndex={0} className="learner-card p-5 text-xl font-bold text-slate-900">Your teacher says: {instructions}</p>}
+      {stage === 'welcome' && showMedia && lesson && <AccessibleLessonMedia lesson={lesson} learnerFriendly />}
 
       {stage === 'quiz' && <QuizRunner lessonId={lessonId} stage="pre" onBack={goBack} onDone={goNext ?? null} bar={(props) => <Bar {...props} />} />}
+
+      {stage === 'activity' && <QuizRunner lessonId={lessonId} stage="mid" onBack={goBack} onDone={goNext ?? null} bar={(props) => <Bar {...props} />}
+        afterResult={plan.activity?.talk && <p tabIndex={0} className="w-full rounded-2xl bg-amber-100 p-4 text-left text-xl font-bold !text-slate-900">{plan.activity.talk}</p>} />}
+
+      {stage === 'history' && plan.history && <div className="learner-card space-y-4 p-6">
+        <h3 tabIndex={0} className="lesson-subhead">{plan.history.heading}</h3>
+        {plan.history.lines.map(storyLine).map(({ picture, words }) => (
+          <p key={words} tabIndex={0} className="flex items-center gap-4 text-2xl font-bold !text-slate-900">
+            {picture && <span aria-hidden="true" className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-3xl" style={{ background: 'var(--stage-soft)', border: '3px solid var(--stage)' }}>{picture}</span>}
+            <span>{words}</span>
+          </p>
+        ))}
+      </div>}
+
+      {stage === 'idea' && plan.idea && <div className="learner-card space-y-4 p-6">
+        <h3 tabIndex={0} className="lesson-subhead">{plan.idea.heading}</h3>
+        {plan.idea.before.map((line) => <p key={line} tabIndex={0} className="text-2xl font-bold !text-slate-900">{line}</p>)}
+        <ol className="idea-cards space-y-1">
+          {plan.idea.cards.map((card, n) => <li key={card} tabIndex={0} className="idea-card"><span className="sr-only">Block {n + 1}: </span>{card}</li>)}
+        </ol>
+        {plan.idea.after.map((line) => <p key={line} tabIndex={0} className="text-2xl font-bold !text-slate-900">{line}</p>)}
+      </div>}
 
       {stage === 'code' && <>
         <LessonBuild work={work} level={plan.level} />
@@ -241,18 +323,23 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, submi
       </>}
 
       {stage === 'final' && <>
-        <QuizRunner lessonId={lessonId} stage="end" onBack={goBack} onDone={goNext ?? null} bar={(props) => <Bar {...props} />}
-          doneText="Yay! You did it! Your teacher can see your work." />
-        {latestReview && <div className="learner-card space-y-2 p-5">
-          <h3>Your teacher said</h3>
-          <p tabIndex={0} className="whitespace-pre-wrap text-lg font-semibold text-slate-900">{latestReview.feedback}</p>
-        </div>}
+        <QuizRunner lessonId={lessonId} stage="end" onBack={goBack} onDone={goNext ?? null} bar={(props) => <Bar {...props} nextLabel={send.isPending ? 'Sending…' : props.nextLabel} />}
+          doneText={`${plan.doneLine ?? 'Yay! You did it!'}${submissions.length ? ' Your teacher can see your work.' : ''}`} />
       </>}
-      <FriendlyAlert error={send.error} />
+      {stage === 'recap' && <div className="learner-card space-y-4 p-6">
+        {recap.map((line) => <p key={line} tabIndex={0} className="text-2xl font-bold !text-slate-900">{line}</p>)}
+        {plan.noBlocks && submissions.length > 0 && <p tabIndex={0} className="text-xl font-bold !text-slate-900">Your teacher can see that you finished.</p>}
+      </div>}
+      {/* A teacher's comments close the lesson: on its last step, whichever that is. */}
+      {stage === steps[steps.length - 1].id && latestReview && <div className="learner-card space-y-2 p-5">
+        <h3>Your teacher said</h3>
+        <p tabIndex={0} className="whitespace-pre-wrap text-lg font-semibold text-slate-900">{latestReview.feedback}</p>
+      </div>}
+      {send.error && <div ref={sendError}><FriendlyAlert error={send.error} /></div>}
       </div>
     </section>
 
-    {(stage === 'story' || stage === 'welcome' || stage === 'code') && <Bar back={goBack} next={goNext} />}
+    {(stage === 'story' || stage === 'welcome' || stage === 'history' || stage === 'idea' || stage === 'code' || stage === 'recap') && <Bar back={goBack} next={goNext} nextLabel={send.isPending ? 'Sending…' : 'Next'} />}
     <FriendlyAlert error={openNext.error} />
   </>;
 }
