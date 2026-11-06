@@ -16,7 +16,8 @@ import { fetchLessonById } from '../../lib/gql/queries';
 import type { LessonLearningPlan } from '../../lib/learningRecords';
 import { learnerTitle } from '../../lib/learnerCopy';
 import { buildPath } from '../../lib/learnerPath';
-import { LearnerPage, FriendlyAlert, Loading } from './ui/LearnerKit';
+import { LearnerPage, FriendlyAlert, Loading, ReadAloud } from './ui/LearnerKit';
+import { AccessibleLessonMedia } from './AccessibleLessonMedia';
 import { QuizRunner, type BarProps } from './ui/QuizRunner';
 import { LessonBuild, LessonSend, useLessonWork } from './LearnerSubmission';
 import { Mascot } from './ui/LearnerArt';
@@ -95,7 +96,7 @@ function pickStageContent(plan: LessonLearningPlan | null | undefined): Partial<
   return fresh;
 }
 
-function LessonStages({ assignmentId, title, lessonId, instructions, plan, submissions, reviews }: {
+function LessonStages({ assignmentId, title, lessonId, instructions, plan, lesson, submissions, reviews }: {
   assignmentId: string; title: string; lessonId: string; instructions: string; plan: LessonLearningPlan;
   lesson: Awaited<ReturnType<typeof fetchLessonById>> | null;
   submissions: Parameters<typeof LessonSend>[0]['submissions']; reviews: Parameters<typeof LessonSend>[0]['reviews'];
@@ -175,7 +176,23 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, submi
   const preCount = lessonQuiz('pre')?.questions.length ?? 2;
   const endCount = lessonQuiz('end')?.questions.length ?? 3;
   const latestReview = reviews[0];
-
+  // The general "how to use your lesson" video belongs on the first lesson
+  // only; lesson-specific audio or video shows on its own lesson.
+  const generalVideo = !lesson?.media_url || lesson.media_url.endsWith('/lesson-media/lesson-orientation.webm');
+  const showMedia = !!lesson && (!generalVideo || here === 0);
+  const welcomeSteps = [
+    { picture: '❓', words: `Answer ${numberWord(preCount).toLowerCase()} questions. Just guess!` },
+    { picture: '💬', words: 'Make the computer talk!' },
+    { picture: '⭐', words: `Answer ${numberWord(endCount).toLowerCase()} more. Yay, all done!` },
+  ];
+  // Read aloud says the same words the screen shows, for learners with low
+  // vision or a reading difficulty who are not using a screen reader.
+  const readAloudText = stage === 'story'
+    ? [current.say, ...story.map((line) => storyLine(line).words), 'Press Next!'].join(' ')
+    : stage === 'welcome'
+      ? [current.say, 'We will:', ...welcomeSteps.map((step) => step.words), 'Tab moves. Space picks.',
+          instructions ? `Your teacher says: ${instructions}` : '', 'Ready? Press Next!'].filter(Boolean).join(' ')
+      : null;
 
   return <>
     {/* The lesson title is the page heading for screen readers; the screen
@@ -195,6 +212,8 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, submi
             <span className="sr-only">Step {index + 1} of {steps.length}{stage === 'story' ? '' : `: ${current.label}`}. </span>{current.say}
           </h2>
         </div>
+        {/* Keyed by step, so moving on stops the voice and it never reads the old step. */}
+        {readAloudText && <ReadAloud key={stage} text={readAloudText} />}
       </div>
 
       <div key={stage} className="stage-pop space-y-6">
@@ -217,11 +236,7 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, submi
       {stage === 'welcome' && <div className="learner-card space-y-5 p-6">
         <h3 tabIndex={0} className="lesson-subhead">We will:</h3>
         <ol className="space-y-4">
-          {[
-            { picture: '❓', words: `Answer ${numberWord(preCount).toLowerCase()} questions. Just guess!` },
-            { picture: '💬', words: 'Make the computer talk!' },
-            { picture: '⭐', words: `Answer ${numberWord(endCount).toLowerCase()} more. Yay, all done!` },
-          ].map((step, n) => (
+          {welcomeSteps.map((step, n) => (
             <li key={step.words} tabIndex={0} className="flex items-center gap-4 rounded-2xl text-2xl font-bold text-slate-900">
               <span aria-hidden="true" className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-3xl" style={{ background: 'var(--stage-soft)', border: '3px solid var(--stage)' }}>{step.picture}</span>
               <span><span className="sr-only">{n + 1}. </span>{step.words}</span>
@@ -232,6 +247,7 @@ function LessonStages({ assignmentId, title, lessonId, instructions, plan, submi
         <p tabIndex={0} className="text-2xl font-bold !text-slate-900">Ready? Press Next!</p>
       </div>}
       {stage === 'welcome' && instructions && <p tabIndex={0} className="learner-card p-5 text-xl font-bold text-slate-900">Your teacher says: {instructions}</p>}
+      {stage === 'welcome' && showMedia && lesson && <AccessibleLessonMedia lesson={lesson} learnerFriendly />}
 
       {stage === 'quiz' && <QuizRunner lessonId={lessonId} stage="pre" onBack={goBack} onDone={goNext ?? null} bar={(props) => <Bar {...props} />} />}
 
